@@ -61,10 +61,7 @@ def process_calendar(url, source):
                     print(end)
 
                     # Process the reservation based on the event's summary
-                    if (
-                        component.get("SUMMARY", "") == "Reserved"
-                        or source == "booking"
-                    ):
+                    if component.get("SUMMARY", "") == "Reserved":
                         logement = Logement.objects.first()
 
                         # Create or update the reservation for Airbnb or Booking
@@ -87,23 +84,22 @@ def process_calendar(url, source):
 
                     elif source == "booking":
                         logement = Logement.objects.first()
-
-                        if source == "booking":
-                            reservation, created = (
-                                booking_booking.objects.update_or_create(
-                                    logement=logement,
-                                    start=start,
-                                    end=end,
-                                )
+                        print("booking")
+                        reservation, created = (
+                            booking_booking.objects.update_or_create(
+                                logement=logement,
+                                start=start,
+                                end=end,
                             )
-                            if created:
-                                logger.info(
-                                    f"Booking reservation created: {reservation}"
-                                )
-                            else:
-                                logger.info(
-                                    f"Booking reservation updated: {reservation}"
-                                )
+                        )
+                        if created:
+                            logger.info(
+                                f"Booking reservation created: {reservation}"
+                            )
+                        else:
+                            logger.info(
+                                f"Booking reservation updated: {reservation}"
+                            )
 
             # After processing the calendar, delete any future reservations not in the calendar
             delete_old_reservations(event_dates, source)
@@ -132,9 +128,10 @@ def delete_old_reservations(event_dates, source):
         for reservation in reservations:
             is_found = False
             for event_start, event_end in event_dates:
-                print(reservation.start)
-                print(reservation.end)
-                if reservation.start == event_start and reservation.end == event_end:
+                if (
+                    reservation.start == event_start.date()
+                    and reservation.end == event_end.date()
+                ):
                     is_found = True
                     break
 
