@@ -31,9 +31,10 @@ DATABASES = {
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # SECURITY HARDENING
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 X_FRAME_OPTIONS = "DENY"
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -68,7 +69,7 @@ CACHES = {
         "LOCATION": "redis://127.0.0.1:6379/1",  # DB 1 for cache (avoid collision with Celery's DB 0)
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 }
 
