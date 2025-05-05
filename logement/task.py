@@ -119,10 +119,10 @@ def delete_old_reservations(event_dates, source):
     try:
         # Determine the model to use based on the source
         if source == "airbnb":
-            reservations = airbnb_booking.objects.filter(date_debut__gte=datetime.now())
+            reservations = airbnb_booking.objects.filter(start__gte=datetime.now())
         elif source == "booking":
             reservations = booking_booking.objects.filter(
-                date_debut__gte=datetime.now()
+                tart__gte=datetime.now()
             )
 
         # Find reservations that are not in the event_dates list
