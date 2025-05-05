@@ -67,9 +67,8 @@ def process_calendar(url, source):
                             reservation, created = (
                                 airbnb_booking.objects.update_or_create(
                                     logement=logement,
-                                    date_debut=start,
-                                    date_fin=end,
-                                    defaults={"statut": "reserved"},
+                                    start=start,
+                                    end=end,
                                 )
                             )
                             if created:
@@ -88,9 +87,8 @@ def process_calendar(url, source):
                             reservation, created = (
                                 booking_booking.objects.update_or_create(
                                     logement=logement,
-                                    date_debut=start,
-                                    date_fin=end,
-                                    defaults={"statut": "booked"},
+                                    start=start,
+                                    end=end,
                                 )
                             )
                             if created:
@@ -132,8 +130,8 @@ def delete_old_reservations(event_dates, source):
             is_found = False
             for event_start, event_end in event_dates:
                 if (
-                    reservation.date_debut == event_start
-                    and reservation.date_fin == event_end
+                    reservation.start == event_start
+                    and reservation.end == event_end
                 ):
                     is_found = True
                     break
