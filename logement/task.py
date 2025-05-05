@@ -57,8 +57,6 @@ def process_calendar(url, source):
 
                     # Add the event's date range to the list
                     event_dates.append((start, end))
-                    print(start)
-                    print(end)
 
                     # Process the reservation based on the event's summary
                     if component.get("SUMMARY", "") == "Reserved":
@@ -84,7 +82,6 @@ def process_calendar(url, source):
 
                     elif source == "booking":
                         logement = Logement.objects.first()
-                        print("booking")
                         reservation, created = (
                             booking_booking.objects.update_or_create(
                                 logement=logement,

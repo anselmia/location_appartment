@@ -2,46 +2,52 @@
 {% load i18n %}
 {% block content %}
 <div class="form-box">
-    <h2>{% trans "Modifier le logement" %} : {{ logement.name }}</h2>
+    <h2 class="text-center">{% trans "Modifier le logement" %}: {{ logement.name }}</h2>
 
-    <form method="post">
+    <form method="post" class="form-horizontal">
         {% csrf_token %}
         {{ form.as_p }}
-
-        <div style="text-align:center;">
-            <button type="submit" class="btn btn-primary">{% trans "Enregistrer" %}</button>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">{% trans "Enregistrer" %}</button>
         </div>
     </form>
 
-    <hr>
-    <h3>Pièces</h3>
-    <ul>
+    <hr class="my-4">
+
+    <h3 class="section-title">{% trans "Pièces" %}</h3>
+    <ul class="list-unstyled">
         {% for room in rooms %}
-            <li>
-                {{ room.name }}
+            <li class="d-flex justify-content-between align-items-center">
+                <span>{{ room.name }}</span>
                 <form method="post" action="{% url 'administration:delete_room' room.id %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit">🗑️ Supprimer</button>
+                    <button type="submit" class="btn btn-danger btn-sm">🗑️ {% trans "Supprimer" %}</button>
                 </form>
             </li>
         {% endfor %}
     </ul>
-    
+
     <form method="post" action="{% url 'administration:add_room' logement.id %}">
         {% csrf_token %}
-        <input type="text" name="name" placeholder="Nom de la pièce" required>
-        <button type="submit">➕ Ajouter une pièce</button>
+        <div class="input-group mb-3">
+            <input type="text" name="name" placeholder="{% trans 'Nom de la pièce' %}" class="form-control" required>
+            <button type="submit" class="btn btn-success">➕ {% trans 'Ajouter une pièce' %}</button>
+        </div>
     </form>
 
-    <hr>
-    <h3>Photos</h3>
-    <ul>
+    <hr class="my-4">
+
+    <h3 class="section-title">{% trans "Photos" %}</h3>
+    <ul class="list-unstyled">
         {% for photo in logement.photos.all %}
-            <li>
-                <img src="{{ photo.image.url }}" width="100">
+            <li class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="{{ photo.image.url }}" width="100" alt="{{ photo.room.name }}">
+                    <span class="ml-3">{{ photo.room.name }}</span>
+                </div>
                 <form method="post" action="{% url 'administration:delete_photo' photo.id %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit">🗑️ Supprimer</button>
+                    <button type="submit" class="btn btn-danger btn-sm">🗑️ {% trans "Supprimer" %}</button>
                 </form>
             </li>
         {% endfor %}
@@ -49,16 +55,24 @@
 
     <form action="{% url 'administration:upload_photos' logement.id %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="room">Pièce :</label>
-        <select name="room_id" id="room">
-            <option value="">Aucune (général)</option>
-            {% for room in rooms %}
-                <option value="{{ room.id }}">{{ room.name }}</option>
-            {% endfor %}
-        </select>
+        <div class="form-group">
+            <label for="room">{% trans "Pièce" %}:</label>
+            <select name="room_id" id="room" class="form-control">
+                <option value="">Aucune ({% trans "général" %})</option>
+                {% for room in rooms %}
+                    <option value="{{ room.id }}">{{ room.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
     
-        <input type="file" name="photo" multiple required>
-        <button type="submit">Add photo(s)</button>
+        <div class="form-group">
+            <label for="photos">{% trans "Sélectionner des photos" %}</label>
+            <input type="file" name="photo" multiple required class="form-control-file" id="photos">
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-info btn-lg">{% trans "Ajouter des photos" %}</button>
+        </div>
     </form>
 </div>
 {% endblock %}

@@ -90,9 +90,15 @@ document.querySelectorAll('.carousel-item3d img').forEach(img => {
 });
 
 document.getElementById('roomFilter').addEventListener('change', function () {
-    const selected = this.value;
+    const selected = this.value;  // Get the selected value from the dropdown
+    
     document.querySelectorAll('.carousel-item3d').forEach(item => {
-        item.style.display = (selected === 'all' || item.classList.contains(selected)) ? 'block' : 'none';
+        // Show or hide items based on whether their class includes the selected room
+        if (selected === 'all' || item.classList.contains(selected)) {
+            item.style.display = 'block';  // Show the item
+        } else {
+            item.style.display = 'none';   // Hide the item
+        }
     });
 });
 
