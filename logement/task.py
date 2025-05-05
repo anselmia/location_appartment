@@ -59,7 +59,10 @@ def process_calendar(url, source):
                     event_dates.append((start, end))
 
                     # Process the reservation based on the event's summary
-                    if component.get("SUMMARY", "") == "Reserved":
+                    if (
+                        component.get("SUMMARY", "") == "Reserved"
+                        or source == "booking"
+                    ):
                         logement = Logement.objects.first()
 
                         # Create or update the reservation for Airbnb or Booking
@@ -80,7 +83,7 @@ def process_calendar(url, source):
                                     f"Airbnb reservation updated: {reservation}"
                                 )
 
-                    elif component.get("SUMMARY", "") == "Booked":
+                    elif source == "booking":
                         logement = Logement.objects.first()
 
                         if source == "booking":
@@ -121,18 +124,13 @@ def delete_old_reservations(event_dates, source):
         if source == "airbnb":
             reservations = airbnb_booking.objects.filter(start__gte=datetime.now())
         elif source == "booking":
-            reservations = booking_booking.objects.filter(
-                start__gte=datetime.now()
-            )
+            reservations = booking_booking.objects.filter(start__gte=datetime.now())
 
         # Find reservations that are not in the event_dates list
         for reservation in reservations:
             is_found = False
             for event_start, event_end in event_dates:
-                if (
-                    reservation.start == event_start
-                    and reservation.end == event_end
-                ):
+                if reservation.start == event_start and reservation.end == event_end:
                     is_found = True
                     break
 
