@@ -57,6 +57,8 @@ def process_calendar(url, source):
 
                     # Add the event's date range to the list
                     event_dates.append((start, end))
+                    print(start)
+                    print(end)
 
                     # Process the reservation based on the event's summary
                     if (
@@ -130,6 +132,8 @@ def delete_old_reservations(event_dates, source):
         for reservation in reservations:
             is_found = False
             for event_start, event_end in event_dates:
+                print(reservation.start)
+                print(reservation.end)
                 if reservation.start == event_start and reservation.end == event_end:
                     is_found = True
                     break
