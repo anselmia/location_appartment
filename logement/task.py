@@ -9,16 +9,21 @@ from logement.models import Logement, airbnb_booking, booking_booking
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
 
 def process_calendar(url, source):
     try:
         response = requests.get(url)
         if response.status_code != 200:
-            logger.error(f"Failed to fetch calendar from {source}. Status code: {response.status_code}")
-            raise ValueError(f"Failed to fetch calendar. Status code: {response.status_code}")
+            logger.error(
+                f"Failed to fetch calendar from {source}. Status code: {response.status_code}"
+            )
+            raise ValueError(
+                f"Failed to fetch calendar. Status code: {response.status_code}"
+            )
 
         # Check for valid iCal content
         if response.headers.get("Content-Type", "").startswith("text/calendar"):
@@ -32,10 +37,23 @@ def process_calendar(url, source):
                     end = component.get("DTEND").dt
 
                     # Ensure the start and end dates are in correct format (handle timezone or UTC)
-                    if isinstance(start, datetime.date):
-                        start = datetime.datetime.combine(start, time.min)
-                    if isinstance(end, datetime.date):
-                        end = datetime.datetime.combine(end, time.min)
+                    if isinstance(start, datetime):
+                        start = start.replace(tzinfo=None)  # Remove timezone if any
+                    elif isinstance(start, datetime.date):
+                        start = datetime.combine(start, time.min)
+
+                    if isinstance(end, datetime):
+                        end = end.replace(tzinfo=None)  # Remove timezone if any
+                    elif isinstance(end, datetime.date):
+                        end = datetime.combine(end, time.min)
+
+                    if not isinstance(start, datetime):
+                        logger.warning(f"Invalid start date: {start}")
+                        continue  # Skip this event if the start date is not valid
+
+                    if not isinstance(end, datetime):
+                        logger.warning(f"Invalid end date: {end}")
+                        continue  # Skip this event if the end date is not valid
 
                     # Add the event's date range to the list
                     event_dates.append((start, end))
@@ -45,32 +63,44 @@ def process_calendar(url, source):
                         logement = Logement.objects.first()
 
                         # Create or update the reservation for Airbnb or Booking
-                        if source == 'airbnb':
-                            reservation, created = airbnb_booking.objects.update_or_create(
-                                logement=logement,
-                                date_debut=start,
-                                date_fin=end,
-                                defaults={"statut": "reserved"}
+                        if source == "airbnb":
+                            reservation, created = (
+                                airbnb_booking.objects.update_or_create(
+                                    logement=logement,
+                                    date_debut=start,
+                                    date_fin=end,
+                                    defaults={"statut": "reserved"},
+                                )
                             )
                             if created:
-                                logger.info(f"Airbnb reservation created: {reservation}")
+                                logger.info(
+                                    f"Airbnb reservation created: {reservation}"
+                                )
                             else:
-                                logger.info(f"Airbnb reservation updated: {reservation}")
-                    
+                                logger.info(
+                                    f"Airbnb reservation updated: {reservation}"
+                                )
+
                     elif component.get("SUMMARY", "") == "Booked":
                         logement = Logement.objects.first()
 
-                        if source == 'booking':
-                            reservation, created = booking_booking.objects.update_or_create(
-                                logement=logement,
-                                date_debut=start,
-                                date_fin=end,
-                                defaults={"statut": "booked"}
+                        if source == "booking":
+                            reservation, created = (
+                                booking_booking.objects.update_or_create(
+                                    logement=logement,
+                                    date_debut=start,
+                                    date_fin=end,
+                                    defaults={"statut": "booked"},
+                                )
                             )
                             if created:
-                                logger.info(f"Booking reservation created: {reservation}")
+                                logger.info(
+                                    f"Booking reservation created: {reservation}"
+                                )
                             else:
-                                logger.info(f"Booking reservation updated: {reservation}")
+                                logger.info(
+                                    f"Booking reservation updated: {reservation}"
+                                )
 
             # After processing the calendar, delete any future reservations not in the calendar
             delete_old_reservations(event_dates, source)
@@ -83,22 +113,28 @@ def process_calendar(url, source):
         logger.error(f"Error processing calendar from {source}: {str(e)}")
         raise ValueError(f"Error processing calendar from {source}: {str(e)}")
 
+
 def delete_old_reservations(event_dates, source):
     """
     Deletes future reservations that are no longer present in the calendar.
     """
     try:
         # Determine the model to use based on the source
-        if source == 'airbnb':
+        if source == "airbnb":
             reservations = airbnb_booking.objects.filter(date_debut__gte=datetime.now())
-        elif source == 'booking':
-            reservations = booking_booking.objects.filter(date_debut__gte=datetime.now())
+        elif source == "booking":
+            reservations = booking_booking.objects.filter(
+                date_debut__gte=datetime.now()
+            )
 
         # Find reservations that are not in the event_dates list
         for reservation in reservations:
             is_found = False
             for event_start, event_end in event_dates:
-                if reservation.date_debut == event_start and reservation.date_fin == event_end:
+                if (
+                    reservation.date_debut == event_start
+                    and reservation.date_fin == event_end
+                ):
                     is_found = True
                     break
 
@@ -111,11 +147,14 @@ def delete_old_reservations(event_dates, source):
         logger.error(f"Error deleting old reservations from {source}: {str(e)}")
         raise ValueError(f"Error deleting old reservations from {source}: {str(e)}")
 
+
 @shared_task
 def sync_calendar():
     # Define the URLs
     airbnb_url = "https://www.airbnb.fr/calendar/ical/48121442.ics?s=610867e1dc2cc14aba2f7b792ed5a4b1"
-    booking_url = "https://ical.booking.com/v1/export?t=daf9d628-a484-45c2-94fd-60ff6beb6c91"
+    booking_url = (
+        "https://ical.booking.com/v1/export?t=daf9d628-a484-45c2-94fd-60ff6beb6c91"
+    )
 
     # Sync Airbnb Calendar
     logger.info("Syncing Airbnb calendar...")

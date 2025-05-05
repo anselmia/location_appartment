@@ -59,14 +59,3 @@ def reserver(request, logement_id):
                 "date_fin": date_fin,
             },
         )
-
-def fetch_airbnb_bookings(ical_url):
-    response = requests.get(ical_url)
-    calendar = Calendar.from_ical(response.text)
-    bookings = []
-    for component in calendar.walk():
-        if component.name == "VEVENT":
-            start = component.get("DTSTART").dt
-            end = component.get("DTEND").dt
-            bookings.append((start, end))
-    return bookings
