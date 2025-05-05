@@ -28,7 +28,7 @@ def home(request):
         reservations = Reservation.objects.filter(logement=logement)
         for r in reservations:
             current = r.date_debut
-            while current <= r.date_fin:
+            while current < r.date_fin:
                 reserved_dates.add(current.isoformat())
                 current += timedelta(days=1)
 
