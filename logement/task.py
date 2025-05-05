@@ -7,7 +7,7 @@ import datetime
 
 @shared_task
 def fetch_airbnb_calendar():
-    url = "https://www.airbnb.com/calendar/ical/12345678.ics?s=abcdefg"
+    url = "https://www.airbnb.fr/calendar/ical/48121442.ics?s=610867e1dc2cc14aba2f7b792ed5a4b1"
     response = requests.get(url)
     print(response)
 
