@@ -74,4 +74,4 @@ class Reservation(models.Model):
     date_reservation = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Réservation {self.logement.name} par {self.client.name}"
+        return f"Réservation {self.logement.name} par {self.client.name if self.client else 'Unknown'}"

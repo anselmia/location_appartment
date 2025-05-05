@@ -16,8 +16,6 @@ def fetch_airbnb_calendar():
             f"Failed to fetch calendar. Status code: {response.status_code}"
         )
 
-    print(response.text)
-
     # Check for valid iCal content
     if response.headers.get("Content-Type", "").startswith("text/calendar"):
         calendar = Calendar.from_ical(response.text)
@@ -35,21 +33,17 @@ def fetch_airbnb_calendar():
                 if isinstance(end, datetime.date):
                     end = datetime.datetime.combine(end, datetime.time.min)
 
-                logement = Logement.objects.first()
+                if component.get("SUMMARY", "") == "Reserved":
+                    logement = Logement.objects.first()
 
-                # Create or update the reservation
-                reservation, created = Reservation.objects.update_or_create(
-                    client=None,
-                    logement=logement,
-                    date_debut=start,
-                    date_fin=end,
-                    defaults={"statut": "confirmee"},
-                )
-
-                if created:
-                    print(f"Reservation created: {reservation}")
-                else:
-                    print(f"Reservation updated: {reservation}")
+                    # Create or update the reservation
+                    reservation, created = Reservation.objects.update_or_create(
+                        client=None,
+                        logement=logement,
+                        date_debut=start,
+                        date_fin=end,
+                        defaults={"statut": "confirmee"},
+                    )
 
     else:
         raise ValueError("Received non-icalendar response")
