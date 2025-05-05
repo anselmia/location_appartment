@@ -54,7 +54,12 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 class Reservation(models.Model):
     logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     date_debut = models.DateField()
     date_fin = models.DateField()
     statut = models.CharField(
