@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY", "unsafe-default-secret-key"
 )  # Set securely in env
