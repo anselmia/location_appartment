@@ -44,7 +44,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_TRUSTED_ORIGINS = [
     "https://nas.home-arnaud.ovh",
     "https://www.nas.home-arnaud.ovh",  # If you have the 'www' version as well
-    "192.168.1.174"
+    "https://192.168.1.174"
 ]
 
 # LOGGING
