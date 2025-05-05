@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Client, Logement, Photo, Reservation
+from .models import (
+    Client,
+    Logement,
+    Photo,
+    Reservation,
+    booking_booking,
+    airbnb_booking,
+)
 from django.utils.html import format_html
 
 
@@ -27,3 +34,5 @@ admin.site.register(Logement, LogementAdmin)
 admin.site.register(Photo)
 admin.site.register(Client)
 admin.site.register(Reservation)
+admin.site.register(airbnb_booking)
+admin.site.register(booking_booking)
