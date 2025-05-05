@@ -1,0 +1,63 @@
+{% load static %}
+{% load i18n %}
+{% now "Y" as current_year %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% trans "Location" %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body class="page-wrapper">
+    <header class="navbar">
+        <div class="logo">🏡 MonLocatif</div>
+        <nav class="nav-links">
+            <a href="/">{% trans "Accueil" %}</a>
+            <a href="#contact">{% trans "Contact" %}</a>
+            {% if user.is_authenticated %}
+                {% if user.is_admin %}
+                    <a href="{% url 'administration:dashboard' %}">Admin</a>
+                {% endif %}
+                <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
+            {% endif %}
+        
+            {% get_current_language as LANGUAGE_CODE %}
+            <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
+                    <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français" width="24" height="16">
+                </button>
+                <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
+                    <img src="{% static 'logement/img/flags/en.svg' %}" alt="English" width="24" height="16">
+                </button>
+                <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
+                    <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español" width="24" height="16">
+                </button>
+            </form>
+
+        </nav>
+    </header>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; {{ current_year }} MonLocatif. {% trans "Tous droits réservés." %}</p>
+            <p>
+                <a href="#contact">{% trans "Contact" %}</a> |
+                <a href="#">{% trans "Mentions légales" %}</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

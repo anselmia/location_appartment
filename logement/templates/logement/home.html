@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <span>{% trans "Bienvenue" %}, {{ user.username }}!</span>
+{% endif %}
+
+<h1 class="title">{% trans "Découvrez notre logement" %}</h1>
+<p style="text-align:center; color:#666; margin-top:-30px; margin-bottom: 40px;">
+    {% trans "Réservez en toute simplicité et sécurité." %}
+</p>
+
+<div class="layout-flex">
+    <div class="carousel-wrapper {% if logement.photos.count == 1 %}single{% endif %}">
+        <div id="left-arrow" class="carousel-arrow left">&#10094;</div>
+        <div id="right-arrow" class="carousel-arrow right">&#10095;</div>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <label for="roomFilter">{% trans "Filtrer par pièce" %}:</label>
+            <select id="roomFilter">
+                <option value="all">{% trans "Toutes" %}</option>
+                {% for room in rooms %}
+                    <option value="room-{{ room.id }}">{{ room.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="carousel3d" id="carousel3d">         
+            {% if logement.photos.count > 0 %}
+                {% for photo in logement.photos.all %}
+                    <div class="carousel-item3d room-{{ photo.room.id|default:'none' }} {% if logement.photos.count == 1 %}single{% endif %}" id="carousel3d">
+                        <img src="{{ photo.image.url }}" alt="{% trans 'Photo du logement' %}">                        
+                    </div>                    
+                {% endfor %}                
+            {% else %}
+                <p style="text-align: center;">{% trans "Aucune photo disponible pour ce logement." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="calendar-box">
+        <h3>{% trans "Disponibilités" %}</h3>
+        <form action="{% url 'logement:reserver' logement.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" id="calendar_range" name="date_range" required>
+            <div id="calendar_inline"></div>
+            <button type="submit">{% trans "Réserver" %}</button>
+        </form>
+
+        <div class="legend">
+            <span class="dot booked"></span> Réservé
+            <span class="dot today"></span> Aujourd’hui
+            <span class="dot free"></span> Disponible
+        </div>
+    </div>
+</div>
+
+<div id="imageModal" class="image-modal">
+    <span id="closeModal" class="close-btn">&times;</span>
+    <img id="modalImage" class="modal-content">
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const reservedDates = {{ reserved_dates_json|safe }};
+    const today = new Date().toISOString().slice(0, 10);
+    const logementId = {{ logement.id }};    
+</script>
+<script src="{% static 'logement/js/carousel3d.js' %}"></script>
+{% endblock %}

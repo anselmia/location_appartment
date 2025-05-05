@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Virtual environment
+venv/
+env/
+
+
+# IDEs/editors
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Django
+migrations/
+media/
+db.sqlite3

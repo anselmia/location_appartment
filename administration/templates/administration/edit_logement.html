@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="form-box">
+    <h2>{% trans "Modifier le logement" %} : {{ logement.name }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div style="text-align:center;">
+            <button type="submit" class="btn btn-primary">{% trans "Enregistrer" %}</button>
+        </div>
+    </form>
+
+    <hr>
+    <h3>Pièces</h3>
+    <ul>
+        {% for room in rooms %}
+            <li>
+                {{ room.name }}
+                <form method="post" action="{% url 'administration:delete_room' room.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">🗑️ Supprimer</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <form method="post" action="{% url 'administration:add_room' logement.id %}">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Nom de la pièce" required>
+        <button type="submit">➕ Ajouter une pièce</button>
+    </form>
+
+    <hr>
+    <h3>Photos</h3>
+    <ul>
+        {% for photo in logement.photos.all %}
+            <li>
+                <img src="{{ photo.image.url }}" width="100">
+                <form method="post" action="{% url 'administration:delete_photo' photo.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">🗑️ Supprimer</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form action="{% url 'administration:upload_photos' logement.id %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="room">Pièce :</label>
+        <select name="room_id" id="room">
+            <option value="">Aucune (général)</option>
+            {% for room in rooms %}
+                <option value="{{ room.id }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+    
+        <input type="file" name="photo" multiple required>
+        <button type="submit">Add photo(s)</button>
+    </form>
+</div>
+{% endblock %}

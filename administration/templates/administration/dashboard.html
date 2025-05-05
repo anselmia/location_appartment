@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Administration</h1>
+
+<a href="{% url 'administration:add_logement' %}" class="btn-add">➕ Ajouter un logement</a>
+
+<ul>
+    {% for logement in logements %}
+        <li><a href="{% url 'administration:edit_logement' logement.id %}">{{ logement.name }}</a></li>
+    {% empty %}
+        <li>Aucun logement pour le moment</li>
+    {% endfor %}
+</ul>
+{% endblock %}
