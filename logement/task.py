@@ -2,7 +2,7 @@ import logging
 import requests
 from celery import shared_task
 from icalendar import Calendar
-from datetime import datetime, time
+from datetime import datetime, date, time
 from logement.models import Logement, airbnb_booking, booking_booking
 
 # Setup a logger
@@ -39,12 +39,12 @@ def process_calendar(url, source):
                     # Ensure the start and end dates are in correct format (handle timezone or UTC)
                     if isinstance(start, datetime):
                         start = start.replace(tzinfo=None)  # Remove timezone if any
-                    elif isinstance(start, datetime.date):
+                    elif isinstance(start, date):
                         start = datetime.combine(start, time.min)
 
                     if isinstance(end, datetime):
                         end = end.replace(tzinfo=None)  # Remove timezone if any
-                    elif isinstance(end, datetime.date):
+                    elif isinstance(end, date):
                         end = datetime.combine(end, time.min)
 
                     if not isinstance(start, datetime):
