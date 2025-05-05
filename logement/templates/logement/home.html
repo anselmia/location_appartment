@@ -13,19 +13,15 @@
 </p>
 
 <div class="layout-flex">
+    <div class="room-filter" id="room-filter">
+        <button class="room-filter-button active" data-room="all">{% trans "Toutes" %}</button>
+        {% for room in rooms %}
+            <button class="room-filter-button" data-room="room-{{ room.id }}">{{ room.name }}</button>
+        {% endfor %}
+    </div>
     <div class="carousel-wrapper {% if logement.photos.count == 1 %}single{% endif %}">
         <div id="left-arrow" class="carousel-arrow left">&#10094;</div>
         <div id="right-arrow" class="carousel-arrow right">&#10095;</div>
-        
-        <div style="text-align: center; margin-bottom: 20px;">
-            <label for="roomFilter">{% trans "Filtrer par pièce" %}:</label>
-            <select id="roomFilter">
-                <option value="all">{% trans "Toutes" %}</option>
-                {% for room in rooms %}
-                    <option value="room-{{ room.id }}">{{ room.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
         
         <div class="carousel3d" id="carousel3d">         
             {% if logement.photos.count > 0 %}

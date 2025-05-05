@@ -40,7 +40,7 @@ function positionItems() {
 
 function rotate(indexDelta) {
     currentIndex = (currentIndex + indexDelta + total) % total;
-    updateClasses();  // ⛔ no transform here
+    updateClasses(); // ⛔ no transform here
 }
 
 function updateClasses() {
@@ -89,16 +89,24 @@ document.querySelectorAll('.carousel-item3d img').forEach(img => {
     });
 });
 
-document.getElementById('roomFilter').addEventListener('change', function () {
-    const selected = this.value;  // Get the selected value from the dropdown
-    
-    document.querySelectorAll('.carousel-item3d').forEach(item => {
-        // Show or hide items based on whether their class includes the selected room
-        if (selected === 'all' || item.classList.contains(selected)) {
-            item.style.display = 'block';  // Show the item
-        } else {
-            item.style.display = 'none';   // Hide the item
-        }
+const filterButtons = document.querySelectorAll('.room-filter-button');
+const carouselItems = document.querySelectorAll('.carousel-item3d');
+filterButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        // Reset active state of filter buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active'); // Add active class to the selected button
+
+        const roomFilter = button.getAttribute('data-room');
+
+        // Filter carousel items based on the selected room
+        carouselItems.forEach(item => {
+            if (roomFilter === 'all' || item.classList.contains(roomFilter)) {
+                item.style.display = 'block'; // Show the item
+            } else {
+                item.style.display = 'none'; // Hide the item
+            }
+        });
     });
 });
 
