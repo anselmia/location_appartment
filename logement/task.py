@@ -9,6 +9,7 @@ import datetime
 def fetch_airbnb_calendar():
     url = "https://www.airbnb.com/calendar/ical/12345678.ics?s=abcdefg"
     response = requests.get(url)
+    print(response)
 
     if response.status_code != 200:
         raise ValueError(
