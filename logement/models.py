@@ -75,3 +75,20 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.client.name if self.client else 'Unknown'}"
+
+
+class airbnb_booking(models.Model):
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
+    start = models.DateField()
+    end = models.DateField()
+
+    def __str__(self):
+        return f"Réservation à {self.logement.name} du {self.start} au {self.end}"
+
+class booking_booking(models.Model):
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
+    start = models.DateField()
+    end = models.DateField()
+
+    def __str__(self):
+        return f"Réservation à {self.logement.name} du {self.start} au {self.end}"
