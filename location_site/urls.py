@@ -27,3 +27,4 @@ urlpatterns = [
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("", include("logement.urls", namespace="logement")),  # main site
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
++ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
