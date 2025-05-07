@@ -1033,7 +1033,7 @@ ul.list-unstyled li .ml-3 {
 }
 
 /* ==== RESPONSIVE === */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 900px) {
     .container {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
@@ -1109,34 +1109,3 @@ ul.list-unstyled li .ml-3 {
     }
 }
 
-@media screen and (max-width: 900px) {
-    .container {
-        max-width: 850px !important; /* Adjust width for medium screens and up */
-    }
-
-    .layout-flex {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .room-filter {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        max-width: 100%;
-    }
-
-    .room-filter-button {
-        flex: 1 1 45%;
-        margin: 5px;
-    }
-
-    .calendar-box {
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    .carousel-wrapper, .calendar-box {
-        width: 90%;
-    }
-}
