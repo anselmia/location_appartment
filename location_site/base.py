@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "accounts",
     "administration",
-    "logement",
     'logement.apps.LogementConfig'
 ]
 

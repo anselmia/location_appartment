@@ -1,13 +1,13 @@
 from django.apps import AppConfig
 
 
-
 class LogementConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "logement"
 
     def ready(self):
         from django_celery_beat.models import PeriodicTask, IntervalSchedule
+
         # Avoid running this code multiple times (e.g., migrations, shell)
         from django.db.utils import OperationalError, ProgrammingError
 
