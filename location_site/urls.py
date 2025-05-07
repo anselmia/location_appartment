@@ -19,14 +19,33 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
+from django.contrib.sitemaps import Sitemap
+from logement.models import Logement  # Your model
 
+
+class LogementSitemap(Sitemap):
+    changefreq = "weekly"
+    priority = 0.8
+
+    def items(self):
+        return Logement.objects.all()
+
+    def location(self, obj):
+        return f"/logement/{obj.slug}/"
+
+
+sitemaps = {
+    "logements": LogementSitemap,
+}
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # optional
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("", include("logement.urls", namespace="logement")),  # main site
-] 
+    path("sitemap.xml", sitemap, {'sitemaps': sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
+]
 
 # Append the static files URLs
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

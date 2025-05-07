@@ -7,7 +7,7 @@
     <span>{% trans "Bienvenue" %}, {{ user.username }}!</span>
 {% endif %}
 
-<h1 class="title">{% trans "Découvrez notre logement" %}</h1>
+<h1 class="title">{% trans "Location àppartement de vacance à Nice Centre" %}</h1>
 <p style="text-align:center; color:#666; margin-top:-30px; margin-bottom: 40px;">
     {% trans "Réservez en toute simplicité et sécurité." %}
 </p>
@@ -27,7 +27,7 @@
             {% if logement.photos.count > 0 %}
                 {% for photo in logement.photos.all %}
                     <div class="carousel-item3d room-{{ photo.room.id|default:'none' }} {% if logement.photos.count == 1 %}single{% endif %}" id="carousel3d">
-                        <img src="{{ photo.image.url }}" alt="Room Image" loading="lazy" class="carousel-item3d-img">                    
+                        <img src="{{ photo.image.url }}" alt="alt="Appartement meublé de vacance à Nice" loading="lazy" class="carousel-item3d-img">                    
                     </div>                    
                 {% endfor %}                
             {% else %}

@@ -6,13 +6,47 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% trans "Location" %}{% endblock %}</title>
+    <title>Location Valrose – Chambres à louer à Nice</title>
+    <meta name="description" content="Logement à louer à Nice Centre. Chambres confortables, cuisine, salle de bain, wifi. Idéal étudiants, touristes et familles. Réservation simple et rapide.">
+    <meta name="keywords" content="location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Location appartement Centre de Nice" />
+    <meta property="og:description" content="Réservez facilement un logement à Nice dans notre résidence à Valrose. Réservation rapide et fiable." />
+    <meta property="og:url" content="https://valrose.home-arnaud.ovh/" />
+    <meta property="og:url" content="https://valrose.home-arnaud.ovh/" />
+    <meta property="og:type" content="website" />
+
     <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "LodgingBusiness",
+          "name": "Résidence Valrose",
+          "description": "location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice",
+          "url": "https://valrose.home-arnaud.ovh",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Nice",
+            "addressCountry": "FR"
+          },
+          "amenityFeature": [
+            { "@type": "LocationFeatureSpecification", "name": "Wifi", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Cuisine équipée", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Salle de bain privée", "value": true }
+          ],
+          "sameAs": [
+            "https://www.instagram.com/youraccount",
+            "https://www.facebook.com/yourpage"
+          ]
+        }
+    </script>
 </head>
 <body class="page-wrapper">
     <header class="navbar">
