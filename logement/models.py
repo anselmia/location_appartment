@@ -21,8 +21,6 @@ class Logement(models.Model):
     def __str__(self):
         return self.name
 
-    def get_absolute_url(self):
-        return reverse("logement:detail", kwargs={"slug": self.slug})
 
 
 class Price(models.Model):

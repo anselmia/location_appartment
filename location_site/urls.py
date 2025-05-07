@@ -32,7 +32,7 @@ class LogementSitemap(Sitemap):
         return Logement.objects.all()
 
     def location(self, obj):
-        return obj.get_absolute_url() 
+        return "/"  # or the booking page URL like "/booking/"
 
 
 sitemaps = {
@@ -44,7 +44,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("", include("logement.urls", namespace="logement")),  # main site
-    path("sitemap.xml", sitemap, {'sitemaps': sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
 ]
 
 # Append the static files URLs
