@@ -7,5 +7,15 @@ app_name = "logement"
 urlpatterns = [
     path("", views.home, name="home"),
     path("i18n/setlang/", set_language, name="set_language"),
-    path("reserver/<int:logement_id>/", views.reserver, name="reserver"),
+    path("book/<int:logement_id>/", views.book, name="book"),
+    path(
+        "api/get_price/<int:logement_id>/<str:date>/",
+        views.get_price_for_date,
+        name="get_price_for_date",
+    ),
+    path(
+        "api/check_availability/<int:logement_id>/",
+        views.check_availability,
+        name="check_availability",
+    ),
 ]

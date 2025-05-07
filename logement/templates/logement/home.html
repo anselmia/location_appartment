@@ -27,7 +27,7 @@
             {% if logement.photos.count > 0 %}
                 {% for photo in logement.photos.all %}
                     <div class="carousel-item3d room-{{ photo.room.id|default:'none' }} {% if logement.photos.count == 1 %}single{% endif %}" id="carousel3d">
-                        <img src="{{ photo.image.url }}" alt="{% trans 'Photo du logement' %}">                        
+                        <img src="{{ photo.image.url }}" alt="Room Image" loading="lazy" class="carousel-item3d-img">                    
                     </div>                    
                 {% endfor %}                
             {% else %}
@@ -38,9 +38,11 @@
 
     <div class="calendar-box">
         <h3>{% trans "Disponibilités" %}</h3>
-        <form action="{% url 'logement:reserver' logement.id %}" method="post">
+        <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
             {% csrf_token %}
             <input type="hidden" id="calendar_range" name="date_range" required>
+            <input type="hidden" id="id_start" name="start" required>
+            <input type="hidden" id="id_end" name="end" required>
             <div id="calendar_inline"></div>
             <button type="submit">{% trans "Réserver" %}</button>
         </form>

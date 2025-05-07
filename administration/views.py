@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from logement.models import Logement, Room, Photo
 from .forms import LogementForm
@@ -32,7 +34,7 @@ def add_logement(request):
 @login_required
 @user_passes_test(is_admin)
 def edit_logement(request, logement_id):
-    logement = get_object_or_404(Logement, id=logement_id)
+    logement = Logement.objects.prefetch_related("photos").first()
     rooms = logement.rooms.all()
     photos = logement.photos.all()
 
@@ -84,12 +86,45 @@ def upload_photos(request, logement_id):
     return redirect("administration:edit_logement", logement_id)
 
 
+# Change the room of a photo
 @login_required
 @user_passes_test(is_admin)
-@require_POST
+def change_photo_room(request, photo_id):
+    if request.method == "POST":
+        photo = get_object_or_404(Photo, id=photo_id)
+        room_id = request.POST.get("room_id")
+        room = get_object_or_404(Room, id=room_id)
+        photo.room = room
+        photo.save()
+        return JsonResponse({"success": True})
+
+
+# Move photo up or down
+@login_required
+@user_passes_test(is_admin)
+def move_photo(request, photo_id, direction):
+    if request.method == "POST":
+        photo = get_object_or_404(Photo, id=photo_id)
+        if direction == "up":
+            previous_photo = Photo.objects.filter(order__lt=photo.order).last()
+            if previous_photo:
+                photo.order, previous_photo.order = previous_photo.order, photo.order
+                photo.save()
+                previous_photo.save()
+        elif direction == "down":
+            next_photo = Photo.objects.filter(order__gt=photo.order).first()
+            if next_photo:
+                photo.order, next_photo.order = next_photo.order, photo.order
+                photo.save()
+                next_photo.save()
+        return JsonResponse({"success": True})
+
+
+# Delete photo
+@login_required
+@user_passes_test(is_admin)
 def delete_photo(request, photo_id):
-    photo = get_object_or_404(Photo, id=photo_id)
-    logement_id = photo.logement.id
-    photo.image.delete()  # removes from media folder
-    photo.delete()
-    return redirect("administration:edit_logement", logement_id)
+    if request.method == "DELETE":
+        photo = get_object_or_404(Photo, id=photo_id)
+        photo.delete()
+        return JsonResponse({"success": True})

@@ -15,11 +15,52 @@ class Client(models.Model):
 class Logement(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    prix_par_nuit = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
     adresse = models.CharField(max_length=255)
+    max_traveler = models.IntegerField(default=4)
+    nominal_traveler = models.IntegerField(default=4)
+    fee_per_extra_traveler = models.DecimalField(
+        max_digits=6, decimal_places=2, default=0
+    )
+    cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=4)
+    tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     def __str__(self):
         return self.name
+
+
+class Price(models.Model):
+    logement = models.ForeignKey(
+        Logement, related_name="night_price", on_delete=models.CASCADE
+    )
+    date = models.DateField()
+    value = models.TextField()
+
+    def __str__(self):
+        return f"Prix du {self.date}: {self.value}"
+
+
+class ExtraCharge(models.Model):
+    logement = models.ForeignKey(
+        Logement, related_name="extra_charges", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)  # E.g., Cleaning Fee, Extra Guest Fee
+    amount = models.DecimalField(
+        max_digits=6, decimal_places=2
+    )  # The cost of the extra charge
+    description = models.TextField(
+        blank=True, null=True
+    )  # Optional description of the charge
+    is_active = models.BooleanField(
+        default=True
+    )  # Option to deactivate charge if needed
+
+    def __str__(self):
+        return f"{self.name} for {self.logement.name}"
+
+    class Meta:
+        verbose_name = "Extra Charge"
+        verbose_name_plural = "Extra Charges"
 
 
 class Room(models.Model):
@@ -40,9 +81,21 @@ class Photo(models.Model):
         Room, on_delete=models.SET_NULL, null=True, blank=True, related_name="photos"
     )
     image = models.ImageField(upload_to="logement_images/")
+    order = models.IntegerField(default=0)  # Add the order field
 
     def __str__(self):
         return f"{self.logement.name} - {self.image.name}"
+
+    def save(self, *args, **kwargs):
+        # Set order automatically when a new photo is created
+        if not self.pk:  # If the photo is being created (not updated)
+            max_order = Photo.objects.filter(logement=self.logement).aggregate(
+                max_order=models.Max("order")
+            )["max_order"]
+            self.order = (
+                max_order or 0
+            ) + 1  # Increment the order, default to 1 if no photos exist
+        super().save(*args, **kwargs)
 
 
 @receiver(models.signals.post_delete, sender=Photo)
@@ -60,8 +113,8 @@ class Reservation(models.Model):
         null=True,
         blank=True,
     )
-    date_debut = models.DateField()
-    date_fin = models.DateField()
+    start = models.DateField()
+    end = models.DateField()
     statut = models.CharField(
         max_length=20,
         choices=[
@@ -84,6 +137,7 @@ class airbnb_booking(models.Model):
 
     def __str__(self):
         return f"Réservation à {self.logement.name} du {self.start} au {self.end}"
+
 
 class booking_booking(models.Model):
     logement = models.ForeignKey(Logement, on_delete=models.CASCADE)

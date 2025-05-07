@@ -16,8 +16,33 @@
     </div>
 
     <div class="form-group">
-        <label for="{{ form.prix_par_nuit.id_for_label }}">Prix par nuit</label>
-        {{ form.prix_par_nuit }}
+        <label for="{{ form.price.id_for_label }}">Prix par nuit</label>
+        {{ form.price }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.max_travelers.id_for_label }}">Nombre de Guests maximum</label>
+        {{ form.max_travelers }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.nominal_traveler.id_for_label }}">Nombe de Guests Nominal</label>
+        {{ form.nominal_traveler }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.fee_per_extra_traveler.id_for_label }}">Frais par Extra Guest</label>
+        {{ form.fee_per_extra_traveler }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.cleaning_fee.id_for_label }}">Frais de ménage</label>
+        {{ form.cleaning_fee }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.tax.id_for_label }}">Taxe de Séjour</label>
+        {{ form.tax }}
     </div>
 
     <div class="button-row">

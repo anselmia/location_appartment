@@ -14,5 +14,15 @@ urlpatterns = [
         views.upload_photos,
         name="upload_photos",
     ),
-    path("photo/<int:photo_id>/delete/", views.delete_photo, name="delete_photo"),
+    path(
+        "api/change-photo-room/<int:photo_id>/",
+        views.change_photo_room,
+        name="change_photo_room",
+    ),
+    path(
+        "api/move-photo/<int:photo_id>/<str:direction>/",
+        views.move_photo,
+        name="move_photo",
+    ),
+    path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
 ]

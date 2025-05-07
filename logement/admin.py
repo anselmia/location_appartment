@@ -26,7 +26,7 @@ class PhotoInline(admin.TabularInline):
 
 
 class LogementAdmin(admin.ModelAdmin):
-    list_display = ["name", "prix_par_nuit"]
+    list_display = ["name", "price"]
     inlines = [PhotoInline]
 
 
