@@ -32,7 +32,7 @@ class LogementSitemap(Sitemap):
         return Logement.objects.all()
 
     def location(self, obj):
-        return f"/logement/{obj.slug}/"
+        return obj.get_absolute_url() 
 
 
 sitemaps = {

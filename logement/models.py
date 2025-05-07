@@ -2,6 +2,7 @@ import os
 from django.db import models
 from django.dispatch import receiver
 from accounts.models import CustomUser
+from django.urls import reverse
 
 
 class Logement(models.Model):
@@ -19,6 +20,9 @@ class Logement(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("logement:detail", kwargs={"slug": self.slug})
 
 
 class Price(models.Model):
@@ -116,7 +120,7 @@ class Reservation(models.Model):
         ],
         default="en_attente",
     )
-    guest= models.IntegerField()
+    guest = models.IntegerField()
     date_reservation = models.DateTimeField(auto_now_add=True)
     price = models.FloatField()
 
