@@ -28,7 +28,7 @@ DATABASES = {
 }
 
 # STATIC & MEDIA FILES
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 print(STATIC_ROOT)
 
@@ -42,9 +42,7 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://nas.home-arnaud.ovh",
-    "https://www.nas.home-arnaud.ovh",  # If you have the 'www' version as well
-    "https://192.168.1.174"
+    "https://valrose.home-arnaud.ovh",
 ]
 
 # LOGGING
@@ -81,7 +79,6 @@ CACHES = {
     }
 }
 
-from celery.schedules import crontab
 
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
