@@ -18,4 +18,19 @@ urlpatterns = [
         views.check_availability,
         name="check_availability",
     ),
+    path(
+        "create-checkout-session/",
+        views.create_checkout_session,
+        name="create_checkout_session",
+    ),
+    path(
+        "payment/success/<int:reservation_id>/",
+        views.payment_success,
+        name="payment_success",
+    ),
+    path(
+        "payment/cancel/<int:reservation_id>/",
+        views.payment_cancel,
+        name="payment_cancel",
+    ),
 ]

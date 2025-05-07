@@ -853,7 +853,8 @@ input:focus, textarea:focus, select:focus {
     width: 100%;
     border-radius: 8px;
     object-fit: cover;  /* Ensure the image fills the container while maintaining its aspect ratio */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #b0b0b0;             /* Soft grey border (3D effect) */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(176, 176, 176, 0.4); /* 3D grey shadow */
     max-block-size: -webkit-fill-available;
 }
 
@@ -873,16 +874,45 @@ input:focus, textarea:focus, select:focus {
 }
 
 .smaller-photo img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    width: 100%;                           /* Make the image take up the full width */
+    height: 100%;                          /* Make the image take up the full height */
+    border-radius: 8px;                    /* Rounded corners */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);  /* 3D shadow effect */
+    transition: transform 0.3s ease;       /* Smooth transition for transform */
+    object-fit: contain;                   /* Maintain aspect ratio while filling the space */
+    background-color: white;               /* Set unused space to white */
+    display: block;                        /* Ensure the image is displayed as a block element */
+    margin: 0 auto;                        /* Center the image horizontally */
+    position: relative;                    /* Make sure the shadow applies properly */
+    border: 1px solid #b0b0b0;             /* Soft grey border (3D effect) */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(176, 176, 176, 0.4); /* 3D grey shadow */
 }
 
+/* Optional: Add a hover effect to give it a little 'pop' */
 .smaller-photo img:hover {
+    transform: scale(1.05);                /* Slight zoom-in effect on hover */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(176, 176, 176, 0.6); /* Stronger 3D grey shadow on hover */
+}
+
+/* Adjust modal image size */
+#photoModal .modal-body img {
+    width: 80vw;          /* 80% of the viewport width */
+    height: 80vh;         /* 80% of the viewport height */
+    object-fit: contain;  /* Maintain aspect ratio while fitting the image */
+    margin: 0 auto;       /* Center the image horizontally */
+    display: block;       /* Ensure the image behaves as a block element */
+}
+
+.carousel-control-prev .fas, .carousel-control-next .fas {
+    color: black;                 /* Set the arrow icons to black */
+    font-size: 40px;              /* Adjust the size of the arrows */
+}
+
+/* Optional: Add hover effect for arrows */
+.carousel-control-prev:hover .fas, .carousel-control-next:hover .fas {
     transform: scale(1.05);
 }
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 12px;

@@ -1,15 +1,7 @@
 import os
 from django.db import models
 from django.dispatch import receiver
-
-
-class Client(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    telephone = models.CharField(max_length=20)
-
-    def __str__(self):
-        return f"{self.name} ({self.email})"
+from accounts.models import CustomUser
 
 
 class Logement(models.Model):
@@ -107,11 +99,11 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 class Reservation(models.Model):
     logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
-    client = models.ForeignKey(
-        Client,
+    user = models.ForeignKey(
+        CustomUser,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        null=False,  # Make it required
+        blank=False,
     )
     start = models.DateField()
     end = models.DateField()
@@ -124,10 +116,12 @@ class Reservation(models.Model):
         ],
         default="en_attente",
     )
+    guest= models.IntegerField()
     date_reservation = models.DateTimeField(auto_now_add=True)
+    price = models.FloatField()
 
     def __str__(self):
-        return f"Réservation {self.logement.name} par {self.client.name if self.client else 'Unknown'}"
+        return f"Réservation {self.logement.name} par {self.user.name}"
 
 
 class airbnb_booking(models.Model):

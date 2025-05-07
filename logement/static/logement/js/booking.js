@@ -15,6 +15,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const nominalTraveler = parseInt(logement_js.nominal_traveler);
     const logementId = logement_js.id; // Get the logement ID from Django context
 
+    function openModal(index) {
+        // Set active photo in modal to the clicked one
+        let carouselItems = document.querySelectorAll('#carouselImages .carousel-item');
+        carouselItems.forEach((item, idx) => {
+            item.classList.remove('active');
+            if (idx === index) {
+                item.classList.add('active');
+            }
+        });
+    }
+
     // Function to make an AJAX call to fetch price for a specific date
     function getPriceForDate(date) {
         return new Promise((resolve, reject) => {
@@ -33,8 +44,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to check if the dates are already booked
     function isDateBooked(startDate, endDate) {
+        const url = reservationId 
+        ? `/api/check_availability/${logementId}?start=${startDate}&end=${endDate}&reservation_id=${reservationId}` 
+        : `/api/check_availability/${logementId}?start=${startDate}&end=${endDate}`;
         return new Promise((resolve, reject) => {
-            fetch(`/api/check_availability/${logementId}?start=${startDate}&end=${endDate}`)
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     if (data.available) {
@@ -67,6 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check if the selected dates are available
         isDateBooked(formStart.value, formEnd.value)
             .then(() => {
+                // Update the reservation summary dynamically
+                document.getElementById('start-date').innerText = formStart.value;  // Update start date in summary
+                document.getElementById('end-date').innerText = formEnd.value;      // Update end date in summary
+                document.getElementById('guest-count').innerText = guestCount; 
+                
                 let totalNights = 0;
                 let totalPriceForNights = 0;
 
@@ -86,24 +105,27 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (totalNights === Math.ceil((endDate - startDate) / (1000 * 3600 * 24))) {
                                 // Calculate the extra Guest fee 
                                 const TotalextraGuestFee = Math.max((extraGuestFee * (guestCount - nominalTraveler) * totalNights), 0);
-                                
+
                                 const PricePerNight = (totalPriceForNights + TotalextraGuestFee) / totalNights;
 
                                 // Calculate the tax amount (tax * average price per night * total nights)
                                 const taxRate = Math.min(((touristTax / 100) * (PricePerNight / guestCount)), 6.43);
                                 const taxAmount = taxRate * guestCount * totalNights;
 
-                                
+
 
                                 // Calculate the total price
                                 const totalPrice = totalPriceForNights + TotalextraGuestFee + cleaningFee + taxAmount;
 
                                 // Update the UI elements with the calculated values
                                 pricePerNightElement.innerText = `${(PricePerNight).toFixed(2)} €`; // Average price per night
-                                totalNightsElement.innerText = `${totalNights} nuits`;
+                                totalNightsElement.innerText = `${totalNights}`;
                                 cleaningFeeElement.innerText = `${cleaningFee} €`;
                                 touristTaxElement.innerText = `${taxAmount.toFixed(2)} €`;
                                 totalElement.innerText = `${totalPrice.toFixed(2)} €`;
+
+                                // Set the total price in the hidden input field
+                                document.getElementById('reservation-price').value = totalPrice.toFixed(2);
                             }
                         })
                         .catch(error => console.error('Error fetching price for night:', error));
@@ -124,4 +146,38 @@ document.addEventListener('DOMContentLoaded', function () {
     formStart.addEventListener('change', calculatePrice);
     formEnd.addEventListener('change', calculatePrice);
     formGuest.addEventListener('change', calculatePrice);
+
+    // Function to open modal with selected image
+    function openModal(index) {
+        // Get all the carousel items in the modal
+        const carouselItems = document.querySelectorAll('#carouselImages .carousel-item');
+
+        // Remove the active class from all images
+        carouselItems.forEach((item, idx) => {
+            item.classList.remove('active');
+            // Add the active class to the selected image based on the index
+            if (idx === index) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+    // Adding click event listeners to small images to open modal
+    const smallImages = document.querySelectorAll('.carousel-small-images .carousel-item-img img');
+    smallImages.forEach((img, index) => {
+        img.addEventListener('click', function () {
+            openModal(index);
+            // Manually trigger the modal to open
+            $('#photoModal').modal('show');
+        });
+    });
+
+    // Optional: Listen for clicks on the modal's controls (prev/next)
+    $('#photoModal').on('hidden.bs.modal', function () {
+        // Reset the carousel to the first item when the modal is closed
+        $('#modalCarousel').carousel(0);
+    });
+
+    const stripe = Stripe(stripe_public_key);
+
 });

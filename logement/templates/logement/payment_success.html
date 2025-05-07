@@ -1,0 +1,29 @@
+<!-- payment/success.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="card shadow-lg rounded-lg">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Réservation Confirmée</h2>
+                        <p class="text-center">
+                            Félicitations! Votre réservation a été confirmée avec succès.
+                        </p>
+                        <h4>Résumé de la réservation</h4>
+                        <p><strong>Nom du logement:</strong> {{ reservation.logement.name }}</p>
+                        <p><strong>Voyageurs:</strong> {{ reservation.guest }}</p>
+                        <p><strong>Date de début:</strong> {{ reservation.start }}</p>
+                        <p><strong>Date de fin:</strong> {{ reservation.end }}</p>
+                        <p><strong>Prix total:</strong> {{ reservation.price }} €</p>
+
+                        <div class="mt-4">
+                            <a href="{% url 'logement:home' %}" class="btn btn-primary">Retour à l'accueil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

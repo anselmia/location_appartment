@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import (
-    Client,
     Logement,
     Photo,
     Reservation,
@@ -32,7 +31,6 @@ class LogementAdmin(admin.ModelAdmin):
 
 admin.site.register(Logement, LogementAdmin)
 admin.site.register(Photo)
-admin.site.register(Client)
 admin.site.register(Reservation)
 admin.site.register(airbnb_booking)
 admin.site.register(booking_booking)

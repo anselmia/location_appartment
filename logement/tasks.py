@@ -2,8 +2,9 @@ import logging
 import requests
 from celery import shared_task
 from icalendar import Calendar
-from datetime import datetime, date, time
-from logement.models import Logement, airbnb_booking, booking_booking
+from django.utils import timezone
+from datetime import datetime, date, time, timedelta
+from logement.models import Logement, airbnb_booking, booking_booking, Reservation
 
 # Setup a logger
 logger = logging.getLogger(__name__)
@@ -157,3 +158,12 @@ def sync_calendar():
     # Sync Booking Calendar
     logger.info("Syncing Booking calendar...")
     process_calendar(booking_url, source="booking")
+
+
+@shared_task
+def delete_expired_pending_reservations():
+    expiry_time = timezone.now() - timedelta(minutes=30)
+    expired = Reservation.objects.filter(statut="en_attente", created_at__lt=expiry_time)
+    count = expired.count()
+    expired.delete()
+    return f"Deleted {count} expired reservations"
