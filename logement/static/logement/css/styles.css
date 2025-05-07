@@ -1037,29 +1037,31 @@ ul.list-unstyled li .ml-3 {
     .container {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
+
+    .layout-flex {
+        flex-direction: column;
+        align-items: center;
+    }
     
     .carousel-wrapper {
         height: auto;
-        padding: 10px 0;
+        padding: 0;
         width: 100%;
     }
 
     .carousel3d {
-        flex-wrap: nowrap;
+        display: flex;
         overflow-x: scroll;
         scroll-snap-type: x mandatory;
-        display: flex;
-        height: auto;
-        justify-content: flex-start;
-        align-items: center;
         padding: 10px;
-        touch-action: pan-x;
-        scroll-behavior: smooth;
+        gap: 10px;
+        height: auto;
     }
 
     .carousel-item3d {
         position: relative !important;
-        flex: 0 0 80%;
+        flex: 0 0 85%;
+        max-width: 85%;
         transform: none !important;
         opacity: 1 !important;
         z-index: 1;
@@ -1070,7 +1072,9 @@ ul.list-unstyled li .ml-3 {
     .carousel-item3d img {
         width: 100%;
         height: auto;
-        object-fit: cover;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #fff;
     }
 
     .carousel-arrow {
@@ -1085,6 +1089,23 @@ ul.list-unstyled li .ml-3 {
     }
     #reservation-form h1 {
         font-size: 2rem;
+    }
+
+    .room-filter {
+        flex-direction: row;
+        overflow-x: auto;
+        max-width: 100%;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .room-filter-button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .calendar-box {
+        width: 100%;
     }
 }
 
