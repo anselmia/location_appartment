@@ -1040,7 +1040,7 @@ ul.list-unstyled li .ml-3 {
     
     .carousel-wrapper {
         height: auto;
-        padding: 20px 0;
+        padding: 10px 0;
         width: 100%;
     }
 
@@ -1053,15 +1053,17 @@ ul.list-unstyled li .ml-3 {
         justify-content: flex-start;
         align-items: center;
         padding: 10px;
+        touch-action: pan-x;
+        scroll-behavior: smooth;
     }
 
     .carousel-item3d {
-        position: relative;
+        position: relative !important;
         flex: 0 0 80%;
-        margin-right: 20px;
         transform: none !important;
         opacity: 1 !important;
         z-index: 1;
+        display: block !important;
         scroll-snap-align: center;
     }
 

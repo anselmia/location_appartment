@@ -64,30 +64,39 @@ function rotate(indexDelta) {
     updateClasses(); // Re-apply the active, prev, next classes based on updated currentIndex
 }
 
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
 function updateClasses() {
-    // Reset all items
     items.forEach(item => {
         item.classList.remove("active", "prev", "next", "hidden", "fade-out");
     });
 
-    // Show the filtered items only
-    filteredItems.forEach((item, index) => {
-        item.style.display = 'block'; // Show item
-        if (index === currentIndex) {
-            item.classList.add("active");
-        } else if (index === (currentIndex + 1) % filteredItems.length) {
-            item.classList.add("next");
-        } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
-            item.classList.add("prev");
-        }
-    });
+    if (isMobile()) {
+        // On mobile: show all filtered items
+        filteredItems.forEach(item => {
+            item.style.display = 'block';
+        });
+    } else {
+        // Desktop logic
+        filteredItems.forEach((item, index) => {
+            item.style.display = 'block';
+            if (index === currentIndex) {
+                item.classList.add("active");
+            } else if (index === (currentIndex + 1) % filteredItems.length) {
+                item.classList.add("next");
+            } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
+                item.classList.add("prev");
+            }
+        });
 
-    // Hide all non-filtered items
-    items.forEach(item => {
-        if (!filteredItems.includes(item)) {
-            item.style.display = 'none';
-        }
-    });
+        items.forEach(item => {
+            if (!filteredItems.includes(item)) {
+                item.style.display = 'none';
+            }
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
