@@ -1034,23 +1034,45 @@ ul.list-unstyled li .ml-3 {
 
 /* ==== RESPONSIVE === */
 @media screen and (max-width: 768px) {
-    container {
+    .container {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
     
     .carousel-wrapper {
-        max-width: 100%;
         height: auto;
+        padding: 20px 0;
+        width: 100%;
     }
 
     .carousel3d {
-        position: relative;
-        transform: none;
+        flex-wrap: nowrap;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        display: flex;
         height: auto;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .carousel-item3d {
+        position: relative;
+        flex: 0 0 80%;
+        margin-right: 20px;
+        transform: none !important;
+        opacity: 1 !important;
+        z-index: 1;
+        scroll-snap-align: center;
     }
 
     .carousel-item3d img {
-        max-height: 200px;
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+
+    .carousel-arrow {
+        display: none;
     }
 
     #reservation-form-card {
@@ -1065,13 +1087,30 @@ ul.list-unstyled li .ml-3 {
 }
 
 @media screen and (max-width: 900px) {
-    container {
+    .container {
         max-width: 850px !important; /* Adjust width for medium screens and up */
     }
 
     .layout-flex {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
+    }
+
+    .room-filter {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 100%;
+    }
+
+    .room-filter-button {
+        flex: 1 1 45%;
+        margin: 5px;
+    }
+
+    .calendar-box {
+        width: 100%;
+        margin-top: 20px;
     }
 
     .carousel-wrapper, .calendar-box {
