@@ -304,18 +304,6 @@ ul.list-unstyled li .ml-3 {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
 
-    .carousel-item3d img {
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-        border-radius: 10px;
-        background: #fff;
-    }
-
-    .carousel-arrow {
-        display: none;
-    }
-
     #reservation-form-card {
         padding: 20px;
     }
@@ -324,58 +312,6 @@ ul.list-unstyled li .ml-3 {
     }
     #reservation-form h1 {
         font-size: 2rem;
-    }
-
-    .room-filter {
-        max-width: 100%;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-    }
-
-    .room-filter-button {
-        font-size: 0.9rem;
-        padding: 5px 10px;
-    }
-
-    .room-filter,
-    .calendar-box,
-    .carousel-wrapper {
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .calendar-box {
-        order: 3; /* optional: show calendar after the carousel */
-    }
-
-    .calendar-box {
-        width: 100%;
-        margin-top: 20px;
-        padding: 15px;
-        font-size: 0.95em;
-    }
-
-    .calendar-box h3 {
-        margin-top: 0;
-        color: #2b7cff;
-        font-size: 1.4em;
-        margin-bottom: 15px;
-        text-align: center; /* Add this */
-    }
-
-    .calendar-box button {
-        font-size: 1em;
-        padding: 10px;
-        max-width: 100%; /* Remove max-width if you want it to fully fill on mobile */
-    }
-
-    #room-filter-buttons {
-        display: none;
-    }
-
-    .room-filter-dropdown {
-        display: block;
     }
 }
 

@@ -1,7 +1,6 @@
 /* ==== Flex layout === */
 .layout-flex {
     display: flex;
-    gap: 40px;
     align-items: stretch;  /* Ensures items stretch vertically */
     justify-content: center;
     flex-wrap: wrap;
@@ -260,10 +259,12 @@
 }
 
 .calendar-box h3 {
+    display: flex;
     margin-top: 0;
     color: #2b7cff;
     font-size: 1.4em;
     margin-bottom: 15px;
+    justify-content: center; 
 }
 
 .calendar-box input {
@@ -364,4 +365,126 @@
 
 .legend .free {
     background-color: #d8f5d1;
+}
+
+.equipment-section {
+    background: #fff;
+    padding: 60px 30px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    margin-top: 60px;
+}
+
+.equipment-title {
+    text-align: center;
+    font-size: 2em;
+    color: #2b7cff;
+    margin-bottom: 40px;
+}
+
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.equipment-group h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.equipment-group ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.equipment-group ul li {
+    padding-left: 24px;
+    margin-bottom: 8px;
+    position: relative;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.equipment-group ul li::before {
+    content: "✅";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #2b7cff;
+}
+
+@media screen and (max-width: 900px) {
+
+    .carousel-item3d img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .carousel-arrow {
+        display: none;
+    }
+
+    .room-filter {
+        max-width: 100%;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+
+    .room-filter-button {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+
+    .room-filter,
+    .calendar-box,
+    .carousel-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .calendar-box {
+        order: 3; /* optional: show calendar after the carousel */
+    }
+
+    .calendar-box {
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        font-size: 0.95em;
+    }
+
+    .calendar-box h3 {
+        margin-top: 0;
+        color: #2b7cff;
+        font-size: 1.4em;
+        margin-bottom: 15px;
+        text-align: center; /* Add this */
+        justify-content: center; 
+        display: flex;
+    }
+
+    .calendar-box button {
+        font-size: 1em;
+        padding: 10px;
+        max-width: 100%; /* Remove max-width if you want it to fully fill on mobile */
+    }
+
+    #room-filter-buttons {
+        display: none;
+    }
+
+    .room-filter-dropdown {
+        display: block !important;
+    }
+
+    .equipments-grid ul {
+        columns: 1;
+      }
 }

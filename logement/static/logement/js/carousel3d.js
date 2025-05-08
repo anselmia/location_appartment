@@ -69,6 +69,10 @@ function isMobile() {
 }
 
 function updateClasses() {
+    items.forEach(item => {
+        item.classList.remove("active", "prev", "next", "hidden", "fade-out");
+    });
+    
     // Desktop logic
     filteredItems.forEach((item, index) => {
         item.style.display = 'block';

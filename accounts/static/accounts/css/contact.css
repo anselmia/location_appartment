@@ -3,8 +3,9 @@
     justify-content: center;
     padding: 50px 20px;
     background: linear-gradient(to bottom right, #e8f0ff, #f4f8ff);
-    max-width: 60%;
+    max-width: 100%;
     margin: auto;
+    box-sizing: border-box;
 }
 
 .contact-card {
@@ -14,6 +15,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     max-width: 600px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .contact-card h1 {
@@ -47,6 +49,7 @@
     border: 1px solid #ccc;
     font-size: 1rem;
     transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -58,7 +61,7 @@
 
 .contact-container .btn-submit {
     display: block;
-    margin: 30px auto 0; /* top auto bottom */
+    margin: 30px auto 0;
     padding: 12px 30px;
     font-size: 1.1rem;
     border-radius: 8px;
@@ -66,7 +69,7 @@
     color: white;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .contact-container .btn-submit:hover {
@@ -80,4 +83,35 @@
     padding: 12px 15px;
     border-radius: 8px;
     margin-bottom: 20px;
+}
+
+/* ===== Responsive Rules ===== */
+@media screen and (max-width: 768px) {
+    .contact-card {
+        padding: 30px 20px;
+    }
+
+    .contact-card h1 {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    .contact-card .subtitle {
+        text-align: center;
+        font-size: 0.95rem;
+    }
+
+    .contact-container {
+        padding: 30px 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .contact-card h1 {
+        font-size: 1.5rem;
+    }
+
+    .contact-container .btn-submit {
+        width: 100%;
+    }
 }
