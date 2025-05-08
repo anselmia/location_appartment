@@ -94,7 +94,7 @@
         <div class="footer-content">
             <p>&copy; {{ current_year }} MonLocatif. {% trans "Tous droits réservés." %}</p>
             <p>
-                <a href="#contact">{% trans "Contact" %}</a> |
+                <a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a> |
                 <a href="#">{% trans "Mentions légales" %}</a>
             </p>
         </div>
