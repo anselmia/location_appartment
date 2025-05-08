@@ -3,22 +3,30 @@
 {% load i18n %}
 
 {% block content %}
-{% if user.is_authenticated %}
-    <span>{% trans "Bienvenue" %}, {{ user.username }}!</span>
-{% endif %}
-
 <h1 class="title">{% trans "Location àppartement de vacance à Nice Centre" %}</h1>
 <p style="text-align:center; color:#666; margin-top:-30px; margin-bottom: 40px;">
     {% trans "Réservez en toute simplicité et sécurité." %}
 </p>
 
 <div class="layout-flex">
-    <div class="room-filter" id="room-filter">
+    <!-- Dropdown (only shown on mobile) -->
+    <div class="room-filter-dropdown">
+        <select id="room-filter-select">
+            <option value="all">{% trans "Toutes" %}</option>
+            {% for room in rooms %}
+                <option value="room-{{ room.id }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Button list (hidden on mobile) -->
+    <div class="room-filter" id="room-filter-buttons">
         <button class="room-filter-button active" data-room="all">{% trans "Toutes" %}</button>
         {% for room in rooms %}
             <button class="room-filter-button" data-room="room-{{ room.id }}">{{ room.name }}</button>
         {% endfor %}
     </div>
+
     <div class="carousel-wrapper {% if logement.photos.count == 1 %}single{% endif %}">
         <div id="left-arrow" class="carousel-arrow left">&#10094;</div>
         <div id="right-arrow" class="carousel-arrow right">&#10095;</div>

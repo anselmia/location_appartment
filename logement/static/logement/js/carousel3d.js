@@ -69,34 +69,24 @@ function isMobile() {
 }
 
 function updateClasses() {
-    items.forEach(item => {
-        item.classList.remove("active", "prev", "next", "hidden", "fade-out");
+    // Desktop logic
+    filteredItems.forEach((item, index) => {
+        item.style.display = 'block';
+        if (index === currentIndex) {
+            item.classList.add("active");
+        } else if (index === (currentIndex + 1) % filteredItems.length) {
+            item.classList.add("next");
+        } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
+            item.classList.add("prev");
+        }
     });
 
-    if (isMobile()) {
-        // On mobile: show all filtered items
-        filteredItems.forEach(item => {
-            item.style.display = 'block';
-        });
-    } else {
-        // Desktop logic
-        filteredItems.forEach((item, index) => {
-            item.style.display = 'block';
-            if (index === currentIndex) {
-                item.classList.add("active");
-            } else if (index === (currentIndex + 1) % filteredItems.length) {
-                item.classList.add("next");
-            } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
-                item.classList.add("prev");
-            }
-        });
-
-        items.forEach(item => {
-            if (!filteredItems.includes(item)) {
-                item.style.display = 'none';
-            }
-        });
-    }
+    items.forEach(item => {
+        if (!filteredItems.includes(item)) {
+            item.style.display = 'none';
+        }
+    });
+    
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -122,7 +112,6 @@ document.querySelectorAll('.carousel-item3d img').forEach(img => {
 });
 
 const filterButtons = document.querySelectorAll('.room-filter-button');
-const carouselItems = document.querySelectorAll('.carousel-item3d');
 filterButtons.forEach(button => {
     button.addEventListener('click', function () {
         // Reset active state of filter buttons
@@ -141,6 +130,21 @@ filterButtons.forEach(button => {
         updateClasses();
     });
 });
+
+const select = document.getElementById("room-filter-select");
+    if (select) {
+        select.addEventListener("change", function () {
+            const selectedRoom = this.value;
+
+            // Filter items based on the selected room
+            filteredItems = Array.from(items).filter(item => selectedRoom === 'all' || item.classList.contains(selectedRoom));
+
+            // Reset current index and position the items again
+            currentIndex = 0; // Start from the first photo in the selected room
+            positionItems(); // Apply new filter and re-position items
+            updateClasses();
+        });
+    }
 
 document.getElementById('closeModal').addEventListener('click', () => {
     document.getElementById('imageModal').style.display = "none";

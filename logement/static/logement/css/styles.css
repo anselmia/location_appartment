@@ -74,6 +74,15 @@ html, body {
     width: 100%;  /* Ensure the parent takes full width */
 }
 
+.layout-flex > .carousel-wrapper {
+    flex: 2 1 500px;  /* More space, grows more */
+}
+
+.layout-flex > .calendar-box,
+.layout-flex > .room-filter {
+    flex: 1 1 250px;  /* Shrinks better */
+}
+
 /* ==== ROOM FILTER BUTTONS === */
 
 .room-filter {
@@ -129,6 +138,20 @@ html, body {
 .room-filter-button:focus {
     outline: none;
     box-shadow: 0 0 10px rgba(43, 124, 255, 0.6);
+}
+
+/* Hide dropdown by default */
+.room-filter-dropdown {
+    display: none;
+    margin-bottom: 20px;
+}
+
+.room-filter-dropdown select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
 }
 
 /* ==== CAROUSEL WRAPPER === */
@@ -343,7 +366,8 @@ html, body {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    flex: 0 0 300px;
+    flex: 1 1 300px;  /* Allow it to shrink and grow */
+    max-width: 100%;
 }
 
 .calendar-box h3 {
@@ -362,15 +386,32 @@ html, body {
     margin-bottom: 10px;
 }
 
-.calendar-box button {
+.calendar-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  /* Center contents */
     width: 100%;
+}
+
+.calendar-box button {
     background: #2b7cff;
     color: white;
     border: none;
     padding: 10px;
     font-size: 1em;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    margin-top: 10px;
+}
+
+
+.legend {
+    font-size: 0.8em;
+}
+
+.legend .dot {
+    width: 10px;
+    height: 10px;
 }
 
 .calendar-box button:hover {
@@ -961,37 +1002,6 @@ ul.list-unstyled li .ml-3 {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
 
-    .layout-flex {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .carousel-wrapper {
-        height: auto;
-        padding: 0;
-        width: 100%;
-    }
-
-    .carousel3d {
-        display: flex;
-        overflow-x: scroll;
-        scroll-snap-type: x mandatory;
-        padding: 10px;
-        gap: 10px;
-        height: auto;
-    }
-
-    .carousel-item3d {
-        position: relative !important;
-        flex: 0 0 85%;
-        max-width: 85%;
-        transform: none !important;
-        opacity: 1 !important;
-        z-index: 1;
-        display: block !important;
-        scroll-snap-align: center;
-    }
-
     .carousel-item3d img {
         width: 100%;
         height: auto;
@@ -1015,20 +1025,55 @@ ul.list-unstyled li .ml-3 {
     }
 
     .room-filter {
-        flex-direction: row;
-        overflow-x: auto;
         max-width: 100%;
         gap: 10px;
         margin-bottom: 10px;
+        padding: 10px;
     }
 
     .room-filter-button {
-        flex: 0 0 auto;
-        white-space: nowrap;
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+
+    .room-filter,
+    .calendar-box,
+    .carousel-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .calendar-box {
+        order: 3; /* optional: show calendar after the carousel */
     }
 
     .calendar-box {
         width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        font-size: 0.95em;
+    }
+
+    .calendar-box h3 {
+        margin-top: 0;
+        color: #2b7cff;
+        font-size: 1.4em;
+        margin-bottom: 15px;
+        text-align: center; /* Add this */
+    }
+
+    .calendar-box button {
+        font-size: 1em;
+        padding: 10px;
+        max-width: 100%; /* Remove max-width if you want it to fully fill on mobile */
+    }
+
+    #room-filter-buttons {
+        display: none;
+    }
+
+    .room-filter-dropdown {
+        display: block;
     }
 }
 
