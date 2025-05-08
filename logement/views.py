@@ -3,7 +3,9 @@ import json
 import stripe
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 from urllib.parse import urlencode
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -317,3 +319,19 @@ def payment_cancel(request, reservation_id):
     except Reservation.DoesNotExist:
         # If the reservation does not exist, redirect to the home page
         return redirect("logement:home")
+
+
+@login_required
+def cancel_booking(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+
+    if reservation.start <= timezone.now().date():
+        messages.error(
+            request,
+            "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
+        )
+    else:
+        reservation.delete()
+        messages.success(request, "✅ Réservation annulée avec succès.")
+        
+    return redirect("accounts:dashboard")

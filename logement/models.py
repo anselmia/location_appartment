@@ -17,10 +17,10 @@ class Logement(models.Model):
     )
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=4)
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    cancelation_period = models.IntegerField(default=15)
 
     def __str__(self):
         return self.name
-
 
 
 class Price(models.Model):

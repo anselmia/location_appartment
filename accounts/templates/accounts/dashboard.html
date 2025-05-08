@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+
+{% block content %}
+<div class="container client-dashboard mt-5">
+    <h2>👤 Bonjour {{ user.username }}</h2>
+
+    <div class="row mt-4">
+        <!-- Profile -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    Mon Profil
+                </div>
+                <div class="card-body">
+                    <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Display errors if the form is invalid -->
+                        {% if formUser.errors %}
+                            <div class="alert alert-danger">
+                                <ul>
+                                    {% for field in formUser %}
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% for error in formUser.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        
+                        <h3 class="text-center mb-4">Informations Personelles</h3>
+
+                        <div class="form-group">
+                            <label for="id_name">Nom</label>
+                            {{ formUser.name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_last_name">Prénom</label>
+                            {{ formUser.last_name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_email">Email</label>
+                            {{ formUser.email }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_phone">Phone</label>
+                            {{ formUser.phone }}
+                        </div>                        
+
+                        <!-- Submit Button -->
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Modifier mes infos</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Réservations -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    Mes Réservations
+                </div>
+                <div class="card-body">
+                    {% if reservations %}
+                        <ul class="list-group">
+                            {% for r in reservations %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ r.logement.name }}</strong><br>
+                                        Du {{ r.start|date:"d/m/Y" }} au {{ r.end|date:"d/m/Y" }}
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        {% if r.ended %}
+                                            <span class="badge bg-secondary">Terminée</span>
+                                        {% elif r.ongoing %}
+                                            <span class="badge bg-warning text-dark">En cours</span>
+                                        {% elif r.coming %}
+                                            <span class="badge bg-info text-dark mb-2">À venir</span>
+                                            {% if r.can_cancel %}
+                                                <form method="post" action="{% url 'logement:cancel_booking' r.id %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-outline-danger btn-sm mt-2">Annuler</button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">Aucune réservation trouvée.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+</script>
+<script src="{% static 'logement/js/carousel3d.js' %}"></script>
+{% endblock %}

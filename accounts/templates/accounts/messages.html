@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container client-dashboard mt-5">
+    <h2 class="mb-4">📬 Messagerie avec l’administrateur</h2>
+
+    <div class="card mb-4">
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            {% for message in messages %}
+                {% if message.sender == user %}
+                    <div class="text-end">
+                        <div class="alert alert-primary d-inline-block text-start">
+                            <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small><br>
+                            {{ message.content }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-start">
+                        <div class="alert alert-secondary d-inline-block">
+                            <small><strong>Admin</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small><br>
+                            {{ message.content }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <p class="text-muted">Aucun message pour l’instant.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Envoyer</button>
+    </form>
+
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-link mt-3">← Retour au tableau de bord</a>
+</div>
+{% endblock %}

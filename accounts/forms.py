@@ -1,7 +1,7 @@
 import re
 from django.core.validators import EmailValidator
 from django import forms
-from .models import CustomUser
+from .models import CustomUser, Message
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 
@@ -72,7 +72,21 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = CustomUser
-        fields = ("username", "name", "phone", "last_name", "email", "is_admin")
+        fields = ("name", "phone", "last_name", "email")
+
+    def __init__(self, *args, **kwargs):
+        name = kwargs.pop("name", "")
+        last_name = kwargs.pop("last_name", "")
+        email = kwargs.pop("email", "")
+        phone = kwargs.pop("phone", "")
+
+        super().__init__(*args, **kwargs)
+
+        # Initialize start and end date fields if values are provided
+        self.fields["name"].initial = name
+        self.fields["last_name"].initial = last_name
+        self.fields["email"].initial = email
+        self.fields["phone"].initial = phone
 
     # Custom validation for email uniqueness during update
     def clean_email(self):
@@ -111,3 +125,30 @@ class CustomUserChangeForm(UserChangeForm):
         if not is_admin:
             raise ValidationError("L'utilisateur doit être un administrateur.")
         return is_admin
+
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ["content"]
+        widgets = {
+            "content": forms.Textarea(
+                attrs={"rows": 3, "placeholder": "Votre message..."}
+            ),
+        }
+
+
+class ContactForm(forms.Form):
+    name = forms.CharField(label="Nom", max_length=100)
+    email = forms.EmailField(label="Email")
+    subject = forms.CharField(label="Sujet", max_length=150)
+    message = forms.CharField(label="Message", widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        name = kwargs.pop("name", "")
+        email = kwargs.pop("email", "")  # The end date from the view
+        
+        super().__init__(*args, **kwargs)
+
+        self.fields["name"].initial = name
+        self.fields["email"].initial = email

@@ -1,0 +1,106 @@
+.client-dashboard {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+    padding: 30px 20px;
+}
+
+.client-dashboard h2 {
+    color: #2b7cff;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.client-dashboard .card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: white;
+}
+
+.client-dashboard .card-header {
+    font-weight: 600;
+    padding: 15px 20px;
+    font-size: 1.2rem;
+}
+
+.client-dashboard .card-body {
+    padding: 20px;
+}
+
+.client-dashboard .btn {
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.client-dashboard .btn-outline-primary {
+    color: #2b7cff;
+    border: 1px solid #2b7cff;
+}
+
+.client-dashboard .btn-outline-primary:hover {
+    background-color: #2b7cff;
+    color: white;
+}
+
+.client-dashboard .btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.client-dashboard .btn-danger:hover {
+    background-color: #c82333;
+}
+
+.client-dashboard .list-group-item {
+    padding: 12px 15px;
+    border: 1px solid #eee;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: #fcfcfc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.client-dashboard .badge {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 12px;
+}
+
+.client-dashboard .badge.bg-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.client-dashboard .text-muted {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .client-dashboard {
+        padding: 15px 10px;
+    }
+
+    .client-dashboard h2 {
+        font-size: 1.5rem;
+    }
+
+    .client-dashboard .list-group-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .client-dashboard .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
