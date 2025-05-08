@@ -205,7 +205,8 @@
         border-radius: 15px;
         display: none !important;
         z-index: 998;
-        max-width: 30%;
+        width: fit-content;
+        max-width: 90vw;
         right: 0;
         left: auto;  /* instead of left: 0 */
     }
