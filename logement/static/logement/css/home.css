@@ -425,11 +425,7 @@
         border-radius: 10px;
         background: #fff;
     }
-
-    .carousel-arrow {
-        display: none;
-    }
-
+    
     .room-filter {
         max-width: 100%;
         gap: 10px;
