@@ -1,0 +1,177 @@
+/* === NAVIGATION BAR === */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2b7cff;
+    color: white;
+    padding: 15px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+/* Logo area (if present) */
+.navbar .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.nav-logo {
+    height: 24px;
+    width: auto;               /* Keep aspect ratio */
+    max-height: 24px;
+    max-width: 80px;
+    margin-left: 15px;
+    vertical-align: middle;    /* Align inline with text */
+    transition: transform 0.3s ease;
+}
+
+.nav-logo:hover {
+    transform: scale(1.1);
+}
+
+.nav-logos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* Navigation links */
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.navbar .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.navbar .nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* === Language Switcher === */
+.navbar .lang-form {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+    align-items: center;
+}
+
+.navbar .lang-form button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.navbar .lang-form button.active {
+    box-shadow: 0 0 0 2px #fff;
+    transform: scale(1.1);
+}
+
+.navbar .lang-form button.active,
+.navbar .lang-form button:hover {
+    opacity: 1;
+}
+
+.navbar .lang-form img {
+    width: 24px;
+    height: 16px;
+    display: inline-block;
+}
+
+.navbar .lang-form button:hover {
+    transform: scale(1.2);
+}
+
+/* === SUBMENU: Mon compte === */
+.navbar .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.navbar .dropdown-toggle {
+    cursor: pointer;
+    padding: 8px 12px;
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+}
+
+.navbar .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 180px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 8px;
+    top: 100%;
+    left: 0;
+    padding: 10px 0;
+}
+
+.navbar .dropdown-menu a {
+    display: block;
+    padding: 10px 16px;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.navbar .dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
+
+/* Show submenu on hover */
+.navbar .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+
+.lang-form {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+    align-items: center;
+}
+
+.lang-form button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.lang-form button.active {
+    box-shadow: 0 0 0 2px #2b7cff;
+    transform: scale(1.1);
+}
+
+.lang-form button.active,
+.lang-form button:hover {
+    opacity: 1;
+}
+
+.lang-form img {
+    width: 24px;
+    height: 16px;
+    display: inline-block;
+}
+
+.lang-form button:hover {
+    transform: scale(1.2);
+}

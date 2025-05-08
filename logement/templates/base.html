@@ -16,6 +16,7 @@
     <meta property="og:type" content="website" />
 
     <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/nav.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/cgu.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -53,15 +54,29 @@
     <header class="navbar">
         <div class="logo">🏡 MonLocatif</div>
         <nav class="nav-links">
+            <div class="nav-logos">
+                <a href="https://www.airbnb.fr/rooms/48121442?guests=1&adults=1&s=67&unique_share_id=9aed57ba-2770-43e8-9412-4945aef18a18" target="_blank" rel="noopener">
+                    <img src="{% static 'logement/img/airbnb-logo.svg' %}" alt="Airbnb" class="nav-logo">
+                </a>
+                <a href="https://www.booking.com/Share-vmmyTIy" target="_blank" rel="noopener">
+                    <img src="{% static 'logement/img/booking-logo.svg' %}" alt="Booking.com" class="nav-logo">
+                </a>
+            </div>
             <a href="/">{% trans "Accueil" %}</a>
             <a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a>
             {% if user.is_authenticated %}
                 {% if user.is_admin %}
                     <a href="{% url 'administration:dashboard' %}">Admin</a>
                 {% endif %}
-                <a href="{% url 'accounts:dashboard' %}">Mon compte</a>
-                <a href="{% url 'accounts:messages' %}" class="btn btn-outline-primary btn-sm">📬 Messagerie</a>
-                <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle">{% trans "Mon compte" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
+                        <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
+                        <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
+                    </div>
+                </div>
+                
             {% else %}
                 <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
             {% endif %}
