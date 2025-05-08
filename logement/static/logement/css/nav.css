@@ -175,3 +175,100 @@
 .lang-form button:hover {
     transform: scale(1.2);
 }
+
+.nav-toggle {
+    display: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: white;
+    margin-left: auto;
+    z-index: 999;
+}
+
+@media screen and (max-width: 900px) {
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        position: fixed;              /* Stick to viewport */
+        top: 60px; 
+        width: 100vw;                 /* Full screen width */
+        height: auto;
+        background-color: #fff;       /* Contrast for readability */
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        border-radius: 15px;
+        display: none !important;
+        z-index: 998;
+        max-width: 30%;
+        right: 0;
+        left: auto;  /* instead of left: 0 */
+    }
+
+    .nav-links.show {
+        display: flex !important;
+    }
+
+    .nav-links a,
+    .nav-links .dropdown-toggle {
+        color: #111 !important;       /* Make text readable */
+        width: 100%;
+        padding: 12px 0;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 1px solid #eee;
+    }
+
+    .nav-links a:hover {
+        background-color: #f0f0f0;
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .nav-logos {
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .lang-form {
+        justify-content: center;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .navbar .dropdown {
+        width: 100%;
+    }
+
+    .navbar .dropdown-menu {
+        position: static;
+        background: #f9f9f9;
+        box-shadow: none;
+        padding: 0;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .navbar .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    .navbar .dropdown-menu a {
+        color: #333;
+        padding: 10px 16px;
+        border-top: 1px solid #eee;
+    }
+
+    .lang-form {
+        justify-content: center;
+    }
+}

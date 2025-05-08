@@ -16,7 +16,10 @@
     <meta property="og:type" content="website" />
 
     <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/cgu.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -58,50 +61,55 @@
 </head>
 <body class="page-wrapper">
     <header class="navbar">
-        <div class="logo">🏡 MonLocatif</div>
-        <nav class="nav-links">
-            <div class="nav-logos">
-                <a href="https://www.airbnb.fr/rooms/48121442?guests=1&adults=1&s=67&unique_share_id=9aed57ba-2770-43e8-9412-4945aef18a18" target="_blank" rel="noopener">
-                    <img src="{% static 'logement/img/airbnb-logo.svg' %}" alt="Airbnb" class="nav-logo">
-                </a>
-                <a href="https://www.booking.com/Share-vmmyTIy" target="_blank" rel="noopener">
-                    <img src="{% static 'logement/img/booking-logo.svg' %}" alt="Booking.com" class="nav-logo">
-                </a>
-            </div>
-            <a href="/">{% trans "Accueil" %}</a>
-            <a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a>
-            {% if user.is_authenticated %}
-                {% if user.is_admin %}
-                    <a href="{% url 'administration:dashboard' %}">Admin</a>
-                {% endif %}
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle">{% trans "Mon compte" %}</a>
-                    <div class="dropdown-menu">
-                        <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
-                        <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
-                        <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
-                    </div>
-                </div>
-                
-            {% else %}
-                <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
-            {% endif %}
+        <div class="logo">🏡 Location Nice, Valrose</div>
+        <nav>
         
-            {% get_current_language as LANGUAGE_CODE %}
-            <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français" width="24" height="16">
-                </button>
-                <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/en.svg' %}" alt="English" width="24" height="16">
-                </button>
-                <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español" width="24" height="16">
-                </button>
-            </form>
-
+            <!-- Hamburger Icon -->
+            <div class="nav-toggle" id="navToggle">&#9776;</div>
+        
+            <!-- Links Container -->
+            <div class="nav-links" id="navLinks">
+                <div class="nav-logos">
+                    <a href="https://www.airbnb.fr/..." target="_blank" rel="noopener">
+                        <img src="{% static 'logement/img/airbnb-logo.svg' %}" alt="Airbnb" class="nav-logo">
+                    </a>
+                    <a href="https://www.booking.com/..." target="_blank" rel="noopener">
+                        <img src="{% static 'logement/img/booking-logo.svg' %}" alt="Booking.com" class="nav-logo">
+                    </a>
+                </div>
+                <a href="/">{% trans "Accueil" %}</a>
+                <a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a>
+        
+                {% if user.is_authenticated %}
+                    {% if user.is_admin %}
+                        <a href="{% url 'administration:dashboard' %}">Admin</a>
+                    {% endif %}
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">{% trans "Mon compte" %}</a>
+                        <div class="dropdown-menu">
+                            <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
+                            <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
+                            <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
+                {% endif %}
+        
+                <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français">
+                    </button>
+                    <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/en.svg' %}" alt="English">
+                    </button>
+                    <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español">
+                    </button>
+                </form>
+            </div>
         </nav>
     </header>
 
@@ -120,5 +128,7 @@
             </p>
         </div>
     </footer>
+
+    <script src="{% static 'logement/js/nav.js' %}"></script>
 </body>
 </html>

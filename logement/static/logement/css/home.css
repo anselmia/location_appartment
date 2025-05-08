@@ -1,0 +1,367 @@
+/* ==== Flex layout === */
+.layout-flex {
+    display: flex;
+    gap: 40px;
+    align-items: stretch;  /* Ensures items stretch vertically */
+    justify-content: center;
+    flex-wrap: wrap;
+    height: 100%;  /* Ensure the layout flex container fills the full height */
+    width: 100%;  /* Ensure the parent takes full width */
+}
+
+.layout-flex > .carousel-wrapper {
+    flex: 2 1 500px;  /* More space, grows more */
+}
+
+.layout-flex > .calendar-box,
+.layout-flex > .room-filter {
+    flex: 1 1 250px;  /* Shrinks better */
+}
+
+/* ==== ROOM FILTER BUTTONS === */
+
+.room-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-right: 20px;
+    max-width: 200px;
+    flex-grow: 1;  /* Ensure it takes up the remaining space */
+    align-items: flex-start;
+    justify-content: stretch;
+    border-radius: 8px;
+    padding: 10px 10px;
+    overflow: hidden;  /* Prevent any overflow from affecting the height */
+    background: linear-gradient(to bottom, #ffffff, #e8f0ff);
+}
+
+/* 3D Block Effect for Buttons */
+.room-filter-button {
+    padding: 6px 12px; /* Smaller padding for buttons */
+    font-size: 1rem;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: perspective(500px) rotateX(2deg) scale(1);
+    margin-bottom: 5px;  /* Slight margin between buttons */
+}
+
+/* Hover effect for buttons */
+.room-filter-button:hover {
+    background-color: #f0f8ff;
+    transform: perspective(500px) rotateX(0deg) scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Active button styling */
+.room-filter-button.active {
+    background-color: #2b7cff;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Focused button */
+.room-filter-button:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(43, 124, 255, 0.6);
+}
+
+/* Hide dropdown by default */
+.room-filter-dropdown {
+    display: none;
+    margin-bottom: 20px;
+}
+
+.room-filter-dropdown select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+/* ==== CAROUSEL WRAPPER === */
+.carousel-wrapper {
+    position: relative;
+    margin: auto;  /* Ensure it's centered */
+    background: linear-gradient(to bottom, #ffffff, #e8f0ff);
+    border-radius: 15px;
+    padding: 40px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    flex-grow: 1;
+    height: 500px;  /* Keep or adjust the height */
+    overflow: hidden;  /* Hide anything that exceeds the container */
+}
+
+/* ==== 3D CAROUSEL === */
+.carousel3d {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.carousel-item3d {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease, z-index 0.3s;
+    max-width: 100%;  /* Ensure it doesn’t overflow horizontally */
+    max-height: 100%; /* Ensure it doesn’t overflow vertically */
+}
+
+
+.carousel-item3d img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    max-width: 100%;  /* Ensure it doesn’t overflow horizontally */
+    max-height: 100%; /* Ensure it doesn’t overflow vertically */
+    transition: all 0.3s ease;
+    padding: 2px;
+}
+
+
+.carousel-item3d:hover img {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-wrapper.single .carousel3d {
+    position: relative;
+    transform: none;
+    height: auto;
+}
+
+.carousel-wrapper.single .carousel-item3d {
+    transform: none !important;
+}
+
+.carousel-item3d:hover img {
+    transform: scale(1.1);
+}
+
+.carousel-item3d.active {
+    width: 50%;  /* Make the active item take up half the width of its parent */
+    height: auto;  /* Maintain the aspect ratio or adjust height accordingly */
+    max-height: 100%;  /* Ensure that the height doesn't exceed the parent's height */
+    transform: translate(-45%, -50%);  /* Keep the item centered */
+    z-index: 3;
+    opacity: 1;
+    content: fit;
+}
+
+.carousel-item3d.prev {
+    width: 20%;
+    height: 135px;
+    transform: scale(0.7) translate(-340%, -50%);
+    z-index: 2;
+    opacity: 0.7;
+}
+
+.carousel-item3d.next {
+    width: 20%;
+    height: 135px;
+    transform: scale(0.7) translate(200%, -50%);
+    z-index: 2;
+    opacity: 0.7;
+}
+
+.carousel-item3d.hidden {
+    display: none;
+}
+
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: none;
+    overflow: auto;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    max-width: 90%; /* Adjust width to be responsive */
+    max-height: 80%; /* Adjust height to maintain proportion */
+    margin: auto;
+    display: block;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 20px #000;
+    object-fit: contain; /* Ensures the image maintains its aspect ratio */
+}
+
+/* ==== ARROWS === */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    font-size: 48px;
+    color: #333;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    line-height: 60px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: background 0.3s;
+    z-index: 10;
+    transform: translateY(-50%);
+}
+
+.carousel-arrow:hover {
+    background: rgba(0, 102, 255, 0.8);
+    color: white;
+}
+
+.carousel-arrow.left {
+    left: 10px;
+}
+
+.carousel-arrow.right {
+    right: 10px;
+}
+
+
+/* ==== Calendar === */
+.calendar-box {
+    background: linear-gradient(to bottom, #ffffff, #e8f0ff);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    flex: 1 1 300px;  /* Allow it to shrink and grow */
+    max-width: 100%;
+}
+
+.calendar-box h3 {
+    margin-top: 0;
+    color: #2b7cff;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+}
+
+.calendar-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.calendar-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  /* Center contents */
+    width: 100%;
+}
+
+.calendar-box button {
+    background: #2b7cff;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+.legend {
+    font-size: 0.8em;
+}
+
+.legend .dot {
+    width: 10px;
+    height: 10px;
+}
+
+.calendar-box button:hover {
+    background: #1a5fd1;
+}
+
+.booked-day {
+    background-color: #ffd6d6 !important;
+    color: #999 !important;
+    border-radius: 50%;
+}
+
+.free-day {
+    background-color: #d8f5d1 !important;
+    border-radius: 50%;
+}
+
+.today-day {
+    background-color: #cce7ff !important;
+    border-radius: 50%;
+    border: 2px solid #2b7cff;
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.booked { background-color: #ffd6d6; }
+.today  { background-color: #cce7ff; }
+.free   { background-color: #d8f5d1; }
+
+.legend {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #555;
+    display: flex;                 /* Enable flexbox layout */
+    justify-content: center; /* Distribute items */
+    gap: 10px;                     /* Optional: extra spacing */
+    flex-wrap: wrap;              /* Allow wrapping if needed */
+}
+
+.legend .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.legend .booked {
+    background-color: #ffd6d6;
+}
+
+.legend .today {
+    background-color: #cce7ff;
+}
+
+.legend .free {
+    background-color: #d8f5d1;
+}
