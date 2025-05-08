@@ -1,0 +1,49 @@
+/* Wrapper */
+.cgu-wrapper {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 40px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+
+.cgu-header h1 {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+.cgu-header .subtitle {
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* Content */
+.cgu-content section {
+    margin-bottom: 35px;
+}
+
+.cgu-content h2 {
+    font-size: 1.5rem;
+    color: #0c4a6e;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e1e5eb;
+    padding-bottom: 5px;
+}
+
+.cgu-content p {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #444;
+}
+
+.cgu-content a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.cgu-content a:hover {
+    text-decoration: underline;
+}

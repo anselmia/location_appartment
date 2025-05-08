@@ -155,3 +155,7 @@ def contact_view(request):
             form = ContactForm()
 
     return render(request, "accounts/contact.html", {"form": form})
+
+
+def cgu_view(request):
+    return render(request, 'accounts/cgu.html')
