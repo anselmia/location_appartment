@@ -11,6 +11,7 @@ class LogementForm(forms.ModelForm):
             "price",
             "max_traveler",
             "nominal_traveler",
+            "bedrooms",
             "fee_per_extra_traveler",
             "cleaning_fee",
             "tax",

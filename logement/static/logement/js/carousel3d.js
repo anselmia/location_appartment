@@ -1,7 +1,41 @@
-// Functions 
+const modal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const modalPrev = document.getElementById('modalPrev');
+const modalNext = document.getElementById('modalNext');
+const closeModal = document.getElementById('closeModal');
+
+// Gather all images into an array
+const galleryImages = Array.from(document.querySelectorAll('.image-gallery img'));
 let currentIndex = 0;
-let selectedRoom = 'all'; // Default to showing all items
-let filteredItems = []; // List of items after filtering by room
+
+function showModal(index) {
+    currentIndex = index;
+    modalImage.src = galleryImages[currentIndex].src;
+    modal.style.display = 'flex';
+}
+
+galleryImages.forEach((img, index) => {
+    img.addEventListener('click', () => {
+        showModal(index);
+    });
+});
+
+closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+
+modalPrev.addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+    showModal(currentIndex);
+});
+
+modalNext.addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % galleryImages.length;
+    showModal(currentIndex);
+});
+
+// Functions 
 
 function setupFlatpickr(id) {
     // Get today's date in the user's local timezone
@@ -39,120 +73,10 @@ function setupFlatpickr(id) {
     });
 }
 
-function positionItems() {
-    // Loop through filtered items and apply the active, prev, and next classes
-    filteredItems.forEach((item, index) => {
-        item.classList.remove("active", "prev", "next", "hidden");
-
-        if (index === currentIndex) {
-            item.classList.add("active");
-        } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
-            item.classList.add("prev");
-        } else if (index === (currentIndex + 1) % filteredItems.length) {
-            item.classList.add("next");
-        } else {
-            item.classList.add("hidden");
-        }
-    });
-}
-
-function rotate(indexDelta) {
-    if (filteredItems.length === 0) return; // No filtered items available
-
-    // Update the currentIndex based on the filtered items length
-    currentIndex = (currentIndex + indexDelta + filteredItems.length) % filteredItems.length;
-    updateClasses(); // Re-apply the active, prev, next classes based on updated currentIndex
-}
-
-function isMobile() {
-    return window.innerWidth <= 768;
-}
-
-function updateClasses() {
-    items.forEach(item => {
-        item.classList.remove("active", "prev", "next", "hidden", "fade-out");
-    });
-    
-    // Desktop logic
-    filteredItems.forEach((item, index) => {
-        item.style.display = 'block';
-        if (index === currentIndex) {
-            item.classList.add("active");
-        } else if (index === (currentIndex + 1) % filteredItems.length) {
-            item.classList.add("next");
-        } else if (index === (currentIndex - 1 + filteredItems.length) % filteredItems.length) {
-            item.classList.add("prev");
-        }
-    });
-
-    items.forEach(item => {
-        if (!filteredItems.includes(item)) {
-            item.style.display = 'none';
-        }
-    });
-    
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    carousel = document.getElementById('carousel3d');
-    items = carousel.querySelectorAll('.carousel-item3d');
-    total = items.length;
-
-    // Set initial filtered items to all items (no filter)
-    filteredItems = Array.from(items);
-
-    document.getElementById('left-arrow').addEventListener('click', () => rotate(-1));
-    document.getElementById('right-arrow').addEventListener('click', () => rotate(1));
-
-    positionItems(); // applies transform + classes
     setupFlatpickr("#calendar_range");
 });
 
-document.querySelectorAll('.carousel-item3d img').forEach(img => {
-    img.addEventListener('click', () => {
-        document.getElementById('modalImage').src = img.src;
-        document.getElementById('imageModal').style.display = "flex"; // Use flex for centering
-    });
-});
-
-const filterButtons = document.querySelectorAll('.room-filter-button');
-filterButtons.forEach(button => {
-    button.addEventListener('click', function () {
-        // Reset active state of filter buttons
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active'); // Add active class to the selected button
-
-        const roomFilter = button.getAttribute('data-room');
-        selectedRoom = roomFilter; // Set the selected room
-
-        // Filter items based on the selected room
-        filteredItems = Array.from(items).filter(item => selectedRoom === 'all' || item.classList.contains(selectedRoom));
-
-        // Reset current index and position the items again
-        currentIndex = 0; // Start from the first photo in the selected room
-        positionItems(); // Apply new filter and re-position items
-        updateClasses();
-    });
-});
-
-const select = document.getElementById("room-filter-select");
-    if (select) {
-        select.addEventListener("change", function () {
-            const selectedRoom = this.value;
-
-            // Filter items based on the selected room
-            filteredItems = Array.from(items).filter(item => selectedRoom === 'all' || item.classList.contains(selectedRoom));
-
-            // Reset current index and position the items again
-            currentIndex = 0; // Start from the first photo in the selected room
-            positionItems(); // Apply new filter and re-position items
-            updateClasses();
-        });
-    }
-
-document.getElementById('closeModal').addEventListener('click', () => {
-    document.getElementById('imageModal').style.display = "none";
-});
 
 document.querySelector(".booking-form").addEventListener("submit", function (e) {
     const rangeInput = document.getElementById("calendar_range").value;
@@ -194,6 +118,6 @@ document.querySelector(".booking-form").addEventListener("submit", function (e) 
 
     // Add start_date and end_date as hidden fields to the form before submitting
     document.getElementById("id_start").value = startDate.toISOString().split('T')[0]; // Format to YYYY-MM-DD
-    document.getElementById("id_end").value = endDate.toISOString().split('T')[0];   // Format to YYYY-MM-DD
+    document.getElementById("id_end").value = endDate.toISOString().split('T')[0]; // Format to YYYY-MM-DD
 
 });

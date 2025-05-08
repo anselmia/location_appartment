@@ -3,68 +3,88 @@
 {% load i18n %}
 
 {% block content %}
-<h1 class="title">{% trans "Location àppartement de vacance à Nice Centre" %}</h1>
-<p style="text-align:center; color:#666; margin-top:-30px; margin-bottom: 40px;">
-    {% trans "Réservez en toute simplicité et sécurité." %}
-</p>
-
-<div class="layout-flex">
-    <!-- Dropdown (only shown on mobile) -->
-    <div class="room-filter-dropdown">
-        <select id="room-filter-select">
-            <option value="all">{% trans "Toutes" %}</option>
-            {% for room in rooms %}
-                <option value="room-{{ room.id }}">{{ room.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <!-- Button list (hidden on mobile) -->
-    <div class="room-filter" id="room-filter-buttons">
-        <button class="room-filter-button active" data-room="all">{% trans "Toutes" %}</button>
-        {% for room in rooms %}
-            <button class="room-filter-button" data-room="room-{{ room.id }}">{{ room.name }}</button>
-        {% endfor %}
-    </div>
-
-    <div class="carousel-wrapper {% if logement.photos.count == 1 %}single{% endif %}">
-        <div id="left-arrow" class="carousel-arrow left">&#10094;</div>
-        <div id="right-arrow" class="carousel-arrow right">&#10095;</div>
-        
-        <div class="carousel3d" id="carousel3d">         
-            {% if logement.photos.count > 0 %}
-                {% for photo in logement.photos.all %}
-                    <div class="carousel-item3d room-{{ photo.room.id|default:'none' }} {% if logement.photos.count == 1 %}single{% endif %}" id="carousel3d">
-                        <img src="{{ photo.image.url }}" alt="alt="Appartement meublé de vacance à Nice" loading="lazy" class="carousel-item3d-img">                    
-                    </div>                    
-                {% endfor %}                
-            {% else %}
-                <p style="text-align: center;">{% trans "Aucune photo disponible pour ce logement." %}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="calendar-box">
-        <h3>{% trans "Disponibilités" %}</h3>
-        <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
-            {% csrf_token %}
-            <input type="hidden" id="calendar_range" name="date_range" required>
-            <input type="hidden" id="id_start" name="start" required>
-            <input type="hidden" id="id_end" name="end" required>
-            <div id="calendar_inline"></div>
-            <button type="submit">{% trans "Réserver" %}</button>
-        </form>
-
-        <div class="legend">
-            <span class="dot booked"></span> Réservé
-            <span class="dot today"></span> Aujourd’hui
-            <span class="dot free"></span> Disponible
-        </div>
-    </div>
-
+<div class="homepage-header">
+    <h1 class="listing-title">Appartement de vacances à Nice Centre</h1>
+    <p class="listing-subtitle">8 voyageurs • 4 chambres • 4 lits • 1,5 salles de bain</p>
+    <p class="listing-subtitle">{% trans "Réservez en toute simplicité et sécurité." %}</p>
 </div>
 
-<section class="equipment-section">
+<div class="image-gallery">
+    {% if logement.photos.count > 0 %}
+        <div class="gallery-left">
+        <img src="{{ logement.photos.all.0.image.url }}" alt="Photo principale" loading="lazy">
+        </div>
+        <div class="gallery-right">
+        {% for photo in logement.photos.all|slice:"1:5" %}
+            <div class="small-photo">
+            <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucune photo disponible.</p>
+    {% endif %}
+</div>
+
+<section class="section-block">  
+    <div class="layout-flex">
+        <div class="logement-info">
+            <h2>{{ logement.title }}</h2>
+            <p>{{ logement.description|linebreaks }}</p>
+        
+            <ul class="logement-summary">
+                <li>👥 <strong>Capacité :</strong> {{ logement.max_travelers }}</li>
+                <li><strong>Chambres :</strong> {{ logement.bedrooms }}</li>
+            </ul>
+        
+            <hr>
+        
+            <div class="logement-section">
+                <h3>🚍 Transports & Proximité</h3>
+                <ul>
+                    <li>🌊 <strong>Plage la plus proche :</strong> 15 min en tram ou 35 min à pied (Promenade des Anglais)</li>
+                    <li>🏛️ <strong>Centre-ville :</strong> 10 min en tram (Tramway L1)</li>
+                    <li>🛒 <strong>Supermarché :</strong> Carrefour City à 3 min à pied</li>
+                    <li>🚈 <strong>Gare SNCF Nice Ville :</strong> 15 min en tram ou 8 min en voiture</li>
+                    <li>✈️ <strong>Aéroport Nice Côte d’Azur :</strong> 30 min en tram (L2 + L1) ou 20 min en voiture</li>
+                </ul>
+            </div>
+        
+            <hr>
+        
+            <div class="logement-section">
+                <h3>🧭 Arriver au logement</h3>
+                <ul>
+                    <li>🚗 <strong>En voiture :</strong> Sortie autoroute A8 « Nice Nord » puis 10 min</li>
+                    <li>🚄 <strong>Depuis la gare :</strong> Tram L1 → arrêt "Valrose Université"</li>
+                    <li>🚌 <strong>Bus :</strong> Ligne 5 ou 33, arrêt « Valrose »</li>
+                    <li>🚕 <strong>Taxi ou VTC :</strong> Environ 25–35 € depuis l'aéroport</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="calendar-box">
+            <h3>{% trans "Disponibilités" %}</h3>
+            <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
+                {% csrf_token %}
+                <input type="hidden" id="calendar_range" name="date_range" required>
+                <input type="hidden" id="id_start" name="start" required>
+                <input type="hidden" id="id_end" name="end" required>
+                <div id="calendar_inline"></div>
+                <button type="submit">{% trans "Réserver" %}</button>
+            </form>
+
+            <div class="legend">
+                <span class="dot booked"></span> Réservé
+                <span class="dot today"></span> Aujourd’hui
+                <span class="dot free"></span> Disponible
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="equipment-section section-block">
     <h2 class="equipment-title">Équipements disponibles</h2>
     <div class="equipment-grid">
         <div class="equipment-group">
@@ -145,10 +165,16 @@
     </div>
 </section>
 
+<!-- 🗺️ Google Map container -->
+<section class="section-block">
+    <iframe class="logement-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2883.6102969953176!2d7.261666490367619!3d43.71864717368632!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12cdc55614e6e7c9%3A0xce7586de88ac033e!2s85%20Av.%20Valrose%2C%2006100%20Nice!5e0!3m2!1sfr!2sfr!4v1746723047984!5m2!1sfr!2sfr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</section>
 
 <div id="imageModal" class="image-modal">
     <span id="closeModal" class="close-btn">&times;</span>
-    <img id="modalImage" class="modal-content">
+    <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
+    <img id="modalImage" class="modal-content" src="">
+    <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
 </div>
 {% endblock %}
 

@@ -194,6 +194,24 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ==== Buttons === */
+button,
+.btn {
+    padding: 12px 20px;
+    background: #2b7cff;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button:hover,
+.btn:hover {
+    background: #1a5fd1;
+    transform: scale(1.03);
+}
+
 /* Button Hover Effect */
 button:focus {
     outline: none;
@@ -227,13 +245,6 @@ button:focus {
 .btn-submit:hover {
     background-color: #1a5fd1;
     transform: scale(1.05);
-}
-
-.btn {
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-size: 1.1rem;
-    transition: background-color 0.3s;
 }
 
 .btn-primary {
