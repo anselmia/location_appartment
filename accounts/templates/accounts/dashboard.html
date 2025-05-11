@@ -11,7 +11,8 @@
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    Mon Profil
+                    <h5 class="card-title">👤 Mon Profil</h5>
+                    <p class="text-muted mb-3">Gérez vos informations personnelles</p>
                 </div>
                 <div class="card-body">
                     <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
@@ -46,7 +47,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="id_email">Email</label>
+                            <label for="id_email"><i class="fas fa-envelope"></i> Email</label>
                             {{ formUser.email }}
                         </div>
 
@@ -57,12 +58,16 @@
 
                         <!-- Submit Button -->
                         <div class="form-group text-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Modifier mes infos</button>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                                <i class="fas fa-user-edit"></i> Modifier mes infos
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        <hr class="my-3">
 
         <!-- Réservations -->
         <div class="col-md-8">

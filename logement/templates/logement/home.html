@@ -33,7 +33,7 @@
             <p>{{ logement.description|linebreaks }}</p>
         
             <ul class="logement-summary">
-                <li>👥 <strong>Capacité :</strong> {{ logement.max_travelers }}</li>
+                <li>👥 <strong>Capacité :</strong> {{ logement.max_traveler }}</li>
                 <li><strong>Chambres :</strong> {{ logement.bedrooms }}</li>
             </ul>
         
@@ -184,5 +184,5 @@
     const today = new Date().toISOString().slice(0, 10);
     const logementId = {{ logement.id }};    
 </script>
-<script src="{% static 'logement/js/carousel3d.js' %}"></script>
+<script src="{% static 'logement/js/home.js' %}"></script>
 {% endblock %}

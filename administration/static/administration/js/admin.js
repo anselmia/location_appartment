@@ -1,4 +1,5 @@
 // Function to handle photo room change
+
 document.querySelectorAll('.room-select').forEach(select => {
     select.addEventListener('change', (e) => {
         const photoId = e.target.closest('.photo-item').getAttribute('data-photo-id');

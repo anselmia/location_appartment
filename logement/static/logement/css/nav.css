@@ -135,7 +135,7 @@
 }
 
 /* Show submenu on hover */
-.navbar .dropdown:hover .dropdown-menu {
+.navbar .dropdown.show .dropdown-menu {
     display: block;
 }
 

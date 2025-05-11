@@ -4,6 +4,17 @@ from django import forms
 from .models import CustomUser, Message
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+phone_validator = RegexValidator(
+    regex=r"^\+?1?\d{9,15}$",
+    message="Le numéro de téléphone n'est pas valide. Veuillez entrer un numéro valide.",
+)
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -31,6 +42,9 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if CustomUser.objects.filter(email=email).exists():
+            logger.warning(
+                f"Tentative d'enregistrement avec un email déjà utilisé : {email}"
+            )
             raise ValidationError(
                 "Cet email est déjà utilisé. Veuillez en choisir un autre."
             )
@@ -51,11 +65,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
-        phone_regex = r"^\+?1?\d{9,15}$"  # You can adjust this regex to match your required phone format
-        if not re.match(phone_regex, phone):
-            raise ValidationError(
-                "Le numéro de téléphone n'est pas valide. Veuillez entrer un numéro valide."
-            )
+        phone_validator(phone)  # this raises ValidationError if invalid
         if CustomUser.objects.filter(phone=phone).exists():
             raise ValidationError(
                 "Ce numéro de téléphone est déjà utilisé. Veuillez en choisir un autre."
@@ -93,6 +103,9 @@ class CustomUserChangeForm(UserChangeForm):
         email = self.cleaned_data.get("email")
         user = self.instance
         if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
+            logger.warning(
+                f"Tentative d'enregistrement avec un email déjà utilisé : {email}"
+            )
             raise ValidationError(
                 "Cet email est déjà utilisé par un autre utilisateur."
             )
@@ -108,11 +121,7 @@ class CustomUserChangeForm(UserChangeForm):
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
         user = self.instance
-        phone_regex = r"^\+?1?\d{9,15}$"  # You can adjust this regex to match your required phone format
-        if not re.match(phone_regex, phone):
-            raise ValidationError(
-                "Le numéro de téléphone n'est pas valide. Veuillez entrer un numéro valide."
-            )
+        phone_validator(phone)  # this raises ValidationError if invalid
         if CustomUser.objects.filter(phone=phone).exclude(id=user.id).exists():
             raise ValidationError(
                 "Ce numéro de téléphone est déjà utilisé par un autre utilisateur."
@@ -147,7 +156,7 @@ class ContactForm(forms.Form):
     def __init__(self, *args, **kwargs):
         name = kwargs.pop("name", "")
         email = kwargs.pop("email", "")  # The end date from the view
-        
+
         super().__init__(*args, **kwargs)
 
         self.fields["name"].initial = name

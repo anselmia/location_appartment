@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django_celery_beat",
+    'widget_tweaks',
     "accounts",
     "administration",
     'logement.apps.LogementConfig'

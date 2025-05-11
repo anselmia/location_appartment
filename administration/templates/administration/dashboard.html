@@ -1,14 +1,26 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
-<h1>Administration</h1>
 
-<a href="{% url 'administration:add_logement' %}" class="btn-add">➕ Ajouter un logement</a>
+<div class="admin-logement-container">
+    <div class="admin-header">
+        <h2>🏢 Gestion des logements</h2>
+        <a href="{% url 'administration:add_logement' %}" class="btn-add-logement">➕ Ajouter un logement</a>
+    </div>
 
-<ul>
-    {% for logement in logements %}
-        <li><a href="{% url 'administration:edit_logement' logement.id %}">{{ logement.name }}</a></li>
-    {% empty %}
-        <li>Aucun logement pour le moment</li>
-    {% endfor %}
-</ul>
+    {% if logements %}
+        <ul class="logement-list">
+            {% for logement in logements %}
+                <li class="logement-item">
+                    <a href="{% url 'administration:edit_logement' logement.id %}" class="logement-link">
+                        <strong>{{ logement.name }}</strong>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="no-logement">Aucun logement pour le moment.</div>
+    {% endif %}
+</div>
+
 {% endblock %}

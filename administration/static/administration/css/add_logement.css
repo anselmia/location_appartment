@@ -1,0 +1,115 @@
+.logement-form-container {
+    display: flex;
+    justify-content: center;
+    padding: 50px 20px;
+    background: #f4f6f9;
+}
+
+/* Card-style box */
+.logement-card {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border-radius: 16px;
+    padding: 30px 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Title */
+.form-title {
+    text-align: center;
+    font-size: 1.6rem;
+    color: #2b7cff;
+    margin-bottom: 25px;
+}
+
+.logement-form {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.logement-form h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2b7cff;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #fdfdfd;
+}
+
+.form-textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+.input-symbol {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-symbol span {
+    position: absolute;
+    right: 15px;
+    font-weight: bold;
+    color: #666;
+    pointer-events: none;
+}
+
+.input-symbol .form-input {
+    padding-right: 35px;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-submit {
+    background-color: #2b7cff;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #1d5fda;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .form-title {        
+        font-size: 1.2rem;
+    }
+    .logement-form {
+        padding: 20px;
+    }
+
+    .btn-submit {
+        width: 100%;
+    }
+}

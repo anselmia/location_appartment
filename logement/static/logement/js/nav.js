@@ -1,6 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
     const toggle = document.getElementById("navToggle");
     const links = document.getElementById("navLinks");
+    const dropdownToggle = document.querySelector(".dropdown-toggle");
+    const dropdown = dropdownToggle?.closest(".dropdown");
+
+    if (dropdown && dropdownToggle) {
+        dropdownToggle.addEventListener("click", function (e) {
+            e.preventDefault();
+            dropdown.classList.toggle("show");
+
+            // Close if clicking outside
+            document.addEventListener("click", function outsideClickListener(event) {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.classList.remove("show");
+                    document.removeEventListener("click", outsideClickListener);
+                }
+            });
+        });
+    }
 
     // Initial state: force hidden
     links.classList.remove("show");
@@ -24,15 +41,4 @@ document.addEventListener("DOMContentLoaded", function () {
             links.classList.remove("show");
         });
     });
-
-    // Dropdown toggle (mobile only)
-    const dropdownToggle = links.querySelector(".dropdown-toggle");
-    const dropdown = dropdownToggle?.closest(".dropdown");
-
-    if (dropdownToggle && dropdown) {
-        dropdownToggle.addEventListener("click", function (e) {
-            e.preventDefault();
-            dropdown.classList.toggle("show");
-        });
-    }
 });

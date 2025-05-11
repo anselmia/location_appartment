@@ -1,57 +1,89 @@
 {% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
 {% block content %}
+<div class="container logement-form-container">
+    <div class="logement-card">
+        <form method="post" class="logement-form">
+            <h3 class="form-title">🏡 Ajouter un logement</h3>
+            {% csrf_token %}
 
-<form method="post" class="form-box">
-    <h2>Ajouter un logement</h2>
-    {% csrf_token %}
-    
-    <div class="form-group">
-        <label for="{{ form.name.id_for_label }}">Nom</label>
-        {{ form.name }}
-    </div>
+            {% if form.errors %}
+                <div class="alert alert-danger mt-3">
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
-    <div class="form-group">
-        <label for="{{ form.description.id_for_label }}">Description</label>
-        {{ form.description }}
-    </div>
+            <div class="form-field">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name|add_class:"form-input" }}
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.price.id_for_label }}">Prix par nuit</label>
-        {{ form.price }}
-    </div>
+            <div class="form-field">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description|add_class:"form-textarea" }}
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.max_travelers.id_for_label }}">Nombre de Guests maximum</label>
-        {{ form.max_traveler }}
-    </div>
+            <div class="form-field with-symbol">
+                <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                <div class="input-symbol">
+                    {{ form.price|add_class:"form-input" }}
+                    <span>€</span>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.nominal_traveler.id_for_label }}">Nombe de Guests Nominal</label>
-        {{ form.nominal_traveler }}
-    </div>
+            <div class="form-field">
+                <label for="{{ form.max_traveler.id_for_label }}">{{ form.max_traveler.label }}</label>
+                {{ form.max_traveler|add_class:"form-input" }}
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.bedrooms.id_for_label }}">Nombre de Chambres</label>
-        {{ form.bedrooms }}
-    </div>
+            <div class="form-field">
+                <label for="{{ form.nominal_traveler.id_for_label }}">{{ form.nominal_traveler.label }}</label>
+                {{ form.nominal_traveler|add_class:"form-input" }}
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.fee_per_extra_traveler.id_for_label }}">Frais par Extra Guest</label>
-        {{ form.fee_per_extra_traveler }}
-    </div>
+            <div class="form-field">
+                <label for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
+                {{ form.bedrooms|add_class:"form-input" }}
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.cleaning_fee.id_for_label }}">Frais de ménage</label>
-        {{ form.cleaning_fee }}
-    </div>
+            <div class="form-field with-symbol">
+                <label for="{{ form.fee_per_extra_traveler.id_for_label }}">{{ form.fee_per_extra_traveler.label }}</label>
+                <div class="input-symbol">
+                    {{ form.fee_per_extra_traveler|add_class:"form-input" }}
+                    <span>€</span>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="{{ form.tax.id_for_label }}">Taxe de Séjour</label>
-        {{ form.tax }}
-    </div>
+            <div class="form-field with-symbol">
+                <label for="{{ form.cleaning_fee.id_for_label }}">{{ form.cleaning_fee.label }}</label>
+                <div class="input-symbol">
+                    {{ form.cleaning_fee|add_class:"form-input" }}
+                    <span>€</span>
+                </div>
+            </div>
 
-    <div class="button-row">
-        <button type="submit" class="btn-submit">💾 Enregistrer</button>
+            <div class="form-field with-symbol">
+                <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
+                <div class="input-symbol">
+                    {{ form.tax|add_class:"form-input" }}
+                    <span>%</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">💾 Enregistrer</button>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 {% endblock %}

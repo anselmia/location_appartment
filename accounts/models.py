@@ -1,18 +1,33 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.core.validators import RegexValidator
+
+phone_validator = RegexValidator(
+    regex=r"^\+?1?\d{9,15}$",
+    message="Le numéro de téléphone n'est pas valide. Veuillez entrer un numéro valide.",
+)
 
 
 class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False)
     phone = models.CharField(
-        max_length=15, blank=True, null=True
-    )  # Adjust max_length as per your requirement
-    last_name = models.CharField(max_length=100)  # Surname (Last name)
-    name = models.CharField(max_length=100)  # First name (Given name)
+        max_length=15,
+        blank=True,
+        null=True,
+        validators=[phone_validator],
+        unique=True,
+        help_text="Numéro au format international, ex: +33612345678",
+    )
+    last_name = models.CharField(max_length=100, verbose_name="Prénom")
+    name = models.CharField(max_length=100, verbose_name="Nom")
 
     def __str__(self):
         return self.username
+
+    @property
+    def full_name(self):
+        return f"{self.name} {self.last_name}"
 
 
 class Message(models.Model):
@@ -25,5 +40,10 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return f"De {self.sender} à {self.recipient} le {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
     class Meta:
         ordering = ["timestamp"]
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"

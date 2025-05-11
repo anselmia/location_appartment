@@ -35,14 +35,13 @@ def add_logement(request):
 @user_passes_test(is_admin)
 def edit_logement(request, logement_id):
     logement = Logement.objects.prefetch_related("photos").first()
-    rooms = logement.rooms.all()
-    photos = logement.photos.all()
+    rooms = logement.rooms.all().order_by("name")
+    photos = logement.photos.all().order_by('order')
 
     if request.method == "POST":
         form = LogementForm(request.POST, instance=logement)
         if form.is_valid():
             form.save()
-            return redirect("administration:dashboard")
     else:
         form = LogementForm(instance=logement)
 
@@ -89,35 +88,37 @@ def upload_photos(request, logement_id):
 # Change the room of a photo
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 def change_photo_room(request, photo_id):
-    if request.method == "POST":
-        photo = get_object_or_404(Photo, id=photo_id)
-        room_id = request.POST.get("room_id")
-        room = get_object_or_404(Room, id=room_id)
-        photo.room = room
-        photo.save()
-        return JsonResponse({"success": True})
-
+    photo = get_object_or_404(Photo, id=photo_id)
+    room_id = request.POST.get("room_id")
+    if room_id:
+        room = Room.objects.filter(id=room_id).first()
+        if room:
+            photo.room = room
+            photo.save()
+            return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)
 
 # Move photo up or down
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 def move_photo(request, photo_id, direction):
-    if request.method == "POST":
-        photo = get_object_or_404(Photo, id=photo_id)
-        if direction == "up":
-            previous_photo = Photo.objects.filter(order__lt=photo.order).last()
-            if previous_photo:
-                photo.order, previous_photo.order = previous_photo.order, photo.order
-                photo.save()
-                previous_photo.save()
-        elif direction == "down":
-            next_photo = Photo.objects.filter(order__gt=photo.order).first()
-            if next_photo:
-                photo.order, next_photo.order = next_photo.order, photo.order
-                photo.save()
-                next_photo.save()
-        return JsonResponse({"success": True})
+    photo = get_object_or_404(Photo, id=photo_id)
+    if direction == "up":
+        previous_photo = Photo.objects.filter(logement=photo.logement, order__lt=photo.order).order_by('-order').first()
+        if previous_photo:
+            photo.order, previous_photo.order = previous_photo.order, photo.order
+            photo.save()
+            previous_photo.save()
+    elif direction == "down":
+        next_photo = Photo.objects.filter(logement=photo.logement, order__lt=photo.order).order_by('order').first()
+        if next_photo:
+            photo.order, next_photo.order = next_photo.order, photo.order
+            photo.save()
+            next_photo.save()
+    return JsonResponse({"success": True})
 
 
 # Delete photo
