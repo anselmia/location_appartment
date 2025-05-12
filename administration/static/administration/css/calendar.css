@@ -92,3 +92,13 @@
     background: #2d3748 !important;
     color: white !important;
   }
+
+  .tippy-box[data-theme~='light-border'] {
+    border: 1px solid #ddd;
+    font-size: 0.85rem;
+    background: #fff;
+    color: #333;
+    padding: 8px 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+  }
