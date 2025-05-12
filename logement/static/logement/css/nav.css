@@ -105,7 +105,7 @@
     padding: 8px 12px;
     display: inline-block;
     text-decoration: none;
-    color: white;
+    color: #5f4b3e;
     font-weight: 500;
 }
 
@@ -180,7 +180,7 @@
     display: none;
     font-size: 2rem;
     cursor: pointer;
-    color: white;
+    color: #5f4b3e;
     margin-left: auto;
     z-index: 999;
 }
