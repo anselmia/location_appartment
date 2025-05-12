@@ -1,10 +1,16 @@
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
+from .views import DailyPriceViewSet
 
 app_name = "administration"
 
+router = DefaultRouter()
+router.register(r'prices', DailyPriceViewSet, basename='price')
+
 urlpatterns = [
     path("", views.admin_dashboard, name="dashboard"),
+    path("traffic/", views.traffic_dashboard, name="traffic"),
     path("logement/add/", views.add_logement, name="add_logement"),
     path("logement/<int:logement_id>/edit/", views.edit_logement, name="edit_logement"),
     path("logement/<int:logement_id>/add_room/", views.add_room, name="add_room"),
@@ -25,4 +31,7 @@ urlpatterns = [
         name="move_photo",
     ),
     path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
+    path("calendar/", views.calendar, name="calendar"),
 ]
+
+urlpatterns += router.urls

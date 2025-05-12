@@ -1,0 +1,82 @@
+/* traffic.css */
+.traffic-dashboard {
+    background-color: #f4f6f9;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+.traffic-dashboard .container {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    max-width: 1100px;
+    margin: auto;
+}
+
+.traffic-dashboard h2, 
+.traffic-dashboard h4 {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.traffic-dashboard select.form-select {
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+}
+
+.traffic-dashboard canvas#trafficChart {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e3e3e3;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.traffic-dashboard .table-responsive {
+    border: 1px solid #dfe6ec;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.traffic-dashboard table {
+    margin: 0;
+    width: 100%;
+}
+
+.traffic-dashboard table th {
+    background-color: #f1f3f6;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2d3436;
+}
+
+.traffic-dashboard table td {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.traffic-dashboard .stat-box {
+    display: inline-block;
+    background-color: #ecf3fa;
+    border: 1px solid #cddbea;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.traffic-dashboard .stat-box strong {
+    display: block;
+    font-size: 1.4rem;
+    color: #34495e;
+}
+
+.traffic-dashboard .stat-box span {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}

@@ -10,7 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .forms import ReservationForm
-from .models import Logement, Reservation, airbnb_booking, booking_booking, Price
+from .models import Logement, Reservation, airbnb_booking, booking_booking
+
 
 # Set up Stripe with the secret key
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
@@ -333,5 +334,5 @@ def cancel_booking(request, reservation_id):
     else:
         reservation.delete()
         messages.success(request, "✅ Réservation annulée avec succès.")
-        
+
     return redirect("accounts:dashboard")
