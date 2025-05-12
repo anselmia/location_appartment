@@ -5,7 +5,7 @@
 }
 
 .client-dashboard h2 {
-    color: #2b7cff;
+    color: #2b3d55;
     font-size: 2rem;
     margin-bottom: 20px;
     text-align: center;
@@ -23,6 +23,7 @@
     font-weight: 600;
     padding: 15px 20px;
     font-size: 1.2rem;
+    background: #2b3d55;
 }
 
 .client-dashboard .card-body {
@@ -37,12 +38,12 @@
 }
 
 .client-dashboard .btn-outline-primary {
-    color: #2b7cff;
-    border: 1px solid #2b7cff;
+    color: #2b3d55;
+    border: 1px solid #2b3d55;
 }
 
 .client-dashboard .btn-outline-primary:hover {
-    background-color: #2b7cff;
+    background-color: #2b3d55;
     color: white;
 }
 

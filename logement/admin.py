@@ -5,6 +5,8 @@ from .models import (
     Reservation,
     booking_booking,
     airbnb_booking,
+    Discount,
+    DiscountType,
 )
 from django.utils.html import format_html
 
@@ -34,3 +36,5 @@ admin.site.register(Photo)
 admin.site.register(Reservation)
 admin.site.register(airbnb_booking)
 admin.site.register(booking_booking)
+admin.site.register(Discount)
+admin.site.register(DiscountType)

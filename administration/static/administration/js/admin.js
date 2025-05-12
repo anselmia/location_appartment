@@ -9,7 +9,6 @@ document.querySelectorAll('.room-select').forEach(select => {
         const urlTemplate = document.getElementById('change-photo-room-url').getAttribute('data-url');
         const url = urlTemplate.replace('1', photoId); // Replace the placeholder with the actual photo_id
 
-        console.log(url);
 
         fetch(url, {
                 method: 'POST',

@@ -32,6 +32,11 @@ urlpatterns = [
     ),
     path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
     path("calendar/", views.calendar, name="calendar"),
+    path(
+        "logement/discounts/",
+        views.manage_discounts,
+        name="manage_discounts",
+    ),
 ]
 
 urlpatterns += router.urls

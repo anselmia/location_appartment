@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="discounts-container container mt-4">
+    <h2 class="discounts-title">Réductions pour {{ logement.name }}</h2>
+
+    {% if form.non_field_errors %}
+        <div class="form-errors alert alert-danger">
+            {% for error in form.non_field_errors %}
+                <div class="error">{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="discount-form mb-5">
+        {% csrf_token %}
+        <div class="row gy-3 gx-4">
+            <div class="col-md-4">
+                <label class="form-label">Type de réduction *</label>
+                <select id="discount-type-select" name="discount_type" class="form-select {% if form.discount_type.errors %}is-invalid{% endif %}" required>
+                    <option value="" disabled selected>Choisir un type</option>
+                    {% for dt in discount_types %}
+                    <option value="{{ dt.id }}"
+                            data-min-nights="{{ dt.requires_min_nights|yesno:'1,0' }}"
+                            data-days-before="{{ dt.requires_days_before|yesno:'1,0' }}"
+                            data-date-range="{{ dt.requires_date_range|yesno:'1,0' }}">
+                        {{ dt.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.discount_type.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.discount_type.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+    
+            <div class="col-md-2">
+                <label class="form-label">Valeur *</label>
+                <div class="input-group">
+                    <input type="number" step="0.1" name="value" class="form-control {% if form.value.errors %}is-invalid{% endif %}" required placeholder="ex: 10">
+                    <span class="input-group-text">%</span>
+                </div>
+                {% if form.value.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.value.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+    
+            <div class="col-12 mt-2">
+                <hr>
+                <h6 class="text-muted mb-3">Critères</h6>
+            </div>
+    
+            <!-- Optional Fields -->
+            <div class="col-md-2 optional-field min-nights-field" id="min-nights-group">
+                <label class="form-label">Min. nuits</label>
+                <input type="number" step="1" name="min_nights" class="form-control {% if form.min_nights.errors %}is-invalid{% endif %}" placeholder="ex: 7">
+                {% if form.min_nights.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.min_nights.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-2 optional-field days-before-field" id="days-before-group">
+                <label class="form-label">Jours avant</label>
+                <input type="number" step="1" name="days_before" class="form-control {% if form.days_before.errors %}is-invalid{% endif %}" placeholder="ex: 3">
+                {% if form.days_before.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.days_before.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-3 optional-field start-date-field" id="start-date-group">
+                <label class="form-label">Date de début</label>
+                <input type="date" name="start_date" class="form-control {% if form.start_date.errors %}is-invalid{% endif %}">
+                {% if form.start_date.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.start_date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-3 optional-field end-date-field" id="end-date-group">
+                <label class="form-label">Date de fin</label>
+                <input type="date" name="end_date" class="form-control {% if form.end_date.errors %}is-invalid{% endif %}">
+                {% if form.end_date.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.end_date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+    
+            <div class="col-md-2 mt-3">
+                <button class="btn btn-primary">➕ Ajouter</button>
+            </div>
+        </div>
+    </form>    
+
+    <h4 class="mb-3">Réductions existantes</h4>
+    <ul class="list-group discount-list">
+        {% for discount in discounts %}
+        <li class="list-group-item p-3">
+            <div class="row row-cols-auto g-3 align-items-end">
+                <form method="POST" class="col d-flex flex-wrap align-items-end gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_id" value="{{ discount.id }}">
+
+                    <div>
+                        <label class="form-label d-none d-md-block">Type</label>
+                        <select name="discount_type" class="form-select form-select-sm discount-type-select"
+                                data-discount-id="{{ discount.id }}" required>
+                            {% for dt in discount_types %}
+                            <option value="{{ dt.id }}"
+                                    data-min-nights="{{ dt.requires_min_nights|yesno:'1,0' }}"
+                                    data-days-before="{{ dt.requires_days_before|yesno:'1,0' }}"
+                                    data-date-range="{{ dt.requires_date_range|yesno:'1,0' }}"
+                                    {% if discount.discount_type.id == dt.id %}selected{% endif %}>
+                                {{ dt.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label d-none d-md-block">Valeur</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" step="0.1" name="value" value="{{ discount.value|stringformat:'f'|cut:',' }}"
+                                class="form-control" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+
+                    <div class="col-auto optional-field min-nights-field">
+                        <label class="form-label d-none d-md-block">Min nuits</label>
+                        <input type="number" step="1" name="min_nights" value="{{ discount.min_nights|default_if_none:'' }}"
+                            class="form-control form-control-sm" placeholder="ex: 3">
+                    </div>
+
+                    <div class="col-auto optional-field days-before-field">
+                        <label class="form-label d-none d-md-block">Jours avant</label>
+                        <input type="number" step="1" name="days_before" value="{{ discount.days_before|default_if_none:'' }}"
+                            class="form-control form-control-sm" placeholder="ex: 7">
+                    </div>
+
+                    <div class="col-auto optional-field start-date-field">
+                        <label class="form-label d-none d-md-block">Début</label>
+                        <input type="date" name="start_date" value="{{ discount.start_date|date:'Y-m-d' }}"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-auto optional-field end-date-field">
+                        <label class="form-label d-none d-md-block">Fin</label>
+                        <input type="date" name="end_date" value="{{ discount.end_date|date:'Y-m-d' }}"
+                            class="form-control form-control-sm">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-success btn-sm">💾</button>
+                    </div>
+                </form>
+
+                <div class="col-auto ms-auto">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_id" value="{{ discount.id }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">🗑️</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Aucune réduction définie.</li>
+        {% endfor %}
+    </ul>        
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'administration/js/discounts.js' %}"></script>
+{% endblock %}

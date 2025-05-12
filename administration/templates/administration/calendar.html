@@ -1,11 +1,33 @@
 {% extends "base.html" %}
+
 {% load static %}
 {% block content %}
-<div id="calendar" data-logement-id="{{ logement.id }}"></div>
+<div class="calendar-wrapper d-flex position-relative">
+    <div id="calendar" data-logement-id="{{ logement.id }}"></div>
+    <div id="price-panel" class="price-panel hidden">
+        <h4>Modifier le prix</h4>
+        <p id="panel-dates"></p>
+      
+        <label for="base-price">Prix de base (€)</label>
+        <input type="number" id="base-price" class="form-control mb-2" />
+
+        <div id="details" class="price-details-container">
+            <!-- Dynamic content will be inserted here -->
+          </div>
+      
+        <div>
+          <strong>Prix Total : <span id="final-price">0</span> €</strong>
+        </div>
+      
+        <div class="mt-3 d-flex justify-content-between">
+          <button id="apply-price" class="btn btn-success">Appliquer</button>
+          <button id="cancel-price" class="btn btn-secondary">Annuler</button>
+        </div>
+      </div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
   const csrfToken = "{{ csrf_token }}";
 </script>

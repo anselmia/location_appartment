@@ -117,21 +117,19 @@
                         <h4 class="text-center mb-4">Résumé de la Réservation</h4>
     
                         <div>
-                            <p><strong>Prix par nuit :</strong> <span id="price-per-night">0 €</span></p>
                             <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
                             <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
                             <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
-    
+                            
                             <hr>
-    
-                            <p><strong>Total nuits :</strong> <span id="total-nights">0</span> nuits</p>
-                            <p><strong>Frais de ménage :</strong> <span id="cleaning-fee">0 €</span></p>
-                            <p><strong>Taxes :</strong> <span id="tourist-tax">0 €</span></p>
-    
-                            <hr>
-    
-                            <h4><strong>Total :</strong> <span id="total-price">0 €</span></h4>
-                            <p>Aucun montant ne vous sera débité pour le moment</p>
+                            
+                            <div id="details">
+                                <!-- Dynamic content will be inserted here -->
+                              </div>
+                          
+                            <div>
+                              <strong>Prix Total : <span id="final-price">0</span> €</strong>
+                            </div>
 
                             <hr>
 
@@ -189,7 +187,7 @@
     const csrfToken = "{{ csrf_token }}";
     const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
     const reservationId = {% if reservation_id %}{{ reservation_id|escapejs }}{% else %}null{% endif %};
-    console.log(reservationId);
+
 </script>
 <script src="https://js.stripe.com/v3/"></script>
 <!-- Include jQuery from a CDN (or your own static file) -->

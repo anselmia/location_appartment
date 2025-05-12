@@ -35,6 +35,42 @@ class Price(models.Model):
         return f"Prix du {self.date}: {self.value}"
 
 
+class DiscountType(models.Model):
+    name = models.CharField(
+        max_length=100, unique=True
+    )  # ex: "À la semaine (7+ nuits)"
+    description = models.TextField(blank=True)
+
+    # Champs dynamiques selon la logique
+    requires_min_nights = models.BooleanField(default=False)
+    requires_days_before = models.BooleanField(default=False)
+    requires_date_range = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Discount(models.Model):
+    logement = models.ForeignKey(
+        Logement, on_delete=models.CASCADE, related_name="discounts"
+    )
+    discount_type = models.ForeignKey(DiscountType, on_delete=models.CASCADE, null=True, blank=True)
+
+    value = models.DecimalField(max_digits=5, decimal_places=2)
+
+    # Valeurs personnalisables selon le type
+    min_nights = models.IntegerField(null=True, blank=True)
+    days_before = models.IntegerField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('logement', 'discount_type')
+        
+    def __str__(self):
+        return f"{self.discount_type.name} — {self.value} %"
+
+
 class ExtraCharge(models.Model):
     logement = models.ForeignKey(
         Logement, related_name="extra_charges", on_delete=models.CASCADE

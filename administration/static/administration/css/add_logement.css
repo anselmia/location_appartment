@@ -19,7 +19,7 @@
 .form-title {
     text-align: center;
     font-size: 1.6rem;
-    color: #2b7cff;
+    color: #2b3d55;
     margin-bottom: 25px;
 }
 
@@ -33,7 +33,7 @@
 .logement-form h2 {
     text-align: center;
     margin-bottom: 30px;
-    color: #2b7cff;
+    color: #2b3d55;
 }
 
 .form-field {
@@ -85,20 +85,6 @@
     margin-top: 30px;
 }
 
-.btn-submit {
-    background-color: #2b7cff;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-submit:hover {
-    background-color: #1d5fda;
-}
 
 /* Responsive */
 @media (max-width: 900px) {

@@ -18,11 +18,11 @@
 .admin-header h2 {
     margin: 0;
     font-size: 1.8rem;
-    color: #2b7cff;
+    color: #2b3d55;
 }
 
 .btn-add-logement {
-    background-color: #2b7cff;
+    background-color: #2b3d55;
     color: white;
     text-decoration: none;
     padding: 10px 16px;
@@ -61,7 +61,7 @@
 
 .logement-link:hover {
     text-decoration: underline;
-    color: #2b7cff;
+    color: #2b3d55;
 }
 
 .no-logement {

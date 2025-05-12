@@ -11,7 +11,7 @@
 
 .admin-logement-edit h2,
 .admin-logement-edit .section-title {
-    color: #2b7cff;
+    color: #2b3d55;
     font-weight: 600;
     margin-bottom: 20px;
 }
@@ -27,7 +27,7 @@
 }
 
 .admin-logement-edit .nav-tabs .nav-link {
-    color: #2b7cff;
+    color: #2b3d55;
     font-weight: 600;
     border: none;
     border-bottom: 3px solid transparent;
@@ -40,8 +40,8 @@
 }
 
 .admin-logement-edit .nav-tabs .nav-link.active {
-    border-bottom: 3px solid #2b7cff;
-    color: #2b7cff;
+    border-bottom: 3px solid #2b3d55;
+    color: #2b3d55;
     background-color: #eaf4ff;
 }
 
@@ -142,7 +142,7 @@
 }
 
 .admin-logement-edit input[type="file"] {
-    border: 1px dashed #2b7cff;
+    border: 1px dashed #2b3d55;
     padding: 8px;
     border-radius: 8px;
     background-color: #f0f6ff;

@@ -1,12 +1,33 @@
+
 #calendar {
-    max-width: 1300px;
-    margin: 30px auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    font-family: 'Inter', sans-serif;
+    min-width: 0;
+    flex-grow: 1;
+    width: 100%;
+    transition: all 0.3s ease;
 }
+
+#calendar tbody{
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#calendar thead{
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#calendar table{
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.fc .fc-scroller,
+.fc .fc-daygrid-body,
+.fc .fc-daygrid-body-natural {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 
 .fc-toolbar-title {
     font-size: 1.8rem;
@@ -81,19 +102,19 @@
 .booking-event.airbnb {
     background: #ff5a5f !important;
     color: white !important;
-  }
-  
-  .booking-event.bookingcom {
+}
+
+.booking-event.bookingcom {
     background: #003580 !important;
     color: white !important;
-  }
-  
-  .booking-event.internal {
+}
+
+.booking-event.internal {
     background: #2d3748 !important;
     color: white !important;
-  }
+}
 
-  .tippy-box[data-theme~='light-border'] {
+.tippy-box[data-theme~='light-border'] {
     border: 1px solid #ddd;
     font-size: 0.85rem;
     background: #fff;
@@ -101,4 +122,107 @@
     padding: 8px 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     border-radius: 6px;
+}
+
+.calendar-wrapper {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+    justify-content: space-between;
+}
+
+
+.calendar-wrapper.with-panel #calendar {
+    max-width: calc(100% - 300px);
+    flex: 1;
+    transition: all 0.2s ease-in-out;
+}
+
+
+.calendar-wrapper:not(.with-panel) #calendar {
+    max-width: 100%;
   }
+
+.price-panel {
+    width: 300px;
+    flex-shrink: 0;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
+    z-index: 900;
+}
+
+.price-panel input{
+    max-width: 100px;
+}  
+
+.price-panel.hidden {
+    display: none;
+}
+
+/* Container to hold the details */
+.price-details-container {
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Header for the details section */
+.price-details-container h3 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Unordered list for the price details */
+.price-details-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#guest-count {
+    padding: 5px;  /* Add some padding for better appearance */
+    font-size: 0.6em;  /* Ensure the font size matches the rest of the content */
+    border: 1px solid #ccc;  /* Border similar to the other elements */
+    border-radius: 4px;  /* Rounded corners for a clean look */
+    text-align: center;  /* Center the value within the input box */
+    max-width: 40px;
+}
+
+/* To align the label and input correctly in the container */
+.price-details-container label {
+    display: inline-block;  /* Make sure the label and input are aligned */
+    margin-right: 10px;  /* Space between label and input */
+    font-size: 0.6em;  /* Ensure the font size matches the rest of the content */
+}
+
+.price-details-container .price-breakdown-item input {
+    width: 100px;  /* Set width for consistency */
+    padding: 5px;  /* Add some padding for better look */
+    font-size: 1em;  /* Match the font size with other elements */
+    text-align: center;  /* Center the text inside the input */
+    border: 1px solid #ccc;  /* Border similar to other input elements */
+    border-radius: 4px;  /* Rounded corners */
+}
+
+/* Style for headers in each price breakdown */
+.price-breakdown-item strong {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style for price values */
+.price-breakdown-item {
+    font-size: 0.65em;
+    color: #555;
+}
+
+/* Add a light hover effect on the breakdown items */
+.price-breakdown-item:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}

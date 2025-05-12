@@ -3,8 +3,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #2b7cff;
-    color: white;
+    background: #faf8f0;
+    color: #333333;
     padding: 15px 40px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: sticky;
@@ -47,7 +47,7 @@
 }
 
 .navbar .nav-links a {
-    color: white;
+    color: #5f4b3e;
     text-decoration: none;
     font-weight: 500;
     margin-left: 10px;
@@ -157,7 +157,7 @@
 }
 
 .lang-form button.active {
-    box-shadow: 0 0 0 2px #2b7cff;
+    box-shadow: 0 0 0 2px #2b3d55;
     transform: scale(1.1);
 }
 

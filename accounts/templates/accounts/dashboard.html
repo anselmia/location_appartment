@@ -10,9 +10,8 @@
         <!-- Profile -->
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header text-white">
                     <h5 class="card-title">👤 Mon Profil</h5>
-                    <p class="text-muted mb-3">Gérez vos informations personnelles</p>
                 </div>
                 <div class="card-body">
                     <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
@@ -72,7 +71,7 @@
         <!-- Réservations -->
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
+                <div class="card-header text-white">
                     Mes Réservations
                 </div>
                 <div class="card-body">
@@ -83,6 +82,8 @@
                                     <div>
                                         <strong>{{ r.logement.name }}</strong><br>
                                         Du {{ r.start|date:"d/m/Y" }} au {{ r.end|date:"d/m/Y" }}
+                                        <span><strong>{{ r.guest }} Voyageur(s)</strong></span><br>  <!-- Display number of guests -->
+                                        <span><strong>{{ r.price|floatformat:2 }} €</strong></span>  <!-- Display price -->
                                     </div>
                                     
                                     <div class="text-end">
@@ -111,10 +112,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-</script>
-<script src="{% static 'logement/js/carousel3d.js' %}"></script>
 {% endblock %}

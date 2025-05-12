@@ -1,0 +1,97 @@
+.discounts-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .discounts-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1a202c;
+  }
+  
+  .discount-form {
+    background-color: #f9fafb;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  }
+  
+  .discount-form .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #4a5568;
+  }
+  
+  .discount-form .form-control,
+  .discount-form .form-select {
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e0;
+  }
+  
+  .discount-form .form-control:focus,
+  .discount-form .form-select:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+  }
+  
+  .discount-form .btn-primary {
+    background-color: #2563eb;
+    border: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+  }
+  
+  .discount-form .btn-primary:hover {
+    background-color: #1e40af;
+  }
+  
+  .discount-list .empty {
+    color: #a0aec0;
+    font-style: italic;
+  }
+
+  .discount-list .list-group-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background-color: #fefefe;
+  }
+  
+  .discount-list select,
+  .discount-list input {
+    min-width: 120px;
+  }
+  
+  .discount-list .btn {
+    white-space: nowrap;
+  }
+  
+  .discount-list form .form-control,
+  .discount-list form .form-select,
+  .discount-list form .input-group-text {
+    min-height: 34px;
+  }
+  
+  .discount-list form .btn-sm {
+    padding: 4px 10px;
+    font-size: 0.875rem;
+  }
+  
+  .optional-field {
+    display: none;
+  }
+  
+  .discounts-container input[type="text"],
+  .discounts-container select,
+  .discounts-container textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 0.875rem !important;
+  }

@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .forms import ReservationForm
-from .models import Logement, Reservation, airbnb_booking, booking_booking
+from .models import Logement, Reservation, airbnb_booking, booking_booking, Price
 
 
 # Set up Stripe with the secret key
