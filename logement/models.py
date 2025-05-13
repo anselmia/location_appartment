@@ -54,7 +54,9 @@ class Discount(models.Model):
     logement = models.ForeignKey(
         Logement, on_delete=models.CASCADE, related_name="discounts"
     )
-    discount_type = models.ForeignKey(DiscountType, on_delete=models.CASCADE, null=True, blank=True)
+    discount_type = models.ForeignKey(
+        DiscountType, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     value = models.DecimalField(max_digits=5, decimal_places=2)
 
@@ -65,8 +67,8 @@ class Discount(models.Model):
     end_date = models.DateField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('logement', 'discount_type')
-        
+        unique_together = ("logement", "discount_type")
+
     def __str__(self):
         return f"{self.discount_type.name} — {self.value} %"
 
@@ -158,6 +160,7 @@ class Reservation(models.Model):
     guest = models.IntegerField()
     date_reservation = models.DateTimeField(auto_now_add=True)
     price = models.FloatField()
+    tax = models.FloatField(default=0)
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"

@@ -28,7 +28,10 @@
     margin: 0 auto; /* center the calendar block if not already centered */
     max-width: 100%;
     font-size: 1.1em;
+    overflow-x: auto;
+    box-sizing: border-box;
 }
+
 
 .calendar-box input,
 .calendar-box button {
@@ -158,7 +161,15 @@
         border-radius: 16px;
         background: #fff;
         box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-        padding: 20px;
+        width: 100%;
+        max-width: 100%; /* Ensure it doesn't overflow */
+        overflow-x: auto;
+        padding: 10px;
+    }
+
+    #calendar_inline {
+        max-width: 100%;
+        overflow-x: auto;
     }
 
     .calendar-box h3 {
@@ -183,4 +194,102 @@
         text-align: left;
     }
 
+    .flatpickr-calendar {
+        max-width: 100% !important;
+        width: 100% !important;
+        font-size: 0.9rem; /* Smaller font for mobile */
+    }
+
+    .flatpickr-weekdaycontainer {
+        display: grid !important;
+        grid-template-columns: repeat(7, 1fr);
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .flatpickr-weekdays {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .flatpickr-weekday {
+        margin: 0 !important;
+        padding: 0.5rem 0 !important;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .flatpickr-calendar.inline {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
+    .flatpickr-days {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        padding: 0;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        gap: 0;
+      }
+      
+      .flatpickr-day {
+        display: flex !important;             /* make span a flex container */
+        justify-content: center !important;   /* center horizontally */
+        align-items: center !important;       /* center vertically */
+        
+        width: 100% !important;
+        height: 3rem;                         /* or adjust to your design */
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .flatpickr-weekdays {
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .flatpickr-months {
+        align-items: center;
+    }
+
+    .flatpickr-monthDropdown-months {
+        width: 100%;
+    }
+
+    .numInputWrapper {
+        width: auto;
+    }
+
+    .flatpickr-innerContainer{
+        width: 100% !important;
+        max-width: 100%;
+        display: block !important;
+        overflow: auto;
+    }
+
+    .flatpickr-rContainer
+    {
+        width: 100% !important;
+        max-width: 100%;
+    }
+
+    .dayContainer {
+        display: grid !important;
+        grid-template-columns: repeat(7, 1fr); /* force 7 columns */
+        gap: 0 !important;                     /* remove spacing */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-width: 100px !important;
+    }
 }
+

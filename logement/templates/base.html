@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/footer.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
@@ -30,6 +31,7 @@
     <link rel="stylesheet" href="{% static 'administration/css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/calendar.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/discounts.css' %}">
+    <link rel="stylesheet" href="{% static 'administration/css/revenu.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/cgu.css' %}">   
@@ -105,6 +107,7 @@
                                 <a href="{% url 'administration:dashboard' %}">{% trans "Tableau de bord" %}</a>
                                 <a href="{% url 'administration:calendar' %}">{% trans "Calendrier" %}</a>
                                 <a href="{% url 'administration:manage_discounts' %}">{% trans "Réductions" %}</a>
+                                <a href="{% url 'administration:revenu' 1 %}">{% trans "Revenus" %}</a>
                             </div>
                         </div>
                         <a href="{% url 'administration:traffic' %}">Traffic</a>
@@ -158,6 +161,11 @@
             </script>
         {% endif %}
 
+        <div id="economy-loader" style="display:none;">
+            <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+            Chargement...
+        </div>
+
         {% block content %}{% endblock %}
     </div>
 
@@ -165,8 +173,11 @@
 
     <footer class="site-footer">
         <div class="footer-content">
-            <p>&copy; {{ current_year }} Valrose. {% trans "Tous droits réservés." %}</p>
-            <div class="footer-links">
+            <div class="footer-section">
+                <p>&copy; {{ current_year }} Valrose. {% trans "Tous droits réservés." %}</p>
+            </div>
+    
+            <div class="footer-section footer-links">
                 <a href="{% url 'accounts:contact' %}">
                     <i class="fas fa-envelope"></i> {% trans "Contact" %}
                 </a> |
@@ -174,11 +185,12 @@
                     <i class="fas fa-file-alt"></i> {% trans "Mentions légales" %}
                 </a>
             </div>
-            <div class="nav-logos">
-                <a href="https://www.airbnb.fr/rooms/48121442?guests=1&adults=1&s=67&unique_share_id=9aed57ba-2770-43e8-9412-4945aef18a18" target="_blank" rel="noopener">
+    
+            <div class="footer-section nav-logos">
+                <a href="https://www.airbnb.fr/..." target="_blank" rel="noopener">
                     <img src="{% static 'logement/img/airbnb-logo.svg' %}" alt="Airbnb" class="nav-logo">
                 </a>
-                <a href="https://www.booking.com/Share-vmmyTIy" target="_blank" rel="noopener">
+                <a href="https://www.booking.com/..." target="_blank" rel="noopener">
                     <img src="{% static 'logement/img/booking-logo.svg' %}" alt="Booking.com" class="nav-logo">
                 </a>
             </div>
@@ -186,5 +198,6 @@
     </footer>
 
     <script src="{% static 'logement/js/nav.js' %}"></script>
+    <script src="{% static 'logement/js/global.js' %}"></script>
 </body>
 </html>

@@ -26,6 +26,8 @@ from .serializers import DailyPriceSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from calendar import month_name
 
 
 def is_admin(user):
@@ -551,4 +553,62 @@ def manage_discounts(request):
             "discount_types": discount_types,
             "form": empty_form,
         },
+    )
+
+
+def economie_view(request, logement_id):
+    current_year = datetime.now().year
+    years = list(
+        Reservation.objects.filter(logement_id=logement_id)
+        .dates("start", "year")
+        .values_list("start__year", flat=True)
+        .distinct()
+    ) or [current_year]
+
+    return render(
+        request,
+        "administration/revenu.html",
+        {
+            "logement": logement_id,
+            "years": years,
+        },
+    )
+
+
+def api_economie_data(request, logement_id):
+    year = int(request.GET.get("year", datetime.now().year))
+    month = request.GET.get("month", "all")
+
+    qs = Reservation.objects.filter(logement_id=logement_id, start__year=year)
+    if month != "all":
+        qs = qs.filter(start__month=int(month))
+
+    # Calcul brut
+    total_revenue = qs.aggregate(total=Sum("price"))["total"] or 0
+    total_taxes = qs.aggregate(taxes=Sum("tax"))["taxes"] or 0
+    net_profit = total_revenue - total_taxes
+
+    # Graph par mois
+    monthly_data = (
+        qs.annotate(month=F("start__month"))
+        .values("month")
+        .annotate(monthly_total=Sum("price"))
+        .order_by("month")
+    )
+
+    labels = []
+    values = []
+    for m in range(1, 13):
+        labels.append(month_name[m][:3])
+        month_entry = next((x for x in monthly_data if x["month"] == m), None)
+        values.append(float(month_entry["monthly_total"]) if month_entry else 0)
+
+    return JsonResponse(
+        {
+            "total_revenue": total_revenue,
+            "total_taxes": total_taxes,
+            "net_profit": net_profit,
+            "chart_labels": labels,
+            "chart_values": values,
+        }
     )

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% load extra_tags %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">📈 Vue Économique du Logement</h2>
+
+  <!-- Filters -->
+  <div class="card shadow-sm mb-4">
+        <div class="card-body row align-items-end">
+        <div class="col-md-6">
+            <label for="year-select">Année :</label>
+            <select id="year-select" class="form-control">
+            {% for y in years %}
+                <option value="{{ y }}">{{ y }}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+                <label for="month-select">Mois :</label>
+                <select id="month-select" class="form-control">
+                    <option value="all">Tous les mois</option>
+                    {% for month in 1|to_month_range %}
+                        <option value="{{ month }}">{{ month|get_month_name }}</option>
+                    {% endfor %}
+                </select>
+        </div>
+        </div>
+  </div>
+
+  <!-- Economic Summary -->
+  <div class="card shadow-lg mb-4">
+    <div class="card-body">
+        <h4 class="mb-3">Résumé Économique</h4>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h5>Total Revenus</h5>
+                <p class="text-success display-6" id="total-revenue">€0.00</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Taxes Collectées</h5>
+                <p class="text-danger display-6" id="total-taxes">€0.00</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Bénéfice Net</h5>
+                <p class="text-primary display-6" id="net-profit">€0.00</p>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="economy-error" class="alert alert-danger" style="display:none;"></div>
+
+  <!-- Monthly Chart -->
+  <div class="card shadow-lg">
+        <div class="card-body">
+            <h5>Graphique des Revenus Mensuels</h5>
+            <canvas id="economy-chart" height="100"></canvas>
+        </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const logementId = {{ logement }};  
+</script>
+<script src="{% static 'administration/js/revenu.js' %}"></script>
+{% endblock %}

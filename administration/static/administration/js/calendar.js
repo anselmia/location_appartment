@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
       if (info.event.classNames.includes('booking-event')) {
-        let content = `<span>${info.event.title}</span>`;
+        let content = `<span class="booking-span">${info.event.title}</span>`;
 
         if (info.event.extendedProps.avatar) {
           content = `<img src="${info.event.extendedProps.avatar}" alt="avatar" style="width:22px;height:22px;border-radius:50%;margin-right:6px;"> ${content}`;

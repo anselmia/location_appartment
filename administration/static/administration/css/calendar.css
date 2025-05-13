@@ -78,6 +78,9 @@
     color: #2d3748;
     margin-top: 4px;
     margin-left: 4px;
+    display: flex;
+    justify-content: center;  /* centre horizontalement */
+    align-items: center;      /* centre verticalement */
 }
 
 /* Booking event block */
@@ -225,4 +228,20 @@
 .price-breakdown-item:hover {
     background-color: #f1f1f1;
     cursor: pointer;
+}
+
+.fc-day-past {
+    background-color: #f0f0f0 !important;
+    opacity: 0.6;
+    pointer-events: none; /* (optionnel) empêche l'interaction */
+}
+
+@media screen and (max-width: 900px) {
+    .fc-event-price {
+        font-size: 0.6rem;
+    }
+
+    .booking-span {
+        font-size: 0.6rem;
+    }
 }

@@ -6,7 +6,7 @@ from .views import DailyPriceViewSet
 app_name = "administration"
 
 router = DefaultRouter()
-router.register(r'prices', DailyPriceViewSet, basename='price')
+router.register(r"prices", DailyPriceViewSet, basename="price")
 
 urlpatterns = [
     path("", views.admin_dashboard, name="dashboard"),
@@ -37,6 +37,8 @@ urlpatterns = [
         views.manage_discounts,
         name="manage_discounts",
     ),
+    path("revenu/<int:logement_id>/", views.economie_view, name="revenu"),
+    path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
 ]
 
 urlpatterns += router.urls
