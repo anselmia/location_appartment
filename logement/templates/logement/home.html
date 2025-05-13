@@ -63,24 +63,19 @@
             </div>
         </div>
 
-        <div class="calendar-box">
+        <div class="calendar-box mt-4">
             <h3>{% trans "Disponibilités" %}</h3>
-            <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
-                {% csrf_token %}
-                <input type="hidden" id="calendar_range" name="date_range" required>
-                <input type="hidden" id="id_start" name="start" required>
-                <input type="hidden" id="id_end" name="end" required>
+            <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get"></form>
                 <div id="calendar_inline"></div>
-                <button type="submit">{% trans "Réserver" %}</button>
+                <button type="submit">{% trans "Réserver" %}</button>                
             </form>
 
             <div class="legend">
-                <span class="dot booked"></span> Réservé
-                <span class="dot today"></span> Aujourd’hui
-                <span class="dot free"></span> Disponible
+                <div class="legend-item"><span class="dot booked"></span> Réservé</div>
+                <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
+                <div class="legend-item"><span class="dot free"></span> Disponible</div>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -183,7 +178,8 @@
     const reservedDates = {{ reserved_dates_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
     const logementId = {{ logement.id }};    
+    const allPhotoUrls = {{ photo_urls|safe }};
 </script>
-<script src="{% static 'logement/js/home.js' %}"></script>
+<script src="{% static 'logement/js/image-galery.js' %}"></script>
 <script src="{% static 'logement/js/calendar.js' %}"></script>
 {% endblock %}

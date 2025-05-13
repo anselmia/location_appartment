@@ -1,30 +1,10 @@
+let isReservationValid = false;
+
 document.addEventListener('DOMContentLoaded', function () {
     const formStart = document.getElementById('id_start');
     const formEnd = document.getElementById('id_end');
     const formGuest = document.getElementById('id_guest');
-
-    const pricePerNightElement = document.getElementById('price-per-night');
-    const totalNightsElement = document.getElementById('total-nights');
-    const cleaningFeeElement = document.getElementById('cleaning-fee');
-    const touristTaxElement = document.getElementById('tourist-tax');
-    const totalElement = document.getElementById('total-price');
-
-    const cleaningFee = parseFloat(logement_js.cleaning_fee);
-    const touristTax = parseFloat(logement_js.tax);
-    const extraGuestFee = parseFloat(logement_js.fee_per_extra_traveler);
-    const nominalTraveler = parseInt(logement_js.nominal_traveler);
     const logementId = logement_js.id; // Get the logement ID from Django context
-
-    function openModal(index) {
-        // Set active photo in modal to the clicked one
-        let carouselItems = document.querySelectorAll('#carouselImages .carousel-item');
-        carouselItems.forEach((item, idx) => {
-            item.classList.remove('active');
-            if (idx === index) {
-                item.classList.add('active');
-            }
-        });
-    }
 
     // Function to check if the dates are already booked
     function isDateBooked(startDate, endDate) {
@@ -38,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.available) {
                         resolve(true);
                     } else {
-                        reject('The selected dates are already booked');
+                        reject('Les dates sont déjà réservées. Veuillez sélectionner de nouvelles dates.');
                     }
                 })
                 .catch(err => reject('Error checking availability'));
@@ -46,19 +26,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateFinalPrice() {
+        const startDateStr = formStart.value;
+        const endDateStr = formEnd.value;
         // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
-        const startDate = new Date(formStart.value);
-        const endDate = new Date(formEnd.value);
-        const guestCount = formGuest.value;
+        const guestCount = parseInt(formGuest.value, 10) || 1;
 
-        // Safety checks
-        if (!startDate || !endDate || startDate >= endDate || startDate.toISOString().split('T')[0] === endDate.toISOString().split('T')[0]) {
-            alert("Please select valid start and end dates.");
+        if (!startDateStr || !endDateStr) {
             return;
         }
 
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        // Vérifie si les dates sont valides
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            alert("❌ Les dates sélectionnées ne sont pas valides.");
+            isReservationValid = false;
+            return;
+        }
+
+        // Vérifie l'ordre chronologique
+        if (startDate >= endDate) {
+            alert("❌ La date de fin doit être après la date de début.");
+            formStart.value = "";
+            formEnd.value = "";
+            isReservationValid = false;
+            return;
+        }
+
+        // Vérifie que ce ne soit pas le même jour
+        if (startDate.toDateString() === endDate.toDateString()) {
+            alert("❌ La date de début et la date de fin ne peuvent pas être identiques.");
+            formStart.value = "";
+            formEnd.value = "";
+            isReservationValid = false;
+            return;
+        }
+
+
         if (!guestCount || guestCount <= 0) {
             alert("Please enter a valid number of guests.");
+            formGuest.value = 1;
             return;
         }
 
@@ -82,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Update the final price in the UI
                         document.getElementById('final-price').innerText = finalPrice.toFixed(2);
+                        document.getElementById('reservation-price').value = finalPrice.toFixed(2); 
 
                         // Display detailed breakdown in a list
                         const detailsContainer = document.getElementById('details');
@@ -105,12 +114,18 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Append the list item to the list
                             detailsContainer.appendChild(listItem);
                         }
+
+                        isReservationValid = true;
                     })
                     .catch(error => {
                         console.error('Error fetching price calculation:', error);
+                        isReservationValid = false;
                     });
             })
-            .catch(error => alert(error)); // Show alert if dates are already booked
+            .catch(error => {
+                alert(error);
+                isReservationValid = false;
+            });
     }
 
     // Trigger calculation when parameters are valid on page load
@@ -118,42 +133,33 @@ document.addEventListener('DOMContentLoaded', function () {
         updateFinalPrice();
     }
 
+    document.getElementById("reservation-form").addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevent default immediately
+        updateFinalPrice(); // run validation one last time
+
+        // Delay a little to wait for async availability check
+        setTimeout(() => {
+            if (isReservationValid) {
+                e.target.submit();
+            }
+        }, 200); // adjust if needed
+    });
+
+    function debounce(fn, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+    
+    const debouncedUpdatePrice = debounce(updateFinalPrice, 300);
     // Recalculate the price on input change
+
     formStart.addEventListener('change', updateFinalPrice);
     formEnd.addEventListener('change', updateFinalPrice);
     formGuest.addEventListener('change', updateFinalPrice);
-
-    // Function to open modal with selected image
-    function openModal(index) {
-        // Get all the carousel items in the modal
-        const carouselItems = document.querySelectorAll('#carouselImages .carousel-item');
-
-        // Remove the active class from all images
-        carouselItems.forEach((item, idx) => {
-            item.classList.remove('active');
-            // Add the active class to the selected image based on the index
-            if (idx === index) {
-                item.classList.add('active');
-            }
-        });
-    }
-
-    // Adding click event listeners to small images to open modal
-    const smallImages = document.querySelectorAll('.carousel-small-images .carousel-item-img img');
-    smallImages.forEach((img, index) => {
-        img.addEventListener('click', function () {
-            openModal(index);
-            // Manually trigger the modal to open
-            $('#photoModal').modal('show');
-        });
-    });
-
-    // Optional: Listen for clicks on the modal's controls (prev/next)
-    $('#photoModal').on('hidden.bs.modal', function () {
-        // Reset the carousel to the first item when the modal is closed
-        $('#modalCarousel').carousel(0);
-    });
+    formGuest.addEventListener('input', debouncedUpdatePrice); // fires on each keystroke
 
     const stripe = Stripe(stripe_public_key);
-
 });

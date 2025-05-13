@@ -1,0 +1,186 @@
+/* ==== Calendar === */
+.calendar-box {
+    display: flex;
+    background: linear-gradient(to bottom, #ffffff, #e8f0ff);
+    align-items: center; /* horizontally center all child elements */
+    justify-content: center; /* vertically center if needed */
+    text-align: center; /* center text content inside */
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    max-width: 500px;
+    font-size: 1.1rem;
+}
+
+.calendar-box h3 {
+    text-align: center;
+    display: flex;
+    margin-top: 0;
+    color: #555555;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    justify-content: center; 
+}
+
+#calendar_inline {
+    display: block;
+    margin: 0 auto; /* center the calendar block if not already centered */
+    max-width: 100%;
+    font-size: 1.1em;
+}
+
+.calendar-box input,
+.calendar-box button {
+    font-size: 1.1rem;
+}
+
+.calendar-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.calendar-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  /* Center contents */
+    width: 100%;
+}
+
+.calendar-box button {
+    background: #555555;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    text-align: left;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend .dot {
+    width: 10px;
+    height: 10px;    
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.calendar-box button:hover {
+    background: #1a5fd1;
+}
+
+.booked-day {
+    background-color: #ffd6d6 !important;
+    color: #999 !important;
+    border-radius: 50%;
+}
+
+.free-day {
+    background-color: #d8f5d1 !important;
+    border-radius: 50%;
+}
+
+.today-day {
+    background-color: #cce7ff !important;
+    border-radius: 50%;
+    border: 2px solid #2b3d55;
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.booked { background-color: #ffd6d6; }
+.today  { background-color: #cce7ff; }
+.free   { background-color: #d8f5d1; }
+
+.legend {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #555;
+    display: flex;                 /* Enable flexbox layout */
+    justify-content: center; /* Distribute items */
+    gap: 10px;                     /* Optional: extra spacing */
+    flex-wrap: wrap;              /* Allow wrapping if needed */
+}
+
+.legend .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.legend .booked {
+    background-color: #ffd6d6;
+}
+
+.legend .today {
+    background-color: #cce7ff;
+}
+
+.legend .free {
+    background-color: #d8f5d1;
+}
+
+@media screen and (max-width: 900px) {
+    .calendar-box {
+        width: 100%;
+    }
+
+    .calendar-box {
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        padding: 20px;
+    }
+
+    .calendar-box h3 {
+        margin-top: 0;
+        color: #2b3d55;
+        font-size: 1.4em;
+        margin-bottom: 15px;
+        text-align: center; /* Add this */
+        justify-content: center; 
+        display: flex;
+    }
+
+    .calendar-box button {
+        font-size: 1em;
+        padding: 10px;
+        max-width: 100%; /* Remove max-width if you want it to fully fill on mobile */
+    }
+
+    .legend {
+        flex-direction: column;
+        align-items: flex-start; /* Or center */
+        text-align: left;
+    }
+
+}

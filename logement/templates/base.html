@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/nav.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/add_logement.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/edit_logement.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/traffic.css' %}">
@@ -83,7 +85,8 @@
 </head>
 <body class="page-wrapper">
     <header class="navbar">
-        <div class="logo">🏡 Location Nice, Valrose</div>
+
+        <div class="logo"><a href="/">{% trans "🏡 Location Nice, Valrose" %}</a></div>
         <nav>
         
             <!-- Hamburger Icon -->

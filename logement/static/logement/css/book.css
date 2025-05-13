@@ -6,7 +6,14 @@
     padding: 30px;
 }
 
+#reservation-form .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
 #reservation-form {
+    margin-top: 15px;
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
@@ -116,99 +123,3 @@
     transform: scale(1.05);
 }
 
-/* Main Image and Gallery Styles */
-#image-gallery {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ==== MAIN IMAGE === */
-.carousel-wrapper-book {
-    display: flex;
-    gap: 20px;  /* Space between main and small images */
-    justify-content: space-between;
-    align-items: stretch;
-    margin: auto;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    background: linear-gradient(to bottom, #ffffff, #e8f0ff);
-    height: 300px;
-}
-
-/* Main Image */
-.carousel-large-image {
-    flex: 1 1 50%; /* Take 50% of the width */
-    max-width: 50%;
-    padding: 5px;
-    box-sizing: border-box;
-}
-.carousel-large-image img:hover {
-    transform: scale(1.05);
-}
-
-.carousel-large-image img {
-    width: 100%;
-    border-radius: 8px;
-    object-fit: cover;  /* Ensure the image fills the container while maintaining its aspect ratio */
-    border: 1px solid #b0b0b0;             /* Soft grey border (3D effect) */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(176, 176, 176, 0.4); /* 3D grey shadow */
-    max-block-size: -webkit-fill-available;
-}
-
-.carousel-small-images {
-    display: grid;                /* Use Grid Layout */
-    grid-template-columns: repeat(2, 50%); /* Two columns, each taking 50% of the width */
-    grid-template-rows: repeat(2, 50%); /* Two rows, each taking 50% of the height */
-    gap: 5px;                    /* Space between images */
-    width: 50%;                  /* Full width of the parent container */
-    height: 100%;                 /* Full height of the parent container */
-}
-
-.carousel-item-img {
-    flex: 1 1 48%;  /* Each image takes up 48% of the available width, two per row */
-    position: relative;
-    overflow: hidden;
-}
-
-.smaller-photo img {
-    width: 100%;                           /* Make the image take up the full width */
-    height: 100%;                          /* Make the image take up the full height */
-    border-radius: 8px;                    /* Rounded corners */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);  /* 3D shadow effect */
-    transition: transform 0.3s ease;       /* Smooth transition for transform */
-    object-fit: contain;                   /* Maintain aspect ratio while filling the space */
-    background-color: white;               /* Set unused space to white */
-    display: block;                        /* Ensure the image is displayed as a block element */
-    margin: 0 auto;                        /* Center the image horizontally */
-    position: relative;                    /* Make sure the shadow applies properly */
-    border: 1px solid #b0b0b0;             /* Soft grey border (3D effect) */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(176, 176, 176, 0.4); /* 3D grey shadow */
-}
-
-/* Optional: Add a hover effect to give it a little 'pop' */
-.smaller-photo img:hover {
-    transform: scale(1.05);                /* Slight zoom-in effect on hover */
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(176, 176, 176, 0.6); /* Stronger 3D grey shadow on hover */
-}
-
-/* Adjust modal image size */
-#photoModal .modal-body img {
-    width: 80vw;          /* 80% of the viewport width */
-    height: 80vh;         /* 80% of the viewport height */
-    object-fit: contain;  /* Maintain aspect ratio while fitting the image */
-    margin: 0 auto;       /* Center the image horizontally */
-    display: block;       /* Ensure the image behaves as a block element */
-}
-
-.carousel-control-prev .fas, .carousel-control-next .fas {
-    color: black;                 /* Set the arrow icons to black */
-    font-size: 40px;              /* Adjust the size of the arrows */
-}
-
-/* Optional: Add hover effect for arrows */
-.carousel-control-prev:hover .fas, .carousel-control-next:hover .fas {
-    transform: scale(1.05);
-}

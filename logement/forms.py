@@ -25,10 +25,16 @@ class ReservationForm(forms.Form):
     class Meta:
         widgets = {
             "start": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}  # Ensures date input widget
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }  # Ensures date input widget
             ),
             "end": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}  # Ensures date input widget
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }  # Ensures date input widget
             ),
         }
 
@@ -47,12 +53,9 @@ class ReservationForm(forms.Form):
         ] = max_guests  # Set the 'max' attribute in the widget
 
         # Initialize start and end date fields if values are provided
-        if start_date:
-            self.fields["start"].initial = start_date
-        if end_date:
-            self.fields["end"].initial = end_date
-        if guest:
-            self.fields["guest"].initial = guest
+        self.fields["start"].initial = start_date or ""
+        self.fields["end"].initial = end_date or ""
+        self.fields["guest"].initial = guest or 1
 
     def clean_guest(self):
         guest = self.cleaned_data.get("guest")
