@@ -101,7 +101,7 @@ class Room(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name} - {self.image.name}"
+        return f"{self.name} - {self.logement.name}"
 
 
 class Photo(models.Model):

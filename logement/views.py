@@ -75,6 +75,35 @@ def book(request, logement_id):
     logement = Logement.objects.prefetch_related("photos").first()
     # Create form and pass the user and the dates in the form initialization
 
+    # Fetch reserved dates for that logement
+    reserved_dates = set()
+    if logement:
+        # Get today's date
+        today = date.today()
+
+        reservations = Reservation.objects.filter(logement=logement, end__gte=today)
+        reservations_airbnb = airbnb_booking.objects.filter(
+            logement=logement, end__gte=today
+        )
+        reservations_booking = booking_booking.objects.filter(
+            logement=logement, end__gte=today
+        )
+        for r in reservations:
+            current = r.start
+            while current < r.end:
+                reserved_dates.add(current.isoformat())
+                current += timedelta(days=1)
+        for r in reservations_airbnb:
+            current = r.start
+            while current < r.end:
+                reserved_dates.add(current.isoformat())
+                current += timedelta(days=1)
+        for r in reservations_booking:
+            current = r.start
+            while current < r.end:
+                reserved_dates.add(current.isoformat())
+                current += timedelta(days=1)
+
     logement_data = {
         "id": logement.id,
         "name": logement.name,
@@ -167,6 +196,7 @@ def book(request, logement_id):
             "photos": list(logement.photos.all()),
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,  # Pass the public key to the template
             "reservation_id": reservation_id,
+            "reserved_dates_json": json.dumps(sorted(reserved_dates)),
         },
     )
 

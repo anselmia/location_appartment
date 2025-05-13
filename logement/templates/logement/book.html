@@ -53,96 +53,106 @@
             </div>
         </div>
 
-        <div class="row justify-content-center mt-5">
-            <!-- Left Side: Reservation Form -->
-            <div class="col-md-5">
-                <div class="card shadow-lg rounded-lg" id="reservation-form-card">
-                    <div class="card-body">
-                        <h2 class="text-center mb-4">{{ logement.name }}</h2>
-    
-                        <form method="post" id="reservation-form">
-                            {% csrf_token %}
-                            
-                            <!-- Display errors if the form is invalid -->
-                            {% if form.errors %}
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        {% for field in form %}
-                                            {% for error in field.errors %}
+        <form method="post" id="reservation-form">
+            <div class="row justify-content-center mt-5">
+                <!-- Left Side: Reservation Form -->
+                <div class="col-md-5">
+                    <div class="card shadow-lg rounded-lg" id="reservation-form-card">
+                        <div class="card-body">
+                            <h2 class="text-center mb-4">{{ logement.name }}</h2>    
+                        
+                                {% csrf_token %}
+                                
+                                <!-- Display errors if the form is invalid -->
+                                {% if form.errors %}
+                                    <div class="alert alert-danger">
+                                        <ul>
+                                            {% for field in form %}
+                                                {% for error in field.errors %}
+                                                    <li>{{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            {% for error in form.non_field_errors %}
                                                 <li>{{ error }}</li>
                                             {% endfor %}
-                                        {% endfor %}
-                                        {% for error in form.non_field_errors %}
-                                            <li>{{ error }}</li>
-                                        {% endfor %}
-                                    </ul>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                <h3 class="text-center mb-4">Informations sur le séjour</h3>
+
+                                <div class="form-group">
+                                    <label for="id_guest">Voyageurs</label>
+                                    {{ form.guest }}
                                 </div>
-                            {% endif %}
+        
+                                <div class="form-group">
+                                    <label for="id_start">Date de début</label>
+                                    {{ form.start }}
+                                </div>
+        
+                                <div class="form-group">
+                                    <label for="id_end">Date de fin</label>
+                                    {{ form.end }}
+                                </div>
+
+                                <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
+                                <input type="hidden" id="reservation-price" name="reservation_price" value="0">
+                                <div id="payment-checkout-url" data-url="{% url 'logement:create_checkout_session' %}"></div>                            
                             
-                            <h3 class="text-center mb-4">Informations sur le séjour</h3>
-
-                            <div class="form-group">
-                                <label for="id_guest">Voyageurs</label>
-                                {{ form.guest }}
-                            </div>
-    
-                            <div class="form-group">
-                                <label for="id_start">Date de début</label>
-                                {{ form.start }}
-                            </div>
-    
-                            <div class="form-group">
-                                <label for="id_end">Date de fin</label>
-                                {{ form.end }}
-                            </div>
-
-                            <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
-                            <input type="hidden" id="reservation-price" name="reservation_price" value="0">
-                            <div id="payment-checkout-url" data-url="{% url 'logement:create_checkout_session' %}"></div>
-
-
-                            <!-- Submit Button -->
-                            <div class="form-group text-center mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">Procéder au Paiement</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-    
-            <!-- Right Side: Reservation Summary -->
-            <div class="col-md-5">
-                <div class="card shadow-lg rounded-lg" id="reservation-summary-card">
-                    <div class="card-body">
-                        <h4 class="text-center mb-4">Résumé de la Réservation</h4>
-    
-                        <div>
-                            <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
-                            <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
-                            <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
-                            
-                            <hr>
-                            
-                            <div id="details">
-                                <!-- Dynamic content will be inserted here -->
-                              </div>
-                          
-                            <div>
-                              <strong>Prix Total : <span id="final-price">0</span> €</strong>
-                            </div>
-
-                            <hr>
-
-                            <h4 class="text-center mb-4">Informations du Voyageur</h4>
-                            
-                            <p><strong>Nom :</strong> <span>{{ user.last_name }}</span></p>
-                            <p><strong>Prénom :</strong> <span>{{ user.name }}</span></p>
-                            <p><strong>Email :</strong> <span>{{ user.email }}</span></p>
-                            <p><strong>Téléphone :</strong> <span>{{ user.phone }}</span></p>
                         </div>
                     </div>
                 </div>
-            </div>            
+        
+                <!-- Right Side: Reservation Summary -->
+                <div class="col-md-5">
+                    <div class="card shadow-lg rounded-lg" id="reservation-summary-card">
+                        <div class="card-body">
+                            <h4 class="text-center mb-4">Résumé de la Réservation</h4>
+        
+                            <div>
+                                <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
+                                <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
+                                <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
+                                
+                                <hr>
+
+                                <div id="details">
+                                    <!-- Dynamic content will be inserted here -->
+                                </div>
+                            
+                                <div>
+                                <strong>Prix Total : <span id="final-price">0</span> €</strong>
+                                </div>
+
+                                <hr>
+
+                                <h4 class="text-center mb-4">Informations du Voyageur</h4>
+                                
+                                <p><strong>Nom :</strong> <span>{{ user.last_name }}</span></p>
+                                <p><strong>Prénom :</strong> <span>{{ user.name }}</span></p>
+                                <p><strong>Email :</strong> <span>{{ user.email }}</span></p>
+                                <p><strong>Téléphone :</strong> <span>{{ user.phone }}</span></p>
+
+                                <!-- Submit Button -->
+                                <div class="form-group text-center mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg">Procéder au Paiement</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>            
+            </div>
+        </form>
+
+        <div class="calendar-box">
+            <h3>{% trans "Disponibilités" %}</h3>
+            <div id="calendar_inline"></div>
+            <div class="legend">
+                <span class="dot booked"></span> Réservé
+                <span class="dot today"></span> Aujourd’hui
+                <span class="dot free"></span> Disponible
+            </div>
         </div>
     </div>
 
@@ -184,18 +194,14 @@
 {% block extra_js %}
 <script>
     const logement_js = {{ logement|safe }};
+    const logementId = {{ logement.id }};  
     const csrfToken = "{{ csrf_token }}";
     const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
     const reservationId = {% if reservation_id %}{{ reservation_id|escapejs }}{% else %}null{% endif %};
-
+    const reservedDates = {{ reserved_dates_json|safe }};
+    const today = new Date().toISOString().slice(0, 10);
 </script>
 <script src="https://js.stripe.com/v3/"></script>
-<!-- Include jQuery from a CDN (or your own static file) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Include Bootstrap JS (if not already included) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
-
 <script src="{% static 'logement/js/booking.js' %}"></script>
+<script src="{% static 'logement/js/calendar.js' %}"></script>
 {% endblock %}
