@@ -6,6 +6,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
+    function resetReservation() {
+        formStart.value = '';
+        formEnd.value = '';
+    
+        document.getElementById('start-date').innerText = '';
+        document.getElementById('end-date').innerText = '';
+        document.getElementById('final-price').innerText = '0.00';
+        document.getElementById('reservation-price').value = '0.00';
+        document.getElementById('details').innerHTML = '';
+
+        // Disable submit button
+        document.getElementById('submit-booking').disabled = true;
+    
+        isReservationValid = false;
+    }
+
     // Function to check if the dates are already booked
     function isDateBooked(startDate, endDate) {
         const url = reservationId ?
@@ -18,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.available) {
                         resolve(true);
                     } else {
-                        reject('Les dates sont déjà réservées. Veuillez sélectionner de nouvelles dates.');
+                        alert('❌ Les dates sont déjà réservées. Veuillez sélectionner de nouvelles dates.');
+                        resetReservation();
                     }
                 })
                 .catch(err => reject('Error checking availability'));
@@ -41,25 +58,21 @@ document.addEventListener('DOMContentLoaded', function () {
         // Vérifie si les dates sont valides
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             alert("❌ Les dates sélectionnées ne sont pas valides.");
-            isReservationValid = false;
+            resetReservation();
             return;
         }
 
         // Vérifie l'ordre chronologique
         if (startDate >= endDate) {
             alert("❌ La date de fin doit être après la date de début.");
-            formStart.value = "";
-            formEnd.value = "";
-            isReservationValid = false;
+            resetReservation();
             return;
         }
 
         // Vérifie que ce ne soit pas le même jour
         if (startDate.toDateString() === endDate.toDateString()) {
             alert("❌ La date de début et la date de fin ne peuvent pas être identiques.");
-            formStart.value = "";
-            formEnd.value = "";
-            isReservationValid = false;
+            resetReservation();
             return;
         }
 
@@ -116,28 +129,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
 
                         isReservationValid = true;
+                        document.getElementById('submit-booking').disabled = false;
                     })
                     .catch(error => {
                         console.error('Error fetching price calculation:', error);
-                        isReservationValid = false;
+                        resetReservation();
                     });
-            })
-            .catch(error => {
-                isReservationValid = false;
-            })
-            .catch(error => {
-                isReservationValid = false;
-        
-                // ❌ Clear form inputs if dates are not available
-                formStart.value = '';
-                formEnd.value = '';
-        
-                // Optional: Clear summary display too
-                document.getElementById('start-date').innerText = '';
-                document.getElementById('end-date').innerText = '';
-                document.getElementById('final-price').innerText = '0.00';
-                document.getElementById('reservation-price').value = '0.00';
-                document.getElementById('details').innerHTML = '';
             });
     }
 
