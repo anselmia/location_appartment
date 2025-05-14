@@ -1,4 +1,6 @@
 let isReservationValid = false;
+let isStartDatePicked = false;
+let isEndDatePicked = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     const formStart = document.getElementById('id_start');
@@ -9,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function resetReservation() {
         formStart.value = '';
         formEnd.value = '';
-    
+
         document.getElementById('start-date').innerText = '';
         document.getElementById('end-date').innerText = '';
         document.getElementById('final-price').innerText = '0.00';
@@ -18,21 +20,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Disable submit button
         document.getElementById('submit-booking').disabled = true;
-    
+
         isReservationValid = false;
     }
 
     function datesReady() {
         const startDateStr = formStart.value;
         const endDateStr = formEnd.value;
-    
+
         if (!startDateStr || !endDateStr) return false;
-    
+
         const startDate = new Date(startDateStr);
         const endDate = new Date(endDateStr);
-    
+
         if (isNaN(startDate) || isNaN(endDate)) return false;
-    
+
         return true;
     }
 
@@ -57,6 +59,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateFinalPrice() {
+        if (!isStartDatePicked || !isEndDatePicked) {
+            isReservationValid = false;
+            document.getElementById('submit-booking').disabled = true;
+            return;
+        }
         // Wait until both date fields are filled and valid
         if (!datesReady()) {
             isReservationValid = false;
@@ -120,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Update the final price in the UI
                         document.getElementById('final-price').innerText = finalPrice.toFixed(2);
-                        document.getElementById('reservation-price').value = finalPrice.toFixed(2); 
+                        document.getElementById('reservation-price').value = finalPrice.toFixed(2);
 
                         // Display detailed breakdown in a list
                         const detailsContainer = document.getElementById('details');
@@ -174,19 +181,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function debounce(fn, delay) {
         let timeout;
-        return function(...args) {
+        return function (...args) {
             clearTimeout(timeout);
             timeout = setTimeout(() => fn.apply(this, args), delay);
         };
     }
-    
+
     const debouncedUpdatePrice = debounce(updateFinalPrice, 300);
     // Recalculate the price on input change
 
-    formStart.addEventListener('change', updateFinalPrice);
-    formEnd.addEventListener('change', updateFinalPrice);
+    formStart.addEventListener('change', function () {
+        isStartDatePicked = true;
+        updateFinalPrice();
+    });
+
+    formEnd.addEventListener('change', function () {
+        isEndDatePicked = true;
+        updateFinalPrice();
+    });
     formGuest.addEventListener('change', updateFinalPrice);
     formGuest.addEventListener('input', debouncedUpdatePrice); // fires on each keystroke
 
     const stripe = Stripe(stripe_public_key);
+
+    formStart.addEventListener('input', function () {
+        if (!formStart.value) isStartDatePicked = false;
+    });
+    formEnd.addEventListener('input', function () {
+        if (!formEnd.value) isEndDatePicked = false;
+    });
 });
