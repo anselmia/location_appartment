@@ -15,7 +15,7 @@
 #reservation-form {
     margin-top: 15px;
     background-color: #fff;
-    padding: 20px;
+    padding: 0px mp !important;
     border-radius: 10px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     font-size: 0.9rem;
@@ -121,5 +121,42 @@
 #reservation-form button:hover {
     background-color: #1a5fd1;
     transform: scale(1.05);
+}
+
+@media screen and (max-width: 900px) {
+
+    #reservation-form-card {
+        padding: 20px;
+    }
+    #reservation-form {
+        padding: 0px !important;
+    }
+    #reservation-form h1 {
+        font-size: 2rem;
+    }
+
+    #reservation-form h3 {
+        font-size: 1.5rem;
+    }
+
+    #reservation-form h4 {
+        font-size: 1.2rem;
+    }
+
+    #reservation-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+    
+    #reservation-form .form-group {
+    width: 100%;
+    }
+
+    #reservation-form .form-control {
+    width: 100%;
+    font-size: 1rem;
+    padding: 10px;
+    }
 }
 

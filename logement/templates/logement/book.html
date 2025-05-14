@@ -34,99 +34,98 @@
 
         <form method="post" id="reservation-form">
             {% csrf_token %}
-            <div class="container">
-                <div class="row gx-4 gy-4 align-items-stretch mt-5">
-            
-                    <!-- Left Column: Reservation Form -->
-                    <div class="col-md-6 d-flex">
-                        <div class="card shadow-lg rounded-lg flex-fill w-100">
-                            <div class="card-body">
-                                <h2 class="text-center mb-4">{{ logement_data.name }}</h2>
-                    
-                                {% if form.errors %}
-                                    <div class="alert alert-danger">
-                                    <ul>
-                                        {% for field in form %}
-                                        {% for error in field.errors %}
-                                            <li>{{ error }}</li>
-                                        {% endfor %}
-                                        {% endfor %}
-                                        {% for error in form.non_field_errors %}
-                                        <li>{{ error }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                    </div>
-                                {% endif %}
-                    
-                                <h3 class="text-center mb-4">Informations sur le séjour</h3>
-                    
-                                <div class="form-group">
-                                    <label for="id_guest">Voyageurs</label>
-                                    {{ form.guest }}
-                                </div>
-                    
-                                <div class="form-group">
-                                    <label for="id_start">Date de début</label>
-                                    {{ form.start }}
-                                </div>
-                    
-                                <div class="form-group">
-                                    <label for="id_end">Date de fin</label>
-                                    {{ form.end }}
-                                </div>
-                    
-                                <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
-                                <input type="hidden" id="reservation-price" name="reservation_price" value="0">
+
+            <div class="row gx-4 gy-4 align-items-stretch mt-5">
+        
+                <!-- Left Column: Reservation Form -->
+                <div class="col-md-6 d-flex">
+                    <div class="card shadow-lg rounded-lg flex-fill w-100">
+                        <div class="card-body">
+                            <h2 class="text-center mb-4">{{ logement_data.name }}</h2>
                 
-                                <div class="calendar-box mt-4">
-                                    <h3>{% trans "Disponibilités" %}</h3>
-                                    <div id="calendar_inline"></div>
-                                    <div class="legend">
-                                        <div class="legend-item"><span class="dot booked"></span> Réservé</div>
-                                        <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
-                                        <div class="legend-item"><span class="dot free"></span> Disponible</div>
-                                    </div>
+                            {% if form.errors %}
+                                <div class="alert alert-danger">
+                                <ul>
+                                    {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
                                 </div>
+                            {% endif %}
+                
+                            <h3 class="text-center mb-4">Informations sur le séjour</h3>
+                
+                            <div class="form-group">
+                                <label for="id_guest">Voyageurs</label>
+                                {{ form.guest }}
                             </div>
-                        </div>
-                    </div>
+                
+                            <div class="form-group">
+                                <label for="id_start">Date de début</label>
+                                {{ form.start }}
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="id_end">Date de fin</label>
+                                {{ form.end }}
+                            </div>
+                
+                            <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
+                            <input type="hidden" id="reservation-price" name="reservation_price" value="0">
             
-                    <!-- Right Column: Summary + Submit -->
-                    <div class="col-md-6 d-flex">
-                        <div class="card shadow-lg rounded-lg flex-fill w-100">
-                            <div class="card-body">
-                                <h4 class="text-center mb-4">Résumé de la Réservation</h4>
-                    
-                                <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
-                                <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
-                                <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
-                    
-                                <hr>
-                    
-                                <div id="details">
-                                    <!-- Dynamic pricing breakdown -->
-                                </div>
-                    
-                                <div>
-                                    <strong>Prix Total : <span id="final-price">0</span> €</strong>
-                                </div>
-                    
-                                <hr>
-                    
-                                <h4 class="text-center mb-4">Informations du Voyageur</h4>
-                                <p><strong>Nom :</strong> <span>{{ user.last_name }}</span></p>
-                                <p><strong>Prénom :</strong> <span>{{ user.name }}</span></p>
-                                <p><strong>Email :</strong> <span>{{ user.email }}</span></p>
-                                <p><strong>Téléphone :</strong> <span>{{ user.phone }}</span></p>
-                    
-                                <div class="form-group text-center mt-4">
-                                    <button type="submit" class="btn btn-primary btn-lg">Procéder au Paiement</button>
+                            <div class="calendar-box mt-4">
+                                <h3>{% trans "Disponibilités" %}</h3>
+                                <div id="calendar_inline"></div>
+                                <div class="legend">
+                                    <div class="legend-item"><span class="dot booked"></span> Réservé</div>
+                                    <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
+                                    <div class="legend-item"><span class="dot free"></span> Disponible</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-          
                 </div>
+        
+                <!-- Right Column: Summary + Submit -->
+                <div class="col-md-6 d-flex">
+                    <div class="card shadow-lg rounded-lg flex-fill w-100">
+                        <div class="card-body">
+                            <h4 class="text-center mb-4">Résumé de la Réservation</h4>
+                
+                            <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
+                            <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
+                            <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
+                
+                            <hr>
+                
+                            <div id="details">
+                                <!-- Dynamic pricing breakdown -->
+                            </div>
+                
+                            <div>
+                                <strong>Prix Total : <span id="final-price">0</span> €</strong>
+                            </div>
+                
+                            <hr>
+                
+                            <h4 class="text-center mb-4">Informations du Voyageur</h4>
+                            <p><strong>Nom :</strong> <span>{{ user.last_name }}</span></p>
+                            <p><strong>Prénom :</strong> <span>{{ user.name }}</span></p>
+                            <p><strong>Email :</strong> <span>{{ user.email }}</span></p>
+                            <p><strong>Téléphone :</strong> <span>{{ user.phone }}</span></p>
+                
+                            <div class="form-group text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Procéder au Paiement</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
             </div>
         </form>  
     </div>
@@ -150,6 +149,7 @@
     const reservedDates = {{ reserved_dates_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
     const allPhotoUrls = {{ photo_urls|safe }};
+    const calendarDisabled = true;
 </script>
 <script src="https://js.stripe.com/v3/"></script>
 <script src="{% static 'logement/js/image-galery.js' %}"></script>

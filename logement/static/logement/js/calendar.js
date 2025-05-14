@@ -1,4 +1,9 @@
 function setupFlatpickr(id) {
+    const isCalendarDisabled = typeof calendarDisabled !== "undefined" ? calendarDisabled : false;
+    if (isCalendarDisabled === true) {
+        document.querySelector("#calendar_inline").classList.add("calendar-disabled");
+    }
+
     // Get today's date in the user's local timezone
     const todayDate = new Date(); // This will use the browser's local timezone
     todayDate.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
@@ -11,7 +16,7 @@ function setupFlatpickr(id) {
         return date.toISOString().slice(0, 10); // Format reserved date to YYYY-MM-DD
     });
 
-    flatpickr("#calendar_inline", {
+    const config = {
         mode: "range",
         inline: true,
         minDate: todayDate, // Use the adjusted "today" date based on user's timezone
@@ -31,7 +36,13 @@ function setupFlatpickr(id) {
             // Push selected range into hidden input
             document.getElementById("calendar_range").value = dateStr;
         }
-    });
+    };
+
+    if (isCalendarDisabled === true) {
+        config.enable = []; // Disable all selectable dates
+    }
+
+    flatpickr("#calendar_inline", config);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -297,14 +297,8 @@ ul.list-unstyled li .ml-3 {
         max-width: 700px !important; /* Adjust width for medium screens and up */
     }
 
-    #reservation-form-card {
-        padding: 20px;
-    }
-    #reservation-form {
-        padding: 15px;
-    }
-    #reservation-form h1 {
-        font-size: 2rem;
-    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.5); /* optional: style calendar icon */
+      }
 }
 
