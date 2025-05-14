@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
         isStartDatePicked = true;
         isEndDatePicked = true;
         fieldsPrefilled = true; // ✅ mark them as prefilled
+        updateFinalPrice();
     }
 
     function resetReservation() {
@@ -219,11 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Trigger calculation when parameters are valid on page load
-    if (formStart.value && formEnd.value && formGuest.value) {
-        updateFinalPrice();
-    }
-
     document.getElementById("reservation-form").addEventListener("submit", function (e) {
         e.preventDefault(); // Prevent default immediately
         updateFinalPrice(); // run validation one last time
@@ -255,13 +251,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Recalculate the price on input change
 
     formStart.addEventListener('change', function () {
-        isStartDatePicked = true;
-        updateFinalPrice();
+        if (formStart.value) {
+            isStartDatePicked = true;
+            userTouchedStart = true;
+            if (datesReady()) {
+                updateFinalPrice();
+            }
+        } else {
+            isStartDatePicked = false;
+            userTouchedStart = false;
+        }
     });
 
     formEnd.addEventListener('change', function () {
-        isEndDatePicked = true;
-        updateFinalPrice();
+        if (formEnd.value) {
+            isEndDatePicked = true;
+            userTouchedEnd = true;
+            if (datesReady()) {
+                updateFinalPrice();
+            }
+        } else {
+            isEndDatePicked = false;
+            userTouchedEnd = false;
+        }
     });
     formGuest.addEventListener('change', updateFinalPrice);
     formGuest.addEventListener('input', debouncedUpdatePrice); // fires on each keystroke
@@ -272,6 +284,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (formStart.value) {
             isStartDatePicked = true;
             userTouchedStart = true;
+            if (datesReady()) {
+                updateFinalPrice();
+            }
         } else {
             isStartDatePicked = false;
             userTouchedStart = false;
@@ -282,12 +297,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (formEnd.value) {
             isEndDatePicked = true;
             userTouchedEnd = true;
+            if (datesReady()) {
+                updateFinalPrice();
+            }
         } else {
             isEndDatePicked = false;
             userTouchedEnd = false;
         }
     });
-
-    formStart.dispatchEvent(new Event('change'));
-    formEnd.dispatchEvent(new Event('change'));
 });
