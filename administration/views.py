@@ -256,7 +256,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
 
         # Bookings in range
         bookings = Reservation.objects.filter(
-            logement_id=logement_id, start__lte=end, end__gte=start
+            logement_id=logement_id, start__lte=end, end__gte=start, statut="confirmee"
         )
 
         data_bookings = []

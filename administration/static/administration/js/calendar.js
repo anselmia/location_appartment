@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let reservedDates = new Set();
   let reductions = []; // Store active reductions
   let dailyPriceMap = {};
+  let rangeStart = null;
 
   axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
   axios.defaults.headers.post['Content-Type'] = 'application/json';
@@ -91,9 +92,38 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(failureCallback);
     },
 
-    dateClick: function (info) {
+    dateClick: function(info) {
       if (reservedDates.has(info.dateStr)) return;
-      showPanel(info.dateStr);
+    
+      if (!rangeStart) {
+        // First click – set start
+        rangeStart = info.dateStr;
+        showPanel(rangeStart);
+      } else {
+        // Second click – attempt to create range
+        const start = new Date(rangeStart);
+        const end = new Date(info.dateStr);
+    
+        if (end < start) {
+          // Reset selection if end is before start
+          rangeStart = info.dateStr;
+          showPanel(rangeStart);
+          return;
+        }
+    
+        // Check if range is reserved
+        const conflict = isReservedRange(rangeStart, info.dateStr);
+        if (conflict) {
+          alert("❌ La plage sélectionnée contient des dates réservées.");
+          rangeStart = null;
+          hidePanel();
+          return;
+        }
+    
+        // Range is valid
+        showPanel(rangeStart, info.dateStr);
+        rangeStart = null; // Reset selection
+      }
     },
 
     select: function (selectionInfo) {
