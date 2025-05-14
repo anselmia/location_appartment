@@ -123,8 +123,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
             })
             .catch(error => {
-                alert(error);
                 isReservationValid = false;
+            })
+            .catch(error => {
+                isReservationValid = false;
+        
+                // ❌ Clear form inputs if dates are not available
+                formStart.value = '';
+                formEnd.value = '';
+        
+                // Optional: Clear summary display too
+                document.getElementById('start-date').innerText = '';
+                document.getElementById('end-date').innerText = '';
+                document.getElementById('final-price').innerText = '0.00';
+                document.getElementById('reservation-price').value = '0.00';
+                document.getElementById('details').innerHTML = '';
             });
     }
 
