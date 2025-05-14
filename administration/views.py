@@ -579,7 +579,7 @@ def api_economie_data(request, logement_id):
     year = int(request.GET.get("year", datetime.now().year))
     month = request.GET.get("month", "all")
 
-    qs = Reservation.objects.filter(logement_id=logement_id, start__year=year)
+    qs = Reservation.objects.filter(logement_id=logement_id, start__year=year, statut="confirmee")
     if month != "all":
         qs = qs.filter(start__month=int(month))
 
