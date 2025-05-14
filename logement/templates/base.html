@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="{% static 'administration/css/calendar.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/discounts.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/revenu.css' %}">
+    <link rel="stylesheet" href="{% static 'administration/css/log_viewer.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/cgu.css' %}">   
@@ -110,7 +111,14 @@
                                 <a href="{% url 'administration:revenu' 1 %}">{% trans "Revenus" %}</a>
                             </div>
                         </div>
-                        <a href="{% url 'administration:traffic' %}">Traffic</a>
+
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
+                            <div class="dropdown-menu">
+                                <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
+                                <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>
+                            </div>
+                        </div>
                     {% endif %}
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">{% trans "Mon compte" %} ({{ user.username }})</a>

@@ -39,6 +39,8 @@ urlpatterns = [
     ),
     path("revenu/<int:logement_id>/", views.economie_view, name="revenu"),
     path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
+    path("logs/", views.log_viewer, name="log_viewer"),
+    path("api/log-js/", views.js_logger, name="js_logger"),
 ]
 
 urlpatterns += router.urls

@@ -1,9 +1,13 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
+import os
+import re
+import logging
 import json
-from django.utils.dateformat import format as date_format
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from logement.models import (
     Logement,
@@ -26,8 +30,9 @@ from .serializers import DailyPriceSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from django.db.models import Sum, F
 from calendar import month_name
+from django.http import JsonResponse, HttpResponseBadRequest
 
 
 def is_admin(user):
@@ -579,7 +584,9 @@ def api_economie_data(request, logement_id):
     year = int(request.GET.get("year", datetime.now().year))
     month = request.GET.get("month", "all")
 
-    qs = Reservation.objects.filter(logement_id=logement_id, start__year=year, statut="confirmee")
+    qs = Reservation.objects.filter(
+        logement_id=logement_id, start__year=year, statut="confirmee"
+    )
     if month != "all":
         qs = qs.filter(start__month=int(month))
 
@@ -612,3 +619,97 @@ def api_economie_data(request, logement_id):
             "chart_values": values,
         }
     )
+
+
+@login_required
+@user_passes_test(is_admin)
+def log_viewer(request):
+    log_file_path = os.path.join(settings.LOG_DIR, "django.log")
+    log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    selected_level = request.GET.get("level")
+    selected_logger = request.GET.get("logger")
+    query = request.GET.get("query", "").strip().lower()
+
+    logs = []
+    all_logs = []
+    if os.path.exists(log_file_path):
+        try:
+            with open(log_file_path, encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                lines.reverse()  # latest logs first
+                for line in lines:
+                    match = re.match(r"\[(.*?)\] (\w+) ([^\s]+) \((.*?)\) (.*)", line)
+                    if match:
+                        timestamp, level, logger, location, message = match.groups()
+
+                        all_logs.append(
+                            {
+                                "timestamp": timestamp,
+                                "level": level,
+                                "logger": logger,
+                                "location": location,
+                                "message": message,
+                            }
+                        )
+
+                        if selected_level and level != selected_level:
+                            continue
+                        if selected_logger and logger != selected_logger:
+                            continue
+                        if query and query not in message.lower():
+                            continue
+
+                        logs.append(
+                            {
+                                "timestamp": timestamp,
+                                "level": level,
+                                "logger": logger,
+                                "location": location,
+                                "message": message,
+                            }
+                        )
+        except Exception as e:
+            logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
+            lines = []
+    loggers = sorted(set(entry["logger"] for entry in all_logs))
+    context = {
+        "query": query,
+        "loggers": loggers,
+        "logs": logs,
+        "levels": log_levels,
+        "selected_level": selected_level,
+    }
+    return render(request, "administration/log_viewer.html", context)
+
+
+@csrf_exempt
+def js_logger(request):
+    logger = logging.getLogger("frontend")
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            level = data.get("level", "info").lower()
+            message = data.get("message", "")
+            meta = data.get("meta", {})
+
+            # Format message with metadata
+            formatted_msg = f"[JS] {message} | Meta: {meta}"
+
+            if level == "debug":
+                logger.debug(formatted_msg)
+            elif level == "info":
+                logger.info(formatted_msg)
+            elif level == "warning":
+                logger.warning(formatted_msg)
+            elif level == "error":
+                logger.error(formatted_msg)
+            elif level == "critical":
+                logger.critical(formatted_msg)
+            else:
+                logger.info(formatted_msg)
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            logger.exception(f"Failed to log JS message: {e}")
+            return HttpResponseBadRequest("Invalid data")
+    return HttpResponseBadRequest("Only POST allowed")

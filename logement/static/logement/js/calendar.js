@@ -55,6 +55,9 @@ if (bookingForm) {
         const rangeInput = document.getElementById("calendar_range").value;
 
         if (!rangeInput.includes(" to ")) {
+            logToServer("warning", "Soumission sans plage de dates sélectionnée", {
+                formValue: rangeInput
+            });
             e.preventDefault();
             alert("❌ Vous devez sélectionner une plage de dates.");
             return;
@@ -65,12 +68,20 @@ if (bookingForm) {
         const endDate = new Date(end);
 
         if (startDate > endDate) {
+            logToServer("warning", "Date de début après date de fin", {
+                start: start,
+                end: end
+            });
             e.preventDefault();
             alert("❌ La date de début ne peut pas être après la date de fin.");
             return;
         }
 
         if (endDate.getTime() === startDate.getTime()) {
+            logToServer("warning", "Dates identiques sélectionnées", {
+                start: start,
+                end: end
+            });
             e.preventDefault();
             alert("❌ La date de fin ne peut pas être le même jour que la date de début.");
             return;
@@ -82,6 +93,11 @@ if (bookingForm) {
         });
 
         if (booked) {
+            logToServer("warning", "Tentative de réservation sur dates déjà réservées", {
+                start: start,
+                end: end,
+                logementId: logementId
+            });
             e.preventDefault();
             alert("❌ La période sélectionnée contient des dates déjà réservées.");
             return;

@@ -57,7 +57,6 @@ if not os.path.exists(LOG_DIR):
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "[{asctime}] {levelname} {name} ({module}.{funcName}:{lineno}) {message}",
@@ -68,7 +67,6 @@ LOGGING = {
             "style": "{",
         },
     },
-
     "handlers": {
         "console": {
             "level": "DEBUG",
@@ -79,8 +77,8 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": os.path.join(LOG_DIR, "django.log"),
-            "when": "midnight",           # Rotate daily
-            "backupCount": 14,            # Keep 14 days of logs
+            "when": "midnight",  # Rotate daily
+            "backupCount": 14,  # Keep 14 days of logs
             "formatter": "verbose",
         },
         "mail_admins": {
@@ -89,12 +87,10 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-
     "root": {
         "handlers": ["console", "file"],
         "level": "INFO",
     },
-
     "loggers": {
         "django": {
             "handlers": ["console", "file"],
@@ -116,7 +112,12 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
-    }
+        "frontend": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
 }
 
 CACHES = {
@@ -136,10 +137,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
 
 ADMINS = [("Arnaud Anselmi", "anselmi.arnaud@yahoo.fr")]
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "localhost"
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
-DEFAULT_FROM_EMAIL = 'noreply@valrose.home-arnaud.ovh'
-CONTACT_EMAIL = 'contact@valrose.home-arnaud.ovh'
+DEFAULT_FROM_EMAIL = "noreply@valrose.home-arnaud.ovh"
+CONTACT_EMAIL = "contact@valrose.home-arnaud.ovh"

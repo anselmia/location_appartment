@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
       axios.get(`/admin-area/prices/?${params.toString()}`)
         .then(res => {
+          logToServer("info", "Chargement des données de prix et réservations réussi", {
+            logementId: logementId,
+            start: fetchInfo.startStr,
+            end: fetchInfo.endStr
+          });
+
           // 1. Daily Prices (background display)
           const priceEvents = res.data.data.map(e => ({
             start: e.date,
@@ -89,12 +95,19 @@ document.addEventListener('DOMContentLoaded', function () {
             ...bookingBookings
           ]);
         })
-        .catch(failureCallback);
+        .catch(error => {
+          logToServer("error", "Échec du chargement des événements du calendrier : " + error, {
+            logementId: logementId,
+            start: fetchInfo.startStr,
+            end: fetchInfo.endStr
+          });
+          failureCallback(error);
+        });
     },
 
-    dateClick: function(info) {
+    dateClick: function (info) {
       if (reservedDates.has(info.dateStr)) return;
-    
+
       if (!rangeStart) {
         // First click – set start
         rangeStart = info.dateStr;
@@ -103,23 +116,28 @@ document.addEventListener('DOMContentLoaded', function () {
         // Second click – attempt to create range
         const start = new Date(rangeStart);
         const end = new Date(info.dateStr);
-    
+
         if (end < start) {
           // Reset selection if end is before start
           rangeStart = info.dateStr;
           showPanel(rangeStart);
           return;
         }
-    
+
         // Check if range is reserved
         const conflict = isReservedRange(rangeStart, info.dateStr);
         if (conflict) {
+          logToServer("warning", "Conflit détecté dans la plage de dates sélectionnée", {
+            logementId: logementId,
+            start: rangeStart,
+            end: info.dateStr
+          });
           alert("❌ La plage sélectionnée contient des dates réservées.");
           rangeStart = null;
           hidePanel();
           return;
         }
-    
+
         // Range is valid
         showPanel(rangeStart, info.dateStr);
         rangeStart = null; // Reset selection
@@ -263,6 +281,15 @@ document.addEventListener('DOMContentLoaded', function () {
         guests: guestCount // Send the number of guests to the backend
       })
       .then(response => {
+        logToServer("info", "Calcul du prix réussi", {
+          logementId: logementId,
+          start: selectedStart,
+          end: selectedEnd || selectedStart,
+          guests: guestCount,
+          base_price: updatedBasePrice,
+          final_price: response.data.final_price
+        });
+
         const finalPrice = response.data.final_price;
         const details = response.data.details;
 
@@ -312,7 +339,13 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsContainer.appendChild(detailsList);
       })
       .catch(error => {
-        console.error('Error fetching price calculation:', error);
+        logToServer("error", "Erreur lors du calcul du prix : " + error, {
+          logementId: logementId,
+          start: selectedStart,
+          end: selectedEnd || selectedStart,
+          guests: guestCount,
+          base_price: updatedBasePrice
+        });
       });
   }
 
@@ -343,9 +376,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const method = 'post';
 
     axios[method](url, payload).then(() => {
-      calendar.refetchEvents();
-      hidePanel();
-    });
+        calendar.refetchEvents();
+        hidePanel();
+      })
+      .catch(error => {
+        logToServer("error", "Erreur lors de l'application du prix : " + error, {
+          logementId: logementId,
+          payload: payload
+        });
+      });
   });
 
   // Annuler

@@ -25,9 +25,13 @@ async function fetchEconomyData(year, month) {
         return data;
 
     } catch (error) {
-        console.error("Erreur lors du chargement des données :", error);
+        logToServer("error", "Erreur lors du chargement des données économiques : " + error.message, {
+            logementId: logementId,
+            year: year,
+            month: month
+        });
         showError("Impossible de charger les données économiques.");
-        throw error;  // propagate if needed
+        throw error; // propagate if needed
     }
 }
 
@@ -68,18 +72,31 @@ async function refreshData() {
         const month = document.getElementById('month-select').value;
 
         const data = await fetchEconomyData(year, month);
+        logToServer("info", "Chargement des données économiques réussi", {
+            logementId: logementId,
+            year: year,
+            month: month,
+            total_revenue: data.total_revenue,
+            net_profit: data.net_profit
+        });
+
         updateSummary(data);
         renderChart(data.chart_labels, data.chart_values);
 
         document.getElementById("economy-error").style.display = "none"; // hide if shown previously
     } catch (err) {
-        // Error already handled in fetchEconomyData
+        logToServer("error", "Erreur lors du Chargement des données économiques:" + err.message, {
+            logementId: logementId,
+            year: year,
+            month: month,
+            total_revenue: data.total_revenue,
+            net_profit: data.net_profit
+        });
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('year-select').addEventListener('change', refreshData);
     document.getElementById('month-select').addEventListener('change', refreshData);
-    console.log("ah");
     refreshData(); // initial load
 });

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📝 Logs système</h2>
+
+    <form method="get" class="mb-3 d-flex gap-3 flex-wrap">
+        <div>
+            <label for="level">Filtrer par niveau :</label>
+            <select name="level" id="level" onchange="this.form.submit()" class="form-control" style="max-width:200px; display:inline-block;">
+                <option value="">Tous</option>
+                {% for level in levels %}
+                    <option value="{{ level }}" {% if selected_level == level %}selected{% endif %}>{{ level }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <div>
+            <label for="logger">Filtrer par logger :</label>
+            <select name="logger" id="logger" onchange="this.form.submit()" class="form-control" style="max-width:250px; display:inline-block;">
+                <option value="">Tous</option>
+                {% for logger in loggers %}
+                    <option value="{{ logger }}" {% if selected_logger == logger %}selected{% endif %}>{{ logger }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="query">Contient :</label>
+            <input type="text" name="query" id="query" class="form-control"
+                   placeholder="Texte à chercher…" value="{{ query }}"
+                   style="min-width: 250px;" oninput="this.form.submit()">
+        </div>
+    </form>
+
+    <div class="log-table">
+        <table class="table table-sm table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Horodatage</th>
+                    <th scope="col">Niveau</th>
+                    <th scope="col">Logger</th>
+                    <th scope="col">Localisation</th>
+                    <th scope="col">Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr class="log-{{ log.level|lower }}">
+                        <td>{{ log.timestamp }}</td>
+                        <td><strong>{{ log.level }}</strong></td>
+                        <td>{{ log.logger }}</td>
+                        <td><code>{{ log.location }}</code></td>
+                        <td style="white-space: pre-wrap;">{{ log.message }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Aucun log trouvé.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

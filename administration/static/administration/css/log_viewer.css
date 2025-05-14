@@ -1,0 +1,5 @@
+.log-debug { background: #e9f5ff; }
+.log-info { background: #f0fff4; }
+.log-warning { background: #fff9db; }
+.log-error { background: #ffe5e5; }
+.log-critical { background: #ffd6d6; font-weight: bold; }
