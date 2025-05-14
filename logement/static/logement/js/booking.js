@@ -1,12 +1,21 @@
 let isReservationValid = false;
 let isStartDatePicked = false;
 let isEndDatePicked = false;
+let userTouchedStart = false;
+let userTouchedEnd = false;
+let fieldsPrefilled = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     const formStart = document.getElementById('id_start');
     const formEnd = document.getElementById('id_end');
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
+
+    if (formStart.value && formEnd.value) {
+        isStartDatePicked = true;
+        isEndDatePicked = true;
+        fieldsPrefilled = true; // ✅ mark them as prefilled
+    }
 
     function resetReservation() {
         formStart.value = '';
@@ -67,11 +76,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateFinalPrice() {
-        if (!isStartDatePicked || !isEndDatePicked) {
+        if (
+            (!isStartDatePicked || !isEndDatePicked) &&
+            !fieldsPrefilled &&
+            !(userTouchedStart && userTouchedEnd)
+        ) {
             isReservationValid = false;
             document.getElementById('submit-booking').disabled = true;
             return;
         }
+
         // Wait until both date fields are filled and valid
         if (!datesReady()) {
             isReservationValid = false;
@@ -255,10 +269,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const stripe = Stripe(stripe_public_key);
 
     formStart.addEventListener('input', function () {
-        if (!formStart.value) isStartDatePicked = false;
+        if (formStart.value) {
+            isStartDatePicked = true;
+            userTouchedStart = true;
+        } else {
+            isStartDatePicked = false;
+            userTouchedStart = false;
+        }
     });
+
     formEnd.addEventListener('input', function () {
-        if (!formEnd.value) isEndDatePicked = false;
+        if (formEnd.value) {
+            isEndDatePicked = true;
+            userTouchedEnd = true;
+        } else {
+            isEndDatePicked = false;
+            userTouchedEnd = false;
+        }
     });
 
     formStart.dispatchEvent(new Event('change'));
