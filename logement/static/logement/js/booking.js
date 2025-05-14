@@ -22,6 +22,20 @@ document.addEventListener('DOMContentLoaded', function () {
         isReservationValid = false;
     }
 
+    function datesReady() {
+        const startDateStr = formStart.value;
+        const endDateStr = formEnd.value;
+    
+        if (!startDateStr || !endDateStr) return false;
+    
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+    
+        if (isNaN(startDate) || isNaN(endDate)) return false;
+    
+        return true;
+    }
+
     // Function to check if the dates are already booked
     function isDateBooked(startDate, endDate) {
         const url = reservationId ?
@@ -43,24 +57,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateFinalPrice() {
+        // Wait until both date fields are filled and valid
+        if (!datesReady()) {
+            isReservationValid = false;
+            document.getElementById('submit-booking').disabled = true;
+            return;
+        }
+
         const startDateStr = formStart.value;
         const endDateStr = formEnd.value;
         // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
         const guestCount = parseInt(formGuest.value, 10) || 1;
-
-        if (!startDateStr || !endDateStr) {
-            isReservationValid = false;
-            return;
-        }
-
         const startDate = new Date(startDateStr);
         const endDate = new Date(endDateStr);
 
-        // Block execution entirely if either date is invalid
-        if (!(startDate instanceof Date) || isNaN(startDate) || !(endDate instanceof Date) || isNaN(endDate)) {
-            isReservationValid = false;
-            return;
-        }
 
         // Vérifie si les dates sont valides
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
