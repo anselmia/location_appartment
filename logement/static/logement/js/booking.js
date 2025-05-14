@@ -210,4 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formEnd.addEventListener('input', function () {
         if (!formEnd.value) isEndDatePicked = false;
     });
+
+    formStart.dispatchEvent(new Event('change'));
+    formEnd.dispatchEvent(new Event('change'));
 });
