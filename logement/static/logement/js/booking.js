@@ -49,11 +49,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const guestCount = parseInt(formGuest.value, 10) || 1;
 
         if (!startDateStr || !endDateStr) {
+            isReservationValid = false;
             return;
         }
 
         const startDate = new Date(startDateStr);
         const endDate = new Date(endDateStr);
+
+        // Block execution entirely if either date is invalid
+        if (!(startDate instanceof Date) || isNaN(startDate) || !(endDate instanceof Date) || isNaN(endDate)) {
+            isReservationValid = false;
+            return;
+        }
 
         // Vérifie si les dates sont valides
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
