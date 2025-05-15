@@ -37,9 +37,6 @@ def get_booked_dates(logement, user=None):
     return sorted(reserved)
 
 
-def get_booked_dates_in_range(logement, user=None):
-
-
 def is_period_booked(start, end, logement_id, user):
     reservations = Reservation.objects.filter(
         logement_id=logement_id, start__lt=end, end__gt=start
@@ -103,8 +100,6 @@ def create_or_update_reservation(logement, user, start, end, guest, price):
 
 def calculate_price(logement, start, end, guestCount, base_price=None):
     default_price = logement.price
-
-    
 
     # Calculate the number of nights
     number_of_nights = (end - start).days

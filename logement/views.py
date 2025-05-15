@@ -13,13 +13,13 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from .forms import ReservationForm
 from .models import Logement, Reservation, Price
-from services.reservation_service import (
+from logement.services.reservation_service import (
     is_period_booked,
     get_booked_dates,
     create_or_update_reservation,
 )
-from services.calendar_service import generate_ical
-from services.payment_service import create_stripe_checkout_session
+from logement.services.calendar_service import generate_ical
+from logement.services.payment_service import create_stripe_checkout_session
 
 
 logger = logging.getLogger(__name__)
