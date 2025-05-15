@@ -32,7 +32,7 @@ class LogementSitemap(Sitemap):
         return Logement.objects.all()
 
     def location(self, obj):
-        return "/"  # or the booking page URL like "/booking/"
+        return "f/book/"  # or the booking page URL like "/booking/"
 
 
 sitemaps = {

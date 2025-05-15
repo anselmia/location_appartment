@@ -56,4 +56,37 @@
     table {
         font-size: 0.85rem;
     }
+    .traffic-dashboard .container {
+        padding: 1.2rem;
+    }
+
+    .traffic-dashboard .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .traffic-dashboard .stat-box {
+        width: 100%;
+        text-align: left;
+        margin: 0.5rem 0;
+    }
+
+    .traffic-dashboard form {
+        width: 100%;
+    }
+
+    .traffic-dashboard select.form-select {
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .traffic-dashboard canvas#trafficChart {
+        padding: 0.5rem;
+    }
+
+    .traffic-dashboard table th,
+    .traffic-dashboard table td {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
 }

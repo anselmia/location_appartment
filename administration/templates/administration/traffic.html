@@ -34,7 +34,9 @@
         <canvas id="trafficChart" height="100"></canvas>
 
         <h4 class="mt-5">Logs récents</h4>
-        <div class="table-responsive">
+
+        <!-- Table for desktop -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-bordered table-sm">
                 <thead>
                     <tr>
@@ -57,6 +59,20 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Cards for mobile -->
+        <div class="mobile-log-cards d-md-none">
+            {% for log in recent_logs %}
+            <div class="log-card">
+                <div><strong>Date :</strong> {{ log.timestamp|date:"Y-m-d H:i" }}</div>
+                <div><strong>IP :</strong> {{ log.ip_address }}</div>
+                <div><strong>Agent :</strong> {{ log.user_agent|truncatechars:50 }}</div>
+                <div><strong>Page :</strong> {{ log.path }}</div>
+            </div>
+            {% empty %}
+            <p>Aucun log disponible.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
