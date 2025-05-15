@@ -23,6 +23,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.contrib.sitemaps import Sitemap
 from logement.models import Logement  # Your model
 from django.urls import reverse
+from django.urls import re_path
 
 
 class LogementSitemap(Sitemap):
@@ -45,7 +46,9 @@ urlpatterns = [
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("", include("logement.urls", namespace="logement")),  # main site
-    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+    re_path(
+        r"^sitemap\.xml$", sitemap, {"sitemaps": sitemaps}, name="sitemap"
+    ),  # ✅ this avoids redirect
 ]
 
 # Append the static files URLs
