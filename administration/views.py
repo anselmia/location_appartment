@@ -354,12 +354,12 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
 
         details = {}
         details[f"Total {price_data['number_of_nights']} Nuit(s)"] = (
-            f"{round(price_data["total_base_price"], 2)} €"
+            f"{round(price_data['total_base_price'], 2)} €"
         )
 
         if price_data["TotalextraGuestFee"] != 0:
             details["Voyageur(s) supplémentaire(s)"] = (
-                f"+ {round(price_data["TotalextraGuestFee"], 2)} €"
+                f"+ {round(price_data['TotalextraGuestFee'], 2)} €"
             )
 
         for key, value in price_data["discount_totals"].items():
