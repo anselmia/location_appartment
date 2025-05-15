@@ -50,7 +50,6 @@ function setupFlatpickr(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupFlatpickr("#calendar_range");
-    console.log(reservedDatesLocal);
 });
 
 const bookingForm = document.querySelector(".booking-form");

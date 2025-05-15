@@ -9,7 +9,6 @@ document.querySelectorAll('.room-select').forEach(select => {
         const urlTemplate = document.getElementById('change-photo-room-url').getAttribute('data-url');
         const url = urlTemplate.replace('1', photoId); // Replace the placeholder with the actual photo_id
 
-
         fetch(url, {
                 method: 'POST',
                 headers: {
@@ -20,10 +19,15 @@ document.querySelectorAll('.room-select').forEach(select => {
                     room_id: roomId
                 })
             }).then(response => response.json())
-            .then(data => {
-                console.log('Room updated', data);
-            })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                logToServer("error", "Erreur lors du calcul du prix : " + error, {
+                    logementId: logementId,
+                    start: selectedStart,
+                    end: selectedEnd || selectedStart,
+                    guests: guestCount,
+                    base_price: updatedBasePrice
+                });
+            });
     });
 });
 
@@ -36,7 +40,6 @@ document.querySelectorAll('.move-photo').forEach(button => {
         // Fetch the base URL from the hidden element and replace the placeholders
         const urlTemplate = document.getElementById('move-photo-url').getAttribute('data-url');
         const url = urlTemplate.replace('1', photoId).replace('UP', direction);
-        console.log(url);
 
         fetch(url, {
                 method: 'POST',
@@ -69,7 +72,15 @@ document.querySelectorAll('.move-photo').forEach(button => {
                     photoItem.setAttribute('data-photo-order', newOrder);
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                logToServer("error", "Erreur lors du calcul du prix : " + error, {
+                    logementId: logementId,
+                    start: selectedStart,
+                    end: selectedEnd || selectedStart,
+                    guests: guestCount,
+                    base_price: updatedBasePrice
+                });
+            });
     });
 });
 
@@ -82,7 +93,6 @@ document.querySelectorAll('.delete-photo').forEach(button => {
             // Fetch the base URL from the hidden element and replace the placeholder
             const urlTemplate = document.getElementById('delete-photo-url').getAttribute('data-url');
             const url = urlTemplate.replace('1', parseInt(photoId)); // Replace the placeholder with the actual photo_id
-            console.log(url);
 
             fetch(url, {
                     method: 'DELETE',
@@ -95,7 +105,15 @@ document.querySelectorAll('.delete-photo').forEach(button => {
                         e.target.closest('.photo-item').remove();
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    logToServer("error", "Erreur lors du calcul du prix : " + error, {
+                        logementId: logementId,
+                        start: selectedStart,
+                        end: selectedEnd || selectedStart,
+                        guests: guestCount,
+                        base_price: updatedBasePrice
+                    });
+                });
         }
     });
 });
