@@ -16,6 +16,8 @@ logger.addHandler(handler)
 
 
 def process_calendar(url, source):
+    added = 0
+    updated = 0
     try:
         response = requests.get(url)
         if response.status_code != 200:
@@ -36,6 +38,8 @@ def process_calendar(url, source):
                 if component.name == "VEVENT":
                     start = component.get("DTSTART").dt
                     end = component.get("DTEND").dt
+
+                    logger.info(f"{source} - {start} to {end}")
 
                     # Ensure the start and end dates are in correct format (handle timezone or UTC)
                     if isinstance(start, datetime):
@@ -76,31 +80,31 @@ def process_calendar(url, source):
                                 logger.info(
                                     f"Airbnb reservation created: {reservation}"
                                 )
+                                added += 1
                             else:
                                 logger.info(
                                     f"Airbnb reservation updated: {reservation}"
                                 )
+                                updated += 1
 
                     elif source == "booking":
                         logement = Logement.objects.first()
-                        reservation, created = (
-                            booking_booking.objects.update_or_create(
-                                logement=logement,
-                                start=start,
-                                end=end,
-                            )
+                        reservation, created = booking_booking.objects.update_or_create(
+                            logement=logement,
+                            start=start,
+                            end=end,
                         )
                         if created:
-                            logger.info(
-                                f"Booking reservation created: {reservation}"
-                            )
+                            logger.info(f"Booking reservation created: {reservation}")
+                            added += 1
                         else:
-                            logger.info(
-                                f"Booking reservation updated: {reservation}"
-                            )
+                            logger.info(f"Booking reservation updated: {reservation}")
+                            updated += 1
 
             # After processing the calendar, delete any future reservations not in the calendar
-            delete_old_reservations(event_dates, source)
+            deleted = delete_old_reservations(event_dates, source)
+
+            return added, updated, deleted
 
         else:
             logger.error(f"Received non-icalendar response from {source}")
@@ -116,6 +120,8 @@ def delete_old_reservations(event_dates, source):
     Deletes future reservations that are no longer present in the calendar.
     """
     try:
+        deleted = 0
+
         # Determine the model to use based on the source
         if source == "airbnb":
             reservations = airbnb_booking.objects.filter(start__gte=datetime.now())
@@ -137,6 +143,9 @@ def delete_old_reservations(event_dates, source):
                 # If the reservation is not found in the updated calendar, delete it
                 logger.info(f"Deleting reservation: {reservation}")
                 reservation.delete()
+                deleted += 1
+
+        return deleted
 
     except Exception as e:
         logger.error(f"Error deleting old reservations from {source}: {str(e)}")
@@ -153,17 +162,36 @@ def sync_calendar():
 
     # Sync Airbnb Calendar
     logger.info("Syncing Airbnb calendar...")
-    process_calendar(airbnb_url, source="airbnb")
+    airbnb_added, airbnb_updated, airbnb_deleted = process_calendar(
+        airbnb_url, source="airbnb"
+    )
 
     # Sync Booking Calendar
     logger.info("Syncing Booking calendar...")
-    process_calendar(booking_url, source="booking")
+    booking_added, booking_updated, booking_deleted = process_calendar(
+        booking_url, source="booking"
+    )
+
+    return {
+        "airbnb": {
+            "added": airbnb_added,
+            "updated": airbnb_updated,
+            "deleted": airbnb_deleted,
+        },
+        "booking": {
+            "added": booking_added,
+            "updated": booking_updated,
+            "deleted": booking_deleted,
+        },
+    }
 
 
 @shared_task
 def delete_expired_pending_reservations():
     expiry_time = timezone.now() - timedelta(minutes=30)
-    expired = Reservation.objects.filter(statut="en_attente", date_reservation__lt=expiry_time)
+    expired = Reservation.objects.filter(
+        statut="en_attente", date_reservation__lt=expiry_time
+    )
     count = expired.count()
     expired.delete()
     return f"Deleted {count} expired reservations"
