@@ -353,7 +353,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
         price_data = calculate_price(logement, start, end, guestCount, base_price)
 
         details = {}
-        details[f"Total {price_data["number_of_nights"]} Nuit(s)"] = (
+        details[f"Total {price_data['number_of_nights']} Nuit(s)"] = (
             f"{round(price_data["total_base_price"], 2)} €"
         )
 
@@ -366,7 +366,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             details[f"Réduction {key}"] = f"- {round(value, 2)} €"
 
         details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
-        details["Taxe de séjour"] = f"+ {round(price_data["taxAmount"], 2)} €"
+        details["Taxe de séjour"] = f"+ {round(price_data['taxAmount'], 2)} €"
 
         return Response(
             {
