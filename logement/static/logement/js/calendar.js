@@ -1,3 +1,5 @@
+let reservedDatesLocal;
+
 function setupFlatpickr(id) {
     const isCalendarDisabled = typeof calendarDisabled !== "undefined" ? calendarDisabled : false;
     if (isCalendarDisabled === true) {
@@ -10,17 +12,18 @@ function setupFlatpickr(id) {
     const today = todayDate.toISOString().slice(0, 10); // Format the date to YYYY-MM-DD
 
     // Convert reserved dates to the same format (YYYY-MM-DD) using local timezone
-    const reservedDatesLocal = reservedDates.map(dateStr => {
+    reservedDatesLocal = reservedDates.map(dateStr => {
         const date = new Date(dateStr);
         date.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
         return date.toISOString().slice(0, 10); // Format reserved date to YYYY-MM-DD
     });
+ 
 
     const config = {
         mode: "range",
         inline: true,
         minDate: todayDate, // Use the adjusted "today" date based on user's timezone
-        disable: reservedDatesLocal, // Disable the reserved dates
+        disable: reservedDates, // Disable the reserved dates
         onDayCreate: function (_, __, ___, dayElem) {
             const date = dayElem.dateObj.toISOString().slice(0, 10); // Get the current date in YYYY-MM-DD
 
@@ -47,6 +50,7 @@ function setupFlatpickr(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupFlatpickr("#calendar_range");
+    console.log(reservedDatesLocal);
 });
 
 const bookingForm = document.querySelector(".booking-form");
