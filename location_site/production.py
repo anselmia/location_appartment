@@ -49,7 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://valrose.home-arnaud.ovh",
 ]
 
-LOG_DIR = "/var/log/django"
+LOG_DIR = "/srv/location_site/location_appartment/logs"
 
 # Create the log directory if it doesn't exist
 if not os.path.exists(LOG_DIR):
