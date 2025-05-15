@@ -45,7 +45,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("", include("logement.urls", namespace="logement")),  # main site
-    path("sitemap.xml/", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
 ]
 
 # Append the static files URLs
