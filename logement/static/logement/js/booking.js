@@ -275,8 +275,38 @@ document.addEventListener('DOMContentLoaded', function () {
             userTouchedEnd = false;
         }
     });
-    formGuest.addEventListener('change', updateFinalPrice);
-    formGuest.addEventListener('input', debouncedUpdatePrice); // fires on each keystroke
+
+    function validateGuestInput() {
+        const guestValue = formGuest.value.trim();
+        const guestNumber = parseInt(guestValue, 10);
+
+        // Empty, not a number, negative, zero, float, or too large
+        if (
+            !guestValue ||
+            isNaN(guestNumber) ||
+            guestNumber <= 0 ||
+            guestValue.includes('.') ||
+            guestNumber > logement_js.max_traveler
+        ) {
+            alert("❌ Veuillez entrer un nombre valide de voyageurs (entre 1 et " + logement_js.max_traveler +").");
+            formGuest.value = 1;
+            return false;
+        }
+
+        return true;
+    }
+
+    formGuest.addEventListener('change', function () {
+        if (validateGuestInput()) {
+            updateFinalPrice();
+        }
+    });
+
+    formGuest.addEventListener('input', function () {
+        if (validateGuestInput()) {
+            debouncedUpdatePrice();
+        }
+    });
 
     const stripe = Stripe(stripe_public_key);
 
