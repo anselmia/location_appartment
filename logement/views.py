@@ -414,9 +414,7 @@ def export_ical(request):
         )
         event.add(
             "dtend",
-            make_aware(
-                datetime.combine(res.end + timedelta(days=1), datetime.min.time())
-            ),
+            make_aware(datetime.combine(res.end, datetime.min.time())),
         )  # DTEND est exclu, donc +1j
         event.add("dtstamp", datetime.now())
         event["uid"] = f"{res.id}@valrose.home-arnaud.ovh"
