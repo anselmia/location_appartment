@@ -117,6 +117,11 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
+        "logement.tasks": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 
