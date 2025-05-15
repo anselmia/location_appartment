@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="{% static 'administration/css/discounts.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/revenu.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/log_viewer.css' %}">
+    <link rel="stylesheet" href="{% static 'administration/css/reservation.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/cgu.css' %}">   
@@ -108,6 +109,7 @@
                             <div class="dropdown-menu">
                                 <a href="{% url 'administration:dashboard' %}">{% trans "Tableau de bord" %}</a>
                                 <a href="{% url 'administration:calendar' %}">{% trans "Calendrier" %}</a>
+                                <a href="{% url 'administration:reservation_dashboard' %}">{% trans "Réservations" %}</a>
                                 <a href="{% url 'administration:manage_discounts' %}">{% trans "Réductions" %}</a>
                                 <a href="{% url 'administration:revenu' 1 %}">{% trans "Revenus" %}</a>
                             </div>

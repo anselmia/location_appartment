@@ -78,14 +78,16 @@ def book(request, logement_id):
         form = ReservationForm(request.POST)
         if form.is_valid():
             reservation_price = request.POST.get("reservation_price", None)
+            reservation_tax = request.POST.get("reservation_tax", None)
             start = form.cleaned_data["start"]
             end = form.cleaned_data["end"]
             guest = form.cleaned_data["guest"]
 
-            if reservation_price and start and end and guest:
+            if reservation_price and reservation_tax and start and end and guest:
                 price = float(reservation_price)
+                tax = float(reservation_tax)
                 reservation = create_or_update_reservation(
-                    logement, user, start, end, guest, price
+                    logement, user, start, end, guest, price, tax
                 )
 
                 # Create the URLs based on the URL name
@@ -176,7 +178,7 @@ def check_availability(request, logement_id):
 @login_required
 def payment_success(request, reservation_id):
     reservation = Reservation.objects.get(id=reservation_id)
-    reservation.status = "confirmee"
+    reservation.statut = "confirmee"
     reservation.save()
 
     return render(

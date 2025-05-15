@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('end-date').innerText = '';
         document.getElementById('final-price').innerText = '0.00';
         document.getElementById('reservation-price').value = '0.00';
+        document.getElementById('reservation-tax').value = '0.00';
         document.getElementById('details').innerHTML = '';
 
         // Disable submit button
@@ -168,11 +169,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                     .then(response => {
                         const finalPrice = response.data.final_price;
+                        const tax = response.data.tax;
                         const details = response.data.details;
 
                         // Update the final price in the UI
                         document.getElementById('final-price').innerText = finalPrice.toFixed(2);
                         document.getElementById('reservation-price').value = finalPrice.toFixed(2);
+                        document.getElementById('reservation-tax').value = tax.toFixed(2);
 
                         // Display detailed breakdown in a list
                         const detailsContainer = document.getElementById('details');

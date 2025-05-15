@@ -66,7 +66,7 @@ def is_period_booked(start, end, logement_id, user):
     return False
 
 
-def create_or_update_reservation(logement, user, start, end, guest, price):
+def create_or_update_reservation(logement, user, start, end, guest, price, tax):
     reservation = Reservation.objects.filter(
         logement=logement,
         user=user,
@@ -80,6 +80,7 @@ def create_or_update_reservation(logement, user, start, end, guest, price):
         reservation.end = end
         reservation.guest = guest
         reservation.price = price
+        reservation.tax = tax
         reservation.save()
         created = False
     else:
@@ -90,6 +91,7 @@ def create_or_update_reservation(logement, user, start, end, guest, price):
             start=start,
             end=end,
             price=price,
+            tax=tax,
             statut="en_attente",
         )
         created = True

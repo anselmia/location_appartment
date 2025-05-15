@@ -74,7 +74,9 @@ def user_logout(request):
 def client_dashboard(request):
     user = request.user
     today = timezone.now().date()
-    reservations = Reservation.objects.filter(user=user).order_by("-start")
+    reservations = Reservation.objects.filter(
+        user=user, statut__in=["confirmee", "annulee"]
+    ).order_by("-start")
     logement = Logement.objects.prefetch_related("photos").first()
     formUser = CustomUserChangeForm(
         name=user.name, last_name=user.last_name, email=user.email, phone=user.phone
@@ -109,7 +111,9 @@ def update_profile(request):
             logger.warning(
                 f"Échec de mise à jour du profil pour {request.user.username} : {form.errors}"
             )
-            messages.error(request, "❌ Une erreur est survenue lors de la mise à jour du profil.")
+            messages.error(
+                request, "❌ Une erreur est survenue lors de la mise à jour du profil."
+            )
             return redirect("accounts:dashboard")
 
 

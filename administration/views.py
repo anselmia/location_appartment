@@ -371,6 +371,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
         return Response(
             {
                 "final_price": round(price_data["total_price"], 2),
+                "tax": round(price_data["taxAmount"], 2),
                 "details": details,  # Send the total discount for each discount type
             }
         )
@@ -606,3 +607,26 @@ def js_logger(request):
             logger.exception(f"Failed to log JS message: {e}")
             return HttpResponseBadRequest("Invalid data")
     return HttpResponseBadRequest("Only POST allowed")
+
+
+@login_required
+def reservation_dashboard(request):
+    logement = Logement.objects.prefetch_related("photos").first()
+    reservations = (
+        Reservation.objects.filter(logement=logement)
+        .order_by("-start")
+        .values(
+            "statut",
+            "user__name",
+            "user__last_name",
+            "start",
+            "end",
+            "date_reservation",
+            "guest",
+            "price",
+            "tax",
+        )
+    )
+    return render(
+        request, "administration/reservations.html", {"reservations": reservations}
+    )

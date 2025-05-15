@@ -1,0 +1,59 @@
+.container-reservation {
+    background-color: #fdfdfd;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+}
+.reservation-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+}
+.btn-filter {
+    font-weight: 500;
+    min-width: 100px;
+}
+.search-wrapper .search-input {
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    font-size: 1rem;
+}
+.status-badge {
+    padding: 0.5em 0.8em;
+    font-size: 0.9rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.status-badge.confirmee {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+.status-badge.terminee {
+    background-color: #cff4fc;
+    color: #055160;
+}
+.status-badge.annulee {
+    background-color: #f8d7da;
+    color: #842029;
+}
+.status-badge.en_attente {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+@media (max-width: 768px) {
+    .reservation-title {
+        font-size: 1.4rem;
+    }
+    .btn-filter {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.7rem;
+    }
+    .search-input {
+        font-size: 0.9rem;
+    }
+    table {
+        font-size: 0.85rem;
+    }
+}
