@@ -1,30 +1,37 @@
-from datetime import timedelta, date, datetime
+from datetime import datetime
 import json
-import stripe
+
+import logging
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 from urllib.parse import urlencode
 from django.contrib import messages
-from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.http import HttpResponse
-from icalendar import Calendar, Event
-from django.utils.timezone import make_aware
 from .forms import ReservationForm
-from .models import Logement, Reservation, airbnb_booking, booking_booking, Price
+from .models import Logement, Reservation, Price
+from services.reservation_service import (
+    is_period_booked,
+    get_booked_dates,
+    create_or_update_reservation,
+)
+from services.calendar_service import generate_ical
+from services.payment_service import create_stripe_checkout_session
 
 
-# Set up Stripe with the secret key
-stripe.api_key = settings.STRIPE_PRIVATE_KEY
+logger = logging.getLogger(__name__)
 
 
 def home(request):
     logement = Logement.objects.prefetch_related("photos").first()
+    rooms = logement.rooms.all()
+    user = request.user
 
     if not logement:
+        logger.warning("Aucun logement configuré – redirection selon l'utilisateur")
         if request.user.is_authenticated and request.user.is_staff:
             return redirect("administration:dashboard")
         else:
@@ -32,50 +39,8 @@ def home(request):
                 request, "logement/no_logement.html"
             )  # Optional friendly page
 
-    rooms = logement.rooms.all()
-
     # Fetch reserved dates for that logement
-    reserved_dates = set()
-    if logement:
-        # Get today's date
-        today = date.today()
-
-        user = request.user
-
-        reservations = Reservation.objects.filter(
-            logement_id=logement.id, end__gte=today
-        )
-
-        if user.is_authenticated:
-            reservations = reservations.filter(
-                Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user))
-            )
-        else:
-            reservations = reservations.filter(statut="confirmee")
-
-        reservations_airbnb = airbnb_booking.objects.filter(
-            logement=logement, end__gte=today
-        )
-
-        reservations_booking = booking_booking.objects.filter(
-            logement=logement, end__gte=today
-        )
-
-        for r in reservations:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
-        for r in reservations_airbnb:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
-        for r in reservations_booking:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
+    reserved_dates = get_booked_dates(logement, user)
 
     return render(
         request,
@@ -92,40 +57,10 @@ def home(request):
 @login_required
 def book(request, logement_id):
     logement = Logement.objects.prefetch_related("photos").first()
-    # Create form and pass the user and the dates in the form initialization
+    user = request.user
 
     # Fetch reserved dates for that logement
-    reserved_dates = set()
-    if logement:
-        # Get today's date
-        today = date.today()
-
-        user = request.user
-        reservations = Reservation.objects.filter(
-            logement_id=logement_id, end__gte=today
-        ).filter(Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user)))
-
-        reservations_airbnb = airbnb_booking.objects.filter(
-            logement=logement, end__gte=today
-        )
-        reservations_booking = booking_booking.objects.filter(
-            logement=logement, end__gte=today
-        )
-        for r in reservations:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
-        for r in reservations_airbnb:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
-        for r in reservations_booking:
-            current = r.start
-            while current < r.end:
-                reserved_dates.add(current.isoformat())
-                current += timedelta(days=1)
+    reserved_dates = get_booked_dates(logement, user)
 
     logement_data = {
         "id": logement.id,
@@ -143,34 +78,15 @@ def book(request, logement_id):
         form = ReservationForm(request.POST)
         if form.is_valid():
             reservation_price = request.POST.get("reservation_price", None)
-            if reservation_price:
+            start = form.cleaned_data["start"]
+            end = form.cleaned_data["end"]
+            guest = form.cleaned_data["guest"]
+
+            if reservation_price and start and end and guest:
                 price = float(reservation_price)
-
-                reservation = Reservation.objects.filter(
-                    logement_id=logement_id,
-                    start=form.cleaned_data["start"],
-                    end=form.cleaned_data["end"],
-                    statut="en_attente",
-                    user=user,
-                ).first()
-
-                if reservation:
-                    reservation.start = form.cleaned_data["start"]
-                    reservation.end = form.cleaned_data["end"]
-                    reservation.guest = form.cleaned_data["guest"]
-                    reservation.price = price
-                    reservation.save()
-                else:
-                    reservation = Reservation(
-                        logement=logement,
-                        user=request.user,
-                        guest=form.cleaned_data["guest"],
-                        start=form.cleaned_data["start"],
-                        end=form.cleaned_data["end"],
-                        price=price,
-                        statut="en_attente",  # Mark as pending until payment is successful
-                    )
-                    reservation.save()
+                reservation = create_or_update_reservation(
+                    logement, user, start, end, guest, price
+                )
 
                 # Create the URLs based on the URL name
                 success_url = reverse("logement:payment_success", args=[reservation.id])
@@ -181,28 +97,8 @@ def book(request, logement_id):
                 cancel_url = request.build_absolute_uri(cancel_url)
 
                 # Create a Stripe session and pass reservation details
-                session = stripe.checkout.Session.create(
-                    payment_method_types=["card"],
-                    line_items=[
-                        {
-                            "price_data": {
-                                "currency": "eur",
-                                "product_data": {
-                                    "name": f"Reservation for {logement.name}",
-                                },
-                                "unit_amount": int(
-                                    reservation.price * 100
-                                ),  # Convert to cents
-                            },
-                            "quantity": 1,
-                        }
-                    ],
-                    mode="payment",
-                    success_url=success_url,
-                    cancel_url=cancel_url,
-                    metadata={
-                        "reservation_id": reservation.id
-                    },  # Pass reservation ID in metadata
+                session = create_stripe_checkout_session(
+                    reservation, success_url, cancel_url
                 )
 
                 return redirect(session.url)
@@ -233,6 +129,7 @@ def book(request, logement_id):
     )
 
 
+@login_required
 def get_price_for_date(request, logement_id, date):
     try:
         # Parse the date from the request
@@ -256,96 +153,27 @@ def get_price_for_date(request, logement_id, date):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+@login_required
 def check_availability(request, logement_id):
     start_date = request.GET.get("start")
     end_date = request.GET.get("end")
-    reservation_id = request.GET.get(
-        "reservation_id", None
-    )  # Get the reservation_id if available
 
     if not start_date or not end_date:
         return JsonResponse(
-            {"available": False, "error": "Missing start or end date"}, status=400
+            {"available": False, "error": "Il manque la date de début ou de fin"},
+            status=400,
         )
 
     # Check if there are any reservations overlapping the selected dates
-    if reservation_id:
-        reservations = Reservation.objects.exclude(id=reservation_id).filter(
-            logement_id=logement_id,
-            start__lt=end_date,
-            end__gt=start_date,
-            statut__in=["confirmee", "en_attente"],
-        )
+    user = request.user
+
+    if is_period_booked(start_date, end_date, logement_id, user):
+        return JsonResponse({"available": False})
     else:
-        user = request.user
-        reservations = Reservation.objects.filter(
-            logement_id=logement_id, start__lt=end_date, end__gt=start_date
-        ).filter(Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user)))
-
-    airbnb_reservations = airbnb_booking.objects.filter(
-        logement_id=logement_id,
-        start__lt=end_date,
-        end__gt=start_date,
-    )
-
-    booking_reservations = booking_booking.objects.filter(
-        logement_id=logement_id,
-        start__lt=end_date,
-        end__gt=start_date,
-    )
-
-    if reservations.exists():
-        return JsonResponse({"available": False})
-
-    if airbnb_reservations.exists():
-        return JsonResponse({"available": False})
-
-    if booking_reservations.exists():
-        return JsonResponse({"available": False})
-
-    return JsonResponse({"available": True})
+        return JsonResponse({"available": True})
 
 
-def create_checkout_session(request):
-    if request.method == "POST":
-        # Retrieve the reservation ID from the form data
-        reservation_id = request.POST.get("reservation_id")
-        reservation = Reservation.objects.get(id=reservation_id)
-
-        # Create the URLs based on the URL name
-        success_url = reverse("logement:payment_success", args=[reservation.id])
-        cancel_url = reverse("logement:payment_cancel", args=[reservation.id])
-
-        # Build full URLs with request.build_absolute_uri
-        success_url = request.build_absolute_uri(success_url)
-        cancel_url = request.build_absolute_uri(cancel_url)
-
-        # Create a Stripe Checkout session
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card", "google_pay", "apple_pay"],
-            line_items=[
-                {
-                    "price_data": {
-                        "currency": "usd",  # Change to your currency
-                        "product_data": {
-                            "name": f"Reservation for {reservation.logement.name}",
-                        },
-                        "unit_amount": int(
-                            reservation.total_price * 100
-                        ),  # Convert to cents
-                    },
-                    "quantity": 1,
-                }
-            ],
-            mode="payment",
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata={"reservation_id": reservation_id},
-        )
-
-        return JsonResponse({"id": checkout_session.id})
-
-
+@login_required
 def payment_success(request, reservation_id):
     reservation = Reservation.objects.get(id=reservation_id)
     reservation.status = "confirmee"
@@ -356,6 +184,7 @@ def payment_success(request, reservation_id):
     )
 
 
+@login_required
 def payment_cancel(request, reservation_id):
     try:
         # Fetch the reservation object by ID
@@ -399,29 +228,15 @@ def cancel_booking(request, reservation_id):
 
 
 def export_ical(request):
-    cal = Calendar()
-    cal.add("prodid", "-//valrose.home-arnaud.ovh//iCal export//FR")
-    cal.add("version", "2.0")
+    try:
+        ics_content = generate_ical()
+        if ics_content:
+            response = HttpResponse(ics_content, content_type="text/calendar")
+            response["Content-Disposition"] = (
+                "attachment; filename=valrose_calendar.ics"
+            )
 
-    # On prend uniquement les réservations confirmées
-    reservations = Reservation.objects.filter(statut="confirmee")
+            return response
 
-    for res in reservations:
-        event = Event()
-        event.add("summary", "Reserved")
-        event.add(
-            "dtstart", make_aware(datetime.combine(res.start, datetime.min.time()))
-        )
-        event.add(
-            "dtend",
-            make_aware(datetime.combine(res.end, datetime.min.time())),
-        )  # DTEND est exclu, donc +1j
-        event.add("dtstamp", datetime.now())
-        event["uid"] = f"{res.id}@valrose.home-arnaud.ovh"
-        cal.add_component(event)
-
-    ics_content = cal.to_ical()
-
-    response = HttpResponse(ics_content, content_type="text/calendar")
-    response["Content-Disposition"] = "attachment; filename=valrose_calendar.ics"
-    return response
+    except Exception:
+        return HttpResponse("Erreur interne serveur", status=500)

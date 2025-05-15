@@ -1,6 +1,8 @@
 from .base import *  # start from base settings
 
 import os
+import logging
+from django.core.exceptions import DisallowedHost
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -12,6 +14,8 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 # SECURITY SETTINGS
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+
+logging.getLogger('django.security.DisallowedHost').setLevel(logging.CRITICAL)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
