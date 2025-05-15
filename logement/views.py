@@ -10,6 +10,9 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.http import HttpResponse
+from icalendar import Calendar, Event
+from django.utils.timezone import make_aware
 from .forms import ReservationForm
 from .models import Logement, Reservation, airbnb_booking, booking_booking, Price
 
@@ -393,3 +396,34 @@ def cancel_booking(request, reservation_id):
         messages.success(request, "✅ Réservation annulée avec succès.")
 
     return redirect("accounts:dashboard")
+
+
+def export_ical(request):
+    cal = Calendar()
+    cal.add("prodid", "-//valrose.home-arnaud.ovh//iCal export//FR")
+    cal.add("version", "2.0")
+
+    # On prend uniquement les réservations confirmées
+    reservations = Reservation.objects.filter(statut="confirmee")
+
+    for res in reservations:
+        event = Event()
+        event.add("summary", "Reserved")
+        event.add(
+            "dtstart", make_aware(datetime.combine(res.start, datetime.min.time()))
+        )
+        event.add(
+            "dtend",
+            make_aware(
+                datetime.combine(res.end + timedelta(days=1), datetime.min.time())
+            ),
+        )  # DTEND est exclu, donc +1j
+        event.add("dtstamp", datetime.now())
+        event["uid"] = f"{res.id}@valrose.home-arnaud.ovh"
+        cal.add_component(event)
+
+    ics_content = cal.to_ical()
+
+    response = HttpResponse(ics_content, content_type="text/calendar")
+    response["Content-Disposition"] = "attachment; filename=valrose_calendar.ics"
+    return response

@@ -38,4 +38,5 @@ urlpatterns = [
         views.cancel_booking,
         name="cancel_booking",
     ),
+    path('api/export/ical/', views.export_ical, name='export-ical'),
 ]
