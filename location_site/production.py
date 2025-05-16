@@ -15,7 +15,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
-logging.getLogger('django.security.DisallowedHost').setLevel(logging.CRITICAL)
+logging.getLogger("django.security.DisallowedHost").setLevel(logging.CRITICAL)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
@@ -131,8 +131,8 @@ LOGGING = {
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # DB 1 for cache (avoid collision with Celery's DB 0)
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -144,7 +144,7 @@ CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 ADMINS = [("Arnaud Anselmi", "anselmi.arnaud@yahoo.fr")]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
