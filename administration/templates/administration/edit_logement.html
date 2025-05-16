@@ -128,7 +128,10 @@
                     {% for photo in logement.photos.all %}
                         <li class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 photo-item" data-photo-id="{{ photo.id }}" data-photo-order="{{ photo.order }}">
                             <div class="d-flex align-items-center">
-                                <img src="{{ photo.image.url }}" style="max-height: 80px;" class="mr-3" alt="{{ photo.room.name }}">
+                                <picture>
+                                    <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                                    <img src="{{ photo.image_webp.url }}" style="max-height: 80px;" class="mr-3" alt="{{ photo.room.name }}">
+                                </picture>
                                 <div>
                                     <span class="badge badge-secondary">📸 {{ photo.room.name|default:"Général" }}</span>
                                     <small class="d-block text-muted">#{{ photo.order }}</small>
@@ -150,6 +153,8 @@
 
                                 <!-- Delete Button -->
                                 <button type="button" class="btn btn-sm btn-danger delete-photo ml-2">🗑️</button>
+
+                                <button type="button" class="btn btn-sm btn-warning rotate-photo ml-2" data-photo-id="{{ photo.id }}">🔄</button>
                             </div>
                         </li>
                     {% endfor %}
@@ -158,6 +163,7 @@
                 <div id="move-photo-url" data-url="{% url 'administration:move_photo' photo_id=1 direction='UP' %}"></div>
                 <div id="change-photo-room-url" data-url="{% url 'administration:change_photo_room' photo_id=1 %}"></div>
                 <div id="delete-photo-url" data-url="{% url 'administration:delete_photo' photo_id=1 %}"></div>
+                <div id="rotate-photo-url" data-url="{% url 'administration:rotate_photo' photo_id=1 %}"></div>
 
                 <form action="{% url 'administration:upload_photos' logement.id %}" method="post" enctype="multipart/form-data" class="mt-4">
                     {% csrf_token %}

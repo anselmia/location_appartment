@@ -171,6 +171,22 @@ def delete_photo(request, photo_id):
 
 @login_required
 @user_passes_test(is_admin)
+@require_POST
+def rotate_photo(request, photo_id):
+    degrees = int(request.POST.get("degrees", 90))
+    try:
+        photo = Photo.objects.get(pk=photo_id)
+        photo.rotation = (photo.rotation - degrees) % 360
+        photo.save()
+        return JsonResponse({"status": "ok", "rotation": photo.rotation})
+    except Photo.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "message": "Photo not found"}, status=404
+        )
+
+
+@login_required
+@user_passes_test(is_admin)
 def traffic_dashboard(request):
     period = request.GET.get("period", "day")  # day, week, month
     now = datetime.now()

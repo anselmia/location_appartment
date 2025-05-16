@@ -2,7 +2,11 @@ import os
 from django.db import models
 from django.dispatch import receiver
 from accounts.models import CustomUser
-from django.urls import reverse
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFit
+from io import BytesIO
+from PIL import Image, ExifTags
+from django.core.files.base import ContentFile
 
 
 class Logement(models.Model):
@@ -106,6 +110,18 @@ class Room(models.Model):
         return f"{self.name} - {self.logement.name}"
 
 
+def upload_to(instance, filename):
+    return f"logement_images/{filename}"
+
+
+ROTATION_CHOICES = [
+    (0, "0°"),
+    (90, "90°"),
+    (180, "180°"),
+    (270, "270°"),
+]
+
+
 class Photo(models.Model):
     logement = models.ForeignKey(
         Logement, on_delete=models.CASCADE, related_name="photos"
@@ -113,14 +129,17 @@ class Photo(models.Model):
     room = models.ForeignKey(
         Room, on_delete=models.SET_NULL, null=True, blank=True, related_name="photos"
     )
-    image = models.ImageField(upload_to="logement_images/")
+    image = models.ImageField(upload_to=upload_to)
+    image_webp = models.ImageField(
+        upload_to="logement_images/webp/", blank=True, null=True, editable=False
+    )
     order = models.IntegerField(default=0)  # Add the order field
+    rotation = models.IntegerField(choices=ROTATION_CHOICES, default=0)
 
     def __str__(self):
         return f"{self.logement.name} - {self.image.name}"
 
     def save(self, *args, **kwargs):
-        # Set order automatically when a new photo is created
         if not self.pk:  # If the photo is being created (not updated)
             max_order = Photo.objects.filter(logement=self.logement).aggregate(
                 max_order=models.Max("order")
@@ -128,7 +147,24 @@ class Photo(models.Model):
             self.order = (
                 max_order or 0
             ) + 1  # Increment the order, default to 1 if no photos exist
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs)  # Save original image first
+
+        # Rebuild the WebP with current rotation
+        if self.image:
+            img = Image.open(self.image.path).convert("RGB")
+
+            if self.rotation:
+                img = img.rotate(self.rotation, expand=True)
+
+            buffer = BytesIO()
+            img.save(buffer, format="WEBP", quality=85)
+            buffer.seek(0)
+
+            filename = os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
+            self.image_webp.save(filename, ContentFile(buffer.read()), save=False)
+
+            buffer.close()
+            super().save(update_fields=["image_webp"])
 
 
 @receiver(models.signals.post_delete, sender=Photo)

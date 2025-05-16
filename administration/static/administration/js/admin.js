@@ -117,3 +117,34 @@ document.querySelectorAll('.delete-photo').forEach(button => {
         }
     });
 });
+
+document.querySelectorAll('.rotate-photo').forEach(button => {
+    button.addEventListener('click', function () {
+        const photoId = this.dataset.photoId;
+        const urlTemplate = document.getElementById('rotate-photo-url').getAttribute('data-url');
+        const url = urlTemplate.replace('1', parseInt(photoId));
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "degrees=90",
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "ok") {
+                // 🔄 Recharge complète de la page
+                location.reload();
+            } else {
+                alert("Erreur : " + data.message);
+            }
+        })
+        .catch(err => {
+            logToServer("error", "Erreur lors de la rotation : " + err, {
+                PhotoId: photoId,
+            });
+        });
+    });
+});
