@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.getElementById("visible_start").addEventListener("touchend", function () {
+            this._flatpickr.open();
+        });
+
+        document.getElementById("visible_end").addEventListener("touchend", function () {
+            this._flatpickr.open();
+        });
+    }
+
     flatpickr("#visible_start", {
         dateFormat: "Y-m-d",
         minDate: "today",
