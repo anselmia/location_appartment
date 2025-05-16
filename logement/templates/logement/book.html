@@ -67,12 +67,12 @@
                 
                             <div class="form-group">
                                 <label for="id_start">Date de début</label>
-                                <input type="date" name="start" id="id_start" autocomplete="off" value="{{ form.start.value }}">
+                                <input type="date" id="id_start" name="start" readonly onfocus="this.removeAttribute('readonly')" autocomplete="new-start">
                             </div>
                 
                             <div class="form-group">
                                 <label for="id_end">Date de fin</label>
-                                <input type="date" name="end" id="id_end" autocomplete="off" value="{{ form.end.value }}">
+                                <input type="date" id="id_end" name="end" readonly onfocus="this.removeAttribute('readonly')" autocomplete="new-end">
                             </div>
                 
                             <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">

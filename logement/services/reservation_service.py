@@ -1,6 +1,7 @@
 from datetime import timedelta, date, datetime
 import logging
 from django.db.models import Q
+from django.utils import timezone
 from logement.models import (
     Reservation,
     airbnb_booking,
@@ -233,6 +234,11 @@ def validate_reservation_inputs(
 
     if guest <= 0 or guest > logement.max_traveler:
         raise ValueError("Nombre de voyageurs invalide.")
+
+    today = timezone.now().date()
+
+    if start <= today or end <= today:
+        raise ValueError("Ces dates ne sont plus disponble.")
 
     if start >= end:
         raise ValueError("La date de fin doit être après la date de début.")
