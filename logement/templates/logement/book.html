@@ -11,12 +11,18 @@
                     <div class="image-gallery">
                         {% if logement.photos.count > 0 %}
                             <div class="gallery-left">
-                            <img src="{{ logement.photos.all.0.image.url }}" alt="Photo principale" loading="lazy">
+                                <picture>
+                                    <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
+                                    <img src="{{ logement.photos.all.0.image.url }}" alt="Photo principale" loading="lazy">
+                                </picture>
                             </div>
                             <div class="gallery-right">
                             {% for photo in logement.photos.all|slice:"1:5" %}
                                 <div class="small-photo">
-                                <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+                                    <picture>
+                                        <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                                        <img src="{{ photo.image_webp.url }}" style="max-height: 80px;" class="mr-3" alt="{{ photo.room.name }}">
+                                    </picture>
                                 </div>
                             {% endfor %}
                             </div>
