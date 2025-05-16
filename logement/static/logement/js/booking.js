@@ -6,13 +6,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    // 🔥 iOS Safari fix: ensure calendar opens on touch
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    logToServer("info", "Ios Device", {
+        isIosDevice: isIOS
+    });
+    if (isIOS) {
         document.getElementById("visible_start").addEventListener("touchend", function () {
-            this._flatpickr.open();
+            startInstance.open();
         });
 
         document.getElementById("visible_end").addEventListener("touchend", function () {
-            this._flatpickr.open();
+            endInstance.open();
         });
     }
 
