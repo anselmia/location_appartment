@@ -6,22 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
-    // 🔥 iOS Safari fix: ensure calendar opens on touch
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    logToServer("info", "Ios Device", {
-        isIosDevice: isIOS
-    });
-    if (isIOS) {
-        document.getElementById("visible_start").addEventListener("touchend", function () {
-            startInstance.open();
-        });
 
-        document.getElementById("visible_end").addEventListener("touchend", function () {
-            endInstance.open();
-        });
-    }
 
-    flatpickr("#visible_start", {
+    const startInstance = flatpickr("#visible_start", {
         dateFormat: "Y-m-d",
         minDate: "today",
         defaultDate: document.getElementById("id_start").value || null,
@@ -31,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    flatpickr("#visible_end", {
+    const endInstance = flatpickr("#visible_end", {
         dateFormat: "Y-m-d",
         minDate: "today",
         defaultDate: document.getElementById("id_end").value || null,
@@ -39,6 +26,12 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById("id_end").value = dateStr;
             updateFinalPrice();
         }
+    });
+
+    // 🔥 iOS Safari fix: ensure calendar opens on touch
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    logToServer("info", "Ios Device", {
+        isIosDevice: isIOS
     });
 
     if (formStart.value && formEnd.value) {
