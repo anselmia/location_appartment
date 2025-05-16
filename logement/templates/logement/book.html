@@ -72,9 +72,11 @@
                                     name="fake_start"
                                     class="datepicker"
                                     value="{{ form.start.value|default:'' }}"
+                                    inputmode="none"
                                     autocomplete="nope"
-                                    readonly
-                                    onfocus="this.removeAttribute('readonly')">
+                                    autocorrect="off"
+                                    spellcheck="false"
+                                    placeholder="YYYY-MM-DD">
 
                                 <input type="hidden"
                                     id="id_start"
@@ -89,9 +91,11 @@
                                     name="fake_end"
                                     class="datepicker"
                                     value="{{ form.end.value|default:'' }}"
+                                    inputmode="none"
                                     autocomplete="nope"
-                                    readonly
-                                    onfocus="this.removeAttribute('readonly')">
+                                    autocorrect="off"
+                                    spellcheck="false"
+                                    placeholder="YYYY-MM-DD">
 
                                 <input type="hidden"
                                     id="id_end"
