@@ -6,8 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
-
-
     const startInstance = flatpickr("#visible_start", {
         dateFormat: "Y-m-d",
         minDate: "today",
@@ -109,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const endDate = new Date(endDateStr);
 
                 // Update the reservation summary dynamically
-                document.getElementById('start-date').innerText = formStart.value; // Update start date in summary
-                document.getElementById('end-date').innerText = formEnd.value; // Update end date in summary
+                document.getElementById('start-date').innerText = startDateStr; // Update start date in summary
+                document.getElementById('end-date').innerText = endDateStr; // Update end date in summary
                 document.getElementById('guest-count').innerText = guestCount;
 
                 axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
