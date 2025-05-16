@@ -1,7 +1,13 @@
 from datetime import timedelta, date, datetime
 import logging
 from django.db.models import Q
-from logement.models import Reservation, airbnb_booking, booking_booking, Price, Discount
+from logement.models import (
+    Reservation,
+    airbnb_booking,
+    booking_booking,
+    Price,
+    Discount,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -209,15 +215,41 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
     )
     taxAmount = taxRate * guestCount * number_of_nights
 
-    total_price = (
-        float(total_price) + float(taxAmount) + float(logement.cleaning_fee)
-    )
+    total_price = float(total_price) + float(taxAmount) + float(logement.cleaning_fee)
 
     return {
-        "number_of_nights":number_of_nights,
-        "total_base_price":total_base_price,
-        "TotalextraGuestFee":TotalextraGuestFee,
-        "discount_totals":discount_totals,
-        "taxAmount":taxAmount,
-        "total_price":total_price
+        "number_of_nights": number_of_nights,
+        "total_base_price": total_base_price,
+        "TotalextraGuestFee": TotalextraGuestFee,
+        "discount_totals": discount_totals,
+        "taxAmount": taxAmount,
+        "total_price": total_price,
     }
+
+
+def validate_reservation_inputs(
+    logement, user, start, end, guest, expected_price=None, expected_tax=None
+):
+
+    if guest <= 0 or guest > logement.max_traveler:
+        raise ValueError("Nombre de voyageurs invalide.")
+
+    if start >= end:
+        raise ValueError("La date de fin doit être après la date de début.")
+
+    if is_period_booked(start, end, logement.id, user):
+        raise ValueError("Les dates sélectionnées sont déjà réservées.")
+
+    price_data = calculate_price(logement, start, end, guest)
+
+    real_price = price_data["total_price"]
+    real_tax = price_data["taxAmount"]
+
+    if expected_price and expected_tax:
+        if (
+            abs(expected_price - real_price) > 0.01
+            or abs(expected_tax - real_tax) > 0.01
+        ):
+            raise ValueError("Les montants ne correspondent pas aux prix réels.")
+
+    return True

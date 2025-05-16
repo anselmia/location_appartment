@@ -1,7 +1,6 @@
-from datetime import datetime
 import json
-
 import logging
+from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
@@ -9,14 +8,15 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.http import HttpResponse
+from django.http import JsonResponse, HttpResponse
+from django.utils.dateparse import parse_date
 from .forms import ReservationForm
 from .models import Logement, Reservation, Price
 from logement.services.reservation_service import (
     is_period_booked,
     get_booked_dates,
     create_or_update_reservation,
+    validate_reservation_inputs,
 )
 from logement.services.calendar_service import generate_ical
 from logement.services.payment_service import create_stripe_checkout_session
@@ -86,24 +86,32 @@ def book(request, logement_id):
             if reservation_price and reservation_tax and start and end and guest:
                 price = float(reservation_price)
                 tax = float(reservation_tax)
-                reservation = create_or_update_reservation(
+
+                if validate_reservation_inputs(
                     logement, user, start, end, guest, price, tax
-                )
+                ):
+                    reservation = create_or_update_reservation(
+                        logement, user, start, end, guest, price, tax
+                    )
 
-                # Create the URLs based on the URL name
-                success_url = reverse("logement:payment_success", args=[reservation.id])
-                cancel_url = reverse("logement:payment_cancel", args=[reservation.id])
+                    # Create the URLs based on the URL name
+                    success_url = reverse(
+                        "logement:payment_success", args=[reservation.id]
+                    )
+                    cancel_url = reverse(
+                        "logement:payment_cancel", args=[reservation.id]
+                    )
 
-                # Build full URLs with request.build_absolute_uri
-                success_url = request.build_absolute_uri(success_url)
-                cancel_url = request.build_absolute_uri(cancel_url)
+                    # Build full URLs with request.build_absolute_uri
+                    success_url = request.build_absolute_uri(success_url)
+                    cancel_url = request.build_absolute_uri(cancel_url)
 
-                # Create a Stripe session and pass reservation details
-                session = create_stripe_checkout_session(
-                    reservation, success_url, cancel_url
-                )
+                    # Create a Stripe session and pass reservation details
+                    session = create_stripe_checkout_session(
+                        reservation, success_url, cancel_url
+                    )
 
-                return redirect(session.url)
+                    return redirect(session.url)
             else:
                 messages.error(request, "Une erreur est survenue")
     else:
@@ -173,6 +181,41 @@ def check_availability(request, logement_id):
         return JsonResponse({"available": False})
     else:
         return JsonResponse({"available": True})
+
+
+@login_required
+def check_booking_input(request, logement_id):
+    start_str = request.GET.get("start")
+    end_str = request.GET.get("end")
+    guest_str = request.GET.get("guest")
+
+    try:
+        # Quick validation
+        start = parse_date(start_str)
+        end = parse_date(end_str)
+        guest = int(guest_str)
+        # Fetch the logement
+        logement = Logement.objects.get(id=logement_id)
+        user = request.user
+
+        if not logement:
+            return JsonResponse({"correct": False})
+
+        if not start or not end:
+            return JsonResponse({"correct": False})
+
+        if guest <= 0:
+            return JsonResponse({"correct": False})
+
+        validate_reservation_inputs(logement, user, start, end, guest)
+
+        return JsonResponse({"correct": True})
+    except ValueError as e:
+        return JsonResponse({"correct": False, "error": str(e)})
+    except Exception:
+        return JsonResponse(
+            {"correct": False, "error": "Erreur interne serveur."}, status=500
+        )
 
 
 @login_required

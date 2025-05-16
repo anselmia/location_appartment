@@ -3,6 +3,7 @@ __pycache__/
 
 # Logs
 *.log
+django.log*
 
 # Environment files
 .env

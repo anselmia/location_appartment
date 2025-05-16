@@ -1,4 +1,5 @@
 User-agent: *
-Disallow:
+Disallow: /admin-area/
+Disallow: /accounts/
 
 Sitemap: https://valrose.home-arnaud.ovh/sitemap.xml

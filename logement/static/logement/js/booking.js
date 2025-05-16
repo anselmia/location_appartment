@@ -1,9 +1,4 @@
 let isReservationValid = false;
-let isStartDatePicked = false;
-let isEndDatePicked = false;
-let userTouchedStart = false;
-let userTouchedEnd = false;
-let fieldsPrefilled = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     const formStart = document.getElementById('id_start');
@@ -12,9 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const logementId = logement_js.id; // Get the logement ID from Django context
 
     if (formStart.value && formEnd.value) {
-        isStartDatePicked = true;
-        isEndDatePicked = true;
-        fieldsPrefilled = true; // ✅ mark them as prefilled
         updateFinalPrice();
     }
 
@@ -35,131 +27,64 @@ document.addEventListener('DOMContentLoaded', function () {
         isReservationValid = false;
     }
 
-    function datesReady() {
-        const startDateStr = formStart.value;
-        const endDateStr = formEnd.value;
-
-        if (!startDateStr || !endDateStr) return false;
-
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
-
-        if (isNaN(startDate) || isNaN(endDate)) return false;
-
-        return true;
-    }
-
-    // Function to check if the dates are already booked
-    function isDateBooked(startDate, endDate) {
-        const url = reservationId ?
-            `/api/check_availability/${logementId}?start=${startDate}&end=${endDate}&reservation_id=${reservationId}` :
-            `/api/check_availability/${logementId}?start=${startDate}&end=${endDate}`;
+    // Function to check if the input are correct
+    function areInputCorrect(startDate, endDate, guest) {
+        const url = `/api/check_booking_input/${logementId}?start=${startDate}&end=${endDate}&guest=${guest}`;
         return new Promise((resolve, reject) => {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.available) {
+                    if (data.correct) {
                         resolve(true);
                     } else {
-                        alert('❌ Les dates sont déjà réservées. Veuillez sélectionner de nouvelles dates.');
-                        resetReservation();
+                        if (data.error) {
+                            resetReservation();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validation échouée',
+                                text: `❌ ${data.error}`,
+                                toast: true,
+                                position: 'top-end',
+                                timer: 4000,
+                                showConfirmButton: false,
+                            });
+                        }
                         resolve(false);
                     }
                 })
                 .catch(err => {
-                    logToServer("error", "Erreur lors de la vérification de disponibilité : " + err, {
+                    logToServer("error", "Erreur lors de la vérification des champs : " + err, {
                         start: startDate,
                         end: endDate,
                         logementId: logementId
                     });
+                    resetReservation();
                     reject(err);
                 });
         });
     }
 
     function updateFinalPrice() {
-        if (
-            (!isStartDatePicked || !isEndDatePicked) &&
-            !fieldsPrefilled &&
-            !(userTouchedStart && userTouchedEnd)
-        ) {
-            isReservationValid = false;
-            document.getElementById('submit-booking').disabled = true;
-            return;
-        }
-
-        // Wait until both date fields are filled and valid
-        if (!datesReady()) {
-            isReservationValid = false;
-            document.getElementById('submit-booking').disabled = true;
-            return;
-        }
-
         const startDateStr = formStart.value;
         const endDateStr = formEnd.value;
-        // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
-        const guestCount = parseInt(formGuest.value, 10) || 1;
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
+        const guestValue = parseInt(formGuest.value.trim(), 10) || 1;
 
-
-        // Vérifie si les dates sont valides
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            alert("❌ Les dates sélectionnées ne sont pas valides.");
-            logToServer("error", "Les dates sélectionnées ne sont pas valides.", {
-                start: startDate,
-                end: endDate,
-                logementId: logementId
-            });
-            resetReservation();
-            return;
-        }
-
-        // Vérifie l'ordre chronologique
-        if (startDate >= endDate) {
-            alert("❌ La date de fin doit être après la date de début.");
-            resetReservation();
-            logToServer("error", "La date de fin doit être après la date de début.", {
-                start: startDate,
-                end: endDate,
-                logementId: logementId
-            });
-            return;
-        }
-
-        // Vérifie que ce ne soit pas le même jour
-        if (startDate.toDateString() === endDate.toDateString()) {
-            alert("❌ La date de début et la date de fin ne peuvent pas être identiques.");
-            resetReservation();
-            logToServer("error", "La date de début et la date de fin ne peuvent pas être identiques.", {
-                start: startDate,
-                end: endDate,
-                logementId: logementId
-            });
-            return;
-        }
-
-        if (!guestCount || guestCount <= 0) {
-            alert("Nombre d'invités invalide.");
-            logToServer("error", "Nombre d'invités invalide", {
-                guestInput: formGuest.value,
-                logementId: logementId
-            });
-            formGuest.value = 1;
-            return;
-        }
-
-        // Check if the selected dates are available
-        isDateBooked(formStart.value, formEnd.value)
+        areInputCorrect(startDateStr, endDateStr, formGuest.value)
             .then((available) => {
                 if (!available) {
                     // Rien à faire, resetReservation() a déjà été appelée dans isDateBooked
                     return;
                 }
+                // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
+                const guestCount = parseInt(formGuest.value, 10) || 1;
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(endDateStr);
+
                 // Update the reservation summary dynamically
                 document.getElementById('start-date').innerText = formStart.value; // Update start date in summary
                 document.getElementById('end-date').innerText = formEnd.value; // Update end date in summary
                 document.getElementById('guest-count').innerText = guestCount;
+
                 axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
                 axios.post('/admin-area/prices/calculate_price/', {
                         logement_id: logementId,
@@ -250,54 +175,41 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    const debouncedUpdatePrice = debounce(updateFinalPrice, 300);
-    // Recalculate the price on input change
-
-    formStart.addEventListener('change', function () {
-        if (formStart.value) {
-            isStartDatePicked = true;
-            userTouchedStart = true;
-            if (datesReady()) {
-                updateFinalPrice();
-            }
-        } else {
-            isStartDatePicked = false;
-            userTouchedStart = false;
-        }
-    });
-
-    formEnd.addEventListener('change', function () {
-        if (formEnd.value) {
-            isEndDatePicked = true;
-            userTouchedEnd = true;
-            if (datesReady()) {
-                updateFinalPrice();
-            }
-        } else {
-            isEndDatePicked = false;
-            userTouchedEnd = false;
-        }
-    });
-
     function validateGuestInput() {
         const guestValue = formGuest.value.trim();
+
+        // Allow empty input while user is editing
+        if (guestValue === '') {
+            return false;
+        }
+
         const guestNumber = parseInt(guestValue, 10);
 
-        // Empty, not a number, negative, zero, float, or too large
+        // Check if input is a valid positive integer within allowed range
         if (
-            !guestValue ||
             isNaN(guestNumber) ||
             guestNumber <= 0 ||
             guestValue.includes('.') ||
             guestNumber > logement_js.max_traveler
         ) {
-            alert("❌ Veuillez entrer un nombre valide de voyageurs (entre 1 et " + logement_js.max_traveler +").");
-            formGuest.value = 1;
+            Swal.fire({
+                icon: 'error',
+                title: 'Nombre invalide',
+                text: `❌ Veuillez entrer un nombre valide de voyageurs (entre 1 et ${logement_js.max_traveler}).`,
+                toast: true,
+                position: 'top-end',
+                timer: 4000,
+                showConfirmButton: false,
+            });
+
             return false;
         }
 
         return true;
     }
+
+    const debouncedUpdatePrice = debounce(updateFinalPrice, 300);
+    // Recalculate the price on input change
 
     formGuest.addEventListener('change', function () {
         if (validateGuestInput()) {
@@ -311,31 +223,81 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    formGuest.addEventListener('blur', function () {
+        if (formGuest.value.trim() === '') {
+            formGuest.value = 1;
+        }
+    });
+
     const stripe = Stripe(stripe_public_key);
 
+    function validateDateInput(inputElement, label = "Date") {
+        const value = inputElement.value.trim();
+
+        // Allow empty value while the user is typing
+        if (value === "") {
+            return false;
+        }
+
+        const parsedDate = new Date(value);
+        if (isNaN(parsedDate.getTime())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    formStart.addEventListener('change', function () {
+        if (validateDateInput(formStart, "Date de début")) {
+            updateFinalPrice();
+        }
+    });
+
+    formEnd.addEventListener('change', function () {
+        if (validateDateInput(formEnd, "Date de fin")) {
+            updateFinalPrice();
+        }
+    });
+
     formStart.addEventListener('input', function () {
-        if (formStart.value) {
-            isStartDatePicked = true;
-            userTouchedStart = true;
-            if (datesReady()) {
-                updateFinalPrice();
-            }
-        } else {
-            isStartDatePicked = false;
-            userTouchedStart = false;
+        if (validateDateInput(formStart, "Date de début")) {
+            updateFinalPrice();
         }
     });
 
     formEnd.addEventListener('input', function () {
-        if (formEnd.value) {
-            isEndDatePicked = true;
-            userTouchedEnd = true;
-            if (datesReady()) {
-                updateFinalPrice();
-            }
-        } else {
-            isEndDatePicked = false;
-            userTouchedEnd = false;
+        if (validateDateInput(formEnd, "Date de fin")) {
+            updateFinalPrice();
+        }
+    });
+
+    formStart.addEventListener('blur', function () {
+        const startDate = new Date(formStart.value.trim());
+        if (isNaN(startDate.getTime())) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Date de début requise',
+                text: 'Veuillez sélectionner une date de début.',
+                toast: true,
+                position: 'top-end',
+                timer: 3000,
+                showConfirmButton: false,
+            });
+        }
+    });
+
+    formEnd.addEventListener('blur', function () {
+        const endDate = new Date(formEnd.value.trim());
+        if (isNaN(endDate.getTime())) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Date de Fin requise',
+                text: 'Veuillez sélectionner une date de fin.',
+                toast: true,
+                position: 'top-end',
+                timer: 3000,
+                showConfirmButton: false,
+            });
         }
     });
 });

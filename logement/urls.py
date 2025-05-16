@@ -19,6 +19,11 @@ urlpatterns = [
         name="check_availability",
     ),
     path(
+        "api/check_booking_input/<int:logement_id>/",
+        views.check_booking_input,
+        name="check_booking_input",
+    ),
+    path(
         "payment/success/<int:reservation_id>/",
         views.payment_success,
         name="payment_success",
