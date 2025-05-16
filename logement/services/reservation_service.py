@@ -238,7 +238,7 @@ def validate_reservation_inputs(
     today = timezone.now().date()
 
     if start <= today or end <= today:
-        raise ValueError("Ces dates ne sont plus disponble.")
+        raise ValueError("Ces dates ne sont plus disponible.")
 
     if start >= end:
         raise ValueError("La date de fin doit être après la date de début.")

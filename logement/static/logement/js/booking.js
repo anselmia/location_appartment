@@ -6,6 +6,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
+    flatpickr("#visible_start", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        defaultDate: document.getElementById("id_start").value || null,
+        onChange: function (selectedDates, dateStr) {
+            document.getElementById("id_start").value = dateStr;
+            updateFinalPrice();
+        }
+    });
+
+    flatpickr("#visible_end", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        defaultDate: document.getElementById("id_end").value || null,
+        onChange: function (selectedDates, dateStr) {
+            document.getElementById("id_end").value = dateStr;
+            updateFinalPrice();
+        }
+    });
+
     if (formStart.value && formEnd.value) {
         updateFinalPrice();
     }

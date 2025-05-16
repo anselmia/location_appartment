@@ -67,12 +67,36 @@
                 
                             <div class="form-group">
                                 <label for="id_start">Date de début</label>
-                                <input type="date" id="id_start" name="start" readonly onfocus="this.removeAttribute('readonly')" autocomplete="new-start">
+                                <input type="text"
+                                    id="visible_start"
+                                    name="fake_start"
+                                    class="datepicker"
+                                    value="{{ form.start.value|default:'' }}"
+                                    autocomplete="nope"
+                                    readonly
+                                    onfocus="this.removeAttribute('readonly')">
+
+                                <input type="hidden"
+                                    id="id_start"
+                                    name="start"
+                                    value="{{ form.start.value|default:'' }}">
                             </div>
                 
                             <div class="form-group">
                                 <label for="id_end">Date de fin</label>
-                                <input type="date" id="id_end" name="end" readonly onfocus="this.removeAttribute('readonly')" autocomplete="new-end">
+                                <input type="text"
+                                    id="visible_end"
+                                    name="fake_end"
+                                    class="datepicker"
+                                    value="{{ form.end.value|default:'' }}"
+                                    autocomplete="nope"
+                                    readonly
+                                    onfocus="this.removeAttribute('readonly')">
+
+                                <input type="hidden"
+                                    id="id_end"
+                                    name="end"
+                                    value="{{ form.end.value|default:'' }}">
                             </div>
                 
                             <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
