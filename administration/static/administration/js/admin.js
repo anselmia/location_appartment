@@ -148,3 +148,28 @@ document.querySelectorAll('.rotate-photo').forEach(button => {
         });
     });
 });
+
+document.getElementById("delete-all-photos").addEventListener("click", function () {
+    if (!confirm("⚠️ Êtes-vous sûr de vouloir supprimer TOUTES les photos ?")) return;
+
+    const url = document.getElementById("delete-all-photos-url").dataset.url;
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "ok") {
+            location.reload(); // 🔄 Recharge la page pour voir les effets
+        } else {
+            alert("Une erreur est survenue lors de la suppression.");
+        }
+    })
+    .catch(err => {
+        console.error("Erreur lors de la suppression de toutes les photos :", err);
+    });
+});

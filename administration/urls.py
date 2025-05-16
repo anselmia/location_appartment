@@ -31,6 +31,7 @@ urlpatterns = [
         name="move_photo",
     ),
     path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
+    path('api/delete-all-photos/<int:logement_id>/', views.delete_all_photos, name='delete_all_photos'),
     path("api/rotate-photos/<int:photo_id>/", views.rotate_photo, name="rotate_photo"),
     path("calendar/", views.calendar, name="calendar"),
     path(

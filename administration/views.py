@@ -169,6 +169,16 @@ def delete_photo(request, photo_id):
         return JsonResponse({"success": True})
 
 
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def delete_all_photos(request, logement_id):
+    logement = get_object_or_404(Logement, id=logement_id)
+    logement.photos.all().delete()
+    return JsonResponse({"status": "ok"})
+
+
 @login_required
 @user_passes_test(is_admin)
 @require_POST
