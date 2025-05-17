@@ -20,6 +20,7 @@ from logement.services.reservation_service import (
 )
 from logement.services.calendar_service import generate_ical
 from logement.services.payment_service import create_stripe_checkout_session
+from logement.services.email_service import send_mail_on_new_reservation
 
 
 logger = logging.getLogger(__name__)
@@ -220,9 +221,13 @@ def check_booking_input(request, logement_id):
 
 @login_required
 def payment_success(request, reservation_id):
+    logement = Logement.objects.first()
+    user = request.user
     reservation = Reservation.objects.get(id=reservation_id)
     reservation.statut = "confirmee"
     reservation.save()
+
+    send_mail_on_new_reservation(logement, reservation, user)
 
     return render(
         request, "logement/payment_success.html", {"reservation": reservation}
@@ -266,7 +271,8 @@ def cancel_booking(request, reservation_id):
             "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
         )
     else:
-        reservation.delete()
+        reservation.statut = "anulee"
+        reservation.save()
         messages.success(request, "✅ Réservation annulée avec succès.")
 
     return redirect("accounts:dashboard")

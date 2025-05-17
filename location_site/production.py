@@ -2,7 +2,6 @@ from .base import *  # start from base settings
 
 import os
 import logging
-from django.core.exceptions import DisallowedHost
 from pathlib import Path
 from dotenv import load_dotenv
 

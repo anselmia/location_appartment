@@ -240,7 +240,7 @@ class Reservation(models.Model):
         default="en_attente",
     )
     guest = models.IntegerField()
-    date_reservation = models.DateTimeField(auto_now_add=True)
+    date_reservation = models.DateTimeField(default=timezone.now)
     price = models.FloatField()
     tax = models.FloatField(default=0)
 

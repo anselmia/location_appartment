@@ -33,7 +33,26 @@ class LogementAdmin(admin.ModelAdmin):
 
 admin.site.register(Logement, LogementAdmin)
 admin.site.register(Photo)
-admin.site.register(Reservation)
+
+
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = [
+        "logement",
+        "user",
+        "start",
+        "end",
+        "statut",
+        "guest",
+        "date_reservation",
+        "price",
+        "tax",
+    ]
+    list_filter = ["statut", "logement", "start"]
+    ordering = ["-date_reservation"]
+
+
+admin.site.register(Reservation, ReservationAdmin)
+
 admin.site.register(airbnb_booking)
 admin.site.register(booking_booking)
 admin.site.register(Discount)

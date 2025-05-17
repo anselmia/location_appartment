@@ -1,0 +1,10 @@
+Nouvelle réservation confirmée 🔒
+
+🧑‍💼 Client : {{ user.get_full_name }} ({{ user.email }})
+🏡 Logement : {{ logement.name }}
+📅 Du {{ reservation.start }} au {{ reservation.end }}
+👥 Nombre de voyageurs : {{ reservation.guest }}
+💶 Prix total : {{ reservation.price }} € (taxes : {{ reservation.tax }} €)
+📆 Réservé le : {{ reservation.date_reservation }}
+
+---

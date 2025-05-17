@@ -26,10 +26,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django_celery_beat",
-    'widget_tweaks',
+    "widget_tweaks",
     "accounts",
     "administration",
-    'logement.apps.LogementConfig'
+    "logement.apps.LogementConfig",
 ]
 
 MIDDLEWARE = [
@@ -40,7 +40,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "administration.middleware.TrafficLoggerMiddleware"
+    "administration.middleware.TrafficLoggerMiddleware",
 ]
 
 ROOT_URLCONF = "location_site.urls"
@@ -48,7 +48,7 @@ ROOT_URLCONF = "location_site.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],  # ✅ include custom path
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -121,3 +121,10 @@ LOGIN_REDIRECT_URL = "/"
 
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
 STRIPE_PRIVATE_KEY = os.environ.get("STRIPE_PRIVATE_KEY", "")
+
+# Development Email Backend (prints emails to console)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Optional: Set a default "from" address
+DEFAULT_FROM_EMAIL = "noreply@localhost"
+# Admins who get error emails or notifications via mail_admins
+ADMINS = [("Dev Admin", "admin@example.com")]

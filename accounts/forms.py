@@ -50,6 +50,12 @@ class CustomUserCreationForm(UserCreationForm):
             )
         return email
 
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if CustomUser.objects.filter(username=username).exists():
+            raise ValidationError("Ce nom d'utilisateur est déjà pris.")
+        return username
+
     # Ensure that the name and last name are not empty
     def clean_name(self):
         name = self.cleaned_data.get("name")

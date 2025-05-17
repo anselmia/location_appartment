@@ -9,6 +9,7 @@ from .forms import (
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from logement.models import Reservation, Logement
 from django.db.models import Q
 from .models import Message, CustomUser
@@ -182,3 +183,28 @@ def contact_view(request):
 
 def cgu_view(request):
     return render(request, "accounts/cgu.html")
+
+
+@login_required
+def delete_account(request):
+    user = request.user
+
+    # Check for ongoing or upcoming reservations
+    today = timezone.now().date()
+    has_active_reservations = Reservation.objects.filter(
+        user=user, statut="confirmee", end__gte=today
+    ).exists()
+
+    if has_active_reservations:
+        messages.error(
+            request,
+            "❌ Vous ne pouvez pas supprimer votre compte avec une réservation en cours ou à venir.",
+        )
+        return redirect("accounts:dashboard")
+
+    # Log out the user before deleting
+    logout(request)
+    # If allowed, delete user
+    user.delete()
+    messages.success(request, "✅ Votre compte a été supprimé avec succès.")
+    return redirect("logement:home")
