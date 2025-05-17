@@ -10,7 +10,7 @@ function showError(message) {
 
 async function fetchEconomyData(year, month) {
     try {
-        const res = await fetch(`/admin-area/api/revenu/${logementId}/?year=${year}&month=${month}`);
+        const res = await fetchWithLoader(`/admin-area/api/revenu/${logementId}/?year=${year}&month=${month}`);
 
         if (!res.ok) {
             throw new Error(`Erreur serveur: ${res.status}`);

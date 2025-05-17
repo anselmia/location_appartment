@@ -136,26 +136,35 @@ def change_photo_room(request, photo_id):
 @require_POST
 def move_photo(request, photo_id, direction):
     photo = get_object_or_404(Photo, id=photo_id)
+    logement_photos = list(
+        Photo.objects.filter(logement=photo.logement).order_by("order")
+    )
+
+    if len(logement_photos) < 2:
+        return JsonResponse(
+            {"success": False, "message": "Pas assez de photos."}, status=400
+        )
+
+    index = next((i for i, p in enumerate(logement_photos) if p.id == photo.id), None)
+    if index is None:
+        return JsonResponse(
+            {"success": False, "message": "Photo introuvable."}, status=404
+        )
+
     if direction == "up":
-        previous_photo = (
-            Photo.objects.filter(logement=photo.logement, order__lt=photo.order)
-            .order_by("-order")
-            .first()
-        )
-        if previous_photo:
-            photo.order, previous_photo.order = previous_photo.order, photo.order
-            photo.save()
-            previous_photo.save()
+        swap_index = (index - 1) % len(logement_photos)
     elif direction == "down":
-        next_photo = (
-            Photo.objects.filter(logement=photo.logement, order__lt=photo.order)
-            .order_by("order")
-            .first()
+        swap_index = (index + 1) % len(logement_photos)
+    else:
+        return JsonResponse(
+            {"success": False, "message": "Direction invalide."}, status=400
         )
-        if next_photo:
-            photo.order, next_photo.order = next_photo.order, photo.order
-            photo.save()
-            next_photo.save()
+
+    other_photo = logement_photos[swap_index]
+    photo.order, other_photo.order = other_photo.order, photo.order
+    photo.save()
+    other_photo.save()
+
     return JsonResponse({"success": True})
 
 
@@ -167,7 +176,6 @@ def delete_photo(request, photo_id):
         photo = get_object_or_404(Photo, id=photo_id)
         photo.delete()
         return JsonResponse({"success": True})
-
 
 
 @login_required

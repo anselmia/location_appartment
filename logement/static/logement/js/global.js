@@ -1,7 +1,19 @@
+function fetchWithLoader(url, options = {}) {
+    const loader = document.getElementById("loader");
+    if (loader) {
+        loader.style.display = "flex";
+    }
 
+    return fetch(url, options)
+        .finally(() => {
+            if (loader) {
+                loader.style.display = "none";
+            }
+        });
+}
 
 function logToServer(level, message, meta = {}) {
-    fetch("/admin-area/api/log-js/", {
+    fetchWithLoader("/admin-area/api/log-js/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

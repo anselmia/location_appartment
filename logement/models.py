@@ -2,11 +2,9 @@ import os
 from django.db import models
 from django.dispatch import receiver
 from accounts.models import CustomUser
-from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFit
 from io import BytesIO
-from PIL import Image, ExifTags
 from django.core.files.base import ContentFile
+from PIL import Image
 
 
 class Logement(models.Model):
@@ -14,6 +12,7 @@ class Logement(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     adresse = models.CharField(max_length=255)
+
     max_traveler = models.IntegerField(default=4)
     nominal_traveler = models.IntegerField(default=4)
     fee_per_extra_traveler = models.DecimalField(
@@ -21,8 +20,20 @@ class Logement(models.Model):
     )
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=4)
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    cancelation_period = models.IntegerField(default=15)
+
+    cancelation_period = models.IntegerField(default=15)  # en jours ?
     bedrooms = models.IntegerField(default=1)
+
+    ready_period = models.IntegerField(default=1)  # en jours ?
+
+    entrance_hour_min = models.TimeField(default="15:00")
+    entrance_hour_max = models.TimeField(default="20:00")
+    leaving_hour = models.TimeField(default="11:00")
+
+    max_days = models.IntegerField(default=60)
+    availablity_period = models.IntegerField(default=6)  # en mois ?
+
+    animals = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -140,31 +151,51 @@ class Photo(models.Model):
         return f"{self.logement.name} - {self.image.name}"
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # If the photo is being created (not updated)
+        is_new = self.pk is None
+        old_rotation = None
+        old_image_path = None
+
+        if not is_new:
+            old = Photo.objects.get(pk=self.pk)
+            old_rotation = old.rotation
+            old_image_path = old.image.path if old.image and old.image.name != self.image.name else None
+
+        # If the photo is being created, set initial order
+        if is_new:
             max_order = Photo.objects.filter(logement=self.logement).aggregate(
                 max_order=models.Max("order")
             )["max_order"]
-            self.order = (
-                max_order or 0
-            ) + 1  # Increment the order, default to 1 if no photos exist
-        super().save(*args, **kwargs)  # Save original image first
+            self.order = (max_order or 0) + 1
 
-        # Rebuild the WebP with current rotation
-        if self.image:
-            img = Image.open(self.image.path).convert("RGB")
+        super().save(*args, **kwargs)  # Save original image to get path
 
-            if self.rotation:
-                img = img.rotate(self.rotation, expand=True)
+        should_rebuild_webp = False
 
-            buffer = BytesIO()
-            img.save(buffer, format="WEBP", quality=85)
-            buffer.seek(0)
+        # 1. New image or image changed
+        if is_new or old_image_path:
+            should_rebuild_webp = True
 
-            filename = os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
-            self.image_webp.save(filename, ContentFile(buffer.read()), save=False)
+        # 2. Rotation changed
+        elif old_rotation is not None and self.rotation != old_rotation:
+            should_rebuild_webp = True
 
-            buffer.close()
-            super().save(update_fields=["image_webp"])
+        if should_rebuild_webp and self.image:
+            try:
+                img = Image.open(self.image.path).convert("RGB")
+
+                if self.rotation:
+                    img = img.rotate(self.rotation, expand=True)
+
+                buffer = BytesIO()
+                img.save(buffer, format="WEBP", quality=85)
+                buffer.seek(0)
+
+                filename = os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
+                self.image_webp.save(filename, ContentFile(buffer.read()), save=False)
+                super().save(update_fields=["image_webp"])  # Save only webp
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).exception(f"Error generating WebP for photo {self.pk}: {e}")
 
 
 @receiver(models.signals.post_delete, sender=Photo)

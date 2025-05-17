@@ -50,6 +50,7 @@
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -174,9 +175,11 @@
             </script>
         {% endif %}
 
-        <div id="economy-loader" style="display:none;">
-            <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
-            Chargement...
+        <div id="loader">
+            <div style="text-align: center;">
+                <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+                <div class="mt-2">Chargement...</div>
+            </div>
         </div>
 
         {% block content %}{% endblock %}

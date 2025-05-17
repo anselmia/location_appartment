@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function areInputCorrect(startDate, endDate, guest) {
         const url = `/api/check_booking_input/${logementId}?start=${startDate}&end=${endDate}&guest=${guest}`;
         return new Promise((resolve, reject) => {
-            fetch(url)
+            fetchWithLoader(url)
                 .then(response => response.json())
                 .then(data => {
                     if (data.correct) {

@@ -80,6 +80,47 @@
                 </div>
             </div>
 
+            <div class="form-field">
+                <label for="{{ form.cancelation_period.id_for_label }}">{{ form.cancelation_period.label }}</label>
+                {{ form.cancelation_period|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.ready_period.id_for_label }}">{{ form.ready_period.label }}</label>
+                {{ form.ready_period|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.entrance_hour_min.id_for_label }}">{{ form.entrance_hour_min.label }}</label>
+                {{ form.entrance_hour_min|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.entrance_hour_max.id_for_label }}">{{ form.entrance_hour_max.label }}</label>
+                {{ form.entrance_hour_max|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.leaving_hour.id_for_label }}">{{ form.leaving_hour.label }}</label>
+                {{ form.leaving_hour|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.max_days.id_for_label }}">{{ form.max_days.label }}</label>
+                {{ form.max_days|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.availablity_period.id_for_label }}">{{ form.availablity_period.label }}</label>
+                {{ form.availablity_period|add_class:"form-input" }}
+            </div>
+
+            <div class="form-field checkbox-field">
+                <label for="{{ form.animals.id_for_label }}">
+                    {{ form.animals }} {{ form.animals.label }}
+                </label>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn-submit">💾 Enregistrer</button>
             </div>
