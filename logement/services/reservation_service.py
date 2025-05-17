@@ -1,7 +1,7 @@
 from datetime import timedelta, date, datetime
+from dateutil.relativedelta import relativedelta
 import logging
 from django.db.models import Q
-from django.utils import timezone
 from logement.models import (
     Reservation,
     airbnb_booking,
@@ -14,8 +14,14 @@ logger = logging.getLogger(__name__)
 
 
 def get_booked_dates(logement, user=None):
-    today = today = date.today()
+    today = date.today()
+
     reserved = set()
+
+    current_date = today
+    while current_date < logement.booking_limit:
+        reserved.add(current_date.isoformat())
+        current_date += timedelta(days=1)
 
     reservations = Reservation.objects.filter(logement=logement, end__gte=today)
     if user and user.is_authenticated:
@@ -235,13 +241,27 @@ def validate_reservation_inputs(
     if guest <= 0 or guest > logement.max_traveler:
         raise ValueError("Nombre de voyageurs invalide.")
 
-    today = timezone.now().date()
-
-    if start <= today or end <= today:
+    if start < logement.booking_limit:
         raise ValueError("Ces dates ne sont plus disponible.")
 
     if start >= end:
         raise ValueError("La date de fin doit être après la date de début.")
+
+    duration = (end - start).days  # nombre de jours complets
+    if duration > logement.max_days:
+        raise ValueError(
+            f"La durée de la réservation doit être inférieure à {logement.max_days} jour(s)."
+        )
+
+    # 🗓️ Enforce availablity_period (months from today)
+    today = datetime.today().date()
+    limit_months = logement.availablity_period
+    booking_horizon = today + relativedelta(months=limit_months)
+
+    if start > booking_horizon:
+        raise ValueError(
+            f"Vous pouvez réserver au maximum {limit_months} mois à l'avance (jusqu'au {booking_horizon.strftime('%d/%m/%Y')})."
+        )
 
     if is_period_booked(start, end, logement.id, user):
         raise ValueError("Les dates sélectionnées sont déjà réservées.")

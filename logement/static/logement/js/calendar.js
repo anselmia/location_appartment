@@ -11,6 +11,12 @@ function setupFlatpickr(id) {
     todayDate.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
     const today = todayDate.toISOString().slice(0, 10); // Format the date to YYYY-MM-DD
 
+    // 🗓️ Compute the booking limit
+    const limitInMonths = parseInt(periodLimit);  // e.g. "6"
+    const maxDate = new Date(todayDate);          // Clone todayDate
+
+    maxDate.setMonth(maxDate.getMonth() + limitInMonths);
+
     // Convert reserved dates to the same format (YYYY-MM-DD) using local timezone
     reservedDatesLocal = reservedDates.map(dateStr => {
         const date = new Date(dateStr);
@@ -23,6 +29,7 @@ function setupFlatpickr(id) {
         mode: "range",
         inline: true,
         minDate: todayDate, // Use the adjusted "today" date based on user's timezone
+        maxDate: maxDate,
         disable: reservedDates, // Disable the reserved dates
         onDayCreate: function (_, __, ___, dayElem) {
             const date = dayElem.dateObj.toISOString().slice(0, 10); // Get the current date in YYYY-MM-DD

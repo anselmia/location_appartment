@@ -14,7 +14,7 @@
         <div class="gallery-left">
             <picture>
                 <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
-                <img src="{{ logement.photos.all.0.image.url }}" alt="Photo principale" loading="lazy">
+                <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
             </picture>
         </div>
         <div class="gallery-right">
@@ -22,7 +22,7 @@
             <div class="small-photo">
                 <picture>
                     <source srcset="{{ photo.image_webp.url }}" type="image/webp">
-                    <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+                    <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
                 </picture>
             </div>
         {% endfor %}
@@ -42,15 +42,25 @@
                 <li>👥 <strong>Capacité :</strong> {{ logement.max_traveler }}</li>
                 <li><strong>Chambres :</strong> {{ logement.bedrooms }}</li>
             </ul>
+
+            <hr>
+
+            <div class="logement-section">
+                <h3>🧭 Check In/Out</h3>
+                <ul>
+                    <li>⏰ <strong>Check-in :</strong> entre {{ logement.entrance_hour_min|time:"H:i" }} et {{ logement.entrance_hour_max|time:"H:i" }}</li>
+                    <li>⏳ <strong>Check-out :</strong> avant {{ logement.leaving_hour|time:"H:i" }}</li>
+                </ul>
+            </div>
         
             <hr>
         
             <div class="logement-section">
-                <h3>🚍 Transports & Proximité</h3>
+                <h3>📍 Transports & Proximité</h3>
                 <ul>
                     <li>🌊 <strong>Plage la plus proche :</strong> 15 min en tram ou 35 min à pied (Promenade des Anglais)</li>
                     <li>🏛️ <strong>Centre-ville :</strong> 10 min en tram (Tramway L1)</li>
-                    <li>🛒 <strong>Supermarché :</strong> Carrefour City à 3 min à pied</li>
+                    <li>🛒 <strong>Supermarché :</strong> Carrefour City à 7 min à pied</li>
                     <li>🚈 <strong>Gare SNCF Nice Ville :</strong> 15 min en tram ou 8 min en voiture</li>
                     <li>✈️ <strong>Aéroport Nice Côte d’Azur :</strong> 30 min en tram (L2 + L1) ou 20 min en voiture</li>
                 </ul>
@@ -59,7 +69,7 @@
             <hr>
         
             <div class="logement-section">
-                <h3>🧭 Arriver au logement</h3>
+                <h3>🚍  Arriver au logement</h3>
                 <ul>
                     <li>🚗 <strong>En voiture :</strong> Sortie autoroute A8 « Nice Nord » puis 10 min</li>
                     <li>🚄 <strong>Depuis la gare :</strong> Tram L1 → arrêt "Valrose Université"</li>
@@ -186,7 +196,8 @@
 <script>
     const reservedDates = {{ reserved_dates_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
-    const logementId = {{ logement.id }};    
+    const logementId = {{ logement.id }};
+    const periodLimit = {{ logement.availablity_period }};      
     const allPhotoUrls = {{ photo_urls|safe }};
 </script>
 <script src="{% static 'logement/js/image-galery.js' %}"></script>

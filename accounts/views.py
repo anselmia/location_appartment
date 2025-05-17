@@ -1,5 +1,3 @@
-from datetime import timedelta
-from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import (
@@ -73,7 +71,6 @@ def user_logout(request):
 @login_required
 def client_dashboard(request):
     user = request.user
-    today = timezone.now().date()
     reservations = Reservation.objects.filter(
         user=user, statut__in=["confirmee", "annulee"]
     ).order_by("-start")
@@ -81,12 +78,7 @@ def client_dashboard(request):
     formUser = CustomUserChangeForm(
         name=user.name, last_name=user.last_name, email=user.email, phone=user.phone
     )
-    for r in reservations:
-        cancel_limit = r.start - timedelta(days=r.logement.cancelation_period)
-        r.can_cancel = today < cancel_limit
-        r.ended = today > r.end
-        r.ongoing = r.start <= today and r.end >= today
-        r.coming = r.start > today
+
     return render(
         request,
         "accounts/dashboard.html",

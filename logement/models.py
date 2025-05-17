@@ -5,6 +5,8 @@ from accounts.models import CustomUser
 from io import BytesIO
 from django.core.files.base import ContentFile
 from PIL import Image
+from datetime import timedelta
+from django.utils import timezone
 
 
 class Logement(models.Model):
@@ -37,6 +39,10 @@ class Logement(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def booking_limit(self):
+        return timezone.now().date() + timedelta(days=self.ready_period)
 
 
 class Price(models.Model):
@@ -158,7 +164,11 @@ class Photo(models.Model):
         if not is_new:
             old = Photo.objects.get(pk=self.pk)
             old_rotation = old.rotation
-            old_image_path = old.image.path if old.image and old.image.name != self.image.name else None
+            old_image_path = (
+                old.image.path
+                if old.image and old.image.name != self.image.name
+                else None
+            )
 
         # If the photo is being created, set initial order
         if is_new:
@@ -190,12 +200,17 @@ class Photo(models.Model):
                 img.save(buffer, format="WEBP", quality=85)
                 buffer.seek(0)
 
-                filename = os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
+                filename = (
+                    os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
+                )
                 self.image_webp.save(filename, ContentFile(buffer.read()), save=False)
                 super().save(update_fields=["image_webp"])  # Save only webp
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).exception(f"Error generating WebP for photo {self.pk}: {e}")
+
+                logging.getLogger(__name__).exception(
+                    f"Error generating WebP for photo {self.pk}: {e}"
+                )
 
 
 @receiver(models.signals.post_delete, sender=Photo)
@@ -231,6 +246,26 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"
+
+    @property
+    def can_cancel(self):
+        if self.statut != "confirmee":
+            return False
+        cancel_limit = self.start - timedelta(days=self.logement.cancelation_period)
+        return timezone.now().date() < cancel_limit
+
+    @property
+    def ended(self):
+        return timezone.now().date() > self.end
+
+    @property
+    def ongoing(self):
+        today = timezone.now().date()
+        return self.start <= today <= self.end
+
+    @property
+    def coming(self):
+        return timezone.now().date() < self.start
 
 
 class airbnb_booking(models.Model):

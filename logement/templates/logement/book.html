@@ -13,7 +13,7 @@
                             <div class="gallery-left">
                                 <picture>
                                     <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
-                                    <img src="{{ logement.photos.all.0.image.url }}" alt="Photo principale" loading="lazy">
+                                    <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
                                 </picture>
                             </div>
                             <div class="gallery-right">
@@ -21,7 +21,7 @@
                                 <div class="small-photo">
                                     <picture>
                                         <source srcset="{{ photo.image_webp.url }}" type="image/webp">
-                                        <img src="{{ photo.image_webp.url }}" style="max-height: 80px;" class="mr-3" alt="{{ photo.room.name }}">
+                                        <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
                                     </picture>
                                 </div>
                             {% endfor %}
@@ -29,7 +29,7 @@
                         {% else %}
                             <p>Aucune photo disponible.</p>
                         {% endif %}
-                    </div>                    
+                    </div>               
                     
                     <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#photoModal">
                         Voir toutes les photos
@@ -183,6 +183,7 @@
     const reservedDates = {{ reserved_dates_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
     const allPhotoUrls = {{ photo_urls|safe }};
+    const periodLimit = {{ logement.availablity_period }};  
     const calendarDisabled = true;
 </script>
 <script src="https://js.stripe.com/v3/"></script>
