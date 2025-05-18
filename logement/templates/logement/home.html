@@ -79,23 +79,24 @@
             </div>
         </div>
 
-        <div class="calendar-box mt-4">
-            <h3>{% trans "Disponibilités" %}</h3>
-            <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
-                <input type="hidden" id="calendar_range" name="calendar_range">
-                <input type="hidden" id="id_start" name="start">
-                <input type="hidden" id="id_end" name="end">
-                <div id="calendar_inline"></div>
-                <button type="submit">{% trans "Réserver" %}</button>                
-            </form>
+        <div class="booking-toggle" id="bookingToggle">Réserver</div>
 
-            <div class="legend">
-                <div class="legend-item"><span class="dot booked"></span> Réservé</div>
-                <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
-                <div class="legend-item"><span class="dot free"></span> Disponible</div>
+        <div id="bookingPanel" class="booking-panel collapsed">
+            <div class="booking-content">
+                <h3>{% trans "Choix des dates" %}</h3>
+                <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
+                    <input type="hidden" id="id_start" name="start">
+                    <input type="hidden" id="id_end" name="end">
+                    <div id="calendar_inline"></div>
+                    <button type="submit">{% trans "Réserver" %}</button>
+                </form>
+                <div class="legend">
+                    <div class="legend-item"><span class="dot booked"></span> Réservé</div>
+                    <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
+                    <div class="legend-item"><span class="dot free"></span> Disponible</div>
+                </div>
             </div>
         </div>
-    </div>
 </section>
 
 <section class="equipment-section section-block">
@@ -194,7 +195,8 @@
 
 {% block extra_js %}
 <script>
-    const reservedDates = {{ reserved_dates_json|safe }};
+    const reservedDatesStart = {{ reserved_dates_start_json|safe }};
+    const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
     const logementId = {{ logement.id }};
     const periodLimit = {{ logement.availablity_period }};      

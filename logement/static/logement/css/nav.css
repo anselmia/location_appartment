@@ -18,6 +18,14 @@
     font-weight: bold;
 }
 
+.navbar .logo a {
+    color: #555555;
+}
+
+.navbar .logo a:hover {
+    color: #282323;
+}
+
 .nav-logo {
     height: 24px;
     width: auto;               /* Keep aspect ratio */

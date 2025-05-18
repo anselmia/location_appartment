@@ -7,6 +7,12 @@ html, body {
     background: #faf8f0 !important;
 }
 
+body {
+    font-family: 'Inter', sans-serif; /* or Roboto, Poppins, etc. */
+    line-height: 1.6;
+    letter-spacing: 0.2px;
+}
+
 .page-wrapper {
     display: flex;
     flex-direction: column;

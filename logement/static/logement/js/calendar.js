@@ -1,4 +1,6 @@
-let reservedDatesLocal;
+let reservedDates;
+const startInput = document.getElementById("id_start");
+const endInput = document.getElementById("id_end");
 
 function setupFlatpickr(id) {
     const isCalendarDisabled = typeof calendarDisabled !== "undefined" ? calendarDisabled : false;
@@ -6,35 +8,40 @@ function setupFlatpickr(id) {
         document.querySelector("#calendar_inline").classList.add("calendar-disabled");
     }
 
-    // Get today's date in the user's local timezone
-    const todayDate = new Date(); // This will use the browser's local timezone
-    todayDate.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
-    const today = todayDate.toISOString().slice(0, 10); // Format the date to YYYY-MM-DD
-
     // 🗓️ Compute the booking limit
-    const limitInMonths = parseInt(periodLimit);  // e.g. "6"
-    const maxDate = new Date(todayDate);          // Clone todayDate
+    const limitInMonths = parseInt(periodLimit); // e.g. "6"
+    const maxDate = new Date(today);
 
     maxDate.setMonth(maxDate.getMonth() + limitInMonths);
 
-    // Convert reserved dates to the same format (YYYY-MM-DD) using local timezone
-    reservedDatesLocal = reservedDates.map(dateStr => {
-        const date = new Date(dateStr);
-        date.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
-        return date.toISOString().slice(0, 10); // Format reserved date to YYYY-MM-DD
-    });
- 
+    function formatLocalDate(date) {
+        if (!(date instanceof Date)) {
+            date = new Date(date); // convert from string if necessary
+        }
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     const config = {
         mode: "range",
         inline: true,
-        minDate: todayDate, // Use the adjusted "today" date based on user's timezone
+        minDate: today, // Use the adjusted "today" date based on user's timezone
         maxDate: maxDate,
-        disable: reservedDates, // Disable the reserved dates
+        disable: [], // Disable the reserved dates
         onDayCreate: function (_, __, ___, dayElem) {
-            const date = dayElem.dateObj.toISOString().slice(0, 10); // Get the current date in YYYY-MM-DD
+            const date = formatLocalDate(dayElem.dateObj); // Get the current date in YYYY-MM-DD
 
-            if (reservedDatesLocal.includes(date)) {
+            if (reservedDatesStart.includes(date)) {
+                dayElem.classList.add("no-start");
+            }
+
+            if (reservedDatesEnd.includes(date)) {
+                dayElem.classList.add("no-end");
+            }
+
+            if (reservedDatesStart.includes(date)) {
                 dayElem.classList.add("booked-day"); // Apply booked class
             } else if (date === today) {
                 dayElem.classList.add("today-day"); // Apply today class
@@ -42,9 +49,51 @@ function setupFlatpickr(id) {
                 dayElem.classList.add("free-day"); // Apply free class
             }
         },
-        onChange: function (selectedDates, dateStr) {
+        onChange: function (selectedDates, dateStr, instance) {
+            if (selectedDates.length !== 2) {
+                return; // Ignore if range is not fully selected
+            }
+
+            const startStr = formatLocalDate(selectedDates[0]);
+            const endStr = formatLocalDate(selectedDates[1]);
+
+            if (reservedDatesStart.includes(startStr)) {
+                alert("Ce jour ne peut pas être sélectionné comme date de début.");
+                instance.clear();
+                return;
+            }
+
+            if (reservedDatesEnd.includes(endStr)) {
+                alert("Ce jour ne peut pas être sélectionné comme date de fin.");
+                instance.clear();
+                return;
+            }
+
+            // Check intermediate days
+            let current = new Date(startStr);
+            current.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
+            current.setDate(current.getDate() + 1); // start + 1 day
+            let end = new Date(endStr);
+            end.setHours(0, 0, 0, 0); // Set time to midnight to avoid timezone issues
+
+            while (current < end) {
+                const currentStr = current.toISOString().slice(0, 10);
+                if (reservedDatesStart.includes(currentStr)) {
+                    alert("Une ou plusieurs dates dans la plage sélectionnée ne sont pas disponibles.");
+                    instance.clear();
+                    return;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+
             // Push selected range into hidden input
-            document.getElementById("calendar_range").value = dateStr;
+            startInput.value = startStr;
+            endInput.value = endStr;
+
+            // Manually trigger input/change events
+            endInput.dispatchEvent(new Event("change", {
+                bubbles: true
+            }));
         }
     };
 
@@ -56,7 +105,19 @@ function setupFlatpickr(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupFlatpickr("#calendar_range");
+    const panel = document.getElementById('bookingPanel');
+    const toggle = document.getElementById('bookingToggle');
+
+    if (panel && toggle) {
+        toggle.addEventListener('click', () => {
+            panel.classList.toggle('collapsed');
+        });
+    }
+
+    const calendarEl = document.querySelector("#calendar_inline");
+    if (calendarEl) {
+        setupFlatpickr("#calendar_range");
+    }
 });
 
 const bookingForm = document.querySelector(".booking-form");

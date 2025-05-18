@@ -6,26 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
-    const startInstance = flatpickr("#visible_start", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        defaultDate: document.getElementById("id_start").value || null,
-        onChange: function (selectedDates, dateStr) {
-            document.getElementById("id_start").value = dateStr;
-            updateFinalPrice();
-        }
-    });
-
-    const endInstance = flatpickr("#visible_end", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        defaultDate: document.getElementById("id_end").value || null,
-        onChange: function (selectedDates, dateStr) {
-            document.getElementById("id_end").value = dateStr;
-            updateFinalPrice();
-        }
-    });
-
     // 🔥 iOS Safari fix: ensure calendar opens on touch
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     logToServer("info", "Ios Device", {
@@ -273,57 +253,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    formStart.addEventListener('change', function () {
-        if (validateDateInput(formStart, "Date de début")) {
-            updateFinalPrice();
-        }
-    });
-
-    formEnd.addEventListener('change', function () {
+    endInput.addEventListener('change', function () {
         if (validateDateInput(formEnd, "Date de fin")) {
             updateFinalPrice();
-        }
-    });
-
-    formStart.addEventListener('input', function () {
-        if (validateDateInput(formStart, "Date de début")) {
-            updateFinalPrice();
-        }
-    });
-
-    formEnd.addEventListener('input', function () {
-        if (validateDateInput(formEnd, "Date de fin")) {
-            updateFinalPrice();
-        }
-    });
-
-    formStart.addEventListener('blur', function () {
-        const startDate = new Date(formStart.value.trim());
-        if (isNaN(startDate.getTime())) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Date de début requise',
-                text: 'Veuillez sélectionner une date de début.',
-                toast: true,
-                position: 'top-end',
-                timer: 3000,
-                showConfirmButton: false,
-            });
-        }
-    });
-
-    formEnd.addEventListener('blur', function () {
-        const endDate = new Date(formEnd.value.trim());
-        if (isNaN(endDate.getTime())) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Date de Fin requise',
-                text: 'Veuillez sélectionner une date de fin.',
-                toast: true,
-                position: 'top-end',
-                timer: 3000,
-                showConfirmButton: false,
-            });
         }
     });
 });

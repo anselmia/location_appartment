@@ -16,38 +16,52 @@ logger = logging.getLogger(__name__)
 def get_booked_dates(logement, user=None):
     today = date.today()
 
-    reserved = set()
+    reserved_start = set()
+    reserved_end = set()
 
     current_date = today
     while current_date < logement.booking_limit:
-        reserved.add(current_date.isoformat())
+        reserved_start.add(current_date.isoformat())
+        reserved_end.add(current_date.isoformat())
         current_date += timedelta(days=1)
 
     reservations = Reservation.objects.filter(logement=logement, end__gte=today)
     if user and user.is_authenticated:
         reservations = reservations.filter(
             Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user))
-        )
+        ).order_by("start")
     else:
-        reservations = reservations.filter(statut="confirmee")
-
-    for model in [airbnb_booking, booking_booking]:
-        for r in model.objects.filter(logement=logement, end__gte=today):
-            current = r.start
-            while current < r.end:
-                reserved.add(current.isoformat())
-                current += timedelta(days=1)
+        reservations = reservations.filter(statut="confirmee").order_by("start")
 
     for r in reservations:
         current = r.start
         while current < r.end:
-            reserved.add(current.isoformat())
+            reserved_start.add(current.isoformat())
+            if current != r.start or (
+                current == r.start
+                and (current - timedelta(days=1)).isoformat() in reserved_end
+            ):
+                reserved_end.add(current.isoformat())
             current += timedelta(days=1)
 
+    for model in [airbnb_booking, booking_booking]:
+        for r in model.objects.filter(logement=logement, end__gte=today).order_by(
+            "start"
+        ):
+            current = r.start
+            while current < r.end:
+                reserved_start.add(current.isoformat())
+                if current != r.start or (
+                    current == r.start
+                    and (current - timedelta(days=1)).isoformat() not in reserved_end
+                ):
+                    reserved_end.add(current.isoformat())
+                current += timedelta(days=1)
+
     logger.debug(
-        f"{len(reserved)} dates réservées calculées pour logement {logement.id}"
+        f"{len(reserved_start)} dates réservées calculées pour logement {logement.id}"
     )
-    return sorted(reserved)
+    return sorted(reserved_start), sorted(reserved_end)
 
 
 def is_period_booked(start, end, logement_id, user):

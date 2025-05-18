@@ -41,7 +41,7 @@ def home(request):
             )  # Optional friendly page
 
     # Fetch reserved dates for that logement
-    reserved_dates = get_booked_dates(logement, user)
+    reserved_dates_start, reserved_dates_end = get_booked_dates(logement, user)
 
     return render(
         request,
@@ -49,7 +49,8 @@ def home(request):
         {
             "logement": logement,
             "rooms": rooms,
-            "reserved_dates_json": json.dumps(sorted(reserved_dates)),
+            "reserved_dates_start_json": json.dumps(sorted(reserved_dates_start)),
+            "reserved_dates_end_json": json.dumps(sorted(reserved_dates_end)),
             "photo_urls": [photo.image.url for photo in logement.photos.all()],
         },
     )
@@ -61,7 +62,7 @@ def book(request, logement_id):
     user = request.user
 
     # Fetch reserved dates for that logement
-    reserved_dates = get_booked_dates(logement, user)
+    reserved_dates_start, reserved_dates_end = get_booked_dates(logement, user)
 
     logement_data = {
         "id": logement.id,
@@ -134,7 +135,8 @@ def book(request, logement_id):
             "logement": logement,
             "logement_data": logement_data,
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,  # Pass the public key to the template
-            "reserved_dates_json": json.dumps(sorted(reserved_dates)),
+            "reserved_dates_start_json": json.dumps(sorted(reserved_dates_start)),
+            "reserved_dates_end_json": json.dumps(sorted(reserved_dates_end)),
             "photo_urls": [photo.image.url for photo in logement.photos.all()],
         },
     )

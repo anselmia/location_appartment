@@ -34,8 +34,7 @@
 }
 
 
-.calendar-box input,
-.calendar-box button {
+.calendar-box input {
     font-size: 1.1rem;
 }
 
@@ -55,17 +54,27 @@
     width: 100%;
 }
 
-.calendar-box button {
-    background: #555555;
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 1em;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 10px;
+.no-start {
+    background-color: #ffe6e6;
+    position: relative;
 }
 
+.no-end {
+    background-color: #fff3cd;
+    position: relative;
+}
+
+.flatpickr-day.nextMonthDay {
+    color: #393939 !important; 
+}
+
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+    color: rgba(57, 57, 57, 0.1) !important;
+}
+
+.flatpickr-day.nextMonthDay  .flatpickr-day.flatpickr-disabled, .flatpickr-day.nextMonthDay .flatpickr-day.flatpickr-disabled:hover {
+    color: rgba(57, 57, 57, 0.1) !important;
+}
 
 .legend {
     display: flex;
@@ -90,7 +99,29 @@
     vertical-align: middle;
 }
 
-.calendar-box button:hover {
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* <-- this centers all children horizontally */
+    width: 100%;
+}
+
+.booking-form button {
+    padding: 10px 20px;
+    font-size: 1em;
+    background: #1a5fd1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+    align-self: center; /* <-- make sure the button stays centered */
+    width: auto;         /* ← this ensures it only fits the content */
+    max-width: 100%;
+}
+
+.booking-form button:hover {
     background: #1a5fd1;
 }
 
@@ -124,10 +155,6 @@
     margin-right: 5px;
 }
 
-.booked { background-color: #ffd6d6; }
-.today  { background-color: #cce7ff; }
-.free   { background-color: #d8f5d1; }
-
 .legend {
     margin-top: 15px;
     font-size: 0.9em;
@@ -158,6 +185,55 @@
     background-color: #d8f5d1;
 }
 
+/* Side Panel */
+
+.booking-panel {
+    position: fixed;
+    top: 100px;
+    right: 0;
+    width: 320px;
+    background-color: white;
+    border-left: 1px solid #ddd;
+    box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.4s ease;
+    z-index: 1000;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 10px 0 0 10px;
+}
+
+/* Fully hidden to the right except for toggle (80px toggle visible) */
+.booking-panel.collapsed {
+    transform: translateX(100%);
+}
+
+.booking-toggle {
+    position: fixed;
+    top: 100px;
+    right: 0;
+    background-color: #1a5fd1;
+    color: white;
+    width: 80px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 10px 0 0 10px;
+    box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+}
+
+.booking-toggle:hover {
+    background-color: #2b3d55;
+    transform: scale(1.05);
+}
+
+.booking-content {
+    padding: 15px;
+}
+
 @media screen and (max-width: 900px) {
     .calendar-box {
         width: 100%;
@@ -185,12 +261,6 @@
         text-align: center; /* Add this */
         justify-content: center; 
         display: flex;
-    }
-
-    .calendar-box button {
-        font-size: 1em;
-        padding: 10px;
-        max-width: 100%; /* Remove max-width if you want it to fully fill on mobile */
     }
 
     .legend {
