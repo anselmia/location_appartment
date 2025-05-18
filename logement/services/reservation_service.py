@@ -53,7 +53,7 @@ def get_booked_dates(logement, user=None):
                 reserved_start.add(current.isoformat())
                 if current != r.start or (
                     current == r.start
-                    and (current - timedelta(days=1)).isoformat() not in reserved_end
+                    and (current - timedelta(days=1)).isoformat() in reserved_end
                 ):
                     reserved_end.add(current.isoformat())
                 current += timedelta(days=1)
