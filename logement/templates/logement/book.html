@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load widget_tweaks %}
 {% load i18n %}
 
 {% block content %}
@@ -7,34 +8,28 @@
         <!-- Image Gallery -->
         <div class="row justify-content-center mt-4">
             <div class="col-md-12">
-                <div class="card shadow-lg rounded-lg" id="image-gallery">
-                    <div class="image-gallery">
-                        {% if logement.photos.count > 0 %}
-                            <div class="gallery-left">
+                <div class="image-gallery">
+                    {% if logement.photos.count > 0 %}
+                        <div class="gallery-left">
+                            <picture>
+                                <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
+                                <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
+                            </picture>
+                        </div>
+                        <div class="gallery-right">
+                        {% for photo in logement.photos.all|slice:"1:5" %}
+                            <div class="small-photo">
                                 <picture>
-                                    <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
-                                    <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
+                                    <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                                    <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
                                 </picture>
                             </div>
-                            <div class="gallery-right">
-                            {% for photo in logement.photos.all|slice:"1:5" %}
-                                <div class="small-photo">
-                                    <picture>
-                                        <source srcset="{{ photo.image_webp.url }}" type="image/webp">
-                                        <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
-                                    </picture>
-                                </div>
-                            {% endfor %}
-                            </div>
-                        {% else %}
-                            <p>Aucune photo disponible.</p>
-                        {% endif %}
-                    </div>               
-                    
-                    <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#photoModal">
-                        Voir toutes les photos
-                    </button>
-                </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Aucune photo disponible.</p>
+                    {% endif %}
+                </div>               
             </div>
         </div>
 
@@ -44,7 +39,7 @@
             <div class="row gx-4 gy-4 align-items-stretch">        
                 <!-- Left Column: Reservation Form -->
                 <div class="col-md-6 d-flex">
-                    <div class="card shadow-lg rounded-lg flex-fill w-100">
+                    <div class="card shadow-lg flex-fill w-100">
                         <div class="card-body">
                             <h2 class="text-center mb-4">{{ logement_data.name }}</h2>
                 
@@ -64,10 +59,10 @@
                             {% endif %}
                 
                             <h3 class="text-center mb-4">Informations sur le séjour</h3>
-                
-                            <div class="form-group">
+
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 <label for="id_guest">Voyageurs</label>
-                                {{ form.guest }}
+                                {{ form.guest|add_class:"auto-width" }}
                             </div>
 
                             <div class="calendar-box mt-4">
@@ -97,8 +92,8 @@
                 </div>
         
                 <!-- Right Column: Summary + Submit -->
-                <div class="col-md-6 d-flex">
-                    <div class="card shadow-lg rounded-lg flex-fill w-100">
+                <div id="booking-detail" class="col-md-6 d-flex">
+                    <div class="card shadow-lg flex-fill w-100">
                         <div class="card-body">
                             <h4 class="text-center mb-4">Résumé de la Réservation</h4>
                 
