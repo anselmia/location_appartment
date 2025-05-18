@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const endDateStr = formEnd.value;
         const guestValue = parseInt(formGuest.value.trim(), 10) || 1;
 
-        areInputCorrect(startDateStr, endDateStr, formGuest.value)
+        if (startDateStr && endDateStr) {
+            areInputCorrect(startDateStr, endDateStr, formGuest.value)
             .then((available) => {
                 if (!available) {
                     // Rien à faire, resetReservation() a déjà été appelée dans isDateBooked
@@ -152,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                     });
             });
+        }
     }
 
     document.getElementById("reservation-form").addEventListener("submit", function (e) {
