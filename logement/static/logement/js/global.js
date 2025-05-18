@@ -26,3 +26,10 @@ function logToServer(level, message, meta = {}) {
         }),
     }).catch((error) => console.error("Logging failed:", error));
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const loader = document.getElementById("loader");
+    if (loader) {
+        loader.style.display = "none";
+    }
+});
