@@ -333,12 +333,6 @@ def stripe_webhook(request):
 
         logger.info(f"📩 Received Stripe event: {event_type}")
 
-        from logement.services.payment_service import (
-            handle_checkout_session_completed,
-            handle_charge_refunded,
-            handle_payment_failed,
-        )
-
         if event_type == "checkout.session.completed":
             handle_checkout_session_completed(data)
         elif event_type == "charge.refunded":
