@@ -330,6 +330,9 @@ def cancel_and_refund_reservation(reservation):
 def handle_checkout_session_completed(data):
     reservation_id = data["metadata"].get("reservation_id")
     payment_intent = data.get("payment_intent")
+    logger.info(
+        f"🔔 Handling checkout.session.completed for reservation {reservation_id}"
+    )
 
     try:
         reservation = Reservation.objects.get(id=reservation_id)
@@ -338,13 +341,23 @@ def handle_checkout_session_completed(data):
             reservation.statut = "confirmee"
             reservation.stripe_payment_intent_id = payment_intent
             reservation.save()
+            logger.info(f"✅ Reservation {reservation.id} confirmed")
 
-            send_mail_on_new_reservation(
-                reservation.logement, reservation, reservation.user
-            )
-            logger.info(f"✅ Reservation {reservation.id} confirmed via webhook.")
+            try:
+                send_mail_on_new_reservation(
+                    reservation.logement, reservation, reservation.user
+                )
+            except Exception as e:
+                logger.exception(
+                    f"❌ Error sending mail for reservation {reservation.id}: {e}"
+                )
+
         else:
-            logger.info(f"Reservation {reservation.id} was already confirmed.")
+            logger.info(f"ℹ️ Reservation {reservation.id} was already confirmed.")
 
     except Reservation.DoesNotExist:
         logger.warning(f"⚠️ Reservation {reservation_id} not found.")
+    except Exception as e:
+        logger.exception(
+            f"❌ Unexpected error in handle_checkout_session_completed: {e}"
+        )

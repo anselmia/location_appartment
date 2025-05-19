@@ -324,19 +324,32 @@ def stripe_webhook(request):
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except Exception as e:
-        logger.error(f"Webhook error: {e}")
+        logger.error(f"❌ Stripe webhook signature error: {e}")
         return HttpResponse(status=400)
 
-    event_type = event["type"]
-    data = event["data"]["object"]
+    try:
+        event_type = event["type"]
+        data = event["data"]["object"]
 
-    if event_type == "checkout.session.completed":
-        handle_checkout_session_completed(data)
-    elif event_type == "charge.refunded":
-        handle_charge_refunded(data)
-    elif event_type == "payment_intent.payment_failed":
-        handle_payment_failed(data)
-    else:
-        logger.info(f"🔍 Unhandled event type: {event_type}")
+        logger.info(f"📩 Received Stripe event: {event_type}")
+
+        from logement.services.payment_service import (
+            handle_checkout_session_completed,
+            handle_charge_refunded,
+            handle_payment_failed,
+        )
+
+        if event_type == "checkout.session.completed":
+            handle_checkout_session_completed(data)
+        elif event_type == "charge.refunded":
+            handle_charge_refunded(data)
+        elif event_type == "payment_intent.payment_failed":
+            handle_payment_failed(data)
+        else:
+            logger.info(f"ℹ️ Unhandled Stripe event type: {event_type}")
+
+    except Exception as e:
+        logger.exception(f"❌ Error while handling event {event_type}: {e}")
+        return HttpResponse(status=500)
 
     return HttpResponse(status=200)
