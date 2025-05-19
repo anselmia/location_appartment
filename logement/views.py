@@ -1,3 +1,4 @@
+import time
 import stripe
 import json
 import logging
@@ -232,6 +233,7 @@ def check_booking_input(request, logement_id):
 @login_required
 def payment_success(request, reservation_id):
     try:
+        time.sleep(1)
         reservation = Reservation.objects.get(id=reservation_id)
 
         if reservation.statut != "confirmee":

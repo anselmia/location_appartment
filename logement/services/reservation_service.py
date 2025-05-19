@@ -11,7 +11,7 @@ from logement.models import (
     Discount,
 )
 from logement.services.payment_service import refund_payment
-from logement.services.email_service import send_mail_on_new_reservation
+from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund_result
 
 logger = logging.getLogger(__name__)
 
@@ -319,11 +319,12 @@ def cancel_and_refund_reservation(reservation):
             refund_payment(reservation.stripe_payment_intent_id)
             return ("✅ Réservation annulée et remboursée avec succès.", None)
         except Exception:
+            send_mail_on_refund_result(reservation, success=False, error_message=str(e))
             return (
                 "⚠️ Réservation annulée, mais remboursement échoué.",
                 "❗ Le remboursement a échoué. Contactez l’assistance.",
             )
-
+    send_mail_on_refund_result(reservation, success=True)
     return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
 
 
