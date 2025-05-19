@@ -19,10 +19,14 @@ from logement.services.reservation_service import (
     create_or_update_reservation,
     validate_reservation_inputs,
     cancel_and_refund_reservation,
+    handle_checkout_session_completed,
 )
+
 from logement.services.calendar_service import generate_ical
 from logement.services.payment_service import (
     create_stripe_checkout_session,
+    handle_charge_refunded,
+    handle_payment_failed,
 )
 
 
@@ -325,12 +329,6 @@ def stripe_webhook(request):
 
     event_type = event["type"]
     data = event["data"]["object"]
-
-    from logement.services.payment_service import (
-        handle_checkout_session_completed,
-        handle_charge_refunded,
-        handle_payment_failed,
-    )
 
     if event_type == "checkout.session.completed":
         handle_checkout_session_completed(data)
