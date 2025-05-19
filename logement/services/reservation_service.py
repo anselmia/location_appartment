@@ -1,5 +1,6 @@
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 import logging
 from django.db.models import Q
 from logement.models import (
@@ -9,6 +10,8 @@ from logement.models import (
     Price,
     Discount,
 )
+from logement.services.payment_service import refund_payment
+from logement.services.email_service import send_mail_on_new_reservation
 
 logger = logging.getLogger(__name__)
 
@@ -293,3 +296,55 @@ def validate_reservation_inputs(
             raise ValueError("Les montants ne correspondent pas aux prix réels.")
 
     return True
+
+
+def mark_reservation_cancelled(reservation):
+    reservation.statut = "annulee"
+    reservation.save()
+
+
+def cancel_and_refund_reservation(reservation):
+    today = timezone.now().date()
+
+    if reservation.start <= today:
+        return (
+            None,
+            "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
+        )
+
+    mark_reservation_cancelled(reservation)
+
+    if reservation.stripe_payment_intent_id:
+        try:
+            refund_payment(reservation.stripe_payment_intent_id)
+            return ("✅ Réservation annulée et remboursée avec succès.", None)
+        except Exception:
+            return (
+                "⚠️ Réservation annulée, mais remboursement échoué.",
+                "❗ Le remboursement a échoué. Contactez l’assistance.",
+            )
+
+    return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
+
+
+def handle_checkout_session_completed(data):
+    reservation_id = data["metadata"].get("reservation_id")
+    payment_intent = data.get("payment_intent")
+
+    try:
+        reservation = Reservation.objects.get(id=reservation_id)
+
+        if reservation.statut != "confirmee":
+            reservation.statut = "confirmee"
+            reservation.stripe_payment_intent_id = payment_intent
+            reservation.save()
+
+            send_mail_on_new_reservation(
+                reservation.logement, reservation, reservation.user
+            )
+            logger.info(f"✅ Reservation {reservation.id} confirmed via webhook.")
+        else:
+            logger.info(f"Reservation {reservation.id} was already confirmed.")
+
+    except Reservation.DoesNotExist:
+        logger.warning(f"⚠️ Reservation {reservation_id} not found.")

@@ -39,4 +39,5 @@ urlpatterns = [
         name="cancel_booking",
     ),
     path('api/export/ical/', views.export_ical, name='export-ical'),
+    path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
 ]

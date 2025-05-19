@@ -243,6 +243,7 @@ class Reservation(models.Model):
     date_reservation = models.DateTimeField(default=timezone.now)
     price = models.FloatField()
     tax = models.FloatField(default=0)
+    stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"

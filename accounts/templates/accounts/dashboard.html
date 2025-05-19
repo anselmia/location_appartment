@@ -94,7 +94,8 @@
                                         {% elif r.coming %}
                                             <span class="badge bg-info text-dark mb-2">À venir</span>
                                             {% if r.can_cancel %}
-                                                <form method="post" action="{% url 'logement:cancel_booking' r.id %}">
+                                                <form method="post" action="{% url 'logement:cancel_booking' r.id %}"
+                                                onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
                                                     {% csrf_token %}
                                                     <button class="btn btn-outline-danger btn-sm mt-2">Annuler</button>
                                                 </form>

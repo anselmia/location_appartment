@@ -1,9 +1,10 @@
+import stripe
 import json
 import logging
 from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
-from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -17,13 +18,16 @@ from logement.services.reservation_service import (
     get_booked_dates,
     create_or_update_reservation,
     validate_reservation_inputs,
+    cancel_and_refund_reservation,
 )
 from logement.services.calendar_service import generate_ical
-from logement.services.payment_service import create_stripe_checkout_session
-from logement.services.email_service import send_mail_on_new_reservation
+from logement.services.payment_service import (
+    create_stripe_checkout_session,
+)
 
 
 logger = logging.getLogger(__name__)
+stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 
 def home(request):
@@ -113,7 +117,9 @@ def book(request, logement_id):
                         reservation, success_url, cancel_url
                     )
 
-                    return redirect(session.url)
+                    # Append session ID to success_url and redirect
+                    success_url_with_session = f"{success_url}?session_id={session.id}"
+                    return redirect(success_url_with_session)
             else:
                 messages.error(request, "Une erreur est survenue")
     else:
@@ -223,17 +229,27 @@ def check_booking_input(request, logement_id):
 
 @login_required
 def payment_success(request, reservation_id):
-    logement = Logement.objects.first()
-    user = request.user
-    reservation = Reservation.objects.get(id=reservation_id)
-    reservation.statut = "confirmee"
-    reservation.save()
+    session_id = request.GET.get("session_id")
+    if not session_id:
+        messages.error(request, "Session ID manquant.")
+        return redirect("logement:book", logement_id=1)
 
-    send_mail_on_new_reservation(logement, reservation, user)
+    try:
+        reservation = Reservation.objects.get(id=reservation_id)
 
-    return render(
-        request, "logement/payment_success.html", {"reservation": reservation}
-    )
+        if reservation.statut != "confirmee":
+            messages.warning(
+                request,
+                "Votre paiement semble incomplet ou non encore confirmé. Veuillez vérifier plus tard ou contacter l’assistance.",
+            )
+
+        return render(
+            request, "logement/payment_success.html", {"reservation": reservation}
+        )
+
+    except Reservation.DoesNotExist:
+        messages.error(request, "Réservation introuvable.")
+        return redirect("logement:book", logement_id=1)
 
 
 @login_required
@@ -242,7 +258,12 @@ def payment_cancel(request, reservation_id):
         # Fetch the reservation object by ID
         reservation = get_object_or_404(Reservation, id=reservation_id)
         logement = Logement.objects.prefetch_related("photos").first()
-        # Create form and pass the user and the dates in the form initialization
+
+        # Show a user-friendly message
+        messages.info(
+            request,
+            "Votre paiement a été annulé. Vous pouvez modifier ou reprogrammer votre réservation.",
+        )
 
         # Prepare query string to prefill the form
         query_params = urlencode(
@@ -259,6 +280,11 @@ def payment_cancel(request, reservation_id):
         )
 
     except Reservation.DoesNotExist:
+        # Show a user-friendly message
+        messages.error(
+            request,
+            "Une erreur est survenue.",
+        )
         # If the reservation does not exist, redirect to the home page
         return redirect("logement:home")
 
@@ -267,15 +293,12 @@ def payment_cancel(request, reservation_id):
 def cancel_booking(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
 
-    if reservation.start <= timezone.now().date():
-        messages.error(
-            request,
-            "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
-        )
-    else:
-        reservation.statut = "anulee"
-        reservation.save()
-        messages.success(request, "✅ Réservation annulée avec succès.")
+    success_message, error_message = cancel_and_refund_reservation(reservation)
+
+    if success_message:
+        messages.success(request, success_message)
+    if error_message:
+        messages.error(request, error_message)
 
     return redirect("accounts:dashboard")
 
@@ -293,3 +316,36 @@ def export_ical(request):
 
     except Exception:
         return HttpResponse("Erreur interne serveur", status=500)
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return HttpResponse(status=400)
+
+    event_type = event["type"]
+    data = event["data"]["object"]
+
+    from logement.services.payment_service import (
+        handle_checkout_session_completed,
+        handle_charge_refunded,
+        handle_payment_failed,
+    )
+
+    if event_type == "checkout.session.completed":
+        handle_checkout_session_completed(data)
+    elif event_type == "charge.refunded":
+        handle_charge_refunded(data)
+    elif event_type == "payment_intent.payment_failed":
+        handle_payment_failed(data)
+    else:
+        logger.info(f"🔍 Unhandled event type: {event_type}")
+
+    return HttpResponse(status=200)

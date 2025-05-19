@@ -1,6 +1,10 @@
 import stripe
 import logging
 from django.conf import settings
+from logement.models import Reservation
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
+
 
 logger = logging.getLogger(__name__)
 # Set up Stripe with the secret key
@@ -31,3 +35,19 @@ def create_stripe_checkout_session(reservation, success_url, cancel_url):
     except Exception as e:
         logger.exception(f"Erreur Stripe: {e}")
         raise
+
+
+def refund_payment(payment_intent_id):
+    try:
+        return stripe.Refund.create(payment_intent=payment_intent_id)
+    except stripe.error.StripeError as e:
+        logger.exception(f"Stripe refund error: {e}")
+        raise
+
+
+def handle_charge_refunded(data):
+    logger.info(f"🔁 Charge {data['id']} refunded.")
+
+
+def handle_payment_failed(data):
+    logger.warning(f"❌ Payment failed for intent {data['id']}.")
