@@ -117,9 +117,7 @@ def book(request, logement_id):
                         reservation, success_url, cancel_url
                     )
 
-                    # Append session ID to success_url and redirect
-                    success_url_with_session = f"{success_url}?session_id={session.id}"
-                    return redirect(success_url_with_session)
+                    return redirect(session.url)
             else:
                 messages.error(request, "Une erreur est survenue")
     else:
@@ -229,11 +227,6 @@ def check_booking_input(request, logement_id):
 
 @login_required
 def payment_success(request, reservation_id):
-    session_id = request.GET.get("session_id")
-    if not session_id:
-        messages.error(request, "Session ID manquant.")
-        return redirect("logement:book", logement_id=1)
-
     try:
         reservation = Reservation.objects.get(id=reservation_id)
 
