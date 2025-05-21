@@ -1,72 +1,112 @@
 .admin-logement-container {
-    max-width: 720px;
+    width: 100%;
+    max-width: 860px;
     margin: 40px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    font-family: 'Segoe UI', sans-serif;
-}
-
-.admin-header {
+    padding: 24px;
+    background: #fff;
+    border-radius: 40px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  .admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-}
-
-.admin-header h2 {
+    margin-bottom: 24px;
+  }
+  
+  .admin-header h2 {
+    font-size: 1.7rem;
+    font-weight: 600;
     margin: 0;
-    font-size: 1.8rem;
-    color: #2b3d55;
-}
-
-.btn-add-logement {
-    background-color: #2b3d55;
+    color: #1c2c40;
+  }
+  
+  .btn-add-logement {
+    background-color: #1c2c40;
     color: white;
     text-decoration: none;
     padding: 10px 16px;
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     transition: background-color 0.3s ease;
-}
-
-.btn-add-logement:hover {
-    background-color: #195fd9;
-}
-
-.logement-list {
+    margin-left: 20px;
+  }
+  
+  .btn-add-logement:hover {
+    background-color: #0f6efd;
+  }
+  
+  .logement-list {
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.logement-item {
-    margin-bottom: 12px;
-    background: #f8f9fc;
+  }
+  
+  .logement-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     padding: 12px 16px;
-    border-radius: 8px;
-    transition: background 0.3s ease;
-}
-
-.logement-item:hover {
-    background: #e9f2ff;
-}
-
-.logement-link {
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+  }
+  
+  .logement-item:hover {
+    background: #f5f9ff;
+  }
+  
+  .logement-link {
+    display: flex;
+    align-items: center;
     text-decoration: none;
-    font-size: 1.1rem;
-    color: #333;
-}
-
-.logement-link:hover {
-    text-decoration: underline;
-    color: #2b3d55;
-}
-
-.no-logement {
+    color: inherit;
+    gap: 1rem;
+    flex: 1;
+  }
+  
+  .thumbnail-img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .thumbnail-placeholder {
+    width: 56px;
+    height: 56px;
+    background: #f0f0f0;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1.3rem;
+  }
+  
+  .logement-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .logement-info strong {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .logement-sub {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 2px;
+  }
+  
+  .no-logement {
     text-align: center;
     font-style: italic;
-    color: #888;
+    color: #999;
     margin-top: 20px;
-}
+    font-size: 1.1rem;
+  }
+  

@@ -1,26 +1,38 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
 
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'administration/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="admin-logement-container">
     <div class="admin-header">
-        <h2>🏢 Gestion des logements</h2>
-        <a href="{% url 'administration:add_logement' %}" class="btn-add-logement">➕ Ajouter un logement</a>
+      <h2>🏢 Gestion des logements</h2>
+      <a href="{% url 'administration:add_logement' %}" class="btn-add-logement">➕ Ajouter</a>
     </div>
-
+  
     {% if logements %}
-        <ul class="logement-list">
-            {% for logement in logements %}
-                <li class="logement-item">
-                    <a href="{% url 'administration:edit_logement' logement.id %}" class="logement-link">
-                        <strong>{{ logement.name }}</strong>
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
+      <ul class="logement-list">
+        {% for logement in logements %}
+          <li class="logement-item">
+            <a href="{% url 'administration:edit_logement' logement.id %}" class="logement-link">
+              {% if logement.photos.first %}
+                <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.name }}" class="thumbnail-img">
+              {% else %}
+                <div class="thumbnail-placeholder">📷</div>
+              {% endif %}
+              <div class="logement-info">
+                <strong>{{ logement.name }}</strong>
+                <span class="logement-sub">{{ logement.ville.name|default:"—" }} · {{ logement.price }} €</span>
+              </div>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-        <div class="no-logement">Aucun logement pour le moment.</div>
+      <div class="no-logement">Aucun logement pour le moment.</div>
     {% endif %}
-</div>
-
-{% endblock %}
+  </div>  
+  {% endblock %}

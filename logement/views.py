@@ -2,7 +2,7 @@ import time
 import stripe
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,9 +11,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
+from django.db.models import Q
 from django.utils.dateparse import parse_date
 from .forms import ReservationForm
-from .models import Logement, Reservation, Price
+from .models import Logement, Reservation, Price, City
 from logement.services.reservation_service import (
     is_period_booked,
     get_booked_dates,
@@ -21,6 +22,7 @@ from logement.services.reservation_service import (
     validate_reservation_inputs,
     cancel_and_refund_reservation,
     handle_checkout_session_completed,
+    get_available_logement_in_period,
 )
 
 from logement.services.calendar_service import generate_ical
@@ -29,6 +31,8 @@ from logement.services.payment_service import (
     handle_charge_refunded,
     handle_payment_failed,
 )
+from administration.models import HomePageConfig
+from accounts.forms import ContactForm
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +40,64 @@ stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 
 def home(request):
-    logement = Logement.objects.prefetch_related("photos").first()
+    config = HomePageConfig.objects.prefetch_related(
+        "services", "testimonials", "commitments"
+    ).first()
+
+    logements = Logement.objects.prefetch_related("photos").filter(statut="open")
+
+    destination = request.GET.get("destination", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    guests = request.GET.get("guests")
+
+    flex = int(request.GET.get("flexibility", 0))
+
+    if destination:
+        logements = logements.filter(ville__name__icontains=destination)
+
+    if guests:
+        logements = logements.filter(max_traveler__gte=int(guests))
+
+    if start_date and end_date:
+        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        flex = int(request.GET.get("flexibility", 0))
+        if flex > 0:
+            start -= timedelta(days=flex)
+            end += timedelta(days=flex)
+
+        logements = get_available_logement_in_period(start, end, logements)
+
+    initial_data = {
+        "name": request.user.get_full_name() if request.user.is_authenticated else "",
+        "email": request.user.email if request.user.is_authenticated else "",
+    }
+
+    contact_form = ContactForm(**initial_data)
+
+    return render(
+        request,
+        "logement/home.html",
+        {
+            "logements": logements,
+            "config": config,
+            "contact_form": contact_form,
+        },
+    )
+
+
+def autocomplete_cities(request):
+    q = request.GET.get("q", "")
+    cities = City.objects.filter(name__icontains=q).order_by("name")[:5]
+    return HttpResponse("".join(f"<option value='{c.name}'></option>" for c in cities))
+
+
+def view_logement(request, logement_id):
+    logement = get_object_or_404(
+        Logement.objects.prefetch_related("photos"), id=logement_id
+    )
     rooms = logement.rooms.all()
     user = request.user
 
@@ -54,7 +115,7 @@ def home(request):
 
     return render(
         request,
-        "logement/home.html",
+        "logement/view_logement.html",
         {
             "logement": logement,
             "rooms": rooms,

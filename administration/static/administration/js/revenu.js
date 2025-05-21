@@ -67,6 +67,9 @@ function renderChart(labels, revenues) {
 }
 
 async function refreshData() {
+    const year = document.getElementById('year-select').value;
+    const month = document.getElementById('month-select').value;
+
     try {
         const year = document.getElementById('year-select').value;
         const month = document.getElementById('month-select').value;
@@ -89,8 +92,6 @@ async function refreshData() {
             logementId: logementId,
             year: year,
             month: month,
-            total_revenue: data.total_revenue,
-            net_profit: data.net_profit
         });
     }
 }

@@ -118,6 +118,44 @@
     color: #fff;
 }
 
+.admin-logement-edit .equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 20px;
+}
+
+.admin-logement-edit .equip-card {
+    background: #f8faff;
+    border: 1px solid #d0e3ff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    position: relative;
+}
+
+.admin-logement-edit .equip-card:hover {
+    background: #eef5ff;
+    border-color: #a2c9ff;
+}
+
+.admin-logement-edit .equip-card input[type="checkbox"] {
+    accent-color: #2b3d55;
+    transform: scale(1.2);
+    margin: 0;
+}
+
+.admin-logement-edit .equip-card i {
+    font-size: 1.2rem;
+    color: #4a6fa1;
+    min-width: 20px;
+}
+
 @media (max-width: 768px) {
     .admin-logement-edit .form-box {
         padding: 25px 15px;

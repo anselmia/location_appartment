@@ -27,9 +27,9 @@
 }
 
 .nav-logo {
-    height: 24px;
+    height: 50px;
     width: auto;               /* Keep aspect ratio */
-    max-height: 24px;
+    max-height: 50px;
     max-width: 80px;
     margin-left: 15px;
     vertical-align: middle;    /* Align inline with text */
@@ -46,6 +46,12 @@
     gap: 10px;
 }
 
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    display: inline-block;
+  }
 
 /* Navigation links */
 .navbar .nav-links {

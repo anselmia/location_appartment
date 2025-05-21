@@ -5,9 +5,8 @@ import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test, login_required
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.shortcuts import render, redirect, get_object_or_404
 from logement.models import (
     Logement,
@@ -19,13 +18,21 @@ from logement.models import (
     airbnb_booking,
     Discount,
     DiscountType,
+    Equipment,
 )
 from logement.forms import DiscountForm
 from django.contrib import messages
-from .forms import LogementForm
+from .forms import (
+    LogementForm,
+    HomePageConfigForm,
+    ServiceForm,
+    TestimonialForm,
+    CommitmentForm,
+    EntrepriseForm,
+)
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from django.db.models import Count
-from .models import SiteVisit
+from .models import SiteVisit, HomePageConfig, Entreprise
 from .serializers import DailyPriceSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -63,7 +70,12 @@ def add_logement(request):
 @login_required
 @user_passes_test(is_admin)
 def edit_logement(request, logement_id):
-    logement = Logement.objects.prefetch_related("photos").first()
+    logement = get_object_or_404(
+        Logement.objects.prefetch_related(
+            "photos", "equipment"
+        ),  # Include .equipment if it's a ManyToMany
+        id=logement_id,
+    )
     rooms = logement.rooms.all().order_by("name")
     photos = logement.photos.all().order_by("order")
 
@@ -74,10 +86,20 @@ def edit_logement(request, logement_id):
     else:
         form = LogementForm(instance=logement)
 
+    # Get selected equipment IDs
+    selected_equipment_ids = logement.equipment.values_list("id", flat=True)
+
     return render(
         request,
         "administration/edit_logement.html",
-        {"form": form, "logement": logement, "rooms": rooms, "photos": photos},
+        {
+            "form": form,
+            "logement": logement,
+            "rooms": rooms,
+            "photos": photos,
+            "all_equipment": Equipment.objects.all(),
+            "selected_equipment_ids": selected_equipment_ids,
+        },
     )
 
 
@@ -205,6 +227,18 @@ def rotate_photo(request, photo_id):
 
 @login_required
 @user_passes_test(is_admin)
+def update_equipment(request, logement_id):
+    logement = get_object_or_404(Logement, id=logement_id)
+
+    if request.method == "POST":
+        equipment_ids = request.POST.getlist("equipment")
+        logement.equipment.set(equipment_ids)
+
+    return redirect("administration:edit_logement", logement.id)
+
+
+@login_required
+@user_passes_test(is_admin)
 def traffic_dashboard(request):
     period = request.GET.get("period", "day")  # day, week, month
     now = datetime.now()
@@ -252,8 +286,17 @@ def traffic_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def calendar(request):
-    logement = Logement.objects.prefetch_related("photos").first()
-    return render(request, "administration/calendar.html", {"logement": logement})
+    logements = Logement.objects.prefetch_related("photos").all()
+    return render(
+        request,
+        "administration/calendar.html",
+        {
+            "logements": logements,
+            "logements_json": json.dumps(
+                [{"id": l.id, "name": l.name} for l in logements]
+            ),
+        },
+    )
 
 
 class DailyPriceViewSet(viewsets.ModelViewSet):
@@ -489,10 +532,18 @@ def manage_discounts(request):
     )
 
 
-def economie_view(request, logement_id):
+@login_required
+@user_passes_test(is_admin)
+@require_http_methods(["GET", "POST"])
+def economie_view(request):
+    logements = Logement.objects.all()
+    selected_logement_id = (
+        request.POST.get("logement_id") or logements.first().id if logements else None
+    )
+
     current_year = datetime.now().year
     years = list(
-        Reservation.objects.filter(logement_id=logement_id)
+        Reservation.objects.filter(logement_id=selected_logement_id)
         .dates("start", "year")
         .values_list("start__year", flat=True)
         .distinct()
@@ -502,7 +553,8 @@ def economie_view(request, logement_id):
         request,
         "administration/revenu.html",
         {
-            "logement": logement_id,
+            "logement_id": int(selected_logement_id),
+            "logements": logements,
             "years": years,
         },
     )
@@ -664,3 +716,78 @@ def reservation_dashboard(request):
     return render(
         request, "administration/reservations.html", {"reservations": reservations}
     )
+
+
+@login_required
+@user_passes_test(is_admin)
+def homepage_admin_view(request):
+    config = HomePageConfig.objects.first() or HomePageConfig.objects.create()
+
+    service_form = ServiceForm()
+    testimonial_form = TestimonialForm()
+    commitment_form = CommitmentForm()
+    main_form = HomePageConfigForm(instance=config)
+
+    if request.method == "POST":
+        # DELETE actions
+        if "delete_service_id" in request.POST:
+            config.services.filter(id=request.POST["delete_service_id"]).delete()
+        elif "delete_testimonial_id" in request.POST:
+            config.testimonials.filter(
+                id=request.POST["delete_testimonial_id"]
+            ).delete()
+        elif "delete_commitment_id" in request.POST:
+            config.commitments.filter(id=request.POST["delete_commitment_id"]).delete()
+
+        # ADD actions
+        elif "add_service" in request.POST:
+            service_form = ServiceForm(request.POST, request.FILES)
+            if service_form.is_valid():
+                instance = service_form.save(commit=False)
+                instance.config = config
+                instance.save()
+        elif "add_testimonial" in request.POST:
+            testimonial_form = TestimonialForm(request.POST)
+            if testimonial_form.is_valid():
+                instance = testimonial_form.save(commit=False)
+                instance.config = config
+                instance.save()
+        elif "add_commitment" in request.POST:
+            commitment_form = CommitmentForm(request.POST, request.FILES)
+            if commitment_form.is_valid():
+                instance = commitment_form.save(commit=False)
+                instance.config = config
+                instance.save()
+
+        # UPDATE config form
+        else:
+            main_form = HomePageConfigForm(request.POST, request.FILES, instance=config)
+            if main_form.is_valid():
+                main_form.save()
+
+    context = {
+        "form": main_form,
+        "config": config,
+        "services": config.services.all(),
+        "testimonials": config.testimonials.all(),
+        "commitments": config.commitments.all(),
+        "service_form": service_form,
+        "testimonial_form": testimonial_form,
+        "commitment_form": commitment_form,
+    }
+    return render(request, "administration/base_site.html", context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def edit_entreprise(request):
+    entreprise = Entreprise.objects.first()
+    if request.method == "POST":
+        form = EntrepriseForm(request.POST, request.FILES, instance=entreprise)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Les informations ont été mises à jour.")
+    else:
+        form = EntrepriseForm(instance=entreprise)
+
+    return render(request, "administration/edit_entreprise.html", {"form": form})

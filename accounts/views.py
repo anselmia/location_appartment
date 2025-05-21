@@ -75,7 +75,6 @@ def client_dashboard(request):
     reservations = Reservation.objects.filter(
         user=user, statut__in=["confirmee", "annulee"]
     ).order_by("-start")
-    logement = Logement.objects.prefetch_related("photos").first()
     formUser = CustomUserChangeForm(
         name=user.name, last_name=user.last_name, email=user.email, phone=user.phone
     )
@@ -87,7 +86,6 @@ def client_dashboard(request):
             "user": user,
             "reservations": reservations,
             "formUser": formUser,
-            "logement": logement,
         },
     )
 

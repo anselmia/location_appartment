@@ -71,6 +71,12 @@
     color: #4a5568;
 }
 
+.fc-event {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
 /* Price text styling */
 .fc-event-price {
     display: block;
@@ -164,7 +170,7 @@
 }  
 
 .price-panel.hidden {
-    display: none;
+    display: none !important;
 }
 
 /* Container to hold the details */
@@ -235,6 +241,13 @@
     opacity: 0.6;
     pointer-events: none; /* (optionnel) empêche l'interaction */
 }
+
+.booking-span {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
 @media screen and (max-width: 900px) {
     .fc-event-price {

@@ -1,6 +1,5 @@
 {% load static %}
 {% load i18n %}
-{% now "Y" as current_year %}
 {% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
@@ -21,16 +20,14 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     <link rel="stylesheet" href="{% static 'logement/css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/view_logement.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/nav.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/footer.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
-    <link rel="stylesheet" href="{% static 'administration/css/add_logement.css' %}">
-    <link rel="stylesheet" href="{% static 'administration/css/edit_logement.css' %}">
+    <link rel="stylesheet" href="{% static 'administration/css/add_logement.css' %}">    
     <link rel="stylesheet" href="{% static 'administration/css/traffic.css' %}">
-    <link rel="stylesheet" href="{% static 'administration/css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/calendar.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/discounts.css' %}">
     <link rel="stylesheet" href="{% static 'administration/css/revenu.css' %}">
@@ -43,6 +40,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
@@ -51,6 +49,9 @@
     <script src="https://unpkg.com/tippy.js@6"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -90,130 +91,58 @@
           ]
         }
     </script>
+    {% block extrahead %}{% endblock %}
 </head>
 <body class="page-wrapper">
-    <header class="navbar">
-
-        <div class="logo"><a href="/">{% trans "🏡 Location Nice, Valrose" %}</a></div>
-        <nav>
-        
-            <!-- Hamburger Icon -->
-            <div class="nav-toggle" id="navToggle">&#9776;</div>
-        
-            <!-- Links Container -->
-            <div class="nav-links" id="navLinks">                
-                <a href="/">{% trans "Accueil" %}</a>
-                <a href="{% url 'logement:book' 1 %}">{% trans "Réserver" %}</a>
-        
-                {% if user.is_authenticated %}
-                    {% if user.is_admin %}
-                        <div class="dropdown">
-                            <a href="#" class="dropdown-toggle">{% trans "Logement" %}</a>
-                            <div class="dropdown-menu">
-                                <a href="{% url 'administration:dashboard' %}">{% trans "Tableau de bord" %}</a>
-                                <a href="{% url 'administration:calendar' %}">{% trans "Calendrier" %}</a>
-                                <a href="{% url 'administration:reservation_dashboard' %}">{% trans "Réservations" %}</a>
-                                <a href="{% url 'administration:manage_discounts' %}">{% trans "Réductions" %}</a>
-                                <a href="{% url 'administration:revenu' 1 %}">{% trans "Revenus" %}</a>
-                            </div>
-                        </div>
-
-                        <div class="dropdown">
-                            <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
-                            <div class="dropdown-menu">
-                                <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
-                                <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>
-                            </div>
-                        </div>
-                    {% endif %}
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle">{% trans "Mon compte" %} ({{ user.username }})</a>
-                        <div class="dropdown-menu">
-                            <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
-                            <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
-                            <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
-                        </div>
-                    </div>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
-                {% endif %}
-        
-                <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
-                        <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français">
-                    </button>
-                    <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
-                        <img src="{% static 'logement/img/flags/en.svg' %}" alt="English">
-                    </button>
-                    <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
-                        <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español">
-                    </button>
-                </form>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
             </div>
-        </nav>
-    </header>
+        {% endfor %}
+    {% endif %}
 
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
-                {{ message }}
-                </div>
-            {% endfor %}
-
-            <script>
-                setTimeout(() => {
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(alert => {
-                    alert.classList.remove('show');
-                    alert.classList.add('hide');
-                    setTimeout(() => alert.remove(), 300);
-                });
-                }, 5000);
-            </script>
-        {% endif %}
-
-        <div id="loader">
-            <div style="text-align: center;">
-                <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
-                <div class="mt-2">Chargement...</div>
-            </div>
+    <div id="loader">
+        <div style="text-align: center;">
+            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+            <div class="mt-2">Chargement...</div>
         </div>
-
-        {% block content %}{% endblock %}
     </div>
+
+    {% include "navbar.html" %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <a href="{% url 'accounts:contact' %}" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <div class="footer-wave">
+        <svg viewBox="0 0 1440 100"><path fill="#f8f5f2" d="M0,32L1440,96L1440,0L0,0Z"></path></svg>
+    </div>
+    
+    {% include "footer.html" %}
 
     {% block extra_js %}{% endblock %}
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <p>&copy; {{ current_year }} Valrose. {% trans "Tous droits réservés." %}</p>
-            </div>
-    
-            <div class="footer-section footer-links">
-                <a href="{% url 'accounts:contact' %}">
-                    <i class="fas fa-envelope"></i> {% trans "Contact" %}
-                </a>
-                <a href="{% url 'accounts:cgu' %}">
-                    <i class="fas fa-file-alt"></i> {% trans "Mentions légales" %}
-                </a>
-            </div>
-    
-            <div class="footer-section nav-logos">
-                <a href="https://www.airbnb.fr/..." target="_blank" rel="noopener">
-                    <img src="{% static 'logement/img/airbnb-logo.svg' %}" alt="Airbnb" class="nav-logo">
-                </a>
-                <a href="https://www.booking.com/..." target="_blank" rel="noopener">
-                    <img src="{% static 'logement/img/booking-logo.svg' %}" alt="Booking.com" class="nav-logo">
-                </a>
-            </div>
-        </div>
-    </footer>
+    <div id="cookie-banner" style="display: none;" class="cookie-banner">
+        <p>Ce site utilise des cookies pour vous garantir la meilleure expérience. <a href="{% url 'accounts:cgu' %}">En savoir plus</a></p>
+        <button id="accept-cookies">J'accepte</button>
+    </div>
 
     <script src="{% static 'logement/js/nav.js' %}"></script>
     <script src="{% static 'logement/js/global.js' %}"></script>
+    <script>
+        setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.remove('show');
+            alert.classList.add('hide');
+            setTimeout(() => alert.remove(), 300);
+        });
+        }, 5000);
+    </script>
 </body>
 </html>

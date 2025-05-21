@@ -7,6 +7,8 @@ from .models import (
     airbnb_booking,
     Discount,
     DiscountType,
+    City,
+    Equipment
 )
 from django.utils.html import format_html
 
@@ -52,8 +54,15 @@ class ReservationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Reservation, ReservationAdmin)
+admin.site.register(City)
 
 admin.site.register(airbnb_booking)
 admin.site.register(booking_booking)
 admin.site.register(Discount)
 admin.site.register(DiscountType)
+
+
+@admin.register(Equipment)
+class EquipmentAdmin(admin.ModelAdmin):
+    list_display = ["name"]
+    search_fields = ["name"]

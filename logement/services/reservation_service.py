@@ -11,9 +11,34 @@ from logement.models import (
     Discount,
 )
 from logement.services.payment_service import refund_payment
-from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund_result
+from logement.services.email_service import (
+    send_mail_on_new_reservation,
+    send_mail_on_refund_result,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def get_available_logement_in_period(start, end, logements):
+    reservation_conflits = Reservation.objects.filter(
+        statut="confirmee",
+        start__lt=end,
+        end__gt=start,
+    ).values_list("logement_id", flat=True)
+
+    airbnb_conflits = airbnb_booking.objects.filter(
+        start__lt=end, end__gt=start
+    ).values_list("logement_id", flat=True)
+
+    booking_conflits = booking_booking.objects.filter(
+        start__lt=end, end__gt=start
+    ).values_list("logement_id", flat=True)
+
+    conflits_ids = set(reservation_conflits).union(airbnb_conflits, booking_conflits)
+
+    logements = logements.exclude(id__in=conflits_ids)
+
+    return logements
 
 
 def get_booked_dates(logement, user=None):
@@ -160,26 +185,27 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
         # Keep only the discount with the highest min_nights
         active_discounts = [
             max(valid_min_nights_discounts, key=lambda d: d.min_nights)
-        ] + [discount for discount in active_discounts if not discount.min_nights]
+        ] + [discount for discount in active_discounts if discount.min_nights is None]
     else:
         active_discounts = [
-            discount for discount in active_discounts if not discount.min_nights
+            discount for discount in active_discounts if discount.min_nights is None
         ]
 
     valid_nights_before_discounts = [
         discount
         for discount in active_discounts
-        if discount.days_before and (start - datetime.today().date()).days
+        if discount.days_before
+        and (start - datetime.today().date()).days >= discount.days_before
     ]
     # Keep only the discount with the highest days_before
     if valid_nights_before_discounts:
         # Keep only the discount with the highest days_before
         active_discounts = [
             max(valid_nights_before_discounts, key=lambda d: d.days_before)
-        ] + [discount for discount in active_discounts if not discount.days_before]
+        ] + [discount for discount in active_discounts if discount.days_before is None]
     else:
         active_discounts = [
-            discount for discount in active_discounts if not discount.days_before
+            discount for discount in active_discounts if discount.days_before is None
         ]
 
     # Apply discounts for each day in the range

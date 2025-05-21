@@ -2,34 +2,52 @@
 
 {% load static %}
 {% block content %}
-<div class="calendar-wrapper d-flex position-relative">
-    <div id="calendar" data-logement-id="{{ logement.id }}"></div>
-    <div id="price-panel" class="price-panel hidden">
-        <h4>Modifier le prix</h4>
-        <p id="panel-dates"></p>
-      
-        <label for="base-price">Prix de base (€)</label>
-        <input type="number" id="base-price" class="form-control mb-2" />
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0 fw-bold">📅 Calendrier des prix</h3>
+    <select id="logement-selector" class="form-select w-auto">
+      {% for logement in logements %}
+        <option value="{{ logement.id }}"{% if forloop.first %} selected{% endif %}>{{ logement.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
 
-        <div id="details" class="price-details-container">
-            <!-- Dynamic content will be inserted here -->
-          </div>
-      
-        <div>
-          <strong>Prix Total : <span id="final-price">0</span> €</strong>
+  <div class="d-flex gap-4">
+    <div class="calendar-wrapper d-flex position-relative">
+      <div id="calendar" class="flex-grow-1 border rounded shadow-sm p-2 bg-white" style="min-width: 800px;" data-logement-id="{{ logements.first.id }}"></div>
+
+      <div id="price-panel" class="price-panel hidden border rounded shadow-sm p-3 bg-light" style="width: 300px;">
+        <h5 class="fw-bold mb-3">🛠 Modifier le prix</h5>
+
+        <p id="panel-dates" class="small text-muted"></p>
+
+        <div class="mb-3">
+          <label for="base-price" class="form-label">Prix de base (€)</label>
+          <input type="number" id="base-price" class="form-control" />
         </div>
-      
-        <div class="mt-3 d-flex justify-content-between">
-          <button id="apply-price" class="btn btn-success">Appliquer</button>
-          <button id="cancel-price" class="btn btn-secondary">Annuler</button>
+
+        <div id="details" class="price-details-container mb-3">
+          <!-- Details inserted here -->
+        </div>
+
+        <div class="mb-3">
+          <strong>💰 Prix Total : <span id="final-price">0</span> €</strong>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button id="apply-price" class="btn btn-success">✅ Appliquer</button>
+          <button id="cancel-price" class="btn btn-outline-secondary">❌ Annuler</button>
         </div>
       </div>
+    </div>
   </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
   const csrfToken = "{{ csrf_token }}";
 </script>
+{{ logements_json|json_script:"logements-data" }}
 <script src="{% static 'administration/js/calendar.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'administration/css/base_site.css' %}">
+{% endblock %}
+
+{% block title %}Configuration de la page d'accueil{% endblock %}
+
+{% block content %}
+<div class="custom-admin-container">
+  <h1 class="admin-title">Gestion de la page d'accueil</h1>
+
+  <form method="post" enctype="multipart/form-data" class="custom-admin-form">
+    {% csrf_token %}
+    <fieldset class="section-block">
+      <legend>Identité du site</legend>
+      {{ form.nom.label_tag }} {{ form.nom }}
+      {{ form.devise.label_tag }} {{ form.devise }}
+      {{ form.cta_text.label_tag }} {{ form.cta_text }}
+      {{ form.banner_image.label_tag }} {{ form.banner_image }}
+    </fieldset>
+
+    <fieldset class="section-block">
+      <legend>Style Visuel</legend>
+      {{ form.primary_color.label_tag }} {{ form.primary_color }}
+      {{ form.font_family.label_tag }} {{ form.font_family }}
+      {{ form.contact_title.label_tag }} {{ form.contact_title }}
+    </fieldset>
+
+    <button type="submit" class="default">💾 Enregistrer la configuration</button>
+  </form>
+
+  <div class="inline-section">
+    <h2>Services</h2>
+    {% for service in services %}
+      <div class="inline-item">
+        <div class="inline-header">
+          <div>
+            <strong>{{ service.title }}</strong> <br>
+            {% if service.background_image %}
+              <div style="margin: 0.5rem 0;">
+                <img src="{{ service.background_image.url }}" alt="BG" style="max-width: 150px; border-radius: 6px;">
+              </div>
+            {% endif %}
+            <small>{{ service.icon_class }}</small>
+          </div>
+          <form method="post" class="inline-delete-form">
+            {% csrf_token %}
+            <input type="hidden" name="delete_service_id" value="{{ service.id }}">
+            <button type="submit" class="danger-button">🗑 Supprimer</button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <p>Aucun service défini.</p>
+    {% endfor %}
+  
+    <form method="post" class="inline-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ service_form.as_p }}
+      <button type="submit" name="add_service" class="default">+ Ajouter</button>
+    </form>    
+  </div>
+
+  <div class="inline-section">
+    <h2>Témoignages</h2>
+    {% for t in testimonials %}
+        <div class="inline-item">
+          <div class="inline-header">
+            <div>
+              <blockquote>{{ t.content }}</blockquote> <br>
+            </div>
+            <form method="post" class="inline-delete-form">
+              {% csrf_token %}
+              <input type="hidden" name="delete_testimonial_id" value="{{ t.id }}">
+              <button type="submit" class="danger-button">🗑 Supprimer</button>
+            </form>
+          </div>
+        </div>
+    {% empty %}
+      <p>Aucun témoignage pour le moment.</p>
+    {% endfor %}
+
+    <form method="post" class="inline-form">
+      {% csrf_token %}
+      {{ testimonial_form.as_p }}
+      <button type="submit" name="add_testimonial">+ Ajouter</button>
+    </form>
+  </div>
+
+  <div class="inline-section">
+    <h2>Engagements</h2>
+    {% for c in commitments %}
+      <div class="inline-item">
+        <div class="inline-header">
+          <div>
+            <strong>{{ c.title }}</strong> <br>
+            {% if c.background_image %}
+              <div style="margin: 0.5rem 0;">
+                <img src="{{ c.background_image.url }}" alt="BG" style="max-width: 150px; border-radius: 6px;">
+              </div>
+            {% endif %}
+            <p><i class="fas fa-check-circle"></i> {{ c.text }}</p>
+          </div>
+          <form method="post" class="inline-delete-form">
+            {% csrf_token %}
+            <input type="hidden" name="delete_commitment_id" value="{{ c.id }}">
+            <button type="submit" class="danger-button">🗑 Supprimer</button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <p>Aucun engagement défini.</p>
+    {% endfor %}
+
+    <form method="post" class="inline-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ commitment_form.as_p }}
+      <button type="submit" name="add_commitment" class="default">+ Ajouter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

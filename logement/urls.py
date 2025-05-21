@@ -6,6 +6,8 @@ app_name = "logement"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("logement/<int:logement_id>/", views.view_logement, name="view_logement"),
+    path('cities/', views.autocomplete_cities, name='autocomplete_cities'),
     path("i18n/setlang/", set_language, name="set_language"),
     path("book/<int:logement_id>/", views.book, name="book"),
     path(

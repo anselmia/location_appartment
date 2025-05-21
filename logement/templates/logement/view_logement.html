@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+    <div class="homepage-header">
+        <h1 class="listing-title">Appartement de vacances à Nice Centre</h1>
+        <p class="listing-subtitle">8 voyageurs • 4 chambres • 4 lits • 1,5 salles de bain</p>
+        <p class="listing-subtitle">{% trans "Réservez en toute simplicité et sécurité." %}</p>
+    </div>
+
+    <div class="image-gallery">
+        {% if logement.photos.count > 0 %}
+            <div class="gallery-left">
+                <picture>
+                    <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
+                    <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
+                </picture>
+            </div>
+            <div class="gallery-right">
+            {% for photo in logement.photos.all|slice:"1:5" %}
+                <div class="small-photo">
+                    <picture>
+                        <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                        <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+                    </picture>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucune photo disponible.</p>
+        {% endif %}
+    </div>          
+
+    <section class="section-block">  
+        <div class="layout-flex">
+            <div class="logement-info">                
+                <h2>{{ logement.title }}</h2>
+                <div class="logement-description">
+                    {{ logement.description|linebreaks }}
+                </div>
+            
+                <ul class="logement-summary">
+                    <li>👥 <strong>Capacité :</strong> {{ logement.max_traveler }}</li>
+                    <li><strong>Chambres :</strong> {{ logement.bedrooms }}</li>
+                    <li><strong>Animaux :</strong>
+                    {% if logement.animals %}
+                      ✅ Acceptés
+                    {% else %}
+                      ❌ Interdits
+                    {% endif %}
+                  </li>
+                </ul>
+
+                <hr>
+
+                <div class="logement-section">
+                    <h3>🧭 Check In/Out</h3>
+                    <ul>
+                        <li>⏰ <strong>Check-in :</strong> entre {{ logement.entrance_hour_min|time:"H:i" }} et {{ logement.entrance_hour_max|time:"H:i" }}</li>
+                        <li>⏳ <strong>Check-out :</strong> avant {{ logement.leaving_hour|time:"H:i" }}</li>
+                    </ul>
+                </div>
+            
+                <hr>
+            
+                <div class="logement-section">
+                    <h3>📍 Transports & Proximité</h3>
+                    <ul>
+                        <li>🌊 <strong>Plage la plus proche :</strong> 15 min en tram ou 35 min à pied (Promenade des Anglais)</li>
+                        <li>🏛️ <strong>Centre-ville :</strong> 10 min en tram (Tramway L1)</li>
+                        <li>🛒 <strong>Supermarché :</strong> Carrefour City à 7 min à pied</li>
+                        <li>🚈 <strong>Gare SNCF Nice Ville :</strong> 15 min en tram ou 8 min en voiture</li>
+                        <li>✈️ <strong>Aéroport Nice Côte d’Azur :</strong> 30 min en tram (L2 + L1) ou 20 min en voiture</li>
+                    </ul>
+                </div>
+            
+                <hr>
+            
+                <div class="logement-section">
+                    <h3>🚍  Arriver au logement</h3>
+                    <ul>
+                        <li>🚗 <strong>En voiture :</strong> Sortie autoroute A8 « Nice Nord » puis 10 min</li>
+                        <li>🚄 <strong>Depuis la gare :</strong> Tram L1 → arrêt "Valrose Université"</li>
+                        <li>🚌 <strong>Bus :</strong> Ligne 5 ou 33, arrêt « Valrose »</li>
+                        <li>🚕 <strong>Taxi ou VTC :</strong> Environ 25–35 € depuis l'aéroport</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="booking-toggle" id="bookingToggle">Réserver</div>
+
+            <div id="bookingPanel" class="booking-panel collapsed">
+                <div class="booking-content">
+                    <h3>{% trans "Choix des dates" %}</h3>
+                    <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
+                        <input type="hidden" id="id_start" name="start">
+                        <input type="hidden" id="id_end" name="end">
+                        <div id="calendar_inline"></div>
+                        <button type="submit">{% trans "Réserver" %}</button>
+                    </form>
+                    <div class="legend">
+                        <div class="legend-item"><span class="dot booked"></span> Réservé</div>
+                        <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
+                        <div class="legend-item"><span class="dot free"></span> Disponible</div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <section class="equipment-section section-block">
+        <h2 class="equipment-title">Équipements disponibles</h2>
+        <div class="equipment-grid">
+            <div class="equipment-group">
+                <h3>Confort & Accessibilité</h3>
+                <ul>
+                    <li>Accès à la plage (non en bord de mer)</li>
+                    <li>Logement de plain-pied</li>
+                    <li>Entrée privée</li>
+                    <li>Stores</li>
+                    <li>Mobilier d'extérieur</li>
+                    <li>Patio ou balcon</li>
+                    <li>Lit parapluie / Lit pour bébé (sur demande)</li>
+                </ul>
+            </div>
+
+            <div class="equipment-group">
+                <h3>Équipements de cuisine</h3>
+                <ul>
+                    <li>Cuisine complète</li>
+                    <li>Four / Four à micro-ondes</li>
+                    <li>Cuisinière à gaz / Plaque de cuisson</li>
+                    <li>Réfrigérateur / Congélateur</li>
+                    <li>Lave-vaisselle</li>
+                    <li>Grille-pain</li>
+                    <li>Cafetière / Machine à expresso</li>
+                    <li>Bouilloire électrique</li>
+                    <li>Vaisselle, couverts, casseroles, etc.</li>
+                    <li>Produits de nettoyage</li>
+                    <li>Équipements de cuisine de base (huile, sel, poivre)</li>
+                    <li>Table à manger</li>
+                    <li>Espace repas en plein air</li>
+                </ul>
+            </div>
+
+            <div class="equipment-group">
+                <h3>Technologie & Connectivité</h3>
+                <ul>
+                    <li>Wifi disponible partout</li>
+                    <li>Télévision</li>
+                    <li>Connexion Ethernet</li>
+                    <li>Espace de travail dédié</li>
+                </ul>
+            </div>
+
+            <div class="equipment-group">
+                <h3>Chambre & Salle de bain</h3>
+                <ul>
+                    <li>Draps en coton</li>
+                    <li>Serviettes fournies</li>
+                    <li>Sèche-cheveux</li>
+                    <li>Sèche-linge</li>
+                    <li>Lave-linge</li>
+                    <li>Étendoir à linge</li>
+                    <li>Cintres</li>
+                    <li>Détecteur de fumée</li>
+                    <li>Espace de rangement (commode, placard)</li>
+                </ul>
+            </div>
+
+            <div class="equipment-group">
+                <h3>Stationnement</h3>
+                <ul>
+                    <li>Parking gratuit sur place</li>
+                    <li>Parking gratuit dans la rue</li>
+                    <li>Stationnement payant à proximité</li>
+                </ul>
+            </div>
+
+            <div class="equipment-group">
+                <h3>Autres</h3>
+                <ul>
+                    <li>Chauffage</li>
+                    <li>Ventilateurs portables</li>
+                    <li>Séjours longue durée autorisés (28+ jours)</li>
+                    <li>Arrière-cour</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 🗺️ Google Map container -->
+    <section class="section-block">
+        <iframe class="logement-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2883.6102969953176!2d7.261666490367619!3d43.71864717368632!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12cdc55614e6e7c9%3A0xce7586de88ac033e!2s85%20Av.%20Valrose%2C%2006100%20Nice!5e0!3m2!1sfr!2sfr!4v1746723047984!5m2!1sfr!2sfr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </section>
+
+    <div id="imageModal" class="image-modal">
+        <span id="closeModal" class="close-btn">&times;</span>
+        <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
+        <img id="modalImage" class="modal-content" src="">
+        <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const reservedDatesStart = {{ reserved_dates_start_json|safe }};
+    const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
+    const today = new Date().toISOString().slice(0, 10);
+    const logementId = {{ logement.id }};
+    const periodLimit = {{ logement.availablity_period }};      
+    const allPhotoUrls = {{ photo_urls|safe }};
+</script>
+<script src="{% static 'logement/js/image-galery.js' %}"></script>
+<script src="{% static 'logement/js/calendar.js' %}"></script>
+{% endblock %}

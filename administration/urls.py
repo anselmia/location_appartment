@@ -33,17 +33,20 @@ urlpatterns = [
     path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
     path('api/delete-all-photos/<int:logement_id>/', views.delete_all_photos, name='delete_all_photos'),
     path("api/rotate-photos/<int:photo_id>/", views.rotate_photo, name="rotate_photo"),
+    path("update-equipment/<int:logement_id>/", views.update_equipment, name="update_equipment"),
     path("calendar/", views.calendar, name="calendar"),
     path(
         "logement/discounts/",
         views.manage_discounts,
         name="manage_discounts",
     ),
-    path("revenu/<int:logement_id>/", views.economie_view, name="revenu"),
+    path("revenu/", views.economie_view, name="revenu"),
     path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
     path("logs/", views.log_viewer, name="log_viewer"),
     path("api/log-js/", views.js_logger, name="js_logger"),
     path("reservations/", views.reservation_dashboard, name="reservation_dashboard"),
+    path("gestion-home/", views.homepage_admin_view, name="homepage_admin_view"),
+    path('entreprise/', views.edit_entreprise, name='edit_entreprise'),
 ]
 
 urlpatterns += router.urls

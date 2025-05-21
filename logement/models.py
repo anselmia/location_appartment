@@ -1,4 +1,5 @@
 import os
+from datetime import time
 from django.db import models
 from django.dispatch import receiver
 from accounts.models import CustomUser
@@ -9,11 +10,54 @@ from datetime import timedelta
 from django.utils import timezone
 
 
+class City(models.Model):
+    name = models.CharField(max_length=150)
+    code_postal = models.CharField(max_length=10)
+
+    class Meta:
+        unique_together = ("name", "code_postal")
+
+    def __str__(self):
+        return f"{self.name} ({self.code_postal})"
+
+
+# models.py
+class Equipment(models.Model):
+    name = models.CharField(max_length=150)
+    icon = models.CharField(
+        max_length=100, blank=True, help_text="FontAwesome icon class or image name"
+    )
+
+    def __str__(self):
+        return self.name
+
+
 class Logement(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     adresse = models.CharField(max_length=255)
+    ville = models.ForeignKey(
+        City, related_name="city", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    statut = models.CharField(
+        max_length=20,
+        choices=[
+            ("open", "Ouvert"),
+            ("close", "Fermé"),
+        ],
+        default="close",
+    )
+
+    type = models.CharField(
+        max_length=20,
+        choices=[
+            ("house", "Maison"),
+            ("flat", "Appartement"),
+            ("room", "Chambre"),
+        ],
+        default="full",
+    )
 
     max_traveler = models.IntegerField(default=4)
     nominal_traveler = models.IntegerField(default=4)
@@ -24,18 +68,34 @@ class Logement(models.Model):
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     cancelation_period = models.IntegerField(default=15)  # en jours ?
+    superficie = models.IntegerField(blank=True, null=True)
+    bathrooms = models.IntegerField(default=1)
     bedrooms = models.IntegerField(default=1)
 
     ready_period = models.IntegerField(default=1)  # en jours ?
 
-    entrance_hour_min = models.TimeField(default="15:00")
-    entrance_hour_max = models.TimeField(default="20:00")
-    leaving_hour = models.TimeField(default="11:00")
+    entrance_hour_min = models.TimeField(default=time(15, 0))
+    entrance_hour_max = models.TimeField(default=time(20, 0))
+    leaving_hour = models.TimeField(default=time(11, 0))
 
     max_days = models.IntegerField(default=60)
     availablity_period = models.IntegerField(default=6)  # en mois ?
 
     animals = models.BooleanField(default=False)
+    smoking = models.BooleanField(default=False)
+    owner = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        null=True,  # Make it required
+        blank=True,
+    )
+
+    airbnb_link = models.URLField(blank=True, null=True)
+    airbnb_calendar_link = models.URLField(blank=True, null=True)
+    booking_link = models.URLField(blank=True, null=True)
+    booking_calendar_link = models.URLField(blank=True, null=True)
+
+    equipment = models.ManyToManyField(Equipment, blank=True, related_name="logements")
 
     def __str__(self):
         return self.name
@@ -211,6 +271,9 @@ class Photo(models.Model):
                 logging.getLogger(__name__).exception(
                     f"Error generating WebP for photo {self.pk}: {e}"
                 )
+
+    class Meta:
+        ordering = ["order"]  # 👈 Always sort by `order`
 
 
 @receiver(models.signals.post_delete, sender=Photo)

@@ -1,0 +1,73 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<header class="navbar">
+        <div class="logo">
+            <a href="/">
+              <picture>
+                <source srcset="{% static 'logement/img/logo.webp' %}" type="image/webp">
+                <img src="{% static 'logement/img/logo.jpg' %}" alt="Logement Valrose" class="logo-img" loading="lazy">
+              </picture>
+            </a>
+          </div>
+        <nav>
+        
+            <!-- Hamburger Icon -->
+            <div class="nav-toggle" id="navToggle">&#9776;</div>
+        
+            <!-- Links Container -->
+            <div class="nav-links" id="navLinks">                
+                <a href="/">{% trans "Accueil" %}</a>
+        
+                {% if user.is_authenticated %}
+                    {% if user.is_admin %}
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle">{% trans "Logement" %}</a>
+                            <div class="dropdown-menu">
+                                <a href="{% url 'administration:dashboard' %}">{% trans "Tableau de bord" %}</a>
+                                <a href="{% url 'administration:calendar' %}">{% trans "Calendrier" %}</a>
+                                <a href="{% url 'administration:reservation_dashboard' %}">{% trans "Réservations" %}</a>
+                                <a href="{% url 'administration:manage_discounts' %}">{% trans "Réductions" %}</a>
+                                <a href="{% url 'administration:revenu' %}">{% trans "Revenus" %}</a>
+                            </div>
+                        </div>
+
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
+                            <div class="dropdown-menu">
+                                <a href="{% url 'administration:edit_entreprise' %}">{% trans "Entreprise" %}</a>
+                                <a href="{% url 'administration:homepage_admin_view' %}">{% trans "Home page" %}</a>
+                                <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
+                                <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">{% trans "Mon compte" %} ({{ user.username }})</a>
+                        <div class="dropdown-menu">
+                            <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
+                            <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
+                            <a href="{% url 'accounts:logout' %}">{% trans "Déconnexion" %}</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
+                {% endif %}
+        
+                <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français">
+                    </button>
+                    <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/en.svg' %}" alt="English">
+                    </button>
+                    <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
+                        <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español">
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </header>

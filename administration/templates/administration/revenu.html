@@ -3,28 +3,44 @@
 {% load extra_tags %}
 {% block content %}
 <div class="container mt-5">
-  <h2 class="text-center mb-4">📈 Vue Économique du Logement</h2>
+  <h2 class="text-center mb-4">📈 Revenus</h2>
 
   <!-- Filters -->
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="row align-items-end">
+      <div class="col-md-6">
+        <label for="logement-select">Logement :</label>
+        <select id="logement-select" name="logement_id" class="form-control" onchange="this.form.submit()">
+          {% for loge in logements %}
+            <option value="{{ loge.id }}" {% if loge.id == logement_id %}selected{% endif %}>
+              {{ loge.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </form>
+
   <div class="card shadow-sm mb-4">
-        <div class="card-body row align-items-end">
-        <div class="col-md-6">
-            <label for="year-select">Année :</label>
-            <select id="year-select" class="form-control">
-            {% for y in years %}
-                <option value="{{ y }}">{{ y }}</option>
-            {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-6">
-                <label for="month-select">Mois :</label>
-                <select id="month-select" class="form-control">
-                    <option value="all">Tous les mois</option>
-                    {% for month in 1|to_month_range %}
-                        <option value="{{ month }}">{{ month|get_month_name }}</option>
-                    {% endfor %}
+        <div class="card-body row align-items-end">            
+            <div class="col-md-6">
+                <label for="year-select">Année :</label>
+                <select id="year-select" class="form-control">
+                {% for y in years %}
+                    <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
                 </select>
-        </div>
+            </div>
+            <div class="col-md-6">
+                    <label for="month-select">Mois :</label>
+                    <select id="month-select" class="form-control">
+                        <option value="all">Tous les mois</option>
+                        {% for month in 1|to_month_range %}
+                            <option value="{{ month }}">{{ month|get_month_name }}</option>
+                        {% endfor %}
+                    </select>
+            </div>
         </div>
   </div>
 
@@ -64,7 +80,8 @@
 
 {% block extra_js %}
 <script>
-    const logementId = {{ logement }};  
+    const logementId = {{ logement_id }};
+    const csrfToken = "{{ csrf_token }}";
 </script>
 <script src="{% static 'administration/js/revenu.js' %}"></script>
 {% endblock %}

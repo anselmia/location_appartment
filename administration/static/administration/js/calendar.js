@@ -1,201 +1,217 @@
+let calendar = null;
+
 document.addEventListener('DOMContentLoaded', function () {
+  const logements = JSON.parse(document.getElementById('logements-data').textContent);
+  const selector = document.getElementById('logement-selector');
   const calendarEl = document.getElementById('calendar');
-  const logementId = calendarEl.dataset.logementId;
+  
 
   let selectedStart = null;
   let selectedEnd = null;
   let reservedDates = new Set();
-  let reductions = []; // Store active reductions
   let dailyPriceMap = {};
   let rangeStart = null;
 
   axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
   axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
-    locale: 'fr',
+  function initCalendar(logementId) {
+    if (calendar) {
+        calendar.destroy();  // clean existing calendar
+    }
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 'auto',
+      locale: 'fr',
 
-    selectable: true,
-    selectMirror: true,
+      selectable: true,
+      selectMirror: true,
 
-    events: function (fetchInfo, successCallback, failureCallback) {
-      const params = new URLSearchParams({
-        logement_id: logementId,
-        start: fetchInfo.startStr,
-        end: fetchInfo.endStr,
-      });
-
-      reservedDates.clear();
-
-      axios.get(`/admin-area/prices/?${params.toString()}`)
-        .then(res => {
-          logToServer("info", "Chargement des données de prix et réservations réussi", {
-            logementId: logementId,
-            start: fetchInfo.startStr,
-            end: fetchInfo.endStr
-          });
-
-          // 1. Daily Prices (background display)
-          const priceEvents = res.data.data.map(e => ({
-            start: e.date,
-            display: 'background',
-            className: 'fc-event-price',
-            title: `${parseFloat(e.value).toFixed(2)} €`
-          }));
-
-          // 2. Internal reservations
-          const bookings = res.data.data_bookings.map(b => ({
-            start: b.start,
-            end: b.end,
-            title: `${b.name} • ${b.guests} guests - ${b.total_price}€`,
-            className: 'booking-event internal',
-          }));
-
-          // 3. Airbnb
-          const airbnbBookings = res.data.airbnb_bookings.map(b => ({
-            start: b.start,
-            end: b.end,
-            title: `Airbnb`,
-            className: 'booking-event airbnb'
-          }));
-
-          // 4. Booking.com
-          const bookingBookings = res.data.booking_bookings.map(b => ({
-            start: b.start,
-            end: b.end,
-            title: `Booking.com`,
-            className: 'booking-event bookingcom'
-          }));
-
-          dailyPriceMap = {};
-          res.data.data.forEach(e => {
-            dailyPriceMap[e.date] = parseFloat(e.value);
-          });
-
-          function addReservedRange(start, end) {
-            const current = new Date(start);
-            const endDate = new Date(end);
-            while (current < endDate) {
-              reservedDates.add(current.toISOString().split('T')[0]);
-              current.setDate(current.getDate() + 1);
-            }
-          }
-
-          // Ajoute les jours réservés
-          res.data.data_bookings.forEach(b => addReservedRange(b.start, b.end));
-          res.data.airbnb_bookings.forEach(b => addReservedRange(b.start, b.end));
-          res.data.booking_bookings.forEach(b => addReservedRange(b.start, b.end));
-
-          successCallback([
-            ...priceEvents,
-            ...bookings,
-            ...airbnbBookings,
-            ...bookingBookings
-          ]);
-        })
-        .catch(error => {
-          logToServer("error", "Échec du chargement des événements du calendrier : " + error, {
-            logementId: logementId,
-            start: fetchInfo.startStr,
-            end: fetchInfo.endStr
-          });
-          failureCallback(error);
+      events: function (fetchInfo, successCallback, failureCallback) {
+        const params = new URLSearchParams({
+          logement_id: logementId,
+          start: fetchInfo.startStr,
+          end: fetchInfo.endStr,
         });
-    },
 
-    dateClick: function (info) {
-      if (reservedDates.has(info.dateStr)) return;
+        reservedDates.clear();
 
-      if (!rangeStart) {
-        // First click – set start
-        rangeStart = info.dateStr;
-        showPanel(rangeStart);
-      } else {
-        // Second click – attempt to create range
-        const start = new Date(rangeStart);
-        const end = new Date(info.dateStr);
+        axios.get(`/admin-area/prices/?${params.toString()}`)
+          .then(res => {
+            logToServer("info", "Chargement des données de prix et réservations réussi", {
+              logementId: logementId,
+              start: fetchInfo.startStr,
+              end: fetchInfo.endStr
+            });
 
-        if (end < start) {
-          // Reset selection if end is before start
+            // 1. Daily Prices (background display)
+            const priceEvents = res.data.data.map(e => ({
+              start: e.date,
+              display: 'background',
+              className: 'fc-event-price',
+              title: `${parseFloat(e.value).toFixed(2)} €`
+            }));
+
+            // 2. Internal reservations
+            const bookings = res.data.data_bookings.map(b => ({
+              start: b.start,
+              end: b.end,
+              title: `${b.name} • ${b.guests} guests - ${b.total_price}€`,
+              className: 'booking-event internal',
+            }));
+
+            // 3. Airbnb
+            const airbnbBookings = res.data.airbnb_bookings.map(b => ({
+              start: b.start,
+              end: b.end,
+              title: `Airbnb`,
+              className: 'booking-event airbnb'
+            }));
+
+            // 4. Booking.com
+            const bookingBookings = res.data.booking_bookings.map(b => ({
+              start: b.start,
+              end: b.end,
+              title: `Booking.com`,
+              className: 'booking-event bookingcom'
+            }));
+
+            dailyPriceMap = {};
+            res.data.data.forEach(e => {
+              dailyPriceMap[e.date] = parseFloat(e.value);
+            });
+
+            function addReservedRange(start, end) {
+              const current = new Date(start);
+              const endDate = new Date(end);
+              while (current < endDate) {
+                reservedDates.add(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+              }
+            }
+
+            // Ajoute les jours réservés
+            res.data.data_bookings.forEach(b => addReservedRange(b.start, b.end));
+            res.data.airbnb_bookings.forEach(b => addReservedRange(b.start, b.end));
+            res.data.booking_bookings.forEach(b => addReservedRange(b.start, b.end));
+
+            successCallback([
+              ...priceEvents,
+              ...bookings,
+              ...airbnbBookings,
+              ...bookingBookings
+            ]);
+          })
+          .catch(error => {
+            logToServer("error", "Échec du chargement des événements du calendrier : " + error, {
+              logementId: logementId,
+              start: fetchInfo.startStr,
+              end: fetchInfo.endStr
+            });
+            failureCallback(error);
+          });
+      },
+
+      dateClick: function (info) {
+        if (reservedDates.has(info.dateStr)) return;
+
+        if (!rangeStart) {
+          // First click – set start
           rangeStart = info.dateStr;
           showPanel(rangeStart);
+        } else {
+          // Second click – attempt to create range
+          const start = new Date(rangeStart);
+          const end = new Date(info.dateStr);
+
+          if (end < start) {
+            // Reset selection if end is before start
+            rangeStart = info.dateStr;
+            showPanel(rangeStart);
+            return;
+          }
+
+          // Check if range is reserved
+          const conflict = isReservedRange(rangeStart, info.dateStr);
+          if (conflict) {
+            logToServer("warning", "Conflit détecté dans la plage de dates sélectionnée", {
+              logementId: logementId,
+              start: rangeStart,
+              end: info.dateStr
+            });
+            alert("❌ La plage sélectionnée contient des dates réservées.");
+            rangeStart = null;
+            hidePanel();
+            return;
+          }
+
+          // Range is valid
+          showPanel(rangeStart, info.dateStr);
+          rangeStart = null; // Reset selection
+        }
+      },
+
+      select: function (selectionInfo) {
+        const hasConflict = isReservedRange(selectionInfo.startStr, selectionInfo.endStr);
+        if (hasConflict) return;
+        showPanel(selectionInfo.startStr, selectionInfo.endStr);
+      },
+
+      eventDidMount: function (info) {
+        if (info.event.classNames.includes('fc-event-price')) {
+          info.el.innerHTML = `<div class="fc-event-price">${info.event.title}</div>`;
           return;
         }
 
-        // Check if range is reserved
-        const conflict = isReservedRange(rangeStart, info.dateStr);
-        if (conflict) {
-          logToServer("warning", "Conflit détecté dans la plage de dates sélectionnée", {
-            logementId: logementId,
-            start: rangeStart,
-            end: info.dateStr
+        if (info.event.classNames.includes('discount-event')) {
+          info.el.innerHTML = `<div class="discount-label">${info.event.title}</div>`;
+          return;
+        }
+
+
+        if (info.event.classNames.includes('booking-event')) {
+          let content = `<span class="booking-span">${info.event.title}</span>`;
+
+          if (info.event.extendedProps.avatar) {
+            content = `<img src="${info.event.extendedProps.avatar}" alt="avatar" style="width:22px;height:22px;border-radius:50%;margin-right:6px;"> ${content}`;
+          }
+
+          info.el.innerHTML = content;
+
+          // ✅ Tooltip content
+          let tooltipText = `
+            <strong>Source :</strong> ${getSourceLabel(info.event.classNames)}<br>
+            <strong>Nom :</strong> ${info.event.title}<br>
+            <strong>Début :</strong> ${info.event.start.toLocaleDateString()}<br>
+            <strong>Fin :</strong> ${info.event.end ? new Date(info.event.end.getTime() - 86400000).toLocaleDateString() : ''}<br>
+          `;
+
+          tippy(info.el, {
+            content: tooltipText,
+            allowHTML: true,
+            theme: 'light-border',
+            placement: 'top',
           });
-          alert("❌ La plage sélectionnée contient des dates réservées.");
-          rangeStart = null;
-          hidePanel();
-          return;
         }
 
-        // Range is valid
-        showPanel(rangeStart, info.dateStr);
-        rangeStart = null; // Reset selection
-      }
-    },
-
-    select: function (selectionInfo) {
-      const hasConflict = isReservedRange(selectionInfo.startStr, selectionInfo.endStr);
-      if (hasConflict) return;
-      showPanel(selectionInfo.startStr, selectionInfo.endStr);
-    },
-
-    eventDidMount: function (info) {
-      if (info.event.classNames.includes('fc-event-price')) {
-        info.el.innerHTML = `<div class="fc-event-price">${info.event.title}</div>`;
-        return;
-      }
-
-      if (info.event.classNames.includes('discount-event')) {
-        info.el.innerHTML = `<div class="discount-label">${info.event.title}</div>`;
-        return;
-      }
-
-
-      if (info.event.classNames.includes('booking-event')) {
-        let content = `<span class="booking-span">${info.event.title}</span>`;
-
-        if (info.event.extendedProps.avatar) {
-          content = `<img src="${info.event.extendedProps.avatar}" alt="avatar" style="width:22px;height:22px;border-radius:50%;margin-right:6px;"> ${content}`;
+        function getSourceLabel(classList) {
+          if (classList.includes('airbnb')) return 'Airbnb';
+          if (classList.includes('bookingcom')) return 'Booking.com';
+          return 'Réservation interne';
         }
-
-        info.el.innerHTML = content;
-
-        // ✅ Tooltip content
-        let tooltipText = `
-          <strong>Source :</strong> ${getSourceLabel(info.event.classNames)}<br>
-          <strong>Nom :</strong> ${info.event.title}<br>
-          <strong>Début :</strong> ${info.event.start.toLocaleDateString()}<br>
-          <strong>Fin :</strong> ${info.event.end ? new Date(info.event.end.getTime() - 86400000).toLocaleDateString() : ''}<br>
-        `;
-
-        tippy(info.el, {
-          content: tooltipText,
-          allowHTML: true,
-          theme: 'light-border',
-          placement: 'top',
-        });
       }
+    });
 
-      function getSourceLabel(classList) {
-        if (classList.includes('airbnb')) return 'Airbnb';
-        if (classList.includes('bookingcom')) return 'Booking.com';
-        return 'Réservation interne';
-      }
-    }
-  });
+    calendar.render();
+  }
 
-  calendar.render();
+   // Init first calendar
+   initCalendar(selector.value);
+
+   // Change logement calendar on selector change
+   selector.addEventListener('change', function () {
+    initCalendar(this.value);
+});
 
   // Helper pour décrémenter la date de fin d’un jour (car FullCalendar donne une fin exclusive)
   function dayBefore(dateStr) {
@@ -274,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
       guestCount = 1;
     }
     axios.post('/admin-area/prices/calculate_price/', {
-        logement_id: logementId,
+        logement_id: selector.value,
         start: selectedStart,
         end: selectedEnd || selectedStart,
         base_price: updatedBasePrice,
@@ -282,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(response => {
         logToServer("info", "Calcul du prix réussi", {
-          logementId: logementId,
+          logementId: selector.value,
           start: selectedStart,
           end: selectedEnd || selectedStart,
           guests: guestCount,
@@ -340,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(error => {
         logToServer("error", "Erreur lors du calcul du prix : " + error, {
-          logementId: logementId,
+          logementId: selector.value,
           start: selectedStart,
           end: selectedEnd || selectedStart,
           guests: guestCount,
@@ -366,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const price = document.getElementById('base-price').value;
 
     const payload = {
-      logement_id: logementId,
+      logement_id: selector.value,
       value: price,
       start: selectedStart,
       end: selectedEnd ? dayBefore(selectedEnd) : selectedStart
@@ -381,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(error => {
         logToServer("error", "Erreur lors de l'application du prix : " + error, {
-          logementId: logementId,
+          logementId: selector.value,
           payload: payload
         });
       });

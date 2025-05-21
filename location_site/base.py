@@ -61,6 +61,10 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATES[0]['OPTIONS']['context_processors'] += [
+    'core.context_processors.entreprise_info',
+]
+
 WSGI_APPLICATION = "location_site.wsgi.application"
 
 # Password validation

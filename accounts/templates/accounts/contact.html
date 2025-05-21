@@ -8,11 +8,6 @@
     <h1>📨 Contactez-nous</h1>
     <p class="subtitle">Nous sommes ravis d’avoir de vos nouvelles.</p>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
 
     <form method="post" novalidate>
         {% csrf_token %}

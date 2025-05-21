@@ -33,3 +33,12 @@ document.addEventListener("DOMContentLoaded", function () {
         loader.style.display = "none";
     }
 });
+
+if (!localStorage.getItem('cookiesAccepted')) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
+
+  document.getElementById('accept-cookies').addEventListener('click', () => {
+    localStorage.setItem('cookiesAccepted', true);
+    document.getElementById('cookie-banner').style.display = 'none';
+  });
