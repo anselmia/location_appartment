@@ -31,10 +31,23 @@ urlpatterns = [
         name="move_photo",
     ),
     path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
-    path('api/delete-all-photos/<int:logement_id>/', views.delete_all_photos, name='delete_all_photos'),
+    path(
+        "api/delete-all-photos/<int:logement_id>/",
+        views.delete_all_photos,
+        name="delete_all_photos",
+    ),
     path("api/rotate-photos/<int:photo_id>/", views.rotate_photo, name="rotate_photo"),
-    path("update-equipment/<int:logement_id>/", views.update_equipment, name="update_equipment"),
+    path(
+        "update-equipment/<int:logement_id>/",
+        views.update_equipment,
+        name="update_equipment",
+    ),
     path("calendar/", views.calendar, name="calendar"),
+    path(
+        "logement/discounts/<int:logement_id>/",
+        views.manage_discounts,
+        name="manage_discounts",
+    ),
     path(
         "logement/discounts/",
         views.manage_discounts,
@@ -45,8 +58,24 @@ urlpatterns = [
     path("logs/", views.log_viewer, name="log_viewer"),
     path("api/log-js/", views.js_logger, name="js_logger"),
     path("reservations/", views.reservation_dashboard, name="reservation_dashboard"),
+    path("reservations/<int:pk>/", views.reservation_detail, name="reservation_detail"),
+    path(
+        "reservations/<int:pk>/cancel/",
+        views.cancel_reservation,
+        name="cancel_reservation",
+    ),
+    path(
+        "reservations/<int:pk>/refund/",
+        views.refund_reservation,
+        name="refund_reservation",
+    ),
+    path(
+        "reservations/<int:logement_id>/",
+        views.reservation_dashboard,
+        name="reservation_dashboard_by_id",
+    ),
     path("gestion-home/", views.homepage_admin_view, name="homepage_admin_view"),
-    path('entreprise/', views.edit_entreprise, name='edit_entreprise'),
+    path("entreprise/", views.edit_entreprise, name="edit_entreprise"),
 ]
 
 urlpatterns += router.urls

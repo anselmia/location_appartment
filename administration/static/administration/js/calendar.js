@@ -4,27 +4,25 @@ document.addEventListener('DOMContentLoaded', function () {
   const logements = JSON.parse(document.getElementById('logements-data').textContent);
   const selector = document.getElementById('logement-selector');
   const calendarEl = document.getElementById('calendar');
-  
+
 
   let selectedStart = null;
   let selectedEnd = null;
   let reservedDates = new Set();
   let dailyPriceMap = {};
-  let rangeStart = null;
-
   axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
   axios.defaults.headers.post['Content-Type'] = 'application/json';
 
   function initCalendar(logementId) {
     if (calendar) {
-        calendar.destroy();  // clean existing calendar
+      calendar.destroy(); // clean existing calendar
     }
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       height: 'auto',
       locale: 'fr',
-
       selectable: true,
+      selectLongPressDelay: 0, // 👈 ensures fast response on touch
       selectMirror: true,
 
       events: function (fetchInfo, successCallback, failureCallback) {
@@ -111,49 +109,19 @@ document.addEventListener('DOMContentLoaded', function () {
             failureCallback(error);
           });
       },
-
-      dateClick: function (info) {
-        if (reservedDates.has(info.dateStr)) return;
-
-        if (!rangeStart) {
-          // First click – set start
-          rangeStart = info.dateStr;
-          showPanel(rangeStart);
-        } else {
-          // Second click – attempt to create range
-          const start = new Date(rangeStart);
-          const end = new Date(info.dateStr);
-
-          if (end < start) {
-            // Reset selection if end is before start
-            rangeStart = info.dateStr;
-            showPanel(rangeStart);
-            return;
-          }
-
-          // Check if range is reserved
-          const conflict = isReservedRange(rangeStart, info.dateStr);
-          if (conflict) {
-            logToServer("warning", "Conflit détecté dans la plage de dates sélectionnée", {
-              logementId: logementId,
-              start: rangeStart,
-              end: info.dateStr
-            });
-            alert("❌ La plage sélectionnée contient des dates réservées.");
-            rangeStart = null;
-            hidePanel();
-            return;
-          }
-
-          // Range is valid
-          showPanel(rangeStart, info.dateStr);
-          rangeStart = null; // Reset selection
-        }
-      },
-
       select: function (selectionInfo) {
-        const hasConflict = isReservedRange(selectionInfo.startStr, selectionInfo.endStr);
-        if (hasConflict) return;
+        // Check if range is reserved
+        if (isReservedRange(selectionInfo.startStr, selectionInfo.endStr)) {
+          logToServer("warning", "Conflit détecté dans la plage de dates sélectionnée", {
+            logementId: logementId,
+            start: selectionInfo.startStr,
+            end: selectionInfo.endStr
+          });
+          alert("❌ La plage sélectionnée contient des dates réservées.");
+          hidePanel();
+          return;
+        }
+
         showPanel(selectionInfo.startStr, selectionInfo.endStr);
       },
 
@@ -205,13 +173,13 @@ document.addEventListener('DOMContentLoaded', function () {
     calendar.render();
   }
 
-   // Init first calendar
-   initCalendar(selector.value);
+  // Init first calendar
+  initCalendar(selector.value);
 
-   // Change logement calendar on selector change
-   selector.addEventListener('change', function () {
+  // Change logement calendar on selector change
+  selector.addEventListener('change', function () {
     initCalendar(this.value);
-});
+  });
 
   // Helper pour décrémenter la date de fin d’un jour (car FullCalendar donne une fin exclusive)
   function dayBefore(dateStr) {
@@ -317,9 +285,11 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsContainer.innerHTML = ''; // Clear any existing details
 
         // Create the section header (optional)
-        const detailh3 = document.createElement('h3');
-        detailh3.innerText = 'Détails';
-        detailsContainer.appendChild(detailh3);
+        const detailH5 = document.createElement('h5');
+        const strong = document.createElement('strong');
+        strong.innerText = 'Détails';
+        detailH5.appendChild(strong);
+        detailsContainer.appendChild(detailH5);
 
         const guestDiv = document.createElement('div');
         guestDiv.innerHTML = `

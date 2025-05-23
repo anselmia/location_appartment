@@ -8,7 +8,7 @@ from .models import (
     Discount,
     DiscountType,
     City,
-    Equipment
+    Equipment,
 )
 from django.utils.html import format_html
 
@@ -64,5 +64,5 @@ admin.site.register(DiscountType)
 
 @admin.register(Equipment)
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ["name"]
+    list_display = ["name", "type", "icon"]
     search_fields = ["name"]

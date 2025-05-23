@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}"> 
+{% endblock %}
+
+{% block content %}
+<div class="cgu-wrapper">
+    <article class="cgu-content">
+        <section>
+            <h1>Conditions Générales d'Utilisation</h1>
+    
+            <h2>1. Présentation</h2>
+            <p>La société {{ entreprise.name }} propose des contrats de location saisonnière via leur site internet et différentes plateformes spécialisées. Les réservations et paiements sont sécurisés via Stripe ou, sous conditions, par virement bancaire.</p>
+    
+            <h2>2. Contrat de location</h2>
+            <p>La réservation implique l’acceptation du contrat de location proposé par {{ entreprise.name }}. En cas de refus de signature, d’absence de pièce d’identité ou de dépôt de garantie, la réservation pourra être annulée. {{ entreprise.name }} se réserve également le droit d’annuler en cas de fraude ou comportement inapproprié.</p>
+    
+            <h2>3. Réservation et annulation</h2>
+            <ul>
+                <li><strong>Conditions d'annulation :</strong> Selon les règles du logement.</li>
+                <li><strong>Frais d'annulation :</strong>Il sera toujours prélevé 1% du montant de la réservation pour couvrr les frais de paiement via Stripe</li>
+                <li>En cas d’imprévu de la part de l’agence ou du propriétaire, un remboursement total ou partiel pourra être proposé, ou un relogement.</li>
+            </ul>
+    
+            <h2>4. Dépôt de garantie</h2>
+            <p>Un dépôt de garantie est exigé, via carte bancaire ou virement. Il est obligatoire pour l’accès au logement.</p>
+    
+            <h2>5. Capacité d’accueil</h2>
+            <p>Le nombre de voyageurs ne peut excéder celui indiqué dans la réservation. Dans le cas contraire, l’entrée pourra être refusée.</p>
+    
+            <h2>6. Obligations du locataire</h2>
+            <ul>
+                <li>Réspecter les règles du logement.</li>
+                <li>Utiliser les lieux paisiblement, sans nuisance au voisinage.</li>
+                <li>Pas de sous-location ni d’activité commerciale.</li>
+                <li>Respecter l’agencement et le mobilier.</li>
+                <li>Maintenir le logement propre et en bon état.</li>
+                <li>Pas d’animaux sans accord préalable.</li>
+                <li>Autoriser {{ entreprise.name }} ou ses partenaires à accéder au logement en cas de besoin.</li>
+            </ul>
+    
+            <h2>7. Arrivée et départ</h2>
+            <ul>
+                <li><strong>Arrivée :</strong> à partir de 15h00 (sauf règle spécifique du logement ou accord préalable).</li>
+                <li><strong>Départ :</strong> avant 11h00 (sauf règle spécifique du logement ou accord préalable).</li>
+            </ul>
+    
+            <h2>8. Services inclus</h2>
+            <p>Le logement inclut : linge de maison, internet, TV, chauffage, eau, électricité. Climatisation et parking si disponibles. Aucun frais de ménage n’est ajouté, mais le logement doit être rendu propre. Une retenue sur caution est possible si ce n’est pas respecté.</p>
+        </section>
+    </article>
+</div>
+{% endblock %}

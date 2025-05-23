@@ -3,11 +3,14 @@ import os
 import re
 import logging
 import json
+from django.http import QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.db.models.functions import ExtractYear, ExtractMonth
 from logement.models import (
     Logement,
     Room,
@@ -41,10 +44,11 @@ from django.db.models import Sum, F
 from calendar import month_name
 from django.http import JsonResponse, HttpResponseBadRequest
 from logement.services.reservation_service import calculate_price
+from common.views import is_admin
+from logement.services.payment_service import refund_payment
 
 
-def is_admin(user):
-    return user.is_authenticated and user.is_admin  # or use a custom flag
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -142,7 +146,9 @@ def upload_photos(request, logement_id):
 @require_POST
 def change_photo_room(request, photo_id):
     photo = get_object_or_404(Photo, id=photo_id)
-    room_id = request.POST.get("room_id")
+    data = json.loads(request.body)  # <- THIS IS REQUIRED for JSON body
+    room_id = data.get("room_id")
+
     if room_id:
         room = Room.objects.filter(id=room_id).first()
         if room:
@@ -454,72 +460,89 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
         )
 
 
+def normalize_decimal_input(data):
+    if isinstance(data, QueryDict):
+        data = data.copy()
+    if "value" in data:
+        data["value"] = data["value"].replace(",", ".")
+    return data
+
+
 @login_required
 @user_passes_test(is_admin)
 def manage_discounts(request):
-    logement = Logement.objects.first()
+    all_logements = Logement.objects.all()
+    logement_id = request.GET.get("logement_id") or request.POST.get("logement_id")
+    logement = (
+        get_object_or_404(Logement, id=logement_id)
+        if logement_id
+        else all_logements.first()
+    )
+
+    if not logement:
+        messages.error(request, "Aucun logement trouvé.")
+        return redirect("administration:dashboard")
+
+    discounts = Discount.objects.filter(logement=logement)
     discount_types = DiscountType.objects.all()
 
     if request.method == "POST":
-        post_data = request.POST
+        post_data = normalize_decimal_input(request.POST)
+        action = post_data.get("action")
 
-        # Delete
-        if "delete_id" in post_data:
+        if action == "delete":
             Discount.objects.filter(
-                id=post_data["delete_id"], logement=logement
+                id=post_data["discount_id"], logement=logement
             ).delete()
             messages.success(request, "Réduction supprimée avec succès.")
 
-        # Update
-        elif "update_id" in post_data:
-            discount = get_object_or_404(
-                Discount, id=post_data["update_id"], logement=logement
+        elif action == "update":
+            instance = get_object_or_404(
+                Discount, id=post_data["discount_id"], logement=logement
             )
-            form = DiscountForm(post_data, instance=discount)
+            form = DiscountForm(post_data, instance=instance)
             if form.is_valid():
                 form.save()
                 messages.success(request, "Réduction mise à jour.")
             else:
-                messages.error(
-                    request, "Erreur lors de la mise à jour de la réduction."
-                )
+                messages.error(request, "Erreur lors de la mise à jour.")
                 return render(
                     request,
                     "administration/discounts.html",
                     {
                         "logement": logement,
-                        "discounts": Discount.objects.filter(logement=logement),
+                        "discounts": discounts,
                         "discount_types": discount_types,
+                        "all_logements": all_logements,
                         "form": form,
                     },
                 )
 
-        # Create
-        else:
+        else:  # create
             form = DiscountForm(post_data)
             if form.is_valid():
                 new_discount = form.save(commit=False)
                 new_discount.logement = logement
                 new_discount.save()
-                messages.success(request, "Réduction ajoutée avec succès.")
+                messages.success(request, "Réduction ajoutée.")
             else:
-                # Form has errors, render it with errors
-                messages.error(request, "Erreur lors de la création de la réduction.")
+                messages.error(request, "Erreur lors de la création.")
                 return render(
                     request,
                     "administration/discounts.html",
                     {
                         "logement": logement,
-                        "discounts": Discount.objects.filter(logement=logement),
+                        "discounts": discounts,
                         "discount_types": discount_types,
+                        "all_logements": all_logements,
                         "form": form,
                     },
                 )
 
-        return redirect("administration:manage_discounts")
+        return redirect(
+            f"{reverse('administration:manage_discounts')}?logement_id={logement.id}"
+        )
 
-    discounts = Discount.objects.filter(logement=logement)
-    empty_form = DiscountForm()
     return render(
         request,
         "administration/discounts.html",
@@ -527,7 +550,8 @@ def manage_discounts(request):
             "logement": logement,
             "discounts": discounts,
             "discount_types": discount_types,
-            "form": empty_form,
+            "all_logements": all_logements,
+            "form": DiscountForm(),
         },
     )
 
@@ -696,25 +720,57 @@ def js_logger(request):
 
 
 @login_required
-def reservation_dashboard(request):
-    logement = Logement.objects.prefetch_related("photos").first()
-    reservations = (
-        Reservation.objects.filter(logement=logement)
-        .order_by("-start")
-        .values(
-            "statut",
-            "user__name",
-            "user__last_name",
-            "start",
-            "end",
-            "date_reservation",
-            "guest",
-            "price",
-            "tax",
+@user_passes_test(is_admin)
+def reservation_dashboard(request, logement_id=None):
+    if logement_id:
+        logement = get_object_or_404(
+            Logement.objects.prefetch_related("photos"), id=logement_id
         )
+        base_qs = Reservation.objects.filter(logement=logement)
+    else:
+        base_qs = Reservation.objects.all()
+
+    base_qs = (
+        base_qs.exclude(statut="en_attente")
+        .order_by("-start")
+        .select_related("user", "logement")
+        .prefetch_related("logement__photos")
     )
+
+    # Filter by year and month (from query params)
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+    if year:
+        base_qs = base_qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
+    if month:
+        base_qs = base_qs.annotate(res_month=ExtractMonth("start")).filter(
+            res_month=month
+        )
+
+    # For dropdowns: list all available years and months
+    years = (
+        Reservation.objects.annotate(y=ExtractYear("start"))
+        .values_list("y", flat=True)
+        .distinct()
+        .order_by("y")
+    )
+    months = (
+        Reservation.objects.annotate(m=ExtractMonth("start"))
+        .values_list("m", flat=True)
+        .distinct()
+        .order_by("m")
+    )
+
     return render(
-        request, "administration/reservations.html", {"reservations": reservations}
+        request,
+        "administration/reservations.html",
+        {
+            "reservations": base_qs,
+            "available_years": years,
+            "available_months": months,
+            "current_year": year,
+            "current_month": month,
+        },
     )
 
 
@@ -791,3 +847,53 @@ def edit_entreprise(request):
         form = EntrepriseForm(instance=entreprise)
 
     return render(request, "administration/edit_entreprise.html", {"form": form})
+
+
+@login_required
+@user_passes_test(is_admin)
+def reservation_detail(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+    return render(
+        request, "administration/reservation_detail.html", {"reservation": reservation}
+    )
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def cancel_reservation(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+    if reservation.statut != "annulee":
+        reservation.statut = "annulee"
+        reservation.save()
+        messages.success(request, "Réservation annulée avec succès.")
+    else:
+        messages.warning(request, "La réservation est déjà annulée.")
+    return redirect("administration:reservation_detail", pk=pk)
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def refund_reservation(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+
+    if not reservation.refunded:
+        try:
+            refund_fee = reservation.price * 0.01
+            total_to_refund = reservation.price - refund_fee
+            amount_in_cents = int(total_to_refund * 100)
+
+            refund = refund_payment(reservation.payment_intent_id, amount_in_cents)
+
+            messages.success(
+                request,
+                f"Remboursement de {total_to_refund:.2f} € effectué avec succès.",
+            )
+        except Exception as e:
+            messages.error(request, f"Erreur de remboursement Stripe : {e}")
+            logger.exception("Stripe refund failed")
+    else:
+        messages.warning(request, "Remboursement non possible.")
+
+    return redirect("administration:reservation_detail", pk=pk)

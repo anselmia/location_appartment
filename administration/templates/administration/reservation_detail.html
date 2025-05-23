@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'administration/css/reservation_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 fw-bold text-primary">Détails de la Réservation</h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-5">Logement</dt>
+                        <dd class="col-sm-7">{{ reservation.logement.name }}</dd>
+
+                        <dt class="col-sm-5">Voyageur</dt>
+                        <dd class="col-sm-7">{{ reservation.user.name }} {{ reservation.user.last_name }}</dd>
+
+                        <dt class="col-sm-5">Arrivée</dt>
+                        <dd class="col-sm-7">{{ reservation.start|date:"d M Y" }}</dd>
+
+                        <dt class="col-sm-5">Départ</dt>
+                        <dd class="col-sm-7">{{ reservation.end|date:"d M Y" }}</dd>
+
+                        <dt class="col-sm-5">Date de réservation</dt>
+                        <dd class="col-sm-7">{{ reservation.date_reservation|date:"d M Y H:i" }}</dd>
+
+                        <dt class="col-sm-5">Invités</dt>
+                        <dd class="col-sm-7">{{ reservation.guest }}</dd>
+
+                        <dt class="col-sm-5">Statut</dt>
+                        <dd class="col-sm-7">{{ reservation.get_statut_display }}</dd>
+
+                        <dt class="col-sm-5">Annulable ?</dt>
+                        <dd class="col-sm-7">{{ reservation.can_cancel|yesno:"Oui,Non" }}</dd>
+
+                        <dt class="col-sm-5">En cours ?</dt>
+                        <dd class="col-sm-7">{{ reservation.ongoing|yesno:"Oui,Non" }}</dd>
+
+                        <dt class="col-sm-5">Terminée ?</dt>
+                        <dd class="col-sm-7">{{ reservation.ended|yesno:"Oui,Non" }}</dd>
+
+                        <dt class="col-sm-5">À venir ?</dt>
+                        <dd class="col-sm-7">{{ reservation.coming|yesno:"Oui,Non" }}</dd>
+                    </dl>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-5">Prix</dt>
+                        <dd class="col-sm-7">{{ reservation.price|floatformat:2 }} €</dd>
+
+                        <dt class="col-sm-5">Taxes</dt>
+                        <dd class="col-sm-7">{{ reservation.tax|floatformat:2 }} €</dd>
+
+                        <dt class="col-sm-5">Remboursée ?</dt>
+                        <dd class="col-sm-7">{{ reservation.refunded|yesno:"Oui,Non" }}</dd>
+
+                        <dt class="col-sm-5">Montant remboursé</dt>
+                        <dd class="col-sm-7">{{ reservation.refund_amount|floatformat:2 }} €</dd>
+
+                        <dt class="col-sm-5">Stripe PaymentIntent</dt>
+                        <dd class="col-sm-7">
+                            {{ reservation.stripe_payment_intent_id|default:"—" }}
+                        </dd>
+
+                        <dt class="col-sm-5">Méthode de paiement Stripe</dt>
+                        <dd class="col-sm-7">
+                            {{ reservation.stripe_saved_payment_method_id|default:"—" }}
+                        </dd>
+
+                        <dt class="col-sm-5">ID de remboursement Stripe</dt>
+                        <dd class="col-sm-7">
+                            {{ reservation.stripe_refund_id|default:"—" }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-3">
+        {% if reservation.can_cancel %}
+        <form method="post" action="{% url 'cancel_reservation' reservation.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">Annuler la réservation</button>
+        </form>
+        {% endif %}
+
+        {% if reservation.statut == 'annulee' and not reservation.refunded %}
+        <form method="post" action="{% url 'refund_reservation' reservation.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-warning">Effectuer un remboursement</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

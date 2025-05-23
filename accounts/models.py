@@ -21,6 +21,12 @@ class CustomUser(AbstractUser):
     )
     last_name = models.CharField(max_length=100, verbose_name="Prénom")
     name = models.CharField(max_length=100, verbose_name="Nom")
+    stripe_customer_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Identifiant client Stripe associé pour paiements et impressions de carte.",
+    )
 
     def __str__(self):
         return self.username

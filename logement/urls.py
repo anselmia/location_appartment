@@ -42,4 +42,5 @@ urlpatterns = [
     ),
     path('api/export/ical/', views.export_ical, name='export-ical'),
     path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
+    path('search/', views.logement_search, name='logement_search'),
 ]

@@ -81,12 +81,15 @@
 .fc-event-price {
     display: block;
     font-size: 0.85rem;
-    color: #2d3748;
+    font-weight: 600;
+    color:black;  /* Dark charcoal text */
+    text-shadow: 0 0 1px white; /* subtle outline for light backgrounds */
     margin-top: 4px;
     margin-left: 4px;
     display: flex;
     justify-content: center;  /* centre horizontalement */
     align-items: center;      /* centre verticalement */
+    opacity: 1 !important;
 }
 
 /* Booking event block */
@@ -249,12 +252,80 @@
     text-overflow: ellipsis;
   }
 
-@media screen and (max-width: 900px) {
+  .fc-highlight {
+    background-color: rgba(0, 120, 255, 0.15);
+    border: 1px solid #007bff;
+  }
+
+/* Collapse layout vertically below 992px */
+@media screen and (max-width: 991px) {
+    .calendar-wrapper {
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+  
+    #calendar {
+      min-width: 100% !important;
+      max-width: 100% !important;
+    }
+  
+    .price-panel {
+      width: 100%;
+      max-width: 100%;
+      margin-top: 1rem;
+    }
+
     .fc-event-price {
         font-size: 0.6rem;
+        font-weight: bold;
     }
 
     .booking-span {
         font-size: 0.6rem;
     }
-}
+  }
+  
+  /* Mobile-specific font and padding tweaks */
+  @media screen and (max-width: 576px) {
+    .fc-toolbar-title {
+      font-size: 1.3rem !important;
+    }
+  
+    .fc-daygrid-day-number {
+      font-size: 0.8rem !important;
+    }
+  
+    .fc-event {
+      font-size: 0.65rem !important;
+      padding: 1px 3px;
+    }
+  
+    .price-panel input,
+    .price-panel select {
+      font-size: 0.6rem !important;
+      padding: 6px;
+    }
+  
+    h3 {
+        font-size: 1rem !important;
+    }
+
+    h5 {
+        font-size: 0.8rem !important;
+    }
+
+    .fc-col-header-cell-cushion{
+        font-size: 0.6rem !important;
+    }
+
+    .fc-toolbar-title{
+        font-size: 1rem !important;
+    }
+
+    .btn,
+    label,
+    .fc-button {
+        font-size: 0.6rem !important;
+    }
+  }

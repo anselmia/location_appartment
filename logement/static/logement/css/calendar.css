@@ -1,3 +1,19 @@
+:root {
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Inter', sans-serif;
+  
+    --primary-color: #2b3d55;
+    --accent-color: #bfa66b;
+    --light-bg: #f8f5f2;
+    --bg-white: #ffffff;
+  
+    --text-dark: #2c2c2c;
+    --text-muted: #7f8c8d;
+  
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --radius: 12px;
+  }
+
 /* ==== Calendar === */
 .calendar-box {
     display: flex;
@@ -109,7 +125,7 @@
 .booking-form button {
     padding: 10px 20px;
     font-size: 1em;
-    background: #1a5fd1;
+    background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 8px;
@@ -122,7 +138,7 @@
 }
 
 .booking-form button:hover {
-    background: #1a5fd1;
+    background: var(--accent-color);
 }
 
 .calendar-disabled {
@@ -211,10 +227,10 @@
     position: fixed;
     top: 100px;
     right: 0;
-    background-color: #1a5fd1;
+    background-color: var(--primary-color);
     color: white;
-    width: 80px;
-    height: 50px;
+    width: 120px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -225,8 +241,14 @@
     z-index: 1001;
 }
 
+.booking-toggle.open {
+    font-size: 1.4rem;
+    width: 40px;
+    height: 40px;
+}
+
 .booking-toggle:hover {
-    background-color: #2b3d55;
+    background-color: var(--accent-color);
     transform: scale(1.05);
 }
 
@@ -319,7 +341,7 @@
         align-items: center !important;       /* center vertically */
         
         width: 100% !important;
-        height: 3rem;                         /* or adjust to your design */
+        height: 2rem;                         /* or adjust to your design */
         margin: auto !important;
         padding: 0 !important;
         box-sizing: border-box;

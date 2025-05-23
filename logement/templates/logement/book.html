@@ -3,134 +3,169 @@
 {% load widget_tweaks %}
 {% load i18n %}
 
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
+  <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
+  <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">   
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <!-- Image Gallery -->
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-12">
-                <div class="image-gallery">
+    <div class="container reservation-container py-5">
+        <div class="row justify-content-center">
+            <!-- Left: Image Gallery -->
+            <div class="col-12 mb-4">
+                <div class="image-gallery enhanced-gallery">
                     {% if logement.photos.count > 0 %}
-                        <div class="gallery-left">
+                        <!-- Main photo -->
+                        <div class="gallery-left position-relative">
                             <picture>
                                 <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
                                 <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
                             </picture>
-                        </div>
-                        <div class="gallery-right">
-                        {% for photo in logement.photos.all|slice:"1:5" %}
-                            <div class="small-photo">
-                                <picture>
-                                    <source srcset="{{ photo.image_webp.url }}" type="image/webp">
-                                    <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
-                                </picture>
+            
+                            <!-- Top-right logement stats -->
+                            <div class="gallery-top-right-details">
+                                <span title="Personnes"><i class="fas fa-user-friends"></i> {{ logement.max_traveler }} personnes</span>
+                                <span title="Chambres"><i class="fas fa-door-open"></i> {{ logement.bedrooms }} chambres</span>
+                                <span title="Lits"><i class="fas fa-bed"></i> {{ logement.beds }} lits</span>
+                                <span title="Salles de bain"><i class="fas fa-bath"></i> {{ logement.bathrooms }} salles de bain</span>
                             </div>
-                        {% endfor %}
+                
+                            <!-- Top-left info badge -->
+                            <div class="gallery-badge-top">
+                                <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                                {% if logement.superficie %}
+                                    <span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>
+                                {% endif %}
+                            </div>
+                
+                            <!-- Bottom-right icons -->
+                            <div class="gallery-icons-overlay">
+                                {% for equip in logement.equipment.all %}
+                                    {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                                        <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                                    {% endif %}
+                                {% endfor %}
+                
+                                {% if logement.animals %}
+                                    <i class="fas fa-paw" title="Animaux acceptés"></i>
+                                {% else %}
+                                    <i class="fas fa-paw" style="opacity: 0.4;" title="Animaux non autorisés"></i>
+                                {% endif %}
+                
+                                {% if logement.smoking %}
+                                    <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                                {% else %}
+                                    <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                
+                        <!-- Small thumbnails -->
+                        <div class="gallery-right">
+                            {% for photo in logement.photos.all|slice:"1:5" %}
+                                <div class="small-photo">
+                                    <picture>
+                                        <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                                        <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+                                    </picture>
+                                </div>
+                            {% endfor %}
                         </div>
                     {% else %}
                         <p>Aucune photo disponible.</p>
                     {% endif %}
-                </div>               
+                </div>   
             </div>
+
+            <form method="post" id="reservation-form">
+                {% csrf_token %}
+                <div class="col-lg-6">
+                    <div class="booking-box shadow-lg p-4 rounded">
+                    <h2 class="section-title">{{ logement_data.name }}</h2>
+                
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                        <ul>
+                            {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        </div>
+                    {% endif %}
+                
+                    <h4 class="mb-4 text-center">Informations sur le séjour</h4>
+                
+                    <div class="mb-3 row align-items-center justify-content-center">
+                        <label for="id_guest" class="form-label me-2">Voyageurs :  </label>
+                        <div class="guest-input-wrapper">
+                        {{ form.guest|add_class:"form-control guest-input" }}
+                        </div>
+                    </div>
+                
+                    <div class="calendar-box mt-4">
+                        <div id="calendar_inline"></div>
+                        <div class="legend">
+                        <div class="legend-item"><span class="dot booked"></span> Réservé</div>
+                        <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
+                        <div class="legend-item"><span class="dot free"></span> Disponible</div>
+                        </div>
+                    </div>
+                
+                    {{ form.start.as_hidden }}
+                    {{ form.end.as_hidden }}
+                    <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                    <input type="hidden" id="reservation-price" name="reservation_price" value="0">
+                    <input type="hidden" id="reservation-tax" name="reservation_tax" value="0">
+                    </div>
+                </div>
+
+                <!-- Booking Summary Right -->
+                <div class="col-lg-6">
+                    <div class="summary-box shadow-lg p-4 rounded">
+                        <h4 class="section-title">Récapitulatif</h4>
+                        <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
+                        <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
+                        <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
+
+                        <div class="pricing-summary my-3">
+                            <div id="details"></div>
+                            <h5 class="mt-3">Prix Total : <strong id="final-price">0</strong> €</h5>
+                        </div>
+
+                        <hr>
+
+                        <h5>Vos informations</h5>
+                        <p><strong>Nom :</strong> {{ user.last_name }}</p>
+                        <p><strong>Prénom :</strong> {{ user.name }}</p>
+                        <p><strong>Email :</strong> {{ user.email }}</p>
+                        <p><strong>Téléphone :</strong> {{ user.phone }}</p>
+                        
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" value="" id="cgv-check">
+                            <label class="form-check-label" for="cgv-check">
+                                J’ai lu et j’accepte les <a href="{% url 'common:cgv' %}" target="_blank">Conditions Générales de Vente</a> et la <a href="{% url 'common:confidentiality' %}" target="_blank">Poltique sur la protection des données</a>
+                            </label>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button id="submit-booking" type="submit" class="btn-lg px-5" disabled>
+                                Procéder au Paiement
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
-
-        <form method="post" id="reservation-form">
-            {% csrf_token %}
-
-            <div class="row gx-4 gy-4 align-items-stretch">        
-                <!-- Left Column: Reservation Form -->
-                <div class="col-md-6 d-flex">
-                    <div class="card shadow-lg flex-fill w-100">
-                        <div class="card-body">
-                            <h2 class="text-center mb-4">{{ logement_data.name }}</h2>
-                
-                            {% if form.errors %}
-                                <div class="alert alert-danger">
-                                <ul>
-                                    {% for field in form %}
-                                    {% for error in field.errors %}
-                                        <li>{{ error }}</li>
-                                    {% endfor %}
-                                    {% endfor %}
-                                    {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                                </div>
-                            {% endif %}
-                
-                            <h3 class="text-center mb-4">Informations sur le séjour</h3>
-
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <label for="id_guest">Voyageurs</label>
-                                {{ form.guest|add_class:"auto-width" }}
-                            </div>
-
-                            <div class="calendar-box mt-4">
-                                <div id="calendar_inline"></div>
-                                <div class="legend">
-                                    <div class="legend-item"><span class="dot booked"></span> Réservé</div>
-                                    <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
-                                    <div class="legend-item"><span class="dot free"></span> Disponible</div>
-                                </div>
-                            </div>
-
-                            <input type="hidden"
-                                id="id_start"
-                                name="start"
-                                value="{{ form.start.value|default:'' }}">
-
-                            <input type="hidden"
-                                id="id_end"
-                                name="end"
-                                value="{{ form.end.value|default:'' }}">
-                
-                            <input type="hidden" id="reservation-id" name="reservation_id" value="{{ reservation.id }}">
-                            <input type="hidden" id="reservation-price" name="reservation_price" value="0">
-                            <input type="hidden" id="reservation-tax" name="reservation_tax" value="0">
-                        </div>
-                    </div>
-                </div>
-        
-                <!-- Right Column: Summary + Submit -->
-                <div id="booking-detail" class="col-md-6 d-flex">
-                    <div class="card shadow-lg flex-fill w-100">
-                        <div class="card-body">
-                            <h4 class="text-center mb-4">Résumé de la Réservation</h4>
-                
-                            <p><strong>Arrivée :</strong> <span id="start-date">{{ form.start.value }}</span></p>
-                            <p><strong>Départ :</strong> <span id="end-date">{{ form.end.value }}</span></p>
-                            <p><strong>Voyageurs :</strong> <span id="guest-count">{{ form.guest.value }}</span></p>
-                
-                            <hr>
-                
-                            <div id="details">
-                                <!-- Dynamic pricing breakdown -->
-                            </div>
-                
-                            <div>
-                                <strong>Prix Total : <span id="final-price">0</span> €</strong>
-                            </div>
-                
-                            <hr>
-                
-                            <h4 class="text-center mb-4">Informations du Voyageur</h4>
-                            <p><strong>Nom :</strong> <span>{{ user.last_name }}</span></p>
-                            <p><strong>Prénom :</strong> <span>{{ user.name }}</span></p>
-                            <p><strong>Email :</strong> <span>{{ user.email }}</span></p>
-                            <p><strong>Téléphone :</strong> <span>{{ user.phone }}</span></p>
-                
-                            <div class="form-group text-center mt-4">
-                                <button id="submit-booking" type="submit" class="btn btn-primary btn-lg">Procéder au Paiement</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        
-            </div>
-        </form>  
     </div>
 
-    <!-- Modal to display all photos -->
     <div id="imageModal" class="image-modal">
         <span id="closeModal" class="close-btn">&times;</span>
         <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>

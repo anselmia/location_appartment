@@ -1,49 +1,57 @@
-/* Wrapper */
-.cgu-wrapper {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 40px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+:root {
+    --primary-color: #2b3d55;
+    --accent-color: #bfa66b;
+    --bg-color: #f9f9f9;
+    --text-color: #333;
+    --font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
 }
 
-
-.cgu-header h1 {
-    font-size: 2.5rem;
-    color: #1a1a1a;
-    margin-bottom: 10px;
+body {
+    background: var(--bg-color);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 2rem;
+    color: var(--text-color);
+    line-height: 1.7;
 }
 
-.cgu-header .subtitle {
-    color: #888;
-    font-size: 0.95rem;
+h1, h2, h3 {
+    color: var(--primary-color);
 }
 
-/* Content */
-.cgu-content section {
-    margin-bottom: 35px;
+h1 {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-.cgu-content h2 {
-    font-size: 1.5rem;
-    color: #0c4a6e;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #e1e5eb;
-    padding-bottom: 5px;
+h2 {
+    margin-top: 2rem;
+    font-size: 1.6rem;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.3rem;
 }
 
-.cgu-content p {
-    font-size: 1rem;
-    margin-bottom: 8px;
+h3 {
+    font-size: 1.2rem;
+    margin-top: 1.2rem;
     color: #444;
 }
 
-.cgu-content a {
-    color: #007BFF;
-    text-decoration: none;
+p, li {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
 }
 
-.cgu-content a:hover {
-    text-decoration: underline;
+ul {
+    padding-left: 1.5rem;
+}
+
+section {
+    max-width: 900px;
+    margin: 0 auto 2rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }

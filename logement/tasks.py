@@ -184,9 +184,16 @@ def sync_calendar():
 @shared_task
 def delete_expired_pending_reservations():
     expiry_time = timezone.now() - timedelta(minutes=30)
-    expired = Reservation.objects.filter(
+    count, _ = Reservation.objects.filter(
         statut="en_attente", date_reservation__lt=expiry_time
-    )
-    count = expired.count()
-    expired.delete()
-    return f"Deleted {count} expired reservations"
+    ).delete()
+    return f"Deleted {count} expired pending reservations"
+
+
+@shared_task
+def end_reservations():
+    today = timezone.now()
+    ended = Reservation.objects.filter(statut="confirmee", end__lt=today)
+    count = ended.count()
+    ended.update(statut="terminee")
+    return f"Ended {count} reservations"

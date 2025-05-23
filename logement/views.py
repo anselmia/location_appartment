@@ -2,7 +2,7 @@ import time
 import stripe
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,28 +11,30 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Q
+from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
+from django.db.models import Count, Q
 from .forms import ReservationForm
-from .models import Logement, Reservation, Price, City
+from .models import Logement, Reservation, Price, City, Equipment, EquipmentType
 from logement.services.reservation_service import (
     is_period_booked,
     get_booked_dates,
     create_or_update_reservation,
     validate_reservation_inputs,
-    cancel_and_refund_reservation,
-    handle_checkout_session_completed,
+    cancel_and_refund_reservation,    
     get_available_logement_in_period,
 )
 
 from logement.services.calendar_service import generate_ical
 from logement.services.payment_service import (
-    create_stripe_checkout_session,
+    create_stripe_checkout_session_with_deposit,
     handle_charge_refunded,
     handle_payment_failed,
+    handle_checkout_session_completed,
 )
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
+from collections import defaultdict
 
 
 logger = logging.getLogger(__name__)
@@ -45,30 +47,6 @@ def home(request):
     ).first()
 
     logements = Logement.objects.prefetch_related("photos").filter(statut="open")
-
-    destination = request.GET.get("destination", "").strip()
-    start_date = request.GET.get("start_date")
-    end_date = request.GET.get("end_date")
-    guests = request.GET.get("guests")
-
-    flex = int(request.GET.get("flexibility", 0))
-
-    if destination:
-        logements = logements.filter(ville__name__icontains=destination)
-
-    if guests:
-        logements = logements.filter(max_traveler__gte=int(guests))
-
-    if start_date and end_date:
-        start = datetime.strptime(start_date, "%Y-%m-%d").date()
-        end = datetime.strptime(end_date, "%Y-%m-%d").date()
-
-        flex = int(request.GET.get("flexibility", 0))
-        if flex > 0:
-            start -= timedelta(days=flex)
-            end += timedelta(days=flex)
-
-        logements = get_available_logement_in_period(start, end, logements)
 
     initial_data = {
         "name": request.user.get_full_name() if request.user.is_authenticated else "",
@@ -101,6 +79,10 @@ def view_logement(request, logement_id):
     rooms = logement.rooms.all()
     user = request.user
 
+    grouped_equipment = defaultdict(list)
+    for equip in logement.equipment.all():
+        grouped_equipment[equip.type].append(equip)
+
     if not logement:
         logger.warning("Aucun logement configuré – redirection selon l'utilisateur")
         if request.user.is_authenticated and request.user.is_staff:
@@ -122,13 +104,17 @@ def view_logement(request, logement_id):
             "reserved_dates_start_json": json.dumps(sorted(reserved_dates_start)),
             "reserved_dates_end_json": json.dumps(sorted(reserved_dates_end)),
             "photo_urls": [photo.image.url for photo in logement.photos.all()],
+            "grouped_equipment": grouped_equipment,
+            "EquipmentType": EquipmentType,
         },
     )
 
 
 @login_required
 def book(request, logement_id):
-    logement = Logement.objects.prefetch_related("photos").first()
+    logement = get_object_or_404(
+        Logement.objects.prefetch_related("photos"), id=logement_id
+    )
     user = request.user
 
     # Fetch reserved dates for that logement
@@ -179,11 +165,11 @@ def book(request, logement_id):
                     cancel_url = request.build_absolute_uri(cancel_url)
 
                     # Create a Stripe session and pass reservation details
-                    session = create_stripe_checkout_session(
+                    session = create_stripe_checkout_session_with_deposit(
                         reservation, success_url, cancel_url
                     )
 
-                    return redirect(session.url)
+                    return redirect(session["checkout_session_url"])
             else:
                 messages.error(request, "Une erreur est survenue")
     else:
@@ -410,3 +396,102 @@ def stripe_webhook(request):
         return HttpResponse(status=500)
 
     return HttpResponse(status=200)
+
+
+def logement_search(request):
+    page_number = request.GET.get("page", 1)
+    destination = request.GET.get("destination", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    guests = request.GET.get("guests")
+    equipment_ids = request.GET.getlist("equipments")
+    bedrooms = request.GET.get("bedrooms")
+    bathrooms = request.GET.get("bathrooms")
+    smoking = request.GET.get("is_smoking_allowed") == "1"
+    animals = request.GET.get("is_pets_allowed") == "1"
+    type = request.GET.get("type")
+
+    number_range = [1, 2, 3, 4, 5]
+
+    logements = Logement.objects.prefetch_related("photos").filter(statut="open")
+    equipment_names = [
+        "Piscine",
+        "Parking gratuit sur place",
+        "Garage",
+        "Climatisation",
+        "Chauffage",
+        "Terasse ou balcon",
+        "Télévision",
+        "Wifi",
+        "Machine à laver",
+        "Lave-vaisselle",
+        "Four à micro-ondes",
+        "Four",
+        "Accès mobilité réduite",
+    ]
+
+    equipments = Equipment.objects.filter(name__in=equipment_names)
+    raw_types = Logement.objects.values_list("type", flat=True).distinct()
+
+    # Map to display names using choices
+    type_display_map = dict(Logement._meta.get_field("type").choices)
+    types = [(val, type_display_map.get(val, val)) for val in raw_types]
+
+    if destination:
+        logements = logements.filter(ville__name__icontains=destination)
+
+    if guests:
+        logements = logements.filter(max_traveler__gte=int(guests))
+
+    if start_date and end_date:
+        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        logements = get_available_logement_in_period(start, end, logements)
+
+    if equipment_ids:
+        # Convert to ints for safety
+        equipment_ids = [int(eid) for eid in equipment_ids]
+
+        logements = logements.annotate(
+            matched_equipment_count=Count(
+                "equipment", filter=Q(equipment__id__in=equipment_ids), distinct=True
+            )
+        ).filter(matched_equipment_count=len(equipment_ids))
+
+    if bedrooms:
+        logements = logements.filter(bedrooms__gte=int(bedrooms))
+
+    if bathrooms:
+        logements = logements.filter(bathrooms__gte=int(bathrooms))
+
+    if smoking:
+        logements = logements.filter(smoking=True)
+
+    if animals:
+        logements = logements.filter(animals=True)
+
+    if type:
+        logements = logements.filter(type=type)
+
+    paginator = Paginator(logements, 9) 
+    page_obj = paginator.get_page(page_number)
+
+    selected_equipment_ids = [str(eid) for eid in equipment_ids]
+    guests = int(guests) if guests and guests.isdigit() else 1
+
+    return render(
+        request,
+        "logement/search_results.html",
+        {
+            "logements": page_obj,
+            "equipments": equipments,
+            "destination": destination,
+            "guests": guests,
+            "page_obj": page_obj,
+            "selected_equipment_ids": selected_equipment_ids,
+            "number_range": number_range,
+            "types": types,
+            "selected_type": type,
+        },
+    )

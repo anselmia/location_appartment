@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'logement/css/search_result.css' %}">
+  <link rel="stylesheet" href="{% static 'logement/css/logements_grid.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+  <!-- HERO -->
+  <div class="hero-banner" style="background-image: url('{% static 'logement/img/search.jpg' %}');">
+    <div class="overlay">
+      <h1>Trouvez votre logement idéal</h1>
+      <p>Réservez en toute sérénité avec notre conciergerie</p>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <form method="get" action="{% url 'logement:logement_search' %}" class="compact-search-bar">
+    <div class="search-input destination">
+        <label>Destination</label>
+        <input type="text" name="destination" placeholder="Rechercher une destination"
+               value="{{ request.GET.destination }}" list="cities" id="destination-input" autocomplete="off">
+        <datalist id="cities"></datalist>
+    </div>
+  
+    <div class="search-input dates">
+        <label>Durée</label>
+        <input type="text" id="datepicker" class="date-input"
+               placeholder="Ajouter des dates"
+               value="{{ request.GET.start_date|date:'j F' }} – {{ request.GET.end_date|date:'j F' }}" readonly>
+        <input type="hidden" name="start_date" id="start_date" value="{{ request.GET.start_date }}">
+        <input type="hidden" name="end_date" id="end_date" value="{{ request.GET.end_date }}">
+        <input type="hidden" name="flexibility" id="flexibility" value="{{ request.GET.flexibility|default:0 }}">
+    </div>
+  
+    <div class="search-input guests">
+        <label>Voyageurs</label>
+        <input type="number" name="guests" placeholder="Nombre de voyageurs"
+               value="{{ request.GET.guests|default:1 }}" min="1">
+    </div>
+  
+    <!-- ✅ Optional: keep filters if this bar is reused while filters are active -->
+    {% for eq in selected_equipment_ids %}
+      <input type="hidden" name="equipments" value="{{ eq }}">
+    {% endfor %}
+    {% if request.GET.bedrooms %}
+      <input type="hidden" name="bedrooms" value="{{ request.GET.bedrooms }}">
+    {% endif %}
+    {% if request.GET.bathrooms %}
+      <input type="hidden" name="bathrooms" value="{{ request.GET.bathrooms }}">
+    {% endif %}
+    {% if request.GET.is_smoking_allowed %}
+      <input type="hidden" name="is_smoking_allowed" value="1">
+    {% endif %}
+    {% if request.GET.is_pets_allowed %}
+      <input type="hidden" name="is_pets_allowed" value="1">
+    {% endif %}
+    {% if selected_type %}
+      <input type="hidden" name="type" value="{{ selected_type }}">
+    {% endif %}
+  
+    <button type="submit" class="search-btn">
+        <i class="fas fa-search"></i>
+    </button>
+  </form>
+
+  <div class="search-layout-container">
+    <!-- FILTERS -->
+    <aside class="search-filters">
+      <form method="get" action="{% url 'logement:logement_search' %}">
+        
+        <!-- Type de logement -->
+        <div class="filter-group">
+          <h3>Type de logement</h3>
+          <select name="type">
+            <option value="">Tous les types</option>
+            {% for value, label in types %}
+              <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <br>
+    
+        <!-- Équipements -->
+        <div class="filter-group">
+          <h3>Équipements</h3>
+          <div class="filter-options scrollable-box">
+            {% for equipment in equipments %}
+              <label>
+                <input type="checkbox" name="equipments" value="{{ equipment.id }}"
+                  {% if equipment.id|stringformat:"s" in selected_equipment_ids %}checked{% endif %}>
+                {{ equipment.name }}
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <br>
+    
+        <!-- Autres options -->
+        <div class="filter-group">
+          <h3>Autorisations</h3>
+          <label>
+            <input type="checkbox" name="is_smoking_allowed" value="1"
+              {% if request.GET.is_smoking_allowed %}checked{% endif %}>
+            Fumeur
+          </label>
+          <label>
+            <input type="checkbox" name="is_pets_allowed" value="1"
+              {% if request.GET.is_pets_allowed %}checked{% endif %}>
+            Animaux acceptés
+          </label>
+        </div>
+        
+        <br>
+
+        <!-- Chambres -->
+        <div class="filter-group">
+          <h3>Chambres</h3>
+          <div class="numeric-filters">
+            {% for n in number_range %}
+              <input type="radio" id="bedroom-{{ n }}" name="bedrooms" value="{{ n }}"
+                {% if request.GET.bedrooms == n|stringformat:"s" %}checked{% endif %}>
+              <label for="bedroom-{{ n }}">{{ n }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <br>
+
+        <!-- Salles de bain -->
+        <div class="filter-group">
+          <h3>Salles de bain</h3>
+          <div class="numeric-filters">
+            {% for n in number_range %}
+              <input type="radio" id="bathroom-{{ n }}" name="bathrooms" value="{{ n }}"
+                {% if request.GET.bathrooms == n|stringformat:"s" %}checked{% endif %}>
+              <label for="bathroom-{{ n }}">{{ n }}</label>
+            {% endfor %}
+          </div>
+        </div>
+    
+        <!-- Hidden fields -->
+        <input type="hidden" name="destination" value="{{ request.GET.destination }}">
+        <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
+        <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
+        <input type="hidden" name="guests" value="{{ request.GET.guests }}">
+        <input type="hidden" name="flexibility" value="{{ request.GET.flexibility }}">
+    
+        <div class="filter-button-wrapper">
+          <button class="filter-button" type="submit">Filtrer</button>
+        </div>
+    
+        <div class="filter-reset-wrapper">
+          <a href="{% url 'logement:logement_search' %}" class="reset-button">Réinitialiser</a>
+        </div>
+      </form>
+    </aside>    
+
+    <section class="logements-results">
+      <!-- LOGEMENTS GRID -->
+      <div class="logements-grid">  
+        {% if page_obj %}
+          {% for logement in page_obj %}
+              <div class="card logement-card fade-in-up">
+                  <div class="logement-img-wrapper">
+                      <picture>
+                          <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+                          <img src="{{ logement.photos.first.image.url }}" loading="lazy" alt="{{ logement.name }}">
+                      </picture>
+
+                      <!-- Top-left badge -->
+                      <div class="logement-badge">
+                          <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                          {% if logement.superficie %}
+                          <span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>
+                          {% endif %}
+                      </div>
+
+                      <!-- Bottom-right icons -->
+                      <div class="logement-icons-overlay">
+                          {% for equip in logement.equipment.all %}
+                          {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                              <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                          {% endif %}
+                          {% endfor %}
+
+                          {% if logement.animals %}
+                          <i class="fas fa-paw" title="Animaux acceptés"></i>
+                          {% else %}
+                          <i class="fas fa-paw" style="opacity: 0.4;" title="Animaux non autorisés"></i>
+                          {% endif %}
+
+                          {% if logement.smoking %}
+                          <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                          {% else %}
+                          <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                          {% endif %}
+                      </div>
+                      
+                      <!-- Location -->
+                      <div class="logement-location">
+                          <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
+                      </div>
+                  </div>
+                  </a>
+                  <div class="card-body">
+                      <h3 class="logement-title">{{ logement.name }}</h3>
+                      <p class="price">À partir de {{ logement.price }}€ <span>par nuit</span></p>
+                      
+                      <div class="logement-details">
+                          <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
+                          <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
+                          <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
+                      </div>
+                  </div>
+                  <div class="card-actions">
+                    <a href="{% url 'logement:view_logement' logement.id %}"
+                       class="btn-card btn-view">Voir</a>
+                    <a href="{% url 'logement:book' logement.id %}?start={{ request.GET.start_date }}&end={{ request.GET.end_date }}&guest={{ request.GET.guests|default:1 }}"
+                       class="btn-card btn-book">Réserver</a>
+                  </div>
+              </div>
+          {% endfor %}
+        {% else %}
+            <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
+        {% endif %}
+
+      </div>
+      <div class="pagination">
+        <ul class="pagination-list">
+          {% if page_obj.has_previous %}
+            <li><a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.previous_page_number }}">«</a></li>
+          {% else %}
+            <li class="disabled">«</li>
+          {% endif %}
+      
+          {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+              <li class="active">{{ i }}</li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+              <li><a href="?destination={{ destination }}&guests={{ guests }}&page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+      
+          {% if page_obj.has_next %}
+            <li><a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.next_page_number }}">»</a></li>
+          {% else %}
+            <li class="disabled">»</li>
+          {% endif %}
+        </ul>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'logement/js/search_result.js' %}"></script>
+{% endblock %}
+

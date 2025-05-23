@@ -4,22 +4,10 @@
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'logement/css/logements_grid.css' %}">
 {% endblock %}
 
 {% block content %}
-<style>
-    :root {
-    --primary-color: #bfa66b;
-    --secondary-color: #3b2f2f;
-    --light-bg: #f8f5f2;
-    --text-color: #d4af7f;
-    --font-family: 'Playfair Display', serif;
-    }
-
-    body {
-        font-family: var(--font-family);
-    }
-</style>
 <div class="scroll-down"><i class="fas fa-angle-down"></i></div>
 <div class="home-page">
     <header class="hero-banner" style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}');">
@@ -30,35 +18,20 @@
         </div>
     </header>
 
+    {% if config.description %}
+        {{ config.description|safe }}
+    {% endif %}
+
     <div class="wave-separator">
-        <svg viewBox="0 0 1440 320"><path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path></svg>
+        <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path>
+        </svg>
     </div>
 
     <section class="logements-section fade-in-up" id="logements"
-         style="background-image: url('{% static "logement/img/logements.jpg" %}');">
+         style="background-image: url('{% static "logement/img/logement2.jpg" %}');">
 
-        <h2>Nos logements disponibles</h2>
-        <form method="get" action="{% url 'logement:home' %}" class="compact-search-bar">
-            <div class="search-input destination">
-                <label>Destination</label>
-                <input type="text" name="destination" placeholder="Rechercher une destination" list="cities" id="destination-input" autocomplete="off">
-                <datalist id="cities"></datalist>
-            </div>
-            <div class="search-input dates">
-                <label>Durée</label>
-                <input type="text" id="datepicker" class="date-input" placeholder="Ajouter des dates" readonly>
-                <input type="hidden" name="start_date" id="start_date">
-                <input type="hidden" name="end_date" id="end_date">
-                <input type="hidden" name="flexibility" id="flexibility" value="0">
-            </div>
-            <div class="search-input guests">
-                <label>Voyageurs</label>
-                <input type="number" name="guests" placeholder="Nombre de voyageurs" min="1">
-            </div>
-            <button type="submit" class="search-btn">
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
+        <h2>Nos logements disponibles</h2>        
 
         {% if logements %}
             <div class="logements-grid">
@@ -124,7 +97,7 @@
         {% endif %}
 
         <div class="text-center " style="margin-top: 2rem;">
-            <a href="{% url 'logement:home' %}" class="btn-show-more">Voir tous les logements</a>
+            <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
         </div>
     </section>
     
@@ -149,17 +122,18 @@
         </section>
     {% endif %}
 
-    
-    <section class="testimonials-section fade-in-up">
-        <h2>Ce que nos clients disent</h2>
-        <div class="testimonials-slider" id="testimonialSlider">
-            {% for avis in config.testimonials.all %}
-                <div class="testimonial-card fade-in-up">
-                    <blockquote>“{{ avis.content }}”</blockquote>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
+    {% if config.testimonials %}
+        <section class="testimonials-section fade-in-up">
+            <h2>Ce que nos clients disent</h2>
+            <div class="testimonials-slider" id="testimonialSlider">
+                {% for avis in config.testimonials.all %}
+                    <div class="testimonial-card fade-in-up">
+                        <blockquote>“{{ avis.content }}”</blockquote>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
 
     {% if config.commitments %}
         <section class="commitments-section fade-in-up">

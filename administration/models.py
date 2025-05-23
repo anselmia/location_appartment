@@ -5,6 +5,7 @@ class Entreprise(models.Model):
     contact_address = models.CharField(max_length=255, blank=True, null=True)
     contact_phone = models.CharField(max_length=30, blank=True, null=True)
     contact_email = models.EmailField(blank=True, null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
@@ -26,7 +27,7 @@ class HomePageConfig(models.Model):
     banner_image = models.ImageField(
         upload_to="administration/", blank=True, null=True
     )
-
+    description = models.TextField(default="")
     primary_color = models.CharField(max_length=7, default="#ff385c")
     font_family = models.CharField(max_length=100, default="'Poppins', sans-serif")
     cta_text = models.CharField(max_length=100, default="Découvrir nos logements")

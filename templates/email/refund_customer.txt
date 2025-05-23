@@ -1,0 +1,11 @@
+Bonjour {{ user.name }},
+
+Nous vous confirmons que votre réservation pour "{{ logement.name }}" a été remboursée avec succès.
+
+Montant remboursé : {{ reservation.price|floatformat:2 }} €
+Date de réservation : {{ reservation.date_reservation|date:"d M Y H:i" }}
+
+N'hésitez pas à nous contacter si vous avez des questions.
+
+Merci,
+L'équipe {{ entreprise.name }}

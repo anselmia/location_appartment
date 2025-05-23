@@ -11,7 +11,12 @@
 {% block content %}
 <div class="admin-logement-edit">
     <div class="form-box">
-        <h2 class="text-center">{% trans "Modifier le logement" %} : {{ logement.name }}</h2>
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+            <h2 class="mb-2">{{ logement.name }}</h2>
+            <a href="{% url 'logement:view_logement' logement.id %}" target="_blank" class="btn btn-outline-primary btn-sm">
+                🔍 {% trans "Voir le logement" %}
+            </a>
+        </div>
 
         <!-- === Logement Edit Form === -->
         <form method="post" class="logement-form">
@@ -58,6 +63,10 @@
                     <div class="form-field">
                         <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
                         {{ form.ville|add_class:"form-select" }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
+                        {{ form.map_link|add_class:"form-input" }}
                     </div>
                     <div class="form-field">
                         <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
@@ -108,15 +117,18 @@
                         <label for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
                         {{ form.bedrooms|add_class:"form-input" }}
                     </div>
-                    <div class="form-field checkbox-field mt-3">
-                        <label for="{{ form.smoking.id_for_label }}">
-                            {{ form.smoking }} {{ form.smoking.label }}
-                        </label>
+                    <div class="form-field">
+                        <label for="{{ form.beds.id_for_label }}">{{ form.beds.label }}</label>
+                        {{ form.beds|add_class:"form-input" }}
                     </div>
-                    <div class="form-field checkbox-field mt-3">
-                        <label for="{{ form.animals.id_for_label }}">
-                            {{ form.animals }} {{ form.animals.label }}
-                        </label>
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="{{ form.smoking.id_for_label }}" name="{{ form.smoking.name }}" {{ form.smoking.value|yesno:"checked," }}>
+                        <label for="{{ form.smoking.id_for_label }}">{{ form.smoking.label }}</label>
+                    </div>
+                      
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="{{ form.animals.id_for_label }}" name="{{ form.animals.name }}" {{ form.animals.value|yesno:"checked," }}>
+                        <label for="{{ form.animals.id_for_label }}">{{ form.animals.label }}</label>
                     </div>
                 </div>
         
@@ -144,10 +156,24 @@
                         </div>
                     </div>
                     <div class="form-field with-symbol">
+                        <label for="{{ form.caution.id_for_label }}">{{ form.caution.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.caution|add_class:"form-input" }}
+                            <span>€</span>
+                        </div>
+                    </div>
+                    <div class="form-field with-symbol">
                         <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
                         <div class="input-symbol">
                             {{ form.tax|add_class:"form-input" }}
                             <span>%</span>
+                        </div>
+                    </div>
+                    <div class="form-field with-symbol">
+                        <label for="{{ form.tax_max.id_for_label }}">{{ form.tax_max.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.tax_max|add_class:"form-input" }}
+                            <span>€</span>
                         </div>
                     </div>
 

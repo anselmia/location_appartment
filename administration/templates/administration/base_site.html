@@ -24,6 +24,11 @@
     </fieldset>
 
     <fieldset class="section-block">
+      <legend>Description de l'entreprise</legend>
+      {{ form.description.label_tag }} {{ form.description }}
+    </fieldset>
+
+    <fieldset class="section-block">
       <legend>Style Visuel</legend>
       {{ form.primary_color.label_tag }} {{ form.primary_color }}
       {{ form.font_family.label_tag }} {{ form.font_family }}

@@ -1,6 +1,11 @@
 {% extends "base.html" %}
-
 {% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'administration/css/calendar.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,33 +16,37 @@
       {% endfor %}
     </select>
   </div>
+  
+  <p class="text-muted small mt-2">📱 Astuce : touchez deux dates pour sélectionner une plage.</p>
+  <div class="d-flex gap-4">    
+    <div class="calendar-wrapper d-flex flex-wrap flex-md-nowrap position-relative">
+      <div id="calendar"
+           class="flex-grow-1 border rounded shadow-sm p-2 bg-white"
+           style="min-width: 800px;"
+           data-logement-id="{{ logements.first.id }}"></div>
+    
+      <div id="price-panel" class="price-panel hidden border rounded shadow-sm p-3 bg-light">
+           <h5 class="fw-bold mb-3">🛠 Modifier le prix</h5>
 
-  <div class="d-flex gap-4">
-    <div class="calendar-wrapper d-flex position-relative">
-      <div id="calendar" class="flex-grow-1 border rounded shadow-sm p-2 bg-white" style="min-width: 800px;" data-logement-id="{{ logements.first.id }}"></div>
-
-      <div id="price-panel" class="price-panel hidden border rounded shadow-sm p-3 bg-light" style="width: 300px;">
-        <h5 class="fw-bold mb-3">🛠 Modifier le prix</h5>
-
-        <p id="panel-dates" class="small text-muted"></p>
-
-        <div class="mb-3">
-          <label for="base-price" class="form-label">Prix de base (€)</label>
-          <input type="number" id="base-price" class="form-control" />
-        </div>
-
-        <div id="details" class="price-details-container mb-3">
-          <!-- Details inserted here -->
-        </div>
-
-        <div class="mb-3">
-          <strong>💰 Prix Total : <span id="final-price">0</span> €</strong>
-        </div>
-
-        <div class="d-grid gap-2">
-          <button id="apply-price" class="btn btn-success">✅ Appliquer</button>
-          <button id="cancel-price" class="btn btn-outline-secondary">❌ Annuler</button>
-        </div>
+           <p id="panel-dates" class="small text-muted"></p>
+   
+           <div class="mb-3">
+             <label for="base-price" class="form-label">Prix de base (€)</label>
+             <input type="number" id="base-price" class="form-control" />
+           </div>
+   
+           <div id="details" class="price-details-container mb-3">
+             <!-- Details inserted here -->
+           </div>
+   
+           <div class="mb-3">
+             <strong>💰 Prix Total : <span id="final-price">0</span> €</strong>
+           </div>
+   
+           <div class="d-grid gap-2">
+             <button id="apply-price" class="btn btn-success">✅ Appliquer</button>
+             <button id="cancel-price" class="btn btn-outline-secondary">❌ Annuler</button>
+           </div>
       </div>
     </div>
   </div>

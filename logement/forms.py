@@ -74,23 +74,37 @@ class DiscountForm(forms.ModelForm):
         model = Discount
         fields = [
             "discount_type",
+            "name",
             "value",
             "min_nights",
-            "days_before",
+            "exact_nights",
+            "days_before_min",
+            "days_before_max",
             "start_date",
             "end_date",
         ]
         widgets = {
             "discount_type": forms.Select(
-                attrs={"class": "form-select", "required": True}
+                attrs={
+                    "class": "form-select",
+                    "required": True,
+                    "id": "discount-type-select",
+                }
             ),
+            "name": forms.TextInput(attrs={"class": "form-control", "required": True}),
             "value": forms.NumberInput(
                 attrs={"class": "form-control", "step": "0.1", "required": True}
             ),
             "min_nights": forms.NumberInput(
                 attrs={"class": "form-control", "step": "1"}
             ),
-            "days_before": forms.NumberInput(
+            "exact_nights": forms.NumberInput(
+                attrs={"class": "form-control", "step": "1"}
+            ),
+            "days_before_min": forms.NumberInput(
+                attrs={"class": "form-control", "step": "1"}
+            ),
+            "days_before_max": forms.NumberInput(
                 attrs={"class": "form-control", "step": "1"}
             ),
             "start_date": forms.DateInput(
@@ -102,25 +116,25 @@ class DiscountForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        # Check if update_id is passed to handle the update logic
         update_id = kwargs.pop("update_id", None)
         super().__init__(*args, **kwargs)
-
         if update_id:
             self.instance = Discount.objects.get(id=update_id)
 
     def clean(self):
         cleaned_data = super().clean()
         dt = cleaned_data.get("discount_type")
-        logement = Logement.objects.first()
+        logement = (
+            self.instance.logement if self.instance.pk else Logement.objects.first()
+        )
 
-        # Ensure discount type is unique for this logement
         if logement and dt:
             existing_discount = (
                 Discount.objects.filter(logement=logement, discount_type=dt)
                 .exclude(id=self.instance.id if self.instance else None)
                 .exists()
             )
+
             if existing_discount:
                 self.add_error(
                     "discount_type",
@@ -128,21 +142,25 @@ class DiscountForm(forms.ModelForm):
                 )
 
         if dt:
-            if dt.requires_min_nights and not cleaned_data.get("min_nights"):
+            # You can set these boolean flags in your DiscountType model
+            if getattr(dt, "requires_min_nights", False) and not cleaned_data.get(
+                "min_nights"
+            ):
                 self.add_error(
                     "min_nights", "Ce champ est requis pour ce type de réduction."
                 )
 
-            if dt.requires_days_before and not cleaned_data.get("days_before"):
+            if getattr(dt, "requires_days_before", False) and not (
+                cleaned_data.get("days_before_min")
+                or cleaned_data.get("days_before_max")
+            ):
                 self.add_error(
-                    "days_before", "Ce champ est requis pour ce type de réduction."
+                    "days_before_min",
+                    "Un critère de délai est requis (avant ou après).",
                 )
 
-            if dt.requires_date_range:
-                if not cleaned_data.get("start_date") or not cleaned_data.get(
-                    "end_date"
-                ):
-                    self.add_error(
-                        "start_date", "Les dates sont requises pour ce type."
-                    )
-                    self.add_error("end_date", "Les dates sont requises pour ce type.")
+            if getattr(dt, "requires_date_range", False):
+                if not cleaned_data.get("start_date"):
+                    self.add_error("start_date", "La date de début est requise.")
+                if not cleaned_data.get("end_date"):
+                    self.add_error("end_date", "La date de fin est requise.")

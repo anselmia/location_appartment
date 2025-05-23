@@ -28,6 +28,16 @@ class LogementConfig(AppConfig):
             )
             PeriodicTask.objects.get_or_create(
                 interval=schedule,
+                name="end terminated reservations",
+                task="logement.tasks.end_reservations",
+            )
+
+            schedule, _ = IntervalSchedule.objects.get_or_create(
+                every=30,
+                period=IntervalSchedule.MINUTES,
+            )
+            PeriodicTask.objects.get_or_create(
+                interval=schedule,
                 name="Sync calendar",
                 task="logement.tasks.sync_calendar",
             )

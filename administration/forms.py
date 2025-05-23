@@ -6,7 +6,7 @@ from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise
 class LogementForm(forms.ModelForm):
     class Meta:
         model = Logement
-        exclude = ['equipment']  # Prevent accidental overwrites
+        exclude = ["equipment"]  # Prevent accidental overwrites
         fields = [
             "name",
             "description",
@@ -21,6 +21,7 @@ class LogementForm(forms.ModelForm):
             "fee_per_extra_traveler",
             "cleaning_fee",
             "tax",
+            "tax_max",
             "cancelation_period",
             "ready_period",
             "entrance_hour_min",
@@ -37,6 +38,9 @@ class LogementForm(forms.ModelForm):
             "airbnb_calendar_link",
             "booking_link",
             "booking_calendar_link",
+            "caution",
+            "beds",
+            "map_link",
         ]
         labels = {
             "name": "Nom du logement",
@@ -50,9 +54,11 @@ class LogementForm(forms.ModelForm):
             "superficie": "Surface en m²",
             "bathrooms": "Nombre de salle de bain",
             "bedrooms": "Nombre de chambres",
+            "beds": "Nombre de lits",
             "fee_per_extra_traveler": "Frais par voyageur supplémentaire (€)",
             "cleaning_fee": "Frais de ménage (€)",
             "tax": "Taxe de séjour (%)",
+            "tax_max": "Taxe de séjour Max / Personne / Jour (€)",
             "cancelation_period": "Période limite d'annulation (jours)",
             "ready_period": "Délai avant arrivée (jours)",
             "entrance_hour_min": "Heure d'arrivée (Début)",
@@ -65,7 +71,9 @@ class LogementForm(forms.ModelForm):
             "airbnb_link": "Lien Airbnb",
             "airbnb_calendar_link": "Calendrier Airbnb",
             "booking_link": "Lien Booking",
-            "booking_calendar_link": "Calendrier Booking",          
+            "booking_calendar_link": "Calendrier Booking",
+            "caution": "Dépôt de garantie (€)",
+            "map_link": "Lien Google Map",
         }
         help_texts = {
             "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",
@@ -77,10 +85,14 @@ class LogementForm(forms.ModelForm):
             "entrance_hour_max": forms.TimeInput(attrs={"type": "time"}),
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
+            "map_link": forms.Textarea(attrs={"rows": 2}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
 
         if "ville" in self.fields:
             self.fields["ville"].queryset = City.objects.all().order_by(
@@ -94,16 +106,18 @@ class LogementForm(forms.ModelForm):
             "nominal_traveler",
             "bedrooms",
             "bathrooms",
-            "fee_per_extra_traveler",
+            "beds" "fee_per_extra_traveler",
             "cleaning_fee",
             "cancelation_period",
             "ready_period",
             "max_days",
             "availablity_period",
+            "caution",
         ]
         for field_name in step_1_fields:
             if field_name in self.fields:
                 self.fields[field_name].widget.attrs["step"] = "1"
+                self.fields[field_name].widget.attrs.update({"type": "number"})
 
         # Tax field step should be more precise (0.1%)
         if "tax" in self.fields:
@@ -127,6 +141,7 @@ class HomePageConfigForm(forms.ModelForm):
         model = HomePageConfig
         fields = [
             "nom",
+            "description",
             "devise",
             "banner_image",
             "cta_text",
@@ -167,20 +182,20 @@ class EntrepriseForm(forms.ModelForm):
     class Meta:
         model = Entreprise
         fields = [
-            'contact_address',
-            'contact_phone',
-            'contact_email',
-            'facebook',
-            'instagram',
-            'linkedin',
-            'logo',
+            "contact_address",
+            "contact_phone",
+            "contact_email",
+            "facebook",
+            "instagram",
+            "linkedin",
+            "logo",
         ]
         widgets = {
-            'contact_address': forms.TextInput(attrs={'class': 'form-control'}),
-            'contact_phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'contact_email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'facebook': forms.URLInput(attrs={'class': 'form-control'}),
-            'instagram': forms.URLInput(attrs={'class': 'form-control'}),
-            'linkedin': forms.URLInput(attrs={'class': 'form-control'}),
-            'logo': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            "contact_address": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_phone": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_email": forms.EmailInput(attrs={"class": "form-control"}),
+            "facebook": forms.URLInput(attrs={"class": "form-control"}),
+            "instagram": forms.URLInput(attrs={"class": "form-control"}),
+            "linkedin": forms.URLInput(attrs={"class": "form-control"}),
+            "logo": forms.ClearableFileInput(attrs={"class": "form-control-file"}),
         }

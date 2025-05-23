@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}"> 
+{% endblock %}
+
+{% block content %}
+<div class="cgu-wrapper">
+    <article class="cgu-content">
+        <section>
+            <h1>Politique de confidentialité</h1>
+            <h3>Responsable du traitement</h3>
+            <p>{{ entreprise.name }}, {{ entreprise.contact_adress }}, est responsable du traitement des données personnelles.</p>
+    
+            <h3>Données collectées</h3>
+            <p>Nom, prénom, adresse, e-mail, téléphone – uniquement pour les besoins de la réservation et de l’assistance client.</p>
+    
+            <h3>Finalité</h3>
+            <p>Traitement des réservations, confirmation, communication d’informations pratiques.</p>
+    
+            <h3>Protection</h3>
+            <p>Les données sont stockées de manière sécurisée et accessibles uniquement aux personnes habilitées.</p>
+    
+            <h3>Partage</h3>
+            <p>Aucune donnée n’est vendue ou transmise à des tiers.</p>
+    
+            <h3>Durée de conservation</h3>
+            <p>Les données sont conservées pour une durée maximale de 3 ans à compter de la dernière interaction.</p>
+    
+            <h3>Vos droits</h3>
+            <p>Vous pouvez demander à tout moment :</p>
+            <ul>
+                <li>l’accès, la modification ou la suppression de vos données,</li>
+                <li>la limitation du traitement,</li>
+                <li>l’opposition au traitement,</li>
+                <li>le retrait de votre consentement à la newsletter.</li>
+            </ul>
+            <p>Demande à adresser à <strong>{{ entreprise.contact_email }}</strong> ou par courrier à l’adresse <strong>{{ entreprise.contact_address }}</strong>. Une pièce d’identité pourra être demandée.</p>
+        </section>
+    </article>
+</div>
+{% endblock %}

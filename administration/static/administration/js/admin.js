@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (lastTab) {
         const trigger = document.querySelector(`#logementTabs a[href="${lastTab}"]`);
         if (trigger) {
-            new bootstrap.Tab(trigger).show();  // Bootstrap 5
+            new bootstrap.Tab(trigger).show(); // Bootstrap 5
         }
     }
 });
@@ -22,7 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
 document.querySelectorAll('.room-select').forEach(select => {
     select.addEventListener('change', (e) => {
         const photoId = e.target.closest('.photo-item').getAttribute('data-photo-id');
-        const roomId = e.target.value;
+        let roomId = e.target.value;
+        if (roomId === "") {
+            roomId = null;
+        }
 
         // Fetch the base URL from the hidden element and replace the placeholder
         const urlTemplate = document.getElementById('change-photo-room-url').getAttribute('data-url');
@@ -154,12 +157,21 @@ document.querySelectorAll('.rotate-photo').forEach(button => {
             .then(response => response.json())
             .then(data => {
                 if (data.status === "ok") {
+                    const photoId = this.dataset.photoId;
                     const img = document.querySelector(`.photo-item[data-photo-id="${photoId}"] img`);
-                    if (img) {
-                        const currentSrc = img.getAttribute('src');
-                        const newSrc = currentSrc.split('?')[0] + '?v=' + new Date().getTime();
-                        img.setAttribute('src', newSrc);
-                    }
+
+                    if (!img) return;
+
+                    // Get current angle or initialize
+                    let angle = parseInt(img.dataset.angle || "0");
+                    angle = (angle + 90) % 360;
+                    img.dataset.angle = angle; // Store on element
+
+                    // Remove existing rotation classes
+                    img.classList.remove("rotated-0", "rotated-90", "rotated-180", "rotated-270");
+
+                    // Apply new rotation class
+                    img.classList.add(`rotated-${angle}`);
                 } else {
                     alert("Erreur : " + data.message);
                 }

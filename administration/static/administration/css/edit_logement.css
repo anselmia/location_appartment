@@ -1,193 +1,294 @@
-/* === Admin Logement Styles: Scoped === */
-
 .admin-logement-edit .form-box {
     background: #ffffff;
-    padding: 40px 30px;
-    max-width: 960px;
-    margin: 40px auto;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-}
-
-.admin-logement-edit h2,
-.admin-logement-edit .section-title {
-    color: #2b3d55;
+    padding: 50px 40px;
+    max-width: 980px;
+    margin: 50px auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  .admin-logement-edit h2,
+  .admin-logement-edit .section-title {
+    color: #1c2c40;
     font-weight: 600;
-    margin-bottom: 20px;
-}
-
-.admin-logement-edit .section-title {
-    font-size: 1.4rem;
-    margin-top: 30px;
-}
-
-.admin-logement-edit .nav-tabs {
-    margin-top: 40px;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.admin-logement-edit .nav-tabs .nav-link {
-    color: #2b3d55;
+    margin-bottom: 24px;
+  }
+  
+  .admin-logement-edit .section-title {
+    font-size: 1.25rem;
+    margin-top: 32px;
+    border-bottom: 2px solid #eaeef5;
+    padding-bottom: 8px;
+  }
+  
+  /* === Tabs === */
+  .admin-logement-edit .nav-tabs {
+    margin-top: 50px;
+    border-bottom: 2px solid #dde3ec;
+  }
+  
+  .admin-logement-edit .nav-tabs .nav-link {
+    color: #1c2c40;
     font-weight: 600;
     border: none;
     border-bottom: 3px solid transparent;
-    transition: all 0.2s ease-in-out;
-}
-
-.admin-logement-edit .nav-tabs .nav-link:hover {
-    border-color: #a2c9ff;
-    background-color: #f1f9ff;
-}
-
-.admin-logement-edit .nav-tabs .nav-link.active {
-    border-bottom: 3px solid #2b3d55;
+    transition: all 0.2s ease;
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .admin-logement-edit .nav-tabs .nav-link:hover {
+    border-color: #cfe2ff;
+    background-color: #f7faff;
+  }
+  
+  .admin-logement-edit .nav-tabs .nav-link.active {
+    border-bottom: 3px solid #1c2c40;
+    background-color: #e9f3ff;
+  }
+  
+  /* === Fields === */
+  .admin-logement-edit .form-field {
+    margin-bottom: 20px;
+  }
+  
+  .admin-logement-edit .form-field label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
     color: #2b3d55;
-    background-color: #eaf4ff;
-}
+  }
+  
+  .admin-logement-edit .form-input,
+  .admin-logement-edit .form-select,
+  .admin-logement-edit .form-textarea {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    background-color: #fdfdfd;
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+  
+  .admin-logement-edit .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .admin-logement-edit .form-input:focus,
+  .admin-logement-edit .form-select:focus,
+  .admin-logement-edit .form-textarea:focus {
+    outline: none;
+    border-color: #4f7df9;
+    box-shadow: 0 0 0 2px rgba(79, 125, 249, 0.15);
+  }
+  
+  /* === Checkbox field === */
+  .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .checkbox-field input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #1c2c40; /* modern browsers only */
+    cursor: pointer;
+  }
+  
+  .checkbox-field label {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #2b3d55;
+    cursor: pointer;
+  }
+  
+  /* === With symbol fields (€, %, etc.) === */
+  .admin-logement-edit .with-symbol {
+    position: relative;
+  }
+  
+  .admin-logement-edit .with-symbol .input-symbol {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .admin-logement-edit .with-symbol span {
+    position: absolute;
+    right: 16px;
+    font-weight: 600;
+    color: #666;
+  }
+  
+  .admin-logement-edit .with-symbol .form-input {
+    padding-right: 38px;
+  }
+  
+  /* === Buttons === */
+  .admin-logement-edit .btn {
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .admin-logement-edit .btn:hover {
+    transform: scale(1.02);
+  }
+  
+  .admin-logement-edit .btn-sm {
+    padding: 4px 10px;
+    font-size: 0.875rem;
+  }
+  
+  .admin-logement-edit .btn-lg {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
 
-.admin-logement-edit .list-unstyled {
-    padding-left: 0;
-}
-
-.admin-logement-edit .list-unstyled li {
-    background: #f9fbff;
-    border: 1px solid #e0e7ff;
+  .btn-outline-primary {
+    border: 1px solid #1c2c40;
+    color: #1c2c40;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 6px 14px;
+    transition: 0.3s ease;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #1c2c40;
+    color: white;
+  }
+  
+  /* === Room list === */
+  .admin-logement-edit .list-unstyled li {
+    background: #f8fafd;
+    border: 1px solid #dee9fb;
     border-radius: 8px;
     padding: 10px 15px;
     margin-bottom: 10px;
-    transition: background 0.2s;
-}
-
-.admin-logement-edit .list-unstyled li:hover {
-    background: #eef4ff;
-}
-
-.admin-logement-edit .btn {
-    font-weight: 500;
-    border-radius: 6px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.admin-logement-edit .btn-sm {
-    padding: 4px 10px;
-    font-size: 0.85rem;
-}
-
-.admin-logement-edit .btn-danger:hover,
-.admin-logement-edit .btn-success:hover,
-.admin-logement-edit .btn-info:hover,
-.admin-logement-edit .btn-primary:hover {
-    transform: scale(1.03);
-}
-
-.admin-logement-edit .form-inline input[type="text"] {
-    width: auto;
-    min-width: 220px;
-}
-
-.admin-logement-edit .photo-item img {
+  }
+  
+  .admin-logement-edit .list-unstyled li:hover {
+    background: #eaf4ff;
+  }
+  
+  /* === Photo display === */
+  .admin-logement-edit .photo-item img {
     border-radius: 8px;
     object-fit: cover;
     max-height: 80px;
-    width: auto;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.admin-logement-edit .room-select {
-    min-width: 160px;
-}
-
-.admin-logement-edit .photo-item .btn {
-    margin-left: 5px;
-}
-
-.admin-logement-edit select,
-.admin-logement-edit select option {
-    font-size: 1rem;
-    line-height: 1.5;
-    padding: 8px 12px;
-    height: auto;
-    overflow: visible;
-}
-
-.admin-logement-edit .badge-secondary {
-    background-color: #6c757d;
-    padding: 5px 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .admin-logement-edit .photo-item {
+    background: #fefefe;
+    border: 1px solid #e2e6ea;
+    padding: 10px;
     border-radius: 10px;
-    font-size: 0.8rem;
-    color: #fff;
-}
-
-.admin-logement-edit .equipment-grid {
+  }
+  
+  .admin-logement-edit .photo-item .btn {
+    margin-left: 5px;
+  }
+  
+  .admin-logement-edit .room-select {
+    min-width: 160px;
+  }
+  
+  /* === Equipment section === */
+  .admin-logement-edit .equipment-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
     margin-top: 20px;
-}
-
-.admin-logement-edit .equip-card {
-    background: #f8faff;
-    border: 1px solid #d0e3ff;
+  }
+  
+  .admin-logement-edit .equip-card {
+    background: #f9fbff;
+    border: 1px solid #d2e3f5;
     border-radius: 10px;
     padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 1rem;
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-    position: relative;
-}
-
-.admin-logement-edit .equip-card:hover {
+    transition: background 0.2s ease;
+  }
+  
+  .admin-logement-edit .equip-card:hover {
     background: #eef5ff;
-    border-color: #a2c9ff;
-}
-
-.admin-logement-edit .equip-card input[type="checkbox"] {
-    accent-color: #2b3d55;
-    transform: scale(1.2);
+  }
+  
+  .admin-logement-edit .equip-card input[type="checkbox"] {
+    transform: scale(1.1);
     margin: 0;
-}
-
-.admin-logement-edit .equip-card i {
+    accent-color: #2b3d55;
+  }
+  
+  .admin-logement-edit .equip-card i {
     font-size: 1.2rem;
     color: #4a6fa1;
     min-width: 20px;
-}
-
-@media (max-width: 768px) {
-    .admin-logement-edit .form-box {
-        padding: 25px 15px;
-    }
-
-    .admin-logement-edit .photo-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .admin-logement-edit .photo-item > div:last-child {
-        margin-top: 10px;
-        width: 100%;
-        gap: 8px;
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .admin-logement-edit .room-select {
-        width: 100%;
-    }
-}
-
-.admin-logement-edit input[type="file"] {
+  }
+  
+  /* === File input === */
+  .admin-logement-edit input[type="file"] {
     border: 1px dashed #2b3d55;
-    padding: 8px;
+    padding: 10px;
     border-radius: 8px;
     background-color: #f0f6ff;
     font-size: 0.95rem;
     cursor: pointer;
-}
-
-.admin-logement-edit input[type="file"]:hover {
+    transition: background-color 0.2s;
+  }
+  
+  .admin-logement-edit input[type="file"]:hover {
     background-color: #e2eeff;
+  }
+
+.rotated-90 {
+    transform: rotate(90deg);
+    transition: transform 0.3s ease-in-out;
 }
+.rotated-180 {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease-in-out;
+}
+.rotated-270 {
+    transform: rotate(270deg);
+    transition: transform 0.3s ease-in-out;
+}
+.rotated-0 {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease-in-out;
+}
+  
+  /* === Responsive === */
+  @media (max-width: 768px) {
+    .admin-logement-edit .form-box {
+      padding: 25px 15px;
+    }
+  
+    .admin-logement-edit .photo-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .admin-logement-edit .photo-item > div:last-child {
+      margin-top: 10px;
+      width: 100%;
+      gap: 8px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  
+    .admin-logement-edit .room-select {
+      width: 100%;
+    }
+  }
+  

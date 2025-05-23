@@ -106,11 +106,18 @@ function setupFlatpickr(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const panel = document.getElementById('bookingPanel');
-    const toggle = document.getElementById('bookingToggle');
+    const toggleBtn  = document.getElementById('bookingToggle');
 
-    if (panel && toggle) {
-        toggle.addEventListener('click', () => {
-            panel.classList.toggle('collapsed');
+    if (panel && toggleBtn ) {
+        toggleBtn .addEventListener("click", function () {
+            const isCollapsed = bookingPanel.classList.toggle("collapsed");
+            if (isCollapsed) {
+                toggleBtn.innerHTML = "Réserver";
+                toggleBtn.classList.remove("open");
+            } else {
+                toggleBtn.innerHTML = "→"; // « symbol
+                toggleBtn.classList.add("open");
+            }
         });
     }
 

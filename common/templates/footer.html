@@ -1,0 +1,62 @@
+{% load static %}
+{% load i18n %}
+
+<footer class="site-footer">
+  <div class="footer-main">
+    <!-- Column 1: Logo + contact -->
+      <div class="footer-column">
+          {% if entreprise.logo %}
+              <div class="footer-logo">
+                  <img src="{{ entreprise.logo.url }}" alt="{{ entreprise.nom }}" />
+              </div>
+          {% endif %}
+          {% if entreprise.contact_address %}
+              <p><i class="fas fa-map-marker-alt"></i> {{ entreprise.contact_address }}</p>
+          {% endif %}
+          {% if entreprise.contact_email %}
+              <p><i class="fas fa-envelope"></i> {{ entreprise.contact_email }}</p>
+          {% endif %}
+          {% if entreprise.contact_phone %}
+              <p><i class="fas fa-phone"></i> {{ entreprise.contact_phone }}</p>
+          {% endif %}
+
+          <div class="footer-social">
+              {% if entreprise.facebook %}
+                  <a href={{ entreprise.facebook}}><i class="fab fa-facebook-f"></i></a>
+              {% endif %}
+              {% if entreprise.instagram %}
+                  <a href={{ entreprise.instagram}}><i class="fab fa-instagram"></i></a>
+              {% endif %}
+              {% if entreprise.linkedin %}
+                  <a href={{ entreprise.linkedin}}><i class="fab fa-linkedin"></i></a>
+              {% endif %}
+            </div>
+      </div>
+
+    <!-- Column 2: Quick Links -->
+    <div class="footer-column">
+      <h4>{% trans "Liens rapides" %}</h4>
+      <ul>
+        <li><a href="/">{% trans "Accueil" %}</a></li>
+        <li><a href="{% url 'logement:logement_search' %}">{% trans "Nos Locations" %}</a></li>
+        <li><a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a></li>
+        {% if user.is_authenticated and user.is_admin %}
+          <li><a href="{% url 'administration:dashboard' %}">{% trans "Accès Logements" %}</a></li>
+        {% elif user.is_authenticated and user.is_superuser %}
+          <li><a href="{% url 'administration:dashboard' %}">{% trans "Accès Logements" %}</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <!-- Column 3: Legal and icons -->
+    <div class="footer-column">
+      <h4>{% trans "Aide" %}</h4>
+      <ul>
+        <li><a href="{% url 'common:cgv' %}">{% trans "Conditions générales de vente" %}</a></li>
+        <li><a href="{% url 'common:cgu' %}">{% trans "Politique de Cookies" %}</a></li>
+        <li><a href="{% url 'common:cgu' %}">{% trans "Mentions légales" %}</a></li>
+        <li><a href="{% url 'common:confidentiality' %}">{% trans "Politique de confidentialité" %}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>

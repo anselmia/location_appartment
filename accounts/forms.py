@@ -1,4 +1,3 @@
-import re
 from django.core.validators import EmailValidator
 from django import forms
 from .models import CustomUser, Message

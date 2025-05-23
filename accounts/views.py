@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from logement.models import Reservation, Logement
+from logement.models import Reservation
 from django.db.models import Q
 from .models import Message, CustomUser
 from django.core.mail import send_mail
@@ -20,8 +20,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def is_admin(user):
-    return user.is_authenticated and user.is_admin
+
 
 
 def register(request):
@@ -178,9 +177,6 @@ def contact_view(request):
 
     return render(request, "accounts/contact.html", {"form": form})
 
-
-def cgu_view(request):
-    return render(request, "accounts/cgu.html")
 
 
 @login_required

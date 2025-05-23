@@ -1,0 +1,206 @@
+/* LOGEMENTS */
+.logements-section {
+    width: 100%;
+    padding: 0 2rem;
+    padding-top: 4rem; /* or whatever you want */
+    margin-top: 2rem;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: white; /* Optional if you want text contrast */
+    position: relative;
+  }
+  
+  .logements-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4); /* Dark overlay */
+    z-index: 0;
+  }
+  .logements-section > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .logements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    justify-content: center; /* center the grid */
+    margin: 2rem auto;        /* center grid horizontally */
+    padding: 0 1rem;
+  }
+  
+  .logements-section h2 {
+    color: white;
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .logement-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    max-width: 320px; /* 👈 LIMIT THE CARD WIDTH */
+    width: 100%;      /* let it be responsive */
+    margin: 0 auto;   /* optional: center card in grid cell */
+    padding: 5px 5px;
+  }
+  
+  .logement-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .logement-img-wrapper {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+  }
+  
+  .logement-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .logement-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-bottom-right-radius: 8px;
+    z-index: 2;
+  }
+  
+  .logement-badge span {
+    display: block;
+    line-height: 1.2;
+  }
+  
+  .logement-icons-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0.4rem 0.6rem;
+    border-top-left-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 1rem;
+    z-index: 2;
+  }
+  
+  .logement-icons-overlay i,
+  .logement-badge i {
+    color: #fff; /* or #fff for white if the background is dark */
+  }
+  
+  .logement-location {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    width: 100%;
+    text-align: left;
+    z-index: 1;
+  }
+  
+  .card-body {
+    transition: background 0.3s, transform 0.3s;
+  }
+  
+  .card-body:hover {
+    background: #fdf7f0;
+    transform: scale(1.02);
+  }
+  
+  .logement-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: #111;
+  }
+  
+  .price {
+    font-size: 0.95rem;
+    color: var(--primary-color, #bfa66b); /* Use gold tone */
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .logement-details {
+    font-size: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    color: #555;
+    margin-bottom: 0.4rem;
+  }
+
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .btn-card {
+    flex: 1;
+    padding: 0.6rem 0;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+  }
+  
+  .btn-view {
+    background-color: #f9f9f9;
+    color: #444;
+    border: 1px solid #ccc;
+  }
+  
+  .btn-view:hover {
+    background-color: #f0f0f0;
+    border-color: #aaa;
+  }
+  
+  .btn-book {
+    background-color: var(--primary-color, #bfa66b);
+    color: white;
+    border: 1px solid var(--primary-color, #bfa66b);
+  }
+  
+  .btn-book:hover {
+    background-color: #d4af7f;
+    border-color: #d4af7f;
+  }

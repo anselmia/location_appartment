@@ -1,34 +1,46 @@
 .logement-form-container {
     display: flex;
     justify-content: center;
-    padding: 50px 20px;
-    background: #f4f6f9;
-}
-
-/* Card-style box */
-.logement-card {
+    padding: 60px 20px;
+    background: #f3f5f9;
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  }
+  
+  /* CARD STYLING */
+  .logement-card {
     width: 100%;
-    max-width: 900px;
-    background: white;
-    border-radius: 16px;
-    padding: 30px 25px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
+    max-width: 960px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+  
 
-/* Title */
+/* FORM TITLE */
 .form-title {
     text-align: center;
-    font-size: 1.6rem;
-    color: #2b3d55;
-    margin-bottom: 25px;
-}
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1c2c40;
+    margin-bottom: 35px;
+    border-bottom: 1px solid #e5e9f2;
+    padding-bottom: 10px;
+  }
+  
+  /* FORM STYLING */
+  .logement-form {
+    margin-top: 10px;
+  }
 
-.logement-form {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-}
+  .section-title {
+    font-size: 1.1rem;
+    color: #1c2c40;
+    font-weight: 600;
+    margin: 30px 0 20px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e0e6ef;
+  }
 
 .logement-form h2 {
     text-align: center;
@@ -37,65 +49,118 @@
 }
 
 .form-field {
-    margin-bottom: 20px;
-}
-
-.form-field label {
+    margin-bottom: 18px;
+  }
+  .form-field label {
     display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #333;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #2b3d55;
+  }
+
+/* INPUTS */
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  border: 1px solid #cbd3df;
+  border-radius: 10px;
+  background-color: #fafbfc;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-input,
-.form-textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: #fdfdfd;
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #4f7df9;
+  box-shadow: 0 0 0 2px rgba(79, 125, 249, 0.2);
 }
 
 .form-textarea {
     resize: vertical;
-    height: 100px;
-}
+    min-height: 120px;
+  }
 
+/* SYMBOL INPUTS */
 .input-symbol {
     position: relative;
     display: flex;
     align-items: center;
-}
-
-.input-symbol span {
+  }
+  
+  .input-symbol span {
     position: absolute;
     right: 15px;
-    font-weight: bold;
-    color: #444;
+    font-weight: 600;
+    color: #5c5c5c;
     pointer-events: none;
-}
+  }
+  
+  .input-symbol .form-input {
+    padding-right: 38px;
+  }
 
-.input-symbol .form-input {
-    padding-right: 35px;
-}
+/* CHECKBOX */
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .checkbox-field input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #1c2c40; /* modern browsers only */
+    cursor: pointer;
+  }
+  
+  .checkbox-field label {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #2b3d55;
+    cursor: pointer;
+  }
 
+/* ACTIONS */
 .form-actions {
     text-align: center;
-    margin-top: 30px;
-}
+    margin-top: 40px;
+  }
+  
+  .btn-submit {
+    background-color: #1c2c40;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(28, 44, 64, 0.15);
+    cursor: pointer;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  
+  .btn-submit:hover {
+    background-color: #0f6efd;
+    box-shadow: 0 8px 22px rgba(15, 110, 253, 0.2);
+  }
 
-
-/* Responsive */
-@media (max-width: 900px) {
-    .form-title {        
-        font-size: 1.2rem;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .logement-card {
+      padding: 25px 20px;
     }
-    .logement-form {
-        padding: 20px;
+  
+    .form-title {
+      font-size: 1.4rem;
     }
-
+  
     .btn-submit {
-        width: 100%;
+      width: 100%;
     }
-}
+  }

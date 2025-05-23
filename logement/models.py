@@ -21,11 +21,32 @@ class City(models.Model):
         return f"{self.name} ({self.code_postal})"
 
 
+class EquipmentType(models.TextChoices):
+    COMFORT = "comfort", "Confort & Accessibilité"
+    KITCHEN = "kitchen", "Cuisine"
+    CONNECTIVITY = "connectivity", "Technologie & Connectivité"
+    BED_BATH = "bed_bath", "Chambre & Salle de bain"
+    PARKING = "parking", "Stationnement"
+    OUTDOOR = "outdoor", "Extérieur"
+    CHILDREN = "children", "Équipements pour enfants"
+    SECURITY = "security", "Sécurité"
+    ENTERTAINMENT = "entertainment", "Divertissement"
+    WELLNESS = "wellness", "Bien-être"
+    CLEANING = "cleaning", "Entretien"
+    CLIMATE = "climate", "Climatisation & Chauffage"
+    OTHER = "other", "Autres"
+
+
 # models.py
 class Equipment(models.Model):
     name = models.CharField(max_length=150)
     icon = models.CharField(
         max_length=100, blank=True, help_text="FontAwesome icon class or image name"
+    )
+    type = models.CharField(
+        max_length=20,
+        choices=EquipmentType.choices,
+        default=EquipmentType.OTHER,
     )
 
     def __str__(self):
@@ -56,21 +77,24 @@ class Logement(models.Model):
             ("flat", "Appartement"),
             ("room", "Chambre"),
         ],
-        default="full",
+        default="flat",
     )
 
     max_traveler = models.IntegerField(default=4)
     nominal_traveler = models.IntegerField(default=4)
+    caution = models.IntegerField(default=0)
     fee_per_extra_traveler = models.DecimalField(
         max_digits=6, decimal_places=2, default=0
     )
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=4)
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     cancelation_period = models.IntegerField(default=15)  # en jours ?
     superficie = models.IntegerField(blank=True, null=True)
     bathrooms = models.IntegerField(default=1)
     bedrooms = models.IntegerField(default=1)
+    beds = models.IntegerField(default=1)
 
     ready_period = models.IntegerField(default=1)  # en jours ?
 
@@ -97,6 +121,8 @@ class Logement(models.Model):
 
     equipment = models.ManyToManyField(Equipment, blank=True, related_name="logements")
 
+    map_link = models.URLField(blank=True, null=True, max_length=1000)
+
     def __str__(self):
         return self.name
 
@@ -117,12 +143,8 @@ class Price(models.Model):
 
 
 class DiscountType(models.Model):
-    name = models.CharField(
-        max_length=100, unique=True
-    )  # ex: "À la semaine (7+ nuits)"
-    description = models.TextField(blank=True)
-
-    # Champs dynamiques selon la logique
+    code = models.CharField(max_length=50, unique=True, default="")
+    name = models.CharField(max_length=100, default="")
     requires_min_nights = models.BooleanField(default=False)
     requires_days_before = models.BooleanField(default=False)
     requires_date_range = models.BooleanField(default=False)
@@ -133,25 +155,48 @@ class DiscountType(models.Model):
 
 class Discount(models.Model):
     logement = models.ForeignKey(
-        Logement, on_delete=models.CASCADE, related_name="discounts"
+        Logement, on_delete=models.CASCADE, related_name="discounts", null=False
     )
     discount_type = models.ForeignKey(
-        DiscountType, on_delete=models.CASCADE, null=True, blank=True
+        DiscountType, on_delete=models.CASCADE, related_name="discounts", null=False
     )
 
-    value = models.DecimalField(max_digits=5, decimal_places=2)
+    name = models.CharField(max_length=100, default="")
+    value = models.DecimalField(
+        max_digits=5, decimal_places=2, help_text="En pourcentage"
+    )
 
-    # Valeurs personnalisables selon le type
-    min_nights = models.IntegerField(null=True, blank=True)
-    days_before = models.IntegerField(null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    # Conditions
+    min_nights = models.IntegerField(
+        null=True, blank=True, help_text="Durée minimale du séjour"
+    )
+    exact_nights = models.IntegerField(
+        null=True, blank=True, help_text="Appliqué uniquement pour cette durée exacte"
+    )
+    days_before_min = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Réservation au moins X jours avant (early bird)",
+    )
+    days_before_max = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Réservation moins de X jours avant (last minute)",
+    )
+    start_date = models.DateField(
+        null=True, blank=True, help_text="Date de début d'application"
+    )
+    end_date = models.DateField(
+        null=True, blank=True, help_text="Date de fin d'application"
+    )
+
+    is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("logement", "discount_type")
+        unique_together = ("logement", "discount_type", "name")
 
     def __str__(self):
-        return f"{self.discount_type.name} — {self.value} %"
+        return f"{self.name} — {self.value}%"
 
 
 class ExtraCharge(models.Model):
@@ -299,6 +344,7 @@ class Reservation(models.Model):
             ("en_attente", "En attente"),
             ("confirmee", "Confirmée"),
             ("annulee", "Annulée"),
+            ("terminee", "Terminée"),
         ],
         default="en_attente",
     )
@@ -307,6 +353,12 @@ class Reservation(models.Model):
     price = models.FloatField()
     tax = models.FloatField(default=0)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_saved_payment_method_id = models.CharField(
+        max_length=255, null=True, blank=True
+    )
+    refunded = models.BooleanField(default=False)
+    refund_amount = models.FloatField(default=0)
+    stripe_refund_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"

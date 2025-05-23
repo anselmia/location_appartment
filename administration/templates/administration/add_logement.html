@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 {% load widget_tweaks %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'administration/css/add_logement.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container logement-form-container">
     <div class="logement-card">
@@ -57,6 +63,10 @@
                         {{ form.ville|add_class:"form-select" }}
                     </div>
                     <div class="form-field">
+                        <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
+                        {{ form.map_link|add_class:"form-input" }}
+                    </div>
+                    <div class="form-field">
                         <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
                         {{ form.description|add_class:"form-textarea" }}
                     </div>
@@ -105,15 +115,18 @@
                         <label for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
                         {{ form.bedrooms|add_class:"form-input" }}
                     </div>
-                    <div class="form-field checkbox-field mt-3">
-                        <label for="{{ form.smoking.id_for_label }}">
-                            {{ form.smoking }} {{ form.smoking.label }}
-                        </label>
+                    <div class="form-field">
+                        <label for="{{ form.beds.id_for_label }}">{{ form.beds.label }}</label>
+                        {{ form.beds|add_class:"form-input" }}
                     </div>
-                    <div class="form-field checkbox-field mt-3">
-                        <label for="{{ form.animals.id_for_label }}">
-                            {{ form.animals }} {{ form.animals.label }}
-                        </label>
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="{{ form.smoking.id_for_label }}" name="{{ form.smoking.name }}" {{ form.smoking.value|yesno:"checked," }}>
+                        <label for="{{ form.smoking.id_for_label }}">{{ form.smoking.label }}</label>
+                    </div>
+                      
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="{{ form.animals.id_for_label }}" name="{{ form.animals.name }}" {{ form.animals.value|yesno:"checked," }}>
+                        <label for="{{ form.animals.id_for_label }}">{{ form.animals.label }}</label>
                     </div>
                 </div>
         
@@ -141,10 +154,24 @@
                         </div>
                     </div>
                     <div class="form-field with-symbol">
+                        <label for="{{ form.caution.id_for_label }}">{{ form.caution.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.caution|add_class:"form-input" }}
+                            <span>€</span>
+                        </div>
+                    </div>
+                    <div class="form-field with-symbol">
                         <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
                         <div class="input-symbol">
                             {{ form.tax|add_class:"form-input" }}
                             <span>%</span>
+                        </div>
+                    </div>
+                    <div class="form-field with-symbol">
+                        <label for="{{ form.tax_max.id_for_label }}">{{ form.tax_max.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.tax_max|add_class:"form-input" }}
+                            <span>€</span>
                         </div>
                     </div>
 

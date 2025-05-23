@@ -1,3 +1,15 @@
+:root {
+  --primary-color: #bfa66b;
+  --secondary-color: #3b2f2f;
+  --light-bg: #f8f5f2;
+  --text-color: #d4af7f;
+  --font-family: 'Playfair Display', serif;
+}
+
+body {
+    font-family: var(--font-family);
+}
+
 .home-page {
   display: block;
   width: 100%;
@@ -33,11 +45,17 @@ section h2::after {
   border-radius: 4px;
 }
 
+.wave-separator {
+  width: 100%;
+  height: 100px; /* Adjust as needed */
+  overflow: hidden;
+  line-height: 0;
+}
+
 .wave-separator svg {
   display: block;
   width: 100%;
-  height: 100px;
-  margin-top: -5px;
+  height: 100%;
 }
 
 .scroll-down {
@@ -108,220 +126,6 @@ section h2::after {
   background-color: #d4af7f;
 }
 
-
-/* SEARCH BAR */
-.compact-search-bar {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 999px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  padding: 0.5rem 1rem;
-  gap: 0.5rem;
-  width: fit-content;
-  margin: 2rem auto;
-}
-
-.search-input input {
-  background: #f7f7f7;
-  border-radius: 12px;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid #ddd;
-  transition: border-color 0.3s;
-}
-.search-input input:focus {
-  border-color: var(--primary-color);
-  outline: none;
-}
-.search-input:last-of-type {
-  border-right: none;
-}
-
-.search-input label {
-  display: block;
-  font-size: 0.6rem;
-  color: #888;
-  margin-bottom: 0.1rem;
-  white-space: nowrap;
-}
-
-.search-input input {
-  border: none;
-  outline: none;
-  font-size: 0.85rem;
-  background-color: transparent;
-  padding: 0;
-}
-
-.date-input {
-  cursor: pointer;
-}
-
-.search-btn {
-  background: #ff385c;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-
-/* LOGEMENTS */
-.logements-section {
-  width: 100%;
-  padding: 0 2rem;
-  padding-top: 4rem; /* or whatever you want */
-  margin-top: 2rem;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: white; /* Optional if you want text contrast */
-  position: relative;
-}
-
-.logements-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4); /* Dark overlay */
-  z-index: 0;
-}
-.logements-section > * {
-  position: relative;
-  z-index: 1;
-}
-
-.logements-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  justify-content: center; /* center the grid */
-  margin: 2rem auto;        /* center grid horizontally */
-  padding: 0 1rem;
-}
-
-.logements-section h2 {
-  text-align: center;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-.logement-card {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  max-width: 320px; /* 👈 LIMIT THE CARD WIDTH */
-  width: 100%;      /* let it be responsive */
-  margin: 0 auto;   /* optional: center card in grid cell */
-}
-
-.logement-card:hover {
-  transform: translateY(-4px);
-}
-
-.logement-img-wrapper {
-  position: relative;
-  height: 180px;
-  overflow: hidden;
-}
-
-.logement-img-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.logement-badge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  color: white;
-  font-size: 0.75rem;
-  padding: 0.4rem 0.6rem;
-  border-bottom-right-radius: 8px;
-  z-index: 2;
-}
-
-.logement-badge span {
-  display: block;
-  line-height: 1.2;
-}
-
-.logement-icons-overlay {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 0.4rem 0.6rem;
-  border-top-left-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  font-size: 1rem;
-  z-index: 2;
-}
-
-.logement-icons-overlay i,
-.logement-badge i {
-  color: #fff; /* or #fff for white if the background is dark */
-}
-
-.logement-location {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.85rem;
-  width: 100%;
-  text-align: left;
-  z-index: 1;
-}
-
-.card-body {
-  transition: background 0.3s, transform 0.3s;
-}
-
-.card-body:hover {
-  background: #fdf7f0;
-  transform: scale(1.02);
-}
-
-.logement-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.2rem;
-  color: #111;
-}
-
-.price {
-  font-size: 0.95rem;
-  color: var(--primary-color, #bfa66b); /* Use gold tone */
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-.logement-details {
-  font-size: 0.8rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-  color: #555;
-  margin-bottom: 0.4rem;
-}
-
 .btn-show-more {
   display: inline-block;
   padding: 0.6rem 1.2rem;
@@ -361,6 +165,7 @@ section h2::after {
 
 .service-card {
   background: #fff;
+  color: #111;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -383,7 +188,7 @@ section h2::after {
   width: 100%;
 }
 
-.service-card .card-body {
+.card-body {
   background: #fff;
   color: #111;
 }
@@ -630,19 +435,6 @@ section h2::after {
 
 @keyframes slideUp {
   to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in-up {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .animate-on-scroll {

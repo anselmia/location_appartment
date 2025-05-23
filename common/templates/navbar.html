@@ -19,11 +19,12 @@
             <!-- Links Container -->
             <div class="nav-links" id="navLinks">                
                 <a href="/">{% trans "Accueil" %}</a>
+                <a href="{% url 'logement:logement_search' %}">{% trans "Réserver" %}</a>
         
                 {% if user.is_authenticated %}
-                    {% if user.is_admin %}
+                    {% if user.is_superuser or user.is_admin %}
                         <div class="dropdown">
-                            <a href="#" class="dropdown-toggle">{% trans "Logement" %}</a>
+                            <a href="#" class="dropdown-toggle">{% trans "Logements" %}</a>
                             <div class="dropdown-menu">
                                 <a href="{% url 'administration:dashboard' %}">{% trans "Tableau de bord" %}</a>
                                 <a href="{% url 'administration:calendar' %}">{% trans "Calendrier" %}</a>

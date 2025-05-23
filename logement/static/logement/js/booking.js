@@ -6,6 +6,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const formGuest = document.getElementById('id_guest');
     const logementId = logement_js.id; // Get the logement ID from Django context
 
+    const checkbox = document.getElementById("cgv-check");
+    const submitBtn = document.getElementById("submit-booking");
+
+    if (checkbox && submitBtn) {
+        checkbox.addEventListener("change", function () {
+            submitBtn.disabled = !this.checked;
+        });
+    }
+
     // 🔥 iOS Safari fix: ensure calendar opens on touch
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     logToServer("info", "Ios Device", {
@@ -77,82 +86,82 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (startDateStr && endDateStr) {
             areInputCorrect(startDateStr, endDateStr, formGuest.value)
-            .then((available) => {
-                if (!available) {
-                    // Rien à faire, resetReservation() a déjà été appelée dans isDateBooked
-                    return;
-                }
-                // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
-                const guestCount = parseInt(formGuest.value, 10) || 1;
-                const startDate = new Date(startDateStr);
-                const endDate = new Date(endDateStr);
+                .then((available) => {
+                    if (!available) {
+                        // Rien à faire, resetReservation() a déjà été appelée dans isDateBooked
+                        return;
+                    }
+                    // If guestCount is not provided or is falsy (null, undefined, 0, etc.), set it to 1
+                    const guestCount = parseInt(formGuest.value, 10) || 1;
+                    const startDate = new Date(startDateStr);
+                    const endDate = new Date(endDateStr);
 
-                // Update the reservation summary dynamically
-                document.getElementById('start-date').innerText = startDateStr; // Update start date in summary
-                document.getElementById('end-date').innerText = endDateStr; // Update end date in summary
-                document.getElementById('guest-count').innerText = guestCount;
+                    // Update the reservation summary dynamically
+                    document.getElementById('start-date').innerText = startDateStr; // Update start date in summary
+                    document.getElementById('end-date').innerText = endDateStr; // Update end date in summary
+                    document.getElementById('guest-count').innerText = guestCount;
 
-                axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
-                axios.post('/admin-area/prices/calculate_price/', {
-                        logement_id: logementId,
-                        start: startDate.toISOString().split('T')[0],
-                        end: endDate.toISOString().split('T')[0],
-                        guests: parseInt(guestCount, 10) // Send the number of guests to the backend
-                    })
-                    .then(response => {
-                        const finalPrice = response.data.final_price;
-                        const tax = response.data.tax;
-                        const details = response.data.details;
+                    axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
+                    axios.post('/admin-area/prices/calculate_price/', {
+                            logement_id: logementId,
+                            start: startDate.toISOString().split('T')[0],
+                            end: endDate.toISOString().split('T')[0],
+                            guests: parseInt(guestCount, 10) // Send the number of guests to the backend
+                        })
+                        .then(response => {
+                            const finalPrice = response.data.final_price;
+                            const tax = response.data.tax;
+                            const details = response.data.details;
 
-                        // Update the final price in the UI
-                        document.getElementById('final-price').innerText = finalPrice.toFixed(2);
-                        document.getElementById('reservation-price').value = finalPrice.toFixed(2);
-                        document.getElementById('reservation-tax').value = tax.toFixed(2);
+                            // Update the final price in the UI
+                            document.getElementById('final-price').innerText = finalPrice.toFixed(2);
+                            document.getElementById('reservation-price').value = finalPrice.toFixed(2);
+                            document.getElementById('reservation-tax').value = tax.toFixed(2);
 
-                        // Display detailed breakdown in a list
-                        const detailsContainer = document.getElementById('details');
-                        detailsContainer.innerHTML = ''; // Clear any existing details
+                            // Display detailed breakdown in a list
+                            const detailsContainer = document.getElementById('details');
+                            detailsContainer.innerHTML = ''; // Clear any existing details
 
-                        // Create the section header (optional)
-                        const detailh3 = document.createElement('h4');
-                        detailh3.innerText = 'Détails du Prix';
-                        detailh3.classList.add('text-center');
-                        detailh3.classList.add('mb-4');
-                        detailsContainer.appendChild(detailh3);
+                            // Create the section header (optional)
+                            const detailh3 = document.createElement('h4');
+                            detailh3.innerText = 'Détails du Prix';
+                            detailh3.classList.add('text-center');
+                            detailh3.classList.add('mb-4');
+                            detailsContainer.appendChild(detailh3);
 
 
-                        // Iterate over the details and create a list item for each one
-                        for (const [key, value] of Object.entries(details)) {
-                            const listItem = document.createElement('p');
+                            // Iterate over the details and create a list item for each one
+                            for (const [key, value] of Object.entries(details)) {
+                                const listItem = document.createElement('p');
 
-                            // Set the content of each list item
-                            listItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+                                // Set the content of each list item
+                                listItem.innerHTML = `<strong>${key}:</strong> ${value}`;
 
-                            // Append the list item to the list
-                            detailsContainer.appendChild(listItem);
-                        }
+                                // Append the list item to the list
+                                detailsContainer.appendChild(listItem);
+                            }
 
-                        isReservationValid = true;
+                            isReservationValid = true;
 
-                        logToServer("info", "Prix calculé avec succès", {
-                            finalPrice: finalPrice,
-                            start: startDateStr,
-                            end: endDateStr,
-                            guests: guestCount,
-                            logementId: logementId
+                            logToServer("info", "Prix calculé avec succès", {
+                                finalPrice: finalPrice,
+                                start: startDateStr,
+                                end: endDateStr,
+                                guests: guestCount,
+                                logementId: logementId
+                            });
+
+                            document.getElementById('submit-booking').disabled = false;
+                        })
+                        .catch(error => {
+                            resetReservation();
+                            logToServer("error", "Erreur lors du calcul du prix" + error, {
+                                start: startDate,
+                                end: endDate,
+                                logementId: logementId
+                            });
                         });
-
-                        document.getElementById('submit-booking').disabled = false;
-                    })
-                    .catch(error => {
-                        resetReservation();
-                        logToServer("error", "Erreur lors du calcul du prix" + error, {
-                            start: startDate,
-                            end: endDate,
-                            logementId: logementId
-                        });
-                    });
-            });
+                });
         }
     }
 

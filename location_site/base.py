@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "django_celery_beat",
     "widget_tweaks",
+    "common",
     "accounts",
     "administration",
     "logement.apps.LogementConfig",
@@ -62,7 +63,7 @@ TEMPLATES = [
 ]
 
 TEMPLATES[0]['OPTIONS']['context_processors'] += [
-    'core.context_processors.entreprise_info',
+    'common.context_processors.entreprise_info',
 ]
 
 WSGI_APPLICATION = "location_site.wsgi.application"
