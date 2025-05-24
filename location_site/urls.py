@@ -42,7 +42,7 @@ sitemaps = {
 }
 
 urlpatterns = [
-    path("légale", include("common.urls", namespace="common")),  # main site
+    path("therms/", include("common.urls", namespace="common")),  # main site
     path("admin/", admin.site.urls),  # optional
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),

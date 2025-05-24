@@ -57,10 +57,8 @@
 
 /* Button styles */
 .client-dashboard .btn {
-    font-size: 1rem;
     border-radius: 2rem;
     font-weight: 500;
-    padding: 0.6rem 1.5rem;
     transition: all 0.3s ease;
 }
 
@@ -101,15 +99,27 @@
     background-color: #f0f4ff;
 }
 
-/* Badges */
+/* Badges - Style updates */
+/* Badge container to arrange them in a row at top-right */
+.client-dashboard .badge-container {
+    position: absolute;  /* Position the badge container absolutely */
+    top: 10px;           /* Adjust to your desired top margin */
+    right: 10px;         /* Adjust to your desired right margin */
+    display: flex;       /* Align badges in a row */
+    gap: 0.75rem;        /* Space between badges */
+}
+
+/* Badge Styling */
 .client-dashboard .badge {
-    font-size: 0.9rem;
-    padding: 0.5rem 0.85rem;
+    font-size: 0.6rem;
+    padding: 0.4rem 0.4rem;
     border-radius: 1rem;
 }
 
+/* Badge color updates for states */
 .client-dashboard .badge.bg-secondary {
     background-color: #6c757d;
+    color: white;
 }
 
 .client-dashboard .badge.bg-warning {
@@ -122,15 +132,63 @@
     color: #1c2d41;
 }
 
-/* No reservations message */
-.client-dashboard .text-muted {
-    font-style: italic;
-    color: #6c757d !important;
+.client-dashboard .badge.bg-success {
+    background-color: #28a745;
+    color: white;
 }
 
-/* Delete account form */
-.client-dashboard form[action$="delete_account"] {
-    margin-top: 2rem;
+.client-dashboard .badge.bg-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Special color changes */
+.client-dashboard .badge.bg-info.text-dark {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.client-dashboard .badge.bg-warning.text-dark {
+    background-color: #ffdf7f;
+    color: #6c6c6c;
+}
+
+/* Cancel Button Styling */
+form cancel-button {
+    margin-top: 1rem;
+    font-weight: 600;
+    position: absolute;
+    bottom: 10px;  /* Positioning the cancel button at the bottom */
+    right: 10px;   /* Right side of the container */
+    width: auto;   /* Let the cancel button size adapt to its content */
+}
+
+/* List Group Item Styling */
+.list-group-item {
+    position: relative;  /* Ensure the list item is positioned relative to its parent */
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.client-dashboard .list-group-item .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.client-dashboard .list-group-item .badge {
+    margin-right: 0.75rem;  /* Add margin for horizontal spacing */
+}
+
+/* Text and badge alignment */
+.text-end {
+    text-align: right;
 }
 
 /* Responsive improvements */
@@ -152,5 +210,19 @@
     .client-dashboard .btn {
         width: 100%;
         text-align: center;
+    }
+
+    .badge {
+        position: relative;  /* Adjust positioning for small screens */
+        top: auto;
+        right: auto;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    form button {
+        position: relative;
+        width: 100%;  /* Let the button take the full width on small screens */
+        margin-top: 0;
     }
 }

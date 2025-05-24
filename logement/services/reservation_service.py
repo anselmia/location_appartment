@@ -1,3 +1,4 @@
+import stripe
 from decimal import Decimal
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
@@ -13,14 +14,14 @@ from logement.models import (
     Logement,
 )
 from logement.services.payment_service import refund_payment
-from logement.services.email_service import (
-    send_mail_on_refund_result,
-)
+
 
 logger = logging.getLogger(__name__)
 
 
 def get_available_logement_in_period(start, end, logements):
+    logger.info(f"Fetching available logements between {start} and {end}.")
+
     reservation_conflits = Reservation.objects.filter(
         statut="confirmee",
         start__lt=end,
@@ -42,12 +43,15 @@ def get_available_logement_in_period(start, end, logements):
     logements = [l for l in logements if l.booking_limit <= start]
 
     logements_ids = [l.id for l in logements]
+
+    logger.debug(f"Found {len(logements_ids)} available logements.")
     return Logement.objects.filter(id__in=logements_ids)
 
 
 def get_booked_dates(logement, user=None):
-    today = date.today()
+    logger.info(f"Fetching booked dates for logement {logement.id}.")
 
+    today = date.today()
     reserved_start = set()
     reserved_end = set()
 
@@ -97,6 +101,10 @@ def get_booked_dates(logement, user=None):
 
 
 def is_period_booked(start, end, logement_id, user):
+    logger.info(
+        f"Checking if period {start} to {end} is booked for logement {logement_id}."
+    )
+
     reservations = Reservation.objects.filter(
         logement_id=logement_id, start__lt=end, end__gt=start
     ).filter(Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user)))
@@ -113,19 +121,23 @@ def is_period_booked(start, end, logement_id, user):
         end__gt=start,
     )
 
-    if reservations.exists():
+    if (
+        reservations.exists()
+        or airbnb_reservations.exists()
+        or booking_reservations.exists()
+    ):
+        logger.debug(f"Period {start} to {end} is already booked.")
         return True
 
-    if airbnb_reservations.exists():
-        return True
-
-    if booking_reservations.exists():
-        return True
-
+    logger.debug(f"Period {start} to {end} is available.")
     return False
 
 
 def create_or_update_reservation(logement, user, start, end, guest, price, tax):
+    logger.info(
+        f"Creating or updating reservation for logement {logement.id}, user {user.id}, dates {start} to {end}."
+    )
+
     reservation = Reservation.objects.filter(
         logement=logement,
         user=user,
@@ -142,6 +154,7 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
         reservation.tax = tax
         reservation.save()
         created = False
+        logger.info(f"Reservation {reservation.id} updated.")
     else:
         reservation = Reservation.objects.create(
             logement=logement,
@@ -154,15 +167,14 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
             statut="en_attente",
         )
         created = True
+        logger.info(f"Reservation {reservation.id} created.")
 
-    logger.info(f"{'Créée' if created else 'Mise à jour'} réservation {reservation.id}")
     return reservation
 
 
 def get_best_discounts(discounts, start_date, end_date):
-    """Filter and return only the best discount for each logic type."""
+    logger.info(f"Fetching best discounts for dates {start_date} to {end_date}.")
 
-    # Categories of logic (mutually exclusive)
     best_min_nights = None
     best_days_before = None
     best_date_range_discounts = []
@@ -191,6 +203,7 @@ def get_best_discounts(discounts, start_date, end_date):
         if d.start_date and d.end_date:
             best_date_range_discounts.append(d)
 
+    logger.debug("Best discounts retrieved.")
     return {
         "min_nights": best_min_nights,
         "days_before": best_days_before,
@@ -199,7 +212,7 @@ def get_best_discounts(discounts, start_date, end_date):
 
 
 def apply_discounts(base_price, current_day, discounts_by_type):
-    """Apply applicable discounts to the given base price and return discounted price and breakdown."""
+    logger.debug(f"Applying discounts to price {base_price} for date {current_day}.")
 
     discount_applied = []
 
@@ -222,6 +235,10 @@ def apply_discounts(base_price, current_day, discounts_by_type):
 
 
 def calculate_price(logement, start, end, guestCount, base_price=None):
+    logger.info(
+        f"Calculating price for logement {logement.id}, dates {start} to {end}, {guestCount} guests."
+    )
+
     default_price = logement.price
     nights = (end - start).days or 1
 
@@ -281,6 +298,7 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
     total_price = Decimal(str(total_price))
     total_price += taxAmount + logement.cleaning_fee
 
+    logger.debug(f"Total price calculated: {total_price}")
     return {
         "number_of_nights": nights,
         "total_base_price": total_base,
@@ -294,18 +312,29 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
 def validate_reservation_inputs(
     logement, user, start, end, guest, expected_price=None, expected_tax=None
 ):
+    logger.info(
+        f"Validating reservation inputs for logement {logement.id}, user {user.id}, dates {start} to {end}."
+    )
 
     if guest <= 0 or guest > logement.max_traveler:
+        logger.error(f"Invalid guest count {guest} for reservation.")
         raise ValueError("Nombre de voyageurs invalide.")
 
     if start < logement.booking_limit:
+        logger.error(
+            f"Start date {start} is before booking limit for logement {logement.id}."
+        )
         raise ValueError("Ces dates ne sont plus disponible.")
 
     if start >= end:
+        logger.error("End date is not after start date.")
         raise ValueError("La date de fin doit être après la date de début.")
 
     duration = (end - start).days  # nombre de jours complets
     if duration > logement.max_days:
+        logger.error(
+            f"Reservation duration {duration} exceeds maximum allowed days for logement {logement.id}."
+        )
         raise ValueError(
             f"La durée de la réservation doit être inférieure à {logement.max_days} jour(s)."
         )
@@ -316,11 +345,17 @@ def validate_reservation_inputs(
     booking_horizon = today + relativedelta(months=limit_months)
 
     if start > booking_horizon:
+        logger.error(
+            f"Booking attempt exceeds booking horizon for logement {logement.id}."
+        )
         raise ValueError(
             f"Vous pouvez réserver au maximum {limit_months} mois à l'avance (jusqu'au {booking_horizon.strftime('%d/%m/%Y')})."
         )
 
     if is_period_booked(start, end, logement.id, user):
+        logger.error(
+            f"Dates {start} to {end} are already booked for logement {logement.id}."
+        )
         raise ValueError("Les dates sélectionnées sont déjà réservées.")
 
     price_data = calculate_price(logement, start, end, guest)
@@ -329,40 +364,82 @@ def validate_reservation_inputs(
     real_tax = price_data["taxAmount"]
 
     if expected_price and expected_tax:
-        if (
-            abs(Decimal(expected_price) - Decimal(real_price)) > Decimal("0.01")
-            or abs(Decimal(expected_tax) - Decimal(real_tax)) > Decimal("0.01")
-        ):
+        if abs(Decimal(expected_price) - Decimal(real_price)) > Decimal("0.01") or abs(
+            Decimal(expected_tax) - Decimal(real_tax)
+        ) > Decimal("0.01"):
+            logger.error(
+                f"Expected price or tax doesn't match the real price or tax for reservation."
+            )
             raise ValueError("Les montants ne correspondent pas aux prix réels.")
 
     return True
 
 
 def mark_reservation_cancelled(reservation):
+    logger.info(f"Marking reservation {reservation.id} as cancelled.")
     reservation.statut = "annulee"
     reservation.save()
+    logger.info(f"Reservation {reservation.id} has been marked as cancelled.")
 
 
 def cancel_and_refund_reservation(reservation):
     today = timezone.now().date()
 
+    # Log the start of the cancellation and refund process
+    logger.info(f"Attempting to cancel and refund reservation {reservation.id}")
+
+    # Check if the reservation has already started or passed
     if reservation.start <= today:
         return (
             None,
             "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
         )
 
+    # Mark the reservation as cancelled
     mark_reservation_cancelled(reservation)
 
-    if reservation.stripe_payment_intent_id:
-        try:
-            refund_payment(reservation)
-            return ("✅ Réservation annulée et remboursée avec succès.", None)
-        except Exception:
-            send_mail_on_refund_result(reservation, success=False, error_message=str(e))
+    # Handle refund if applicable
+    if reservation.refundable:
+        if reservation.stripe_payment_intent_id:
+            try:
+                # Calculate the refund amount (converted to cents)
+                refund_amount = reservation.refundable_amount * 100
+
+                # Attempt to process the refund
+                refund_payment(reservation, refund_amount)
+
+                logger.info(
+                    f"Refund successfully processed for reservation {reservation.id}."
+                )
+                return ("✅ Réservation annulée et remboursée avec succès.", None)
+            except stripe.error.StripeError as e:
+                # Handle Stripe-specific errors
+                logger.error(
+                    f"Stripe refund failed for reservation {reservation.id}. Error: {str(e)}"
+                )
+                return (
+                    "⚠️ Réservation annulée, mais remboursement échoué.",
+                    "❗ Le remboursement a échoué. Contactez l’assistance.",
+                )
+            except Exception as e:
+                # Handle other unexpected errors
+                logger.error(
+                    f"Unexpected error during refund process for reservation {reservation.id}. Error: {str(e)}"
+                )
+                return (
+                    "⚠️ Réservation annulée, mais remboursement échoué.",
+                    "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
+                )
+        else:
+            logger.warning(
+                f"Reservation {reservation.id} is refundable, but no Stripe payment intent found."
+            )
             return (
                 "⚠️ Réservation annulée, mais remboursement échoué.",
-                "❗ Le remboursement a échoué. Contactez l’assistance.",
+                "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
             )
-    send_mail_on_refund_result(reservation, success=True)
+
+    logger.info(
+        f"Reservation {reservation.id} cancelled without refund (not refundable)."
+    )
     return ("✅ Réservation annulée (aucun paiement à rembourser).", None)

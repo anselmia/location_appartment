@@ -21,7 +21,7 @@ from logement.services.reservation_service import (
     get_booked_dates,
     create_or_update_reservation,
     validate_reservation_inputs,
-    cancel_and_refund_reservation,    
+    cancel_and_refund_reservation,
     get_available_logement_in_period,
 )
 
@@ -340,12 +340,16 @@ def payment_cancel(request, reservation_id):
 def cancel_booking(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
 
-    success_message, error_message = cancel_and_refund_reservation(reservation)
+    if reservation:
+        success_message, error_message = cancel_and_refund_reservation(reservation)
 
-    if success_message:
-        messages.success(request, success_message)
-    if error_message:
-        messages.error(request, error_message)
+        if success_message:
+            messages.success(request, success_message)
+        if error_message:
+            messages.error(request, error_message)
+
+    else:
+        messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
 
     return redirect("accounts:dashboard")
 
@@ -477,7 +481,7 @@ def logement_search(request):
     if type:
         logements = logements.filter(type=type)
 
-    paginator = Paginator(logements, 9) 
+    paginator = Paginator(logements, 9)
     page_obj = paginator.get_page(page_number)
 
     selected_equipment_ids = [str(eid) for eid in equipment_ids]
