@@ -17,30 +17,36 @@ class StripeCheckoutSessionLineItem(BaseModel):
 class StripeCheckoutSessionData(BaseModel):
     """Contains the session object data in the webhook event."""
 
-    id: str  # The session ID
-    object: str  # Always 'checkout.session' for checkout session events
-    amount_subtotal: int  # The subtotal amount for the session
-    amount_total: int  # Total amount for the session (including taxes, discounts, etc.)
-    cancel_url: str  # URL to redirect the user if they cancel the checkout
-    client_reference_id: Optional[str] = None  # Optional reference ID set by the client
-    created: int  # Timestamp when the session was created
-    currency: StripeCurrency  # The currency of the session (e.g., 'usd', 'eur')
-    customer: str  # Stripe customer ID
-    customer_email: Optional[str] = None  # Customer's email address (nullable)
-    metadata: Optional[Dict[str, str]] = None  # Custom metadata attached to the session
-    payment_intent: Optional[str] = None  # Payment intent ID (if applicable)
-    payment_method_types: List[str]  # Allowed payment method types (e.g., 'card')
-    payment_status: str  # The payment status (e.g., 'paid', 'unpaid')
-    shipping_address_collection: Optional[Dict[str, bool]] = None  # Whether to collect shipping address
-    status: str  # Status of the session (e.g., 'complete', 'open')
-    success_url: str  # URL to redirect the user after successful checkout
-    total_details: Dict[str, int]  # Breakdown of the total (e.g., shipping, taxes, discounts)
-    mode: str  # Mode of the session (e.g., 'payment', 'subscription')
-    shipping: Optional[Dict[str, str]] = None  # Shipping details if applicable
-    discounts: Optional[List[Dict[str, str]]] = None  # Discounts applied to the session
-    automatic_tax: Optional[Dict[str, bool]] = None  # Whether tax is calculated automatically
-    expires_at: Optional[int] = None  # The timestamp for when the session will expire
-    subscription: Optional[str] = None  # Subscription ID (if applicable)
+    id: str
+    object: str
+    amount_subtotal: int
+    amount_total: int
+    cancel_url: str
+    client_reference_id: Optional[str] = None
+    created: int
+    currency: StripeCurrency
+    customer: str
+    customer_email: Optional[str] = None
+    metadata: Optional[Dict[str, str]] = None
+    payment_intent: Optional[str] = None
+    payment_method_types: List[str]
+    payment_status: str
+    shipping_address_collection: Optional[Dict[str, bool]] = None
+    status: str
+    success_url: str
+    total_details: Dict[str, int]
+    mode: str
+    shipping: Optional[Dict[str, str]] = None
+    discounts: Optional[List[Dict[str, str]]] = None
+    automatic_tax: Optional[Dict[str, bool]] = None
+    expires_at: Optional[int] = None
+    subscription: Optional[str] = None
+
+    # Making missing fields optional
+    data: Optional[Dict[str, str]] = None
+    type: Optional[str] = None
+    request: Optional[Dict[str, str]] = None
+    api_version: Optional[str] = None
 
 
 class StripeEventRequest(BaseModel):
@@ -55,12 +61,16 @@ class StripeBaseEvent(BaseModel):
 
     id: str
     api_version: str
-    request: StripeEventRequest  # Optional request data
-    type: str  # The event type (e.g., 'checkout.session.completed')
-    data: StripeCheckoutSessionData  # This holds the session data
+    request: Optional[StripeEventRequest]  # Make request optional
+    type: str
+    data: (
+        StripeCheckoutSessionData  # Adjust this model to reflect actual data structure
+    )
 
 
 class StripeCheckoutSessionEventData(BaseModel):
     """Event data for the checkout session completed event."""
 
-    object: StripeBaseEvent  # Here we nest the base event with 'object' containing the data
+    object: (
+        StripeBaseEvent  # Here we nest the base event with 'object' containing the data
+    )
