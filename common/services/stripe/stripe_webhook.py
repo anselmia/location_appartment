@@ -44,16 +44,35 @@ def _handle_event_type_validation_error(err: ValidationError):
     """
     event_type_error = False
 
+    # Log the error message to help debug
+    logger.error(f"❌ Validation error occurred: {err}")
+
     for error in err.errors():
-        error_loc = error["loc"]
+        # Log the details of each error
+        error_loc = error.get("loc")
+        error_msg = error.get("msg")
+        error_type = error.get("type")
+
+        logger.error(
+            f"Error Location: {error_loc}, Message: {error_msg}, Type: {error_type}"
+        )
+
+        # Check if the error is related to unimplemented event type
         if (
             error_loc[0] == "event"
             and error.get("ctx", {}).get("discriminator_key", {}) == "type"
         ):
             event_type_error = True
+            logger.info(
+                f"⚠️ Ignored validation error for unimplemented event type: {error_loc}"
+            )
             break
 
+    # If the error is not related to unimplemented event types, raise the error
     if event_type_error is False:
+        logger.error(
+            "❌ Validation error is not related to event type, raising exception."
+        )
         raise err
 
 
