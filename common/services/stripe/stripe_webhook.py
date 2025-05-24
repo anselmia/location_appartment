@@ -77,12 +77,32 @@ def _handle_event_type_validation_error(err: ValidationError):
         raise err
 
 
+def log_event_data(event_data, parent_key=""):
+    # Check if the event_data is a dictionary or a list
+    if isinstance(event_data, dict):
+        for key, value in event_data.items():
+            # Create a new key path for nested keys
+            new_key = f"{parent_key}.{key}" if parent_key else key
+            # Recursively log nested data
+            log_event_data(value, new_key)
+    elif isinstance(event_data, list):
+        for index, item in enumerate(event_data):
+            # Handle list by indexing
+            new_key = f"{parent_key}[{index}]"
+            log_event_data(item, new_key)
+    else:
+        # If it's a leaf node (not a list or dict), log the value
+        logger.info(f"{parent_key}: {value}")
+
+
 def handle_webhook_event(event):
     """Perform actions given Stripe Webhook event data."""
 
     try:
         logger.info(f"📩 Handling Stripe event type: {event['type']}")
-        logger.info(event)
+        # Assuming `event['data']` is the part you want to log
+        log_event_data(event)
+
         e = StripeEvent(event=event)
     except ValidationError as err:
         logger.error(f"❌ Error parsing event: {err}")
