@@ -119,9 +119,12 @@ def create_stripe_customer_if_not_exists(user):
     return user.stripe_customer_id
 
 
-def refund_payment(payment_intent_id, amount_cents=None):
+def refund_payment(reservation, amount_cents=None):
     try:
-        params = {"payment_intent": payment_intent_id}
+        params = {
+            "payment_intent": reservation.stripe_payment_intent_id,
+            "metadata": {"reservation_id": reservation.id},
+        }
         if amount_cents is not None:
             params["amount"] = amount_cents
 
@@ -192,9 +195,13 @@ def handle_payment_intent_succeeded(data):
                 reservation = Reservation.objects.get(pk=reservation_id)
                 reservation.caution_charged = True
                 reservation.amount_charged += amount
-                reservation.stripe_deposit_payment_intent_id = payment_intent_id  # if you store it
+                reservation.stripe_deposit_payment_intent_id = (
+                    payment_intent_id  # if you store it
+                )
                 reservation.save()
-                logger.info(f"🏠 Confirmation de charge sur Caution enregistrée pour réservation {reservation.pk}, montant: {amount:.2f}")
+                logger.info(
+                    f"🏠 Confirmation de charge sur Caution enregistrée pour réservation {reservation.pk}, montant: {amount:.2f}"
+                )
             except Reservation.DoesNotExist:
                 logger.warning(f"⚠️ Réservation introuvable pour ID: {reservation_id}")
         else:

@@ -8,6 +8,7 @@ from django.core.files.base import ContentFile
 from PIL import Image
 from datetime import timedelta
 from django.utils import timezone
+from decimal import Decimal, ROUND_HALF_UP
 
 
 class City(models.Model):
@@ -56,7 +57,7 @@ class Equipment(models.Model):
 class Logement(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)
     ville = models.ForeignKey(
         City, related_name="city", on_delete=models.SET_NULL, null=True, blank=True
@@ -86,7 +87,7 @@ class Logement(models.Model):
     fee_per_extra_traveler = models.DecimalField(
         max_digits=6, decimal_places=2, default=0
     )
-    cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=4)
+    cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=49)
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
@@ -122,6 +123,8 @@ class Logement(models.Model):
     equipment = models.ManyToManyField(Equipment, blank=True, related_name="logements")
 
     map_link = models.URLField(blank=True, null=True, max_length=1000)
+
+    refund_charge = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)
 
     def __str__(self):
         return self.name
@@ -350,17 +353,17 @@ class Reservation(models.Model):
     )
     guest = models.IntegerField()
     date_reservation = models.DateTimeField(default=timezone.now)
-    price = models.FloatField()
-    tax = models.FloatField(default=0)
+    price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_saved_payment_method_id = models.CharField(
         max_length=255, null=True, blank=True
     )
     refunded = models.BooleanField(default=False)
-    refund_amount = models.FloatField(default=0)
+    refund_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     stripe_refund_id = models.CharField(max_length=100, blank=True, null=True)
     caution_charged = models.BooleanField(default=False)
-    amount_charged = models.FloatField(default=0)
+    amount_charged = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     stripe_deposit_payment_intent_id = models.CharField(
         max_length=100, blank=True, null=True
     )
@@ -372,8 +375,35 @@ class Reservation(models.Model):
     def can_cancel(self):
         if self.statut != "confirmee":
             return False
+        return True
+
+    @property
+    def refundable(self):
+        if self.statut != "confirmee":
+            return False
+        if self.refunded:
+            return False
         cancel_limit = self.start - timedelta(days=self.logement.cancelation_period)
         return timezone.now().date() < cancel_limit
+
+    @property
+    def refundable_amount(self):
+        # Calculate the refundable amount
+        __refundable_amount = max(
+            self.price
+            - (
+                self.price * (self.logement.refund_charge / Decimal("100"))
+                - self.refund_amount
+            ),
+            Decimal("0"),  # Ensure we return 0 if the result is negative
+        )
+
+        # Round the result to 2 decimal places
+        __refundable_amount = __refundable_amount.quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+
+        return __refundable_amount
 
     @property
     def ended(self):
@@ -390,9 +420,14 @@ class Reservation(models.Model):
 
     @property
     def chargeable_deposit(self):
-        caution = self.logement.caution or 0
-        charged = self.amount_charged or 0
-        return max(0, caution - charged)
+        caution = Decimal(
+            self.logement.caution or 0
+        )  # Ensure it is treated as a Decimal
+        charged = Decimal(self.amount_charged or 0)  # Ensure it is treated as a Decimal
+        result = max(Decimal("0"), caution - charged)
+
+        # Round the result to 2 decimal places
+        return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 class airbnb_booking(models.Model):

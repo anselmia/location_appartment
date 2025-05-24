@@ -115,6 +115,9 @@
                         <dd class="col-sm-7">{{ reservation.stripe_refund_id|default:"—" }}</dd>
                         
                         {% if not reservation.refunded %}
+                            <dt class="col-sm-5">Montant Remboursable</dt>
+                            <dd class="col-sm-7">{{ reservation.refundable_amount|floatformat:2|default:"—" }} €</dd>
+
                             <!-- Inline form for deposit charge -->
                             <dt class="col-sm-5 align-self-center">Remboursement total</dt>
                             <dd class="col-sm-7">
@@ -132,8 +135,8 @@
                                     onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
                                     class="d-flex align-items-center">
                                     {% csrf_token %}
-                                    <input type="number" name="refund_amount" class="form-control" min="0" max="{{ reservation.price }}"
-                                        step="0.1" placeholder="Montant (€)" required style="max-width: 200px;">
+                                    <input type="number" name="refund_amount" class="form-control" min="0"  max="{{ reservation.refundable_amount|stringformat:'f' }}" 
+                                        step="0.01" placeholder="Montant (€)" required style="max-width: 200px;">
                                     <button type="submit" class="btn btn-outline-warning">Rembourser</button>
                                 </form>
                             </dd>
@@ -175,7 +178,7 @@
                                 {% csrf_token %}
                                 <input type="number" name="deposit_amount"
                                     class="form-control form-control-sm me-2"
-                                    min="0" max="{{ reservation.chargeable_deposit }}" step="0.1" placeholder="Montant (€)"
+                                    min="0" max="{{ reservation.chargeable_deposit }}" step="0.01" placeholder="Montant (€)"
                                     required style="max-width: 120px;">
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Charger</button>
                             </form>

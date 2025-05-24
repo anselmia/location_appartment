@@ -356,7 +356,7 @@ def cancel_and_refund_reservation(reservation):
 
     if reservation.stripe_payment_intent_id:
         try:
-            refund_payment(reservation.stripe_payment_intent_id)
+            refund_payment(reservation)
             return ("✅ Réservation annulée et remboursée avec succès.", None)
         except Exception:
             send_mail_on_refund_result(reservation, success=False, error_message=str(e))

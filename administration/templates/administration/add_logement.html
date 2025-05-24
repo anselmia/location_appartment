@@ -161,6 +161,13 @@
                         </div>
                     </div>
                     <div class="form-field with-symbol">
+                        <label for="{{ form.refund_charge.id_for_label }}">{{ form.refund_charge.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.refund_charge|add_class:"form-input" }}
+                            <span>%</span>
+                        </div>
+                    </div>
+                    <div class="form-field with-symbol">
                         <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
                         <div class="input-symbol">
                             {{ form.tax|add_class:"form-input" }}

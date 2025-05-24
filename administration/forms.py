@@ -41,6 +41,7 @@ class LogementForm(forms.ModelForm):
             "caution",
             "beds",
             "map_link",
+            "refund_charge",
         ]
         labels = {
             "name": "Nom du logement",
@@ -74,6 +75,7 @@ class LogementForm(forms.ModelForm):
             "booking_calendar_link": "Calendrier Booking",
             "caution": "Dépôt de garantie (€)",
             "map_link": "Lien Google Map",
+            "refund_charge": "Charges de remboursement (%)",
         }
         help_texts = {
             "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",
@@ -122,6 +124,8 @@ class LogementForm(forms.ModelForm):
         # Tax field step should be more precise (0.1%)
         if "tax" in self.fields:
             self.fields["tax"].widget.attrs["step"] = "0.1"
+        if "refund_charge" in self.fields:
+            self.fields["refund_charge"].widget.attrs["step"] = "0.1"
 
     def clean(self):
         cleaned_data = super().clean()
