@@ -29,6 +29,7 @@ def _make_webhook_event_from_request(request: Request):
     :param event: event from Stripe Webhook, defaults to None. Used for test.
     """
 
+    logger.info(request.body)
     return stripe.Webhook.construct_event(
         payload=request.body,
         sig_header=request.META["HTTP_STRIPE_SIGNATURE"],
