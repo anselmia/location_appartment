@@ -204,7 +204,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
             if not isinstance(reservation.refund_amount, Decimal):
                 reservation.refund_amount = Decimal(reservation.refund_amount)
 
-            reservation.refund_amount += refunded_amount
+            reservation.refund_amount += refunded_amount_decimal
             reservation.stripe_refund_id = refund_id
             reservation.save()
 
