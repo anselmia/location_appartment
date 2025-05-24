@@ -181,20 +181,20 @@ def refund_payment(reservation, amount_cents=None):
 
 
 def handle_charge_refunded(data: StripeChargeEventData):
-    reservation_id = data.metadata.get("reservation_id")
-    if not reservation_id:
-        logger.warning("⚠️ No reservation_id found in the refund event metadata.")
-        return
-
-    logger.info(f"🔔 Handling charge.refunded for reservation {reservation_id}")
-
     try:
+        reservation_id = data.object.metadata.get("reservation_id")
+        if not reservation_id:
+            logger.warning("⚠️ No reservation_id found in the refund event metadata.")
+            return
+
+        logger.info(f"🔔 Handling charge.refunded for reservation {reservation_id}")
+
         reservation = Reservation.objects.get(id=reservation_id)
 
-        amount = data.amount
+        amount = data.object.amount_refunded
         if amount:
             refunded_amount = amount / 100  # Convert to euros
-            refund_id = data.id
+            refund_id = data.object.id
 
             reservation.refunded = True
             reservation.refund_amount += refunded_amount
@@ -202,7 +202,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
             reservation.save()
 
             currency = (
-                data.currency or "eur"
+                data.object.currency or "eur"
             )  # Default to "eur" if no currency provided
             logger.info(
                 f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency.upper()}"

@@ -22,9 +22,7 @@ class StripeCharge(BaseModel):
     customer: Optional[str]  # Customer ID associated with the charge
     metadata: Optional[Dict[str, str]]  # Metadata associated with the charge
     description: Optional[str]  # Description of the charge
-    payment_method: Optional[
-        PaymentMethodDetails
-    ]  # Payment method details used for the charge
+    payment_method: Optional[str]  # Payment method details used for the charge
     payment_method_details: Optional[
         PaymentMethodDetails
     ]  # Payment method details for the charge
