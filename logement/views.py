@@ -36,6 +36,7 @@ from logement.services.payment_service import (
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
 from collections import defaultdict
+from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
 
 
 logger = logging.getLogger(__name__)
@@ -371,54 +372,8 @@ def export_ical(request):
 
 @csrf_exempt
 def stripe_webhook(request):
-    payload = request.body
-    received_sig = request.headers.get("Stripe-Signature", None)
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-
-    try:
-        event = stripe.Webhook.construct_event(payload, received_sig, endpoint_secret)
-    except Exception as e:
-        logger.error(f"❌ Stripe webhook signature error: {e}")
-        return HttpResponse(status=400)
-
-    try:
-        event_type = event["type"]
-        data = event.get("data", {}).get("object", {})  # Using .get() to avoid KeyError
-
-        if not data:
-            logger.warning(f"⚠️ No data object found in event: {event_type}")
-        else:
-            logger.info(f"📩 Event Type: {event_type}")
-            sanitized_data = mask_sensitive_data(data)  # Optional: Mask sensitive info
-            logger.info(f"Event Data: {json.dumps(sanitized_data, indent=2)}")
-
-        if event_type == "checkout.session.completed":
-            handle_checkout_session_completed(data)
-        elif event_type == "charge.refunded":
-            handle_charge_refunded(data)
-        elif event_type == "payment_intent.payment_failed":
-            handle_payment_failed(data)
-        elif event_type == "payment_intent.succeeded":
-            handle_payment_intent_succeeded(data)
-        else:
-            logger.info(f"ℹ️ Unhandled Stripe event type: {event_type}")
-
-    except Exception as e:
-        logger.exception(f"❌ Error while handling event {event_type}: {e}")
-        return HttpResponse(status=500)
-
+    handle_stripe_webhook_request(request)
     return HttpResponse(status=200)
-
-
-def mask_sensitive_data(data):
-    # Example: Mask sensitive fields like credit card details or user info
-    # Modify this function as necessary to mask/remove sensitive data.
-    if "payment_method_details" in data:
-        data["payment_method_details"] = "***MASKED***"
-    if "customer" in data:
-        data["customer"] = "***MASKED***"
-    # Add other fields as needed
-    return data
 
 
 def logement_search(request):
