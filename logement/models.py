@@ -379,7 +379,7 @@ class Reservation(models.Model):
 
     @property
     def refundable(self):
-        if self.statut != "confirmee":
+        if self.refundable_amount == 0:
             return False
         if self.refunded:
             return False

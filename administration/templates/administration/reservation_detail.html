@@ -128,7 +128,7 @@
                                     <button type="submit" class="btn btn-warning">Remboursement complet</button>
                                 </form>
                             </dd>
-
+                            
                             <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
                             <dd class="col-sm-7">
                                 <form method="post" action="{% url 'administration:refund_partially_reservation' reservation.pk %}"
@@ -140,6 +140,9 @@
                                     <button type="submit" class="btn btn-outline-warning">Rembourser</button>
                                 </form>
                             </dd>
+                        {% else %}
+                            <dt class="col-sm-5">Montant Remboursable</dt>
+                            <dd class="col-sm-7">{{ reservation.refund_amount|floatformat:2|default:"—" }} €</dd>
                         {% endif %}
                     </dl>
                 </div>
