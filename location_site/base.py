@@ -42,6 +42,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "administration.middleware.TrafficLoggerMiddleware",
+    "administration.middleware.UpdateUserActivityMiddleware",
+    "administration.middleware.SessionTimeoutMiddleware",
 ]
 
 ROOT_URLCONF = "location_site.urls"
@@ -134,3 +136,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@localhost"
 # Admins who get error emails or notifications via mail_admins
 ADMINS = [("Dev Admin", "admin@example.com")]
+
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Close session when browser is closed

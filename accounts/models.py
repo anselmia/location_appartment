@@ -27,6 +27,9 @@ class CustomUser(AbstractUser):
         null=True,
         help_text="Identifiant client Stripe associé pour paiements et impressions de carte.",
     )
+    last_activity = models.DateTimeField(
+        null=True, blank=True
+    )  # Track the last activity time
 
     def __str__(self):
         return self.username

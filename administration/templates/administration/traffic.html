@@ -3,11 +3,22 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-
 {% block content %}
 <div class="traffic-dashboard">
     <div class="container">
-        <h2>Statistiques de trafic</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Statistiques de trafic</h2>
+
+            <form id="periodForm" method="post" class="d-flex align-items-center ml-auto">
+                {% csrf_token %}
+                <label for="period" class="mr-2">Afficher par :</label>
+                <select name="period" id="period" onchange="submitPeriodForm()" class="form-select">
+                    <option value="day" {% if selected_period == "day" %}selected{% endif %}>Jour</option>
+                    <option value="week" {% if selected_period == "week" %}selected{% endif %}>Semaine</option>
+                    <option value="month" {% if selected_period == "month" %}selected{% endif %}>Mois</option>
+                </select>
+            </form>
+        </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
@@ -21,14 +32,16 @@
                 </div>
             </div>
 
-            <form method="get">
-                <label for="period">Afficher par :</label>
-                <select name="period" id="period" onchange="this.form.submit()" class="form-select">
-                    <option value="day" {% if selected_period == "day" %}selected{% endif %}>Jour</option>
-                    <option value="week" {% if selected_period == "week" %}selected{% endif %}>Semaine</option>
-                    <option value="month" {% if selected_period == "month" %}selected{% endif %}>Mois</option>
-                </select>
-            </form>
+             <div class="d-flex align-items-center ml-auto">
+                <div class="stat-box mr-3">
+                    <strong>{{ online_visitors }}</strong>
+                    <span>Visiteurs en ligne</span>
+                </div>
+                <div class="stat-box">
+                    <strong>{{ online_users }}</strong>
+                    <span>Utilisateurs connectés</span>
+                </div>
+            </div>
         </div>
 
         <canvas id="trafficChart" height="100"></canvas>
@@ -49,7 +62,7 @@
                 <tbody>
                     {% for log in recent_logs %}
                     <tr>
-                        <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ log.timestamp }}</td> 
                         <td>{{ log.ip_address }}</td>
                         <td>{{ log.user_agent|truncatechars:40 }}</td>
                         <td>{{ log.path }}</td>
@@ -80,10 +93,9 @@
 
 {% block extra_js %}
 <script>
-    const labels = {{ labels|safe }};  // pas de guillemets autour
+    const labels = {{ labels|safe }};  
     const data = {{ data|safe }};
     const selectedPeriod = "{{ selected_period }}";
-
 </script>
 
 <script>const csrfToken = "{{ csrf_token }}";</script>

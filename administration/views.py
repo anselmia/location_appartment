@@ -47,6 +47,15 @@ from logement.services.reservation_service import calculate_price
 from common.views import is_admin
 from logement.services.payment_service import refund_payment, charge_payment
 from decimal import Decimal, InvalidOperation
+from administration.services.traffic import (
+    get_online_users,
+    get_connected_users,
+    get_online_visitors,
+    get_traffic_data,
+    get_visits_count,
+    get_unique_visitors_count,
+    get_recent_logs,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -247,47 +256,60 @@ def update_equipment(request, logement_id):
 @login_required
 @user_passes_test(is_admin)
 def traffic_dashboard(request):
-    period = request.GET.get("period", "day")  # day, week, month
-    now = datetime.now()
-    since = now - timedelta(days=30)
+    # Get the statistics for online users and online visitors
+    online_visitors = get_online_visitors()
+    online_users = get_online_users()
 
-    if period == "week":
-        truncate = TruncWeek("timestamp")
-    elif period == "month":
-        truncate = TruncMonth("timestamp")
+    # Handle the POST request for the selected period
+    if request.method == "POST":
+        period = request.POST.get("period", "day")  # Default to "day" if not provided
+
+        # Get the traffic data (labels and data for the chart)
+        labels, data = get_traffic_data(period)
+
+        # Get other statistics
+        total_visits = get_visits_count(since_days=30)
+        unique_visitors = get_unique_visitors_count(since_days=30)
+
+        # Return JSON response with labels, data, and other stats
+        return JsonResponse(
+            {
+                "labels": labels,
+                "data": data,
+                "total_visits": total_visits,
+                "unique_visitors": unique_visitors,
+                "online_visitors": online_visitors,
+                "online_users": online_users,
+            }
+        )
+
+    # Handle the initial page load (GET request)
     else:
-        truncate = TruncDay("timestamp")
+        # Get the traffic data for the initial page load
+        period = request.GET.get("period", "day")  # Default to "day"
+        labels, data = get_traffic_data(period)
 
-    visits_qs = (
-        SiteVisit.objects.filter(timestamp__gte=since)
-        .annotate(period=truncate)
-        .values("period")
-        .annotate(count=Count("id"))
-        .order_by("period")
-    )
+        # Get other statistics
+        total_visits = get_visits_count(since_days=30)
+        unique_visitors = get_unique_visitors_count(since_days=30)
 
-    labels = [v["period"].isoformat() for v in visits_qs]  # or strftime("%Y-%m-%d")
-    data = [v["count"] for v in visits_qs]
+        # Get recent logs and format the timestamp to a serializable string
+        recent_logs = get_recent_logs(limit=20)
+        for log in recent_logs:
+            log.timestamp = log.timestamp.isoformat()  # Convert datetime to string
 
-    total_visits = SiteVisit.objects.filter(timestamp__gte=since).count()
-    unique_visitors = (
-        SiteVisit.objects.filter(timestamp__gte=since)
-        .values("ip_address")
-        .distinct()
-        .count()
-    )
-
-    recent_logs = SiteVisit.objects.order_by("-timestamp")[:20]
-
-    context = {
-        "labels": json.dumps(labels),
-        "data": json.dumps(data),
-        "total_visits": total_visits,
-        "unique_visitors": unique_visitors,
-        "recent_logs": recent_logs,
-        "selected_period": period,
-    }
-    return render(request, "administration/traffic.html", context)
+        # Render the page with the initial data
+        context = {
+            "online_visitors": online_visitors,
+            "online_users": online_users,
+            "labels": json.dumps(labels),
+            "data": json.dumps(data),
+            "total_visits": total_visits,
+            "unique_visitors": unique_visitors,
+            "recent_logs": recent_logs,
+            "selected_period": period,
+        }
+        return render(request, "administration/traffic.html", context)
 
 
 @login_required
