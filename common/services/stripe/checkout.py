@@ -14,7 +14,7 @@ class StripeCheckoutSessionLineItem(BaseModel):
     currency: StripeCurrency
 
 
-class StripeCheckoutSessionData(BaseModel):
+class StripeCheckoutSessionEventData(BaseModel):
     """Contains the session object data in the webhook event."""
 
     id: str
@@ -41,36 +41,3 @@ class StripeCheckoutSessionData(BaseModel):
     automatic_tax: Optional[Dict[str, bool]] = None
     expires_at: Optional[int] = None
     subscription: Optional[str] = None
-
-    # Making missing fields optional
-    data: Optional[Dict[str, str]] = None
-    type: Optional[str] = None
-    request: Optional[Dict[str, str]] = None
-    api_version: Optional[str] = None
-
-
-class StripeEventRequest(BaseModel):
-    """Request field in the Stripe event, such as 'idempotency_key'."""
-
-    id: Optional[str] = None  # It might be null
-    idempotency_key: Optional[str] = None
-
-
-class StripeBaseEvent(BaseModel):
-    """The base event object for Stripe webhook events."""
-
-    id: str
-    api_version: str
-    request: Optional[StripeEventRequest]  # Make request optional
-    type: str
-    data: (
-        StripeCheckoutSessionData  # Adjust this model to reflect actual data structure
-    )
-
-
-class StripeCheckoutSessionEventData(BaseModel):
-    """Event data for the checkout session completed event."""
-
-    object: (
-        StripeBaseEvent  # Here we nest the base event with 'object' containing the data
-    )
