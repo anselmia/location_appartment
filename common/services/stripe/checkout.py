@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from .currency import StripeCurrency  # Assuming StripeCurrency is already defined
 from .price import StripePrice  # Assuming StripePrice is already defined
 
@@ -18,23 +18,23 @@ class StripeCheckoutSessionEventData(BaseModel):
     """Event data for the checkout session completed event."""
 
     session_id: str
-    customer_email: str
+    customer_email: Optional[str]  # Optional since it might not be present in all cases
     amount_total: int  # In cents
-    payment_status: str  # The payment status (e.g., 'paid', 'unpaid')
+    payment_status: Optional[str]  # Optional payment status
     line_items: Optional[
         List[StripeCheckoutSessionLineItem]
     ]  # Optional if line items are present
     metadata: Optional[Dict[str, str]]  # Optional metadata tied to the session
-    success_url: str
-    cancel_url: str
-    client_reference_id: Optional[str]  # An optional client reference ID
+    success_url: Optional[str]  # Optional success URL
+    cancel_url: Optional[str]  # Optional cancel URL
+    client_reference_id: Optional[str]  # Optional client reference ID
     created: int  # The timestamp of when the session was created
     currency: StripeCurrency  # The currency for the session (e.g., 'usd', 'eur')
     mode: str  # The mode of the session ('payment', 'subscription', 'setup')
     status: str  # Status of the session ('open', 'complete', etc.)
     payment_intent: Optional[str]  # Payment intent ID (if applicable)
-    payment_method_types: List[
-        str
+    payment_method_types: Optional[
+        List[str]
     ]  # List of payment method types allowed for the session (e.g., ['card'])
     shipping_address_collection: Optional[
         Dict[str, bool]
@@ -52,11 +52,9 @@ class StripeCheckoutSessionEventData(BaseModel):
     subscription: Optional[
         str
     ]  # The subscription ID if the session is tied to a subscription
-    metadata: Optional[Dict[str, str]]  # Custom metadata attached to the session
-    customer: str  # Stripe customer ID
+    customer: Optional[str]  # Stripe customer ID, optional
     locale: Optional[str]  # The locale for the checkout session (e.g., 'en', 'fr')
     shipping: Optional[Dict[str, str]]  # Shipping details, if collected
-    mode: str  # Type of checkout session (e.g., 'payment', 'subscription')
 
 
 class StripeCheckoutSession(BaseModel):
