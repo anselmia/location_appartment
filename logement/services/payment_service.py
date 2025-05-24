@@ -279,14 +279,14 @@ def handle_payment_failed(data: StripePaymentIntentEventData):
 
 
 def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
-    # Extracting reservation_id and payment_intent from the structured event data
-    reservation_id = data.metadata.get("reservation_id")
-    payment_intent_id = data.payment_intent
     logger.info(
         f"🔔 Handling checkout.session.completed for reservation {reservation_id}"
     )
-
     try:
+        # Extracting reservation_id and payment_intent from the structured event data
+        reservation_id = data.object.metadata.get("reservation_id")
+        payment_intent_id = data.object.payment_intent
+
         # Attempting to retrieve the reservation from the database
         reservation = Reservation.objects.get(id=reservation_id)
 
