@@ -64,8 +64,8 @@ TEMPLATES = [
     },
 ]
 
-TEMPLATES[0]['OPTIONS']['context_processors'] += [
-    'common.context_processors.entreprise_info',
+TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+    "common.context_processors.entreprise_info",
 ]
 
 WSGI_APPLICATION = "location_site.wsgi.application"
@@ -137,5 +137,8 @@ DEFAULT_FROM_EMAIL = "noreply@localhost"
 # Admins who get error emails or notifications via mail_admins
 ADMINS = [("Dev Admin", "admin@example.com")]
 
+SESSION_SAVE_EVERY_REQUEST = (
+    True  # Save the session on every request to reset the timeout period
+)
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Close session when browser is closed
