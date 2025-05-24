@@ -43,7 +43,7 @@ class StripeCheckoutSessionEventobject(BaseModel):
     subscription: Optional[str] = None
 
 
-class StripeCheckoutSessionEventdata(BaseModel):
+class StripeCheckoutSessionEventData(BaseModel):
     """Contains the session object data in the webhook event."""
 
     object: StripeCheckoutSessionEventobject
