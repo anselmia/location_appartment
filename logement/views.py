@@ -386,6 +386,7 @@ def stripe_webhook(request):
         data = event["data"]["object"]
 
         logger.info(f"📩 Received Stripe event: {event_type}")
+        logger.info(data)
 
         if event_type == "checkout.session.completed":
             handle_checkout_session_completed(data)
