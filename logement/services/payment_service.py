@@ -135,17 +135,18 @@ def create_stripe_customer_if_not_exists(user):
             user.save()
             customer_id = customer.id
             logger.info(f"Stripe customer created for user {user.id}.")
+
+            if not customer_id:
+                logger.error(
+                    f"Failed to create or retrieve Stripe customer for user {user.id} {user.username}"
+                )
+                raise Exception("Failed to create or retrieve Stripe customer.")
+
         except Exception as e:
             logger.exception(
                 f"Failed to create Stripe customer for user {user.id}: {e}"
             )
             raise
-
-    if not customer_id:
-        logger.error(
-            f"Failed to create or retrieve Stripe customer for user {user.id} {user.username}"
-        )
-        raise Exception("Failed to create or retrieve Stripe customer.")
 
     return user.stripe_customer_id
 
