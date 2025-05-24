@@ -35,4 +35,3 @@ class StripeChargeEventData(BaseModel):
     """Event data for a Stripe Charge object"""
 
     object: StripeCharge  # The charge object
-    previous_attributes: Optional[StripeCharge]  # Optionally track previous attributes
