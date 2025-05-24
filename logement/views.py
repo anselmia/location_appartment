@@ -385,6 +385,9 @@ def stripe_webhook(request):
         event_type = event["type"]
         data = event["data"]["object"]
 
+        # Log the event object to verify the data
+        logger.info(f"📩 Received Stripe event: {json.dumps(event, indent=2)}")
+
         logger.info(f"📩 Received Stripe event: {event_type}")
         sanitized_data = mask_sensitive_data(data)  # Optional: Mask sensitive info
         logger.info(f"Event Data: {json.dumps(sanitized_data, indent=2)}")
