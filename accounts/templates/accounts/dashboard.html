@@ -81,7 +81,9 @@
                                         {% elif r.ongoing %}
                                             <span class="badge rounded-pill bg-warning text-dark">En cours</span>
                                         {% elif r.coming %}
-                                            <span class="badge rounded-pill bg-info text-dark">Prochaine</span>
+                                            <span class="badge rounded-pill bg-info text-dark">A venir</span>
+                                        {% elif r.statut == "annulee" %}
+                                            <span class="badge rounded-pill bg-danger text-dark">Annulée</span>
                                         {% endif %}
                                     
                                         <!-- Refund or refundable badge -->

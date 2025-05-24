@@ -407,16 +407,18 @@ class Reservation(models.Model):
 
     @property
     def ended(self):
-        return timezone.now().date() > self.end
+        return self.statut == "terminee" or (
+            self.statut == "confirmee" and timezone.now().date() > self.end
+        )
 
     @property
     def ongoing(self):
         today = timezone.now().date()
-        return self.start <= today <= self.end
+        return self.statut == "confirmee" and (self.start <= today <= self.end)
 
     @property
     def coming(self):
-        return timezone.now().date() < self.start
+        return self.statut == "confirmee" and (timezone.now().date() < self.start)
 
     @property
     def chargeable_deposit(self):
