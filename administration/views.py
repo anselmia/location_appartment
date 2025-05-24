@@ -885,7 +885,7 @@ def refund_reservation(request, pk):
             total_to_refund = reservation.price - refund_fee
             amount_in_cents = int(total_to_refund * 100)
 
-            refund = refund_payment(reservation.payment_intent_id, amount_in_cents)
+            refund = refund_payment(reservation.stripe_payment_intent_id, amount_in_cents)
 
             messages.success(
                 request,
@@ -922,7 +922,7 @@ def refund_partially_reservation(request, pk):
             return redirect("administration:reservation_detail", pk=pk)
 
         amount_in_cents = int(refund_amount * 100)
-        refund = refund_payment(reservation.payment_intent_id, amount_in_cents)
+        refund = refund_payment(reservation.stripe_payment_intent_id, amount_in_cents)
 
         # Optionally: store this on the reservation
         reservation.refunded = True
