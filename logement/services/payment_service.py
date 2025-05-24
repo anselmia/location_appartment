@@ -11,6 +11,7 @@ from common.services.stripe.stripe_event import (
     StripeChargeEventData,
     StripePaymentIntentEventData,
 )
+from decimal import Decimal
 
 
 logger = logging.getLogger(__name__)
@@ -197,6 +198,12 @@ def handle_charge_refunded(data: StripeChargeEventData):
             refund_id = data.object.id
 
             reservation.refunded = True
+            refunded_amount_decimal = Decimal(refunded_amount)
+
+            # Ensure reservation.refund_amount is a Decimal (if it isn't already)
+            if not isinstance(reservation.refund_amount, Decimal):
+                reservation.refund_amount = Decimal(reservation.refund_amount)
+
             reservation.refund_amount += refunded_amount
             reservation.stripe_refund_id = refund_id
             reservation.save()
@@ -356,11 +363,16 @@ def charge_payment(
                 "Customer ID is required to charge a saved payment method."
             )
 
+        # Attach PaymentMethod to the Customer
+        payment_method = stripe.PaymentMethod.attach(
+            saved_payment_method_id, customer=customer_id
+        )
+
         intent = stripe.PaymentIntent.create(
             amount=amount_cents,
             currency=currency,
             customer=customer_id,
-            payment_method=saved_payment_method_id,
+            payment_method=payment_method.id,
             confirm=True,
             off_session=True,
             description=f"Charge sur caution location {reservation.logement.name}",
