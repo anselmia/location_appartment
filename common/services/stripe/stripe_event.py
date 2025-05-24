@@ -12,6 +12,7 @@ class EventType(str, Enum):
 
     CHECKOUT_SESSION_COMPLETED = "checkout.session.completed"
     CHARGE_REFUNDED = "charge.refunded"
+    REFUND_UPDATED = "refund.updated"
     PAYMENT_INTENT_FAILED = "payment_intent.payment_failed"
     PAYMENT_INTENT_SUCCEEDED = "payment_intent.succeeded"
 
@@ -42,7 +43,7 @@ class StripeCheckoutEvent(StripeBaseEvent):
 
 class StripeChargeEvent(StripeBaseEvent):
     data: StripeChargeEventData
-    type: Literal[EventType.CHARGE_REFUNDED,]
+    type: Literal[EventType.CHARGE_REFUNDED, EventType.REFUND_UPDATED]
 
 
 class StripePaymentIntentEvent(StripeBaseEvent):

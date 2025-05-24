@@ -128,7 +128,7 @@ def handle_webhook_event(event):
         elif event_type == EventType.PAYMENT_INTENT_FAILED:
             handle_payment_failed(e.event.data)
 
-        elif event_type == EventType.CHARGE_REFUNDED:
+        elif event_type == EventType.REFUND_UPDATED:
             handle_charge_refunded(e.event.data)
 
         else:
