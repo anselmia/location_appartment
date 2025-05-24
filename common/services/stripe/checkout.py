@@ -31,27 +31,36 @@ class StripeCheckoutSessionData(BaseModel):
     payment_intent: Optional[str] = None  # Payment intent ID (if applicable)
     payment_method_types: List[str]  # Allowed payment method types (e.g., 'card')
     payment_status: str  # The payment status (e.g., 'paid', 'unpaid')
-    shipping_address_collection: Optional[Dict[str, bool]] = (
-        None  # Whether to collect shipping address
-    )
+    shipping_address_collection: Optional[Dict[str, bool]] = None  # Whether to collect shipping address
     status: str  # Status of the session (e.g., 'complete', 'open')
     success_url: str  # URL to redirect the user after successful checkout
-    total_details: Dict[
-        str, int
-    ]  # Breakdown of the total (e.g., shipping, taxes, discounts)
+    total_details: Dict[str, int]  # Breakdown of the total (e.g., shipping, taxes, discounts)
     mode: str  # Mode of the session (e.g., 'payment', 'subscription')
     shipping: Optional[Dict[str, str]] = None  # Shipping details if applicable
     discounts: Optional[List[Dict[str, str]]] = None  # Discounts applied to the session
-    automatic_tax: Optional[Dict[str, bool]] = (
-        None  # Whether tax is calculated automatically
-    )
+    automatic_tax: Optional[Dict[str, bool]] = None  # Whether tax is calculated automatically
     expires_at: Optional[int] = None  # The timestamp for when the session will expire
     subscription: Optional[str] = None  # Subscription ID (if applicable)
+
+
+class StripeEventRequest(BaseModel):
+    """Request field in the Stripe event, such as 'idempotency_key'."""
+
+    id: Optional[str] = None  # It might be null
+    idempotency_key: Optional[str] = None
+
+
+class StripeBaseEvent(BaseModel):
+    """The base event object for Stripe webhook events."""
+
+    id: str
+    api_version: str
+    request: StripeEventRequest  # Optional request data
+    type: str  # The event type (e.g., 'checkout.session.completed')
+    data: StripeCheckoutSessionData  # This holds the session data
 
 
 class StripeCheckoutSessionEventData(BaseModel):
     """Event data for the checkout session completed event."""
 
-    id: str
-    api_version: str
-    data: StripeCheckoutSessionData
+    object: StripeBaseEvent  # Here we nest the base event with 'object' containing the data
