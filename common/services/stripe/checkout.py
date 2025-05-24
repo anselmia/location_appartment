@@ -38,7 +38,6 @@ class StripeCheckoutSessionEventobject(BaseModel):
     mode: str
     shipping: Optional[Dict[str, str]] = None
     discounts: Optional[List[Dict[str, str]]] = None
-    automatic_tax: Optional[Dict[str, bool]] = None
     expires_at: Optional[int] = None
     subscription: Optional[str] = None
 
