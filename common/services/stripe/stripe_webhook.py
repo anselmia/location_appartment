@@ -113,22 +113,26 @@ def handle_webhook_event(event):
         _handle_event_type_validation_error(err)
         return
 
-    event_type = e.event.type
+    try:
+        event_type = e.event.type
 
-    # Debug logging to ensure we're passing the right data
-    logger.debug(f"Event data: {e.event.data}")
+        # Debug logging to ensure we're passing the right data
+        logger.debug(f"Event data: {e.event.data}")
 
-    if event_type == EventType.CHECKOUT_SESSION_COMPLETED:
-        handle_checkout_session_completed(e.event.data)
+        if event_type == EventType.CHECKOUT_SESSION_COMPLETED:
+            handle_checkout_session_completed(e.event.data)
 
-    elif event_type == EventType.PAYMENT_INTENT_SUCCEEDED:
-        handle_payment_intent_succeeded(e.event.data)
+        elif event_type == EventType.PAYMENT_INTENT_SUCCEEDED:
+            handle_payment_intent_succeeded(e.event.data)
 
-    elif event_type == EventType.PAYMENT_INTENT_FAILED:
-        handle_payment_failed(e.event.data)
+        elif event_type == EventType.PAYMENT_INTENT_FAILED:
+            handle_payment_failed(e.event.data)
 
-    elif event_type == EventType.CHARGE_REFUNDED:
-        handle_charge_refunded(e.event.data)
+        elif event_type == EventType.CHARGE_REFUNDED:
+            handle_charge_refunded(e.event.data)
 
-    else:
-        logger.warning(f"⚠️ Unsupported event type: {event_type}")
+        else:
+            logger.warning(f"⚠️ Unsupported event type: {event_type}")
+    except Exception as err:
+        logger.error(f"❌ Error parsing event: {err}")
+        return
