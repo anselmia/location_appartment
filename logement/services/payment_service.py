@@ -191,7 +191,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
 
         reservation = Reservation.objects.get(id=reservation_id)
 
-        amount = data.object.amount_refunded
+        amount = data.object.amount
         if amount:
             refunded_amount = amount / 100  # Convert to euros
             refund_id = data.object.id
