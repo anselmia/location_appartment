@@ -14,7 +14,7 @@ class StripeCheckoutSessionLineItem(BaseModel):
     currency: StripeCurrency
 
 
-class StripeCheckoutSessionEventData(BaseModel):
+class StripeCheckoutSessionEventobject(BaseModel):
     """Contains the session object data in the webhook event."""
 
     id: str
@@ -41,3 +41,9 @@ class StripeCheckoutSessionEventData(BaseModel):
     automatic_tax: Optional[Dict[str, bool]] = None
     expires_at: Optional[int] = None
     subscription: Optional[str] = None
+
+
+class StripeCheckoutSessionEventdata(BaseModel):
+    """Contains the session object data in the webhook event."""
+
+    object: StripeCheckoutSessionEventobject
