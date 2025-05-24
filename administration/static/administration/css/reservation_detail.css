@@ -1,61 +1,207 @@
-.card p {
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-    color: #333;
+.container {
+    background-color: #f9fafb;
+    padding: 2rem 1rem;
+    border-radius: 0.75rem;
+    max-width: 1200px;
+}
+
+h2 {
+    font-size: 2.1rem;
+    font-weight: 600;
+    color: #0d2f4e;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+dl.row {
+    margin-bottom: 0;
+}
+
+dl dt {
+    font-size: 0.95rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+dl dd {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.375rem;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background-color: #198754;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-info {
+    background-color: #0dcaf0;
+    color: #0a0a0a;
 }
 
 .btn {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-lg {
+    font-size: 1.1rem;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    color: white;
+}
+
+.btn-outline-warning {
+    border: 1px solid #ffc107;
+    color: #ffc107;
+    background-color: transparent;
+    margin-left: 1rem;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    color: #212529;
 }
 
 .btn-outline-danger {
     border-color: #dc3545;
     color: #dc3545;
+    background-color: transparent;
 }
+
 .btn-outline-danger:hover {
     background-color: #dc3545;
-    color: #fff;
+    color: white;
 }
 
-.btn-outline-warning {
-    border-color: #ffc107;
-    color: #ffc107;
-}
-.btn-outline-warning:hover {
-    background-color: #ffc107;
-    color: #000;
+.btn-outline-primary {
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+    margin-left: 1rem;
 }
 
-.alert {
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
 }
 
-.card dl dt {
-    font-weight: 600;
-    color: #555;
+.input-group input.form-control {
+    height: calc(2.75rem + 2px);
+    font-size: 1rem;
+    border-radius: 0.375rem 0 0 0.375rem;
 }
 
-.card dl dd {
-    margin-bottom: 0.75rem;
-    color: #333;
+.input-group .btn {
+    border-radius: 0 0.375rem 0.375rem 0;
+    white-space: nowrap;
 }
 
-.btn {
-    padding: 0.5rem 1.25rem;
-    font-weight: 500;
-    border-radius: 0.375rem;
+input[name="deposit_amount"] {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.reservation-action-block {
+    padding: 1.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    background-color: #fdfdfd;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 1.5rem;
+}
+
+.reservation-action-block h6 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {
+    dl dt,
+    dl dd {
+        font-size: 1rem;
+    }
+
     .card .row > div {
         flex: 0 0 100%;
         max-width: 100%;
     }
 
-    .btn {
+    .d-flex.flex-wrap {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-control {
         width: 100%;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .form-control,
+    .input-group .btn {
+        width: 100%;
+        border-radius: 0.375rem !important;
     }
 }

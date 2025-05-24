@@ -359,6 +359,11 @@ class Reservation(models.Model):
     refunded = models.BooleanField(default=False)
     refund_amount = models.FloatField(default=0)
     stripe_refund_id = models.CharField(max_length=100, blank=True, null=True)
+    caution_charged = models.BooleanField(default=False)
+    amount_charged = models.FloatField(default=0)
+    stripe_deposit_payment_intent_id = models.CharField(
+        max_length=100, blank=True, null=True
+    )
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"
@@ -382,6 +387,12 @@ class Reservation(models.Model):
     @property
     def coming(self):
         return timezone.now().date() < self.start
+
+    @property
+    def chargeable_deposit(self):
+        caution = self.logement.caution or 0
+        charged = self.amount_charged or 0
+        return max(0, caution - charged)
 
 
 class airbnb_booking(models.Model):

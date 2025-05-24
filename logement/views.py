@@ -30,6 +30,7 @@ from logement.services.payment_service import (
     create_stripe_checkout_session_with_deposit,
     handle_charge_refunded,
     handle_payment_failed,
+    handle_payment_intent_succeeded,
     handle_checkout_session_completed,
 )
 from administration.models import HomePageConfig
@@ -388,6 +389,8 @@ def stripe_webhook(request):
             handle_charge_refunded(data)
         elif event_type == "payment_intent.payment_failed":
             handle_payment_failed(data)
+        elif event_type == "payment_intent.succeeded":
+            handle_payment_intent_succeeded(data)
         else:
             logger.info(f"ℹ️ Unhandled Stripe event type: {event_type}")
 

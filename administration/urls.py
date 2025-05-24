@@ -70,6 +70,16 @@ urlpatterns = [
         name="refund_reservation",
     ),
     path(
+        "reservations/<int:pk>/refund-partially/",
+        views.refund_partially_reservation,
+        name="refund_partially_reservation",
+    ),
+    path(
+        "reservations/<int:pk>/charge-deposit/",
+        views.charge_deposit,
+        name="charge_deposit",
+    ),
+    path(
         "reservations/<int:logement_id>/",
         views.reservation_dashboard,
         name="reservation_dashboard_by_id",

@@ -45,7 +45,8 @@ from calendar import month_name
 from django.http import JsonResponse, HttpResponseBadRequest
 from logement.services.reservation_service import calculate_price
 from common.views import is_admin
-from logement.services.payment_service import refund_payment
+from logement.services.payment_service import refund_payment, charge_payment
+from decimal import Decimal, InvalidOperation
 
 
 logger = logging.getLogger(__name__)
@@ -895,5 +896,92 @@ def refund_reservation(request, pk):
             logger.exception("Stripe refund failed")
     else:
         messages.warning(request, "Remboursement non possible.")
+
+    return redirect("administration:reservation_detail", pk=pk)
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def refund_partially_reservation(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+
+    if reservation.refunded:
+        messages.warning(request, "Cette réservation a déjà été remboursée.")
+        return redirect("administration:reservation_detail", pk=pk)
+
+    try:
+        amount_str = request.POST.get("refund_amount")
+        refund_amount = Decimal(amount_str)
+
+        if refund_amount <= 0 or refund_amount > reservation.price:
+            messages.error(
+                request,
+                "Montant invalide. Il doit être supérieur à 0 et inférieur ou égal au montant total.",
+            )
+            return redirect("administration:reservation_detail", pk=pk)
+
+        amount_in_cents = int(refund_amount * 100)
+        refund = refund_payment(reservation.payment_intent_id, amount_in_cents)
+
+        # Optionally: store this on the reservation
+        reservation.refunded = True
+        reservation.refund_amount = refund_amount
+        reservation.save()
+
+        messages.success(
+            request,
+            f"Remboursement partiel de {refund_amount:.2f} € effectué avec succès.",
+        )
+
+    except (InvalidOperation, TypeError, ValueError):
+        messages.error(request, "Montant de remboursement invalide.")
+    except Exception as e:
+        messages.error(request, f"Erreur de remboursement Stripe : {e}")
+        logger.exception("Stripe refund failed")
+
+    return redirect("administration:reservation_detail", pk=pk)
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def charge_deposit(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+
+    try:
+        amount = Decimal(request.POST.get("deposit_amount"))
+
+        if amount <= 0:
+            messages.error(request, "Le montant doit être supérieur à 0.")
+            return redirect("administration:reservation_detail", pk=pk)
+
+        logement_caution = getattr(reservation.logement, "caution", None)
+        if logement_caution is not None and amount > logement_caution:
+            messages.error(
+                request,
+                f"Le montant de la caution ({amount:.2f} €) dépasse la limite autorisée pour ce logement ({logement_caution:.2f} €).",
+            )
+            return redirect("administration:reservation_detail", pk=pk)
+
+        amount_in_cents = int(amount * 100)
+
+        charge_result = charge_payment(
+            reservation.stripe_saved_payment_method_id,
+            amount_in_cents,
+            reservation.user.stripe_customer_id,
+            reservation,
+        )
+
+        if charge_result:
+            messages.success(request, f"Caution de {amount:.2f} € chargée avec succès.")
+        else:
+            messages.error(request, "Erreur lors du chargement de la caution.")
+
+    except (InvalidOperation, ValueError, TypeError):
+        messages.error(request, "Montant invalide.")
+    except Exception as e:
+        messages.error(request, f"Erreur lors du chargement Stripe : {e}")
+        logger.exception("Stripe deposit charge failed")
 
     return redirect("administration:reservation_detail", pk=pk)

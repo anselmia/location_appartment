@@ -20,9 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
-
-
 def register(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
@@ -74,9 +71,7 @@ def client_dashboard(request):
     reservations = Reservation.objects.filter(
         user=user, statut__in=["confirmee", "annulee"]
     ).order_by("-start")
-    formUser = CustomUserChangeForm(
-        name=user.name, last_name=user.last_name, email=user.email, phone=user.phone
-    )
+    formUser = CustomUserChangeForm(instance=user)
 
     return render(
         request,
@@ -176,7 +171,6 @@ def contact_view(request):
             form = ContactForm()
 
     return render(request, "accounts/contact.html", {"form": form})
-
 
 
 @login_required

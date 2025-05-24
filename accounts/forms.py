@@ -87,41 +87,15 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = CustomUser
-        fields = ("name", "phone", "last_name", "email")
+        fields = ("username", "name", "last_name", "email", "phone")
 
     def __init__(self, *args, **kwargs):
-        name = kwargs.pop("name", "")
-        last_name = kwargs.pop("last_name", "")
-        email = kwargs.pop("email", "")
-        phone = kwargs.pop("phone", "")
-
         super().__init__(*args, **kwargs)
 
-        # Initialize start and end date fields if values are provided
-        self.fields["name"].initial = name
-        self.fields["last_name"].initial = last_name
-        self.fields["email"].initial = email
-        self.fields["phone"].initial = phone
-
-    # Custom validation for email uniqueness during update
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        user = self.instance
-        if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
-            logger.warning(
-                f"Tentative d'enregistrement avec un email déjà utilisé : {email}"
-            )
-            raise ValidationError(
-                "Cet email est déjà utilisé par un autre utilisateur."
-            )
-        return email
-
-    # Ensure that the username cannot be changed (optional based on requirements)
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if username != self.instance.username:
-            raise ValidationError("Le nom d'utilisateur ne peut pas être modifié.")
-        return username
+        self.fields["username"].disabled = True
+        self.fields["name"].disabled = True
+        self.fields["last_name"].disabled = True
+        self.fields["email"].disabled = True
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")

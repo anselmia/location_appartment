@@ -173,8 +173,37 @@ def handle_charge_refunded(data):
         raise
 
 
+def handle_payment_intent_succeeded(data):
+    metadata = data.get("metadata", {})
+    payment_type = metadata.get("type")
+
+    if payment_type == "deposit":
+        payment_intent_id = data.get("id")
+        reservation_id = metadata.get("reservation_id")
+        amount = data.get("amount_received") / 100
+
+        logger.info(
+            f"✅ Dépôt reçu: {amount:.2f} € via PaymentIntent {payment_intent_id}"
+        )
+
+        # Optional: match to reservation and mark deposit
+        if reservation_id:
+            try:
+                reservation = Reservation.objects.get(pk=reservation_id)
+                reservation.caution_charged = True
+                reservation.amount_charged += amount
+                reservation.stripe_deposit_payment_intent_id = payment_intent_id  # if you store it
+                reservation.save()
+                logger.info(f"🏠 Confirmation de charge sur Caution enregistrée pour réservation {reservation.pk}, montant: {amount:.2f}")
+            except Reservation.DoesNotExist:
+                logger.warning(f"⚠️ Réservation introuvable pour ID: {reservation_id}")
+        else:
+            logger.warning("⚠️ Aucun reservation_id fourni dans les metadata.")
+
+
 def handle_payment_failed(data):
-    logger.warning(f"❌ Payment failed for intent {data['id']}.")
+    customer_id = data.get("customer")
+    logger.warning(f"⚠️ Paiement échoué pour client Stripe {customer_id}: {data}")
 
 
 def handle_checkout_session_completed(data):
@@ -235,4 +264,46 @@ def handle_checkout_session_completed(data):
         logger.exception(
             f"❌ Unexpected error handling checkout.session.completed: {e}"
         )
+        raise
+
+
+def charge_payment(
+    saved_payment_method_id,
+    amount_cents,
+    customer_id,
+    reservation,
+    currency="eur",
+):
+    try:
+        if not saved_payment_method_id:
+            raise ValueError("Missing saved payment method ID.")
+
+        if not customer_id:
+            raise ValueError(
+                "Customer ID is required to charge a saved payment method."
+            )
+
+        # Create a PaymentIntent
+        intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency=currency,
+            customer=customer_id,
+            payment_method=saved_payment_method_id,
+            confirm=True,  # Automatically confirm and attempt to capture
+            off_session=True,  # Required for charging without user interaction
+            description=f"Charge sur caution location {reservation.logement.name}",
+            metadata={"type": "deposit", "reservation_id": str(reservation.id)},
+        )
+        return intent
+
+    except stripe.error.CardError as e:
+        logger.error(f"Carte refusée : {e.user_message}")
+        raise
+
+    except stripe.error.StripeError as e:
+        logger.exception("Erreur Stripe inattendue : %s", str(e))
+        raise
+
+    except Exception as e:
+        logger.exception("Erreur interne lors du chargement du paiement : %s", str(e))
         raise

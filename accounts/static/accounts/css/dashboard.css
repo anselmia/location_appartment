@@ -1,108 +1,152 @@
+/* Root container */
 .client-dashboard {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f6f9;
-    padding: 30px 20px;
+    font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background-color: #f5f7fa;
+    padding: 40px 20px;
 }
 
+/* Section titles */
 .client-dashboard h2 {
-    color: #2b3d55;
-    font-size: 2rem;
-    margin-bottom: 20px;
-    text-align: center;
+    color: #1c2d41;
+    font-weight: 600;
+    font-size: 2.2rem;
 }
 
+/* Card styles */
 .client-dashboard .card {
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    margin-bottom: 30px;
-    background: white;
+    background: #ffffff;
+    border-radius: 1.25rem;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+    border: none;
 }
 
 .client-dashboard .card-header {
+    background-color: #1c2d41;
+    color: white;
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    padding: 15px 20px;
-    font-size: 1.2rem;
-    background: #2b3d55;
+    border-top-left-radius: 1.25rem;
+    border-top-right-radius: 1.25rem;
 }
 
+/* Card body spacing */
 .client-dashboard .card-body {
-    padding: 20px;
+    padding: 2rem 1.5rem;
 }
 
+/* Form elements */
+.client-dashboard .form-label {
+    font-weight: 500;
+    color: #1c2d41;
+    margin-bottom: 0.3rem;
+}
+
+.client-dashboard .form-control {
+    border-radius: 0.5rem;
+    border: 1px solid #ced4da;
+    box-shadow: none;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+}
+
+.client-dashboard .form-control:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 0.1rem rgba(74, 144, 226, 0.25);
+}
+
+/* Button styles */
 .client-dashboard .btn {
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
     transition: all 0.3s ease;
 }
 
-.client-dashboard .btn-outline-primary {
-    color: #2b3d55;
-    border: 1px solid #2b3d55;
+.client-dashboard .btn-primary {
+    background-color: #4a90e2;
+    border: none;
 }
 
-.client-dashboard .btn-outline-primary:hover {
-    background-color: #2b3d55;
-    color: white;
+.client-dashboard .btn-primary:hover {
+    background-color: #3978c5;
 }
 
-.client-dashboard .btn-danger {
+.client-dashboard .btn-outline-danger {
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    background-color: transparent;
+}
+
+.client-dashboard .btn-outline-danger:hover {
     background-color: #dc3545;
     color: white;
 }
 
-.client-dashboard .btn-danger:hover {
-    background-color: #c82333;
+.client-dashboard .btn-outline-danger:focus {
+    box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.3);
 }
 
+/* List group reservations */
 .client-dashboard .list-group-item {
-    padding: 12px 15px;
-    border: 1px solid #eee;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    background: #fcfcfc;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.client-dashboard .badge {
-    font-size: 0.85rem;
-    padding: 6px 10px;
-    border-radius: 12px;
-}
-
-.client-dashboard .badge.bg-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.client-dashboard .text-muted {
-    color: #888;
-    font-style: italic;
-    text-align: center;
+    background-color: #fdfdfd;
+    border: 1px solid #e4e6eb;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s ease;
 }
 
 .client-dashboard .list-group-item:hover {
     background-color: #f0f4ff;
-    transition: background-color 0.3s ease;
 }
 
+/* Badges */
+.client-dashboard .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 1rem;
+}
+
+.client-dashboard .badge.bg-secondary {
+    background-color: #6c757d;
+}
+
+.client-dashboard .badge.bg-warning {
+    background-color: #ffc107;
+    color: #1c2d41;
+}
+
+.client-dashboard .badge.bg-info {
+    background-color: #0dcaf0;
+    color: #1c2d41;
+}
+
+/* No reservations message */
+.client-dashboard .text-muted {
+    font-style: italic;
+    color: #6c757d !important;
+}
+
+/* Delete account form */
+.client-dashboard form[action$="delete_account"] {
+    margin-top: 2rem;
+}
+
+/* Responsive improvements */
 @media (max-width: 768px) {
     .client-dashboard {
-        padding: 15px 10px;
+        padding: 20px 10px;
     }
 
     .client-dashboard h2 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
 
     .client-dashboard .list-group-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 0.75rem;
     }
 
     .client-dashboard .btn {
