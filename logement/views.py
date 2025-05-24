@@ -386,7 +386,8 @@ def stripe_webhook(request):
         data = event["data"]["object"]
 
         logger.info(f"📩 Received Stripe event: {event_type}")
-        logger.info(data)
+        sanitized_data = mask_sensitive_data(data)  # Optional: Mask sensitive info
+        logger.info(f"Event Data: {json.dumps(sanitized_data, indent=2)}")
 
         if event_type == "checkout.session.completed":
             handle_checkout_session_completed(data)
@@ -404,6 +405,17 @@ def stripe_webhook(request):
         return HttpResponse(status=500)
 
     return HttpResponse(status=200)
+
+
+def mask_sensitive_data(data):
+    # Example: Mask sensitive fields like credit card details or user info
+    # Modify this function as necessary to mask/remove sensitive data.
+    if "payment_method_details" in data:
+        data["payment_method_details"] = "***MASKED***"
+    if "customer" in data:
+        data["customer"] = "***MASKED***"
+    # Add other fields as needed
+    return data
 
 
 def logement_search(request):
