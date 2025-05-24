@@ -183,19 +183,17 @@ def handle_charge_refunded(data):
         reservation = Reservation.objects.get(id=reservation_id)
 
         # Get refunded amount from the charge object
-        refunds = data.get("refunds", {}).get("data", [])
-        if refunds:
-            latest_refund = refunds[-1]  # If multiple refunds, get the last one
-            refunded_amount = latest_refund["amount"] / 100  # convert to euros
-            refund_id = latest_refund["id"]
+        amount = data.get("amount")
+        if amount:
+            refunded_amount = amount / 100  # convert to euros
+            refund_id = data.get("id")
 
             reservation.refunded = True
             reservation.refund_amount += refunded_amount
-            reservation.statut = "annulee"
             reservation.stripe_refund_id = refund_id
             reservation.save()
 
-            currency = latest_refund.get("currency", "eur").upper()
+            currency = data.get("currency", "eur").upper()
             logger.info(
                 f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency}"
             )

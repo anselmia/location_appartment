@@ -372,11 +372,11 @@ def export_ical(request):
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+    received_sig = request.headers.get("Stripe-Signature", None)
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+        event = stripe.Webhook.construct_event(payload, received_sig, endpoint_secret)
     except Exception as e:
         logger.error(f"❌ Stripe webhook signature error: {e}")
         return HttpResponse(status=400)
@@ -385,12 +385,16 @@ def stripe_webhook(request):
         event_type = event["type"]
         data = event["data"]["object"]
 
-        # Log the event object to verify the data
+        # Log the full event to verify the structure
         logger.info(f"📩 Received Stripe event: {json.dumps(event, indent=2)}")
 
-        logger.info(f"📩 Received Stripe event: {event_type}")
-        sanitized_data = mask_sensitive_data(data)  # Optional: Mask sensitive info
-        logger.info(f"Event Data: {json.dumps(sanitized_data, indent=2)}")
+        # Debugging - Check the content of 'data' and 'metadata'
+        logger.info(f"Event Data (Raw): {json.dumps(data, indent=2)}")
+        logger.info(f"Metadata (Raw): {json.dumps(data.get('metadata', {}), indent=2)}")
+
+        # Ensure metadata is accessible
+        reservation_id = data["metadata"].get("reservation_id")
+        logger.info(f"Reservation ID from metadata: {reservation_id}")
 
         if event_type == "checkout.session.completed":
             handle_checkout_session_completed(data)
