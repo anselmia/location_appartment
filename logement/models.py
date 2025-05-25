@@ -114,6 +114,10 @@ class Logement(models.Model):
         null=True,  # Make it required
         blank=True,
     )
+    # Add a many-to-many field for admins
+    admins = models.ManyToManyField(
+        CustomUser, related_name="admin_logements", blank=True
+    )
 
     airbnb_link = models.URLField(blank=True, null=True)
     airbnb_calendar_link = models.URLField(blank=True, null=True)

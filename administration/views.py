@@ -23,10 +23,9 @@ from logement.models import (
     DiscountType,
     Equipment,
 )
-from logement.forms import DiscountForm
+from logement.forms import DiscountForm, LogementForm
 from django.contrib import messages
 from .forms import (
-    LogementForm,
     HomePageConfigForm,
     ServiceForm,
     TestimonialForm,

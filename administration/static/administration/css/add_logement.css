@@ -103,6 +103,34 @@
   }
 
 /* CHECKBOX */
+.admin-checkboxes {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;  /* Maximum height of the scrollable box */
+  overflow-y: auto;  /* Makes the box scrollable */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center; /* Aligns checkbox and the username label on the same line */
+  padding: 5px;
+}
+
+.checkbox-wrapper label {
+  display: flex !important;
+  align-items: center; /* Ensures the checkbox and username are horizontally aligned */
+  cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  margin-right: 10px;  /* Adds space between checkbox and username */
+  width: 12px;  /* Resize the checkbox */
+  height: 12px; /* Resize the checkbox */
+}
+
 .checkbox-field {
     display: flex;
     align-items: center;

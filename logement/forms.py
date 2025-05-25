@@ -1,5 +1,155 @@
 from django import forms
-from logement.models import Discount, Logement
+from logement.models import Discount, Logement, City
+
+
+class LogementForm(forms.ModelForm):
+    class Meta:
+        model = Logement
+        exclude = ["equipment"]  # Prevent accidental overwrites
+        fields = [
+            "name",
+            "description",
+            "adresse",
+            "ville",
+            "price",
+            "max_traveler",
+            "nominal_traveler",
+            "superficie",
+            "bathrooms",
+            "bedrooms",
+            "fee_per_extra_traveler",
+            "cleaning_fee",
+            "tax",
+            "tax_max",
+            "cancelation_period",
+            "ready_period",
+            "entrance_hour_min",
+            "entrance_hour_max",
+            "leaving_hour",
+            "max_days",
+            "availablity_period",
+            "animals",
+            "smoking",
+            "statut",
+            "type",
+            "owner",
+            "admins",
+            "airbnb_link",
+            "airbnb_calendar_link",
+            "booking_link",
+            "booking_calendar_link",
+            "caution",
+            "beds",
+            "map_link",
+            "refund_charge",
+        ]
+        labels = {
+            "name": "Nom du logement",
+            "description": "Description",
+            "adresse": "Adresse",
+            "ville": "Ville",
+            "statut": "Statut",
+            "price": "Prix par nuit (€)",
+            "max_traveler": "Voyageurs max.",
+            "nominal_traveler": "Voyageurs inclus",
+            "superficie": "Surface en m²",
+            "bathrooms": "Nombre de salle de bain",
+            "bedrooms": "Nombre de chambres",
+            "beds": "Nombre de lits",
+            "fee_per_extra_traveler": "Frais par voyageur supplémentaire (€)",
+            "cleaning_fee": "Frais de ménage (€)",
+            "tax": "Taxe de séjour (%)",
+            "tax_max": "Taxe de séjour Max / Personne / Jour (€)",
+            "cancelation_period": "Période limite d'annulation (jours)",
+            "ready_period": "Délai avant arrivée (jours)",
+            "entrance_hour_min": "Heure d'arrivée (Début)",
+            "entrance_hour_max": "Heure d'arrivée (Fin)",
+            "leaving_hour": "Heure de départ maximum",
+            "max_days": "Durée maximum de séjour (jours)",
+            "availablity_period": "Période de disponibilité (mois)",
+            "animals": "Animaux de compagnie autorisés",
+            "smoking": "Logement fumeur",
+            "airbnb_link": "Lien Airbnb",
+            "airbnb_calendar_link": "Calendrier Airbnb",
+            "booking_link": "Lien Booking",
+            "booking_calendar_link": "Calendrier Booking",
+            "caution": "Dépôt de garantie (€)",
+            "map_link": "Lien Google Map",
+            "refund_charge": "Charges de remboursement (%)",
+            "admins": "Utilisateurs associés",
+        }
+        help_texts = {
+            "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",
+            "fee_per_extra_traveler": "S'applique si le nombre de voyageurs dépasse ceux inclus.",
+        }
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 10}),
+            "entrance_hour_min": forms.TimeInput(attrs={"type": "time"}),
+            "entrance_hour_max": forms.TimeInput(attrs={"type": "time"}),
+            "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
+            "equipment": forms.CheckboxSelectMultiple,
+            "map_link": forms.Textarea(attrs={"rows": 2}),
+            "admins": forms.CheckboxSelectMultiple(),  # Use checkboxes for admins
+            "owner": forms.Select(
+                attrs={"class": "form-control select2"}
+            ),  # Select for owner
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
+
+        if "ville" in self.fields:
+            self.fields["ville"].queryset = City.objects.all().order_by(
+                "code_postal", "name"
+            )
+
+        # Fields that should have numeric step=1
+        step_1_fields = [
+            "price",
+            "max_traveler",
+            "nominal_traveler",
+            "bedrooms",
+            "bathrooms",
+            "beds" "fee_per_extra_traveler",
+            "cleaning_fee",
+            "cancelation_period",
+            "ready_period",
+            "max_days",
+            "availablity_period",
+            "caution",
+        ]
+        for field_name in step_1_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs["step"] = "1"
+                self.fields[field_name].widget.attrs.update({"type": "number"})
+
+        # Tax field step should be more precise (0.1%)
+        if "tax" in self.fields:
+            self.fields["tax"].widget.attrs["step"] = "0.1"
+        if "refund_charge" in self.fields:
+            self.fields["refund_charge"].widget.attrs["step"] = "0.1"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        max_traveler = cleaned_data.get("max_traveler")
+        nominal_traveler = cleaned_data.get("nominal_traveler")
+
+        if max_traveler is not None and nominal_traveler is not None:
+            if nominal_traveler > max_traveler:
+                self.add_error(
+                    "nominal_traveler",
+                    "Le nombre de voyageurs inclus ne peut pas dépasser le maximum autorisé.",
+                )
+
+        # Custom validation for caution (positive number)
+        caution = cleaned_data.get("caution")
+        if caution is not None and caution < 0:
+            self.add_error(
+                "caution", "Le montant de la caution ne peut pas être négatif."
+            )
 
 
 class ReservationForm(forms.Form):

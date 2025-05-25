@@ -49,7 +49,16 @@
                     <div class="form-field">
                         <label for="{{ form.owner.id_for_label }}">{{ form.owner.label }}</label>
                         {{ form.owner|add_class:"form-input" }}
-                      </div>
+                    </div>
+                    <div class="form-field">
+                        <div class="admin-checkboxes">
+                            {% for checkbox in form.admins %}
+                                <div class="checkbox-wrapper">
+                                    {{ checkbox }}  <!-- Renders the checkbox -->
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <div class="form-field">
                         <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
                         {{ form.type|add_class:"form-input" }}
@@ -226,4 +235,7 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
 {% endblock %}
