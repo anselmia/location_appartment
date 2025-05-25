@@ -973,7 +973,7 @@ def charge_deposit(request, pk):
             return redirect("administration:reservation_detail", pk=pk)
 
         logement_caution = getattr(reservation.logement, "caution", None)
-        if logement_caution is not None and amount > logement_caution:
+        if logement_caution is not None and amount > reservation.chargeable_deposit:
             messages.error(
                 request,
                 f"Le montant de la caution ({amount:.2f} €) dépasse la limite autorisée pour ce logement ({logement_caution:.2f} €).",
@@ -992,7 +992,7 @@ def charge_deposit(request, pk):
         if charge_result:
             messages.success(request, f"Caution de {amount:.2f} € chargée avec succès.")
         else:
-            messages.error(request, "Erreur lors du chargement de la caution.")
+            messages.error(request, "Erreur lors du paiement de la caution.")
 
     except (InvalidOperation, ValueError, TypeError):
         messages.error(request, "Montant invalide.")

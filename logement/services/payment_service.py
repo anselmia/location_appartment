@@ -247,7 +247,14 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
             try:
                 reservation = Reservation.objects.get(pk=reservation_id)
                 reservation.caution_charged = True
-                reservation.amount_charged += amount
+
+                caution_charged_decimal = Decimal(amount)
+
+                # Ensure reservation.refund_amount is a Decimal (if it isn't already)
+                if not isinstance(reservation.amount_charged, Decimal):
+                    reservation.amount_charged = Decimal(reservation.amount_charged)
+
+                reservation.amount_charged += caution_charged_decimal
                 reservation.stripe_deposit_payment_intent_id = payment_intent_id
                 reservation.save()
                 logger.info(
@@ -312,24 +319,6 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 if not payment_method:
                     raise ValueError(
                         f"No payment method found on PaymentIntent {payment_intent_id}"
-                    )
-
-                try:
-                    if (
-                        not payment_method.customer
-                        or payment_method.customer
-                        != reservation.user.stripe_customer_id
-                    ):
-                        logger.info(
-                            f"Attaching Payment Method {payment_method} to customer {reservation.user.stripe_customer_id}"
-                        )
-                        # Try to attach the payment method to the Customer
-                        stripe.PaymentMethod.attach(
-                            payment_method, customer=reservation.user.stripe_customer_id
-                        )
-                except Exception as e:
-                    logger.error(
-                        f"An error occured  while attaching customer ID to Payment Method:  {e}"
                     )
 
                 # Save the payment method if not already saved

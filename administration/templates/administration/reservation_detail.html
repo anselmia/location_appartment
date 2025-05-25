@@ -10,13 +10,15 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Détails de la Réservation</h2>
-        <form method="post" action="{% url 'administration:cancel_reservation' reservation.pk %}"
-              onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ?');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-x-circle"></i> Annuler
-            </button>
-        </form>
+        {% if reservation.statut != "annulee" %}
+            <form method="post" action="{% url 'administration:cancel_reservation' reservation.pk %}"
+                onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-x-circle"></i> Annuler
+                </button>
+            </form>
+        {% endif %}
     </div>
 
     <div class="card shadow-sm mb-4">
@@ -181,7 +183,7 @@
                                 {% csrf_token %}
                                 <input type="number" name="deposit_amount"
                                     class="form-control form-control-sm me-2"
-                                    min="0" max="{{ reservation.chargeable_deposit }}" step="0.01" placeholder="Montant (€)"
+                                    min="0" max="{{ reservation.chargeable_deposit|stringformat:'f' }}" step="0.01" placeholder="Montant (€)"
                                     required style="max-width: 120px;">
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Charger</button>
                             </form>
