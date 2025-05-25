@@ -95,16 +95,14 @@ def create_stripe_checkout_session_with_deposit(reservation, success_url, cancel
                         "quantity": 1,
                     }
                 ],
+                "payment_intent_data": {"setup_future_usage": "off_session"},
+                "payment_method_options": {
+                    "card": {"setup_future_usage": "off_session"}
+                },
                 "success_url": success_url,
                 "cancel_url": cancel_url,
                 "metadata": {"reservation_id": reservation.id},
             }
-
-            # Request card to be saved if no card is saved yet
-            if not user_has_saved_card(customer_id):
-                session_args["payment_intent_data"] = {
-                    "setup_future_usage": "off_session"
-                }
 
             checkout_session = stripe.checkout.Session.create(**session_args)
             logger.info(
@@ -319,14 +317,15 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 try:
                     if (
                         not payment_method.customer
-                        or payment_method.customer != reservation.user.customer_id
+                        or payment_method.customer
+                        != reservation.user.stripe_customer_id
                     ):
                         logger.info(
-                            f"Attaching Payment Method {payment_method} to customer {reservation.user.customer_id}"
+                            f"Attaching Payment Method {payment_method} to customer {reservation.user.stripe_customer_id}"
                         )
                         # Try to attach the payment method to the Customer
                         stripe.PaymentMethod.attach(
-                            payment_method, customer=reservation.user.customer_id
+                            payment_method, customer=reservation.user.stripe_customer_id
                         )
                 except Exception as e:
                     logger.error(
