@@ -946,11 +946,6 @@ def refund_partially_reservation(request, pk):
         amount_in_cents = int(refund_amount * 100)
         refund = refund_payment(reservation, amount_in_cents)
 
-        # Optionally: store this on the reservation
-        reservation.refunded = True
-        reservation.refund_amount = refund_amount
-        reservation.save()
-
         messages.success(
             request,
             f"Remboursement partiel de {refund_amount:.2f} € effectué avec succès.",

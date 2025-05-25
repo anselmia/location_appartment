@@ -312,6 +312,17 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                         f"No payment method found on PaymentIntent {payment_intent_id}"
                     )
 
+                try:
+                    if payment_method.customer != reservation.user.customer_id:
+                        # Try to attach the payment method to the Customer
+                        stripe.PaymentMethod.attach(
+                            payment_method, customer=reservation.user.customer_id
+                        )
+                except Exception as e:
+                    logger.error(
+                        f"An error occured  while attaching customer ID to Payment Method:  {e}"
+                    )
+
                 # Save the payment method if not already saved
                 if not reservation.stripe_saved_payment_method_id:
                     reservation.stripe_saved_payment_method_id = payment_method.id
@@ -363,10 +374,15 @@ def charge_payment(
                 "Customer ID is required to charge a saved payment method."
             )
 
-        # Attach PaymentMethod to the Customer
-        payment_method = stripe.PaymentMethod.attach(
-            saved_payment_method_id, customer=customer_id
-        )
+        # Check if the PaymentMethod is already attached to the Customer
+        payment_method = stripe.PaymentMethod.retrieve(saved_payment_method_id)
+
+        # If not attached, attach the PaymentMethod to the customer
+        if payment_method.customer != customer_id:
+            logger.info(
+                f"Attaching PaymentMethod {saved_payment_method_id} to Customer {customer_id}."
+            )
+            stripe.PaymentMethod.attach(saved_payment_method_id, customer=customer_id)
 
         intent = stripe.PaymentIntent.create(
             amount=amount_cents,
@@ -394,3 +410,15 @@ def charge_payment(
     except Exception as e:
         logger.exception("Erreur interne lors du chargement du paiement : %s", str(e))
         raise
+
+
+def create_bank_account():
+    #stripe.createToken(
+    #    country: 'US',
+    #    currency: 'usd',
+    #    routing_number: '110000000',
+    #    account_number: '000123456789',
+    #    account_holder_name: 'Jenny Rosen',
+    #    account_holder_type: 'individual',
+    #)
+    
