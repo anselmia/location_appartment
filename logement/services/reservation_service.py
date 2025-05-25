@@ -15,6 +15,7 @@ from logement.models import (
     Logement,
 )
 from logement.services.payment_service import refund_payment
+from django.db.models.functions import ExtractYear, ExtractMonth
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,40 @@ def get_reservations(user, logement_id=None):
         )
         # Optionally, you can re-raise the error or return a safe result, depending on the use case
         raise
+
+
+def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=None):
+    qs = get_reservations(user, logement_id)
+
+    qs = (
+        qs.exclude(statut="en_attente")
+        .order_by("-start")
+        .select_related("user", "logement")
+        .prefetch_related("logement__photos")
+    )
+
+    if year:
+        qs = qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
+    if month:
+        qs = qs.annotate(res_month=ExtractMonth("start")).filter(res_month=month)
+
+    return qs
+
+
+def get_reservation_years_and_months():
+    years = (
+        Reservation.objects.annotate(y=ExtractYear("start"))
+        .values_list("y", flat=True)
+        .distinct()
+        .order_by("y")
+    )
+    months = (
+        Reservation.objects.annotate(m=ExtractMonth("start"))
+        .values_list("m", flat=True)
+        .distinct()
+        .order_by("m")
+    )
+    return years, months
 
 
 def get_available_logement_in_period(start, end, logements):

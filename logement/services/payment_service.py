@@ -1,5 +1,6 @@
 import stripe
 import logging
+from django.urls import reverse
 from django.conf import settings
 from logement.models import Reservation
 from logement.services.email_service import (
@@ -79,6 +80,18 @@ def create_stripe_checkout_session_with_deposit(reservation, success_url, cancel
         customer_id = create_stripe_customer_if_not_exists(reservation.user)
 
         if customer_id:
+            # Create the URLs based on the URL name
+            success_url = reverse(
+                "logement:payment_success", args=[reservation.id]
+            )
+            cancel_url = reverse(
+                "logement:payment_cancel", args=[reservation.id]
+            )
+
+            # Build full URLs with request.build_absolute_uri
+            success_url = request.build_absolute_uri(success_url)
+            cancel_url = request.build_absolute_uri(cancel_url)
+
             session_args = {
                 "payment_method_types": ["card"],
                 "mode": "payment",

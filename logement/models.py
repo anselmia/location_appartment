@@ -283,6 +283,9 @@ class Photo(models.Model):
     order = models.IntegerField(default=0)  # Add the order field
     rotation = models.IntegerField(choices=ROTATION_CHOICES, default=0)
 
+    class Meta:
+        ordering = ["order"]  # 👈 Always sort by `order`
+
     def __str__(self):
         return f"{self.logement.name} - {self.image.name}"
 
@@ -342,8 +345,44 @@ class Photo(models.Model):
                     f"Error generating WebP for photo {self.pk}: {e}"
                 )
 
-    class Meta:
-        ordering = ["order"]  # 👈 Always sort by `order`
+    def assign_room(self, room):
+        self.room = room
+        self.save()
+
+    def move_in_order(self, direction):
+        photos = list(Photo.objects.filter(logement=self.logement).order_by("order"))
+        if len(photos) < 2:
+            return False, "Pas assez de photos."
+
+        try:
+            index = next(i for i, p in enumerate(photos) if p.id == self.id)
+        except StopIteration:
+            return False, "Photo introuvable."
+
+        if direction == "up":
+            swap_index = (index - 1) % len(photos)
+        elif direction == "down":
+            swap_index = (index + 1) % len(photos)
+        else:
+            return False, "Direction invalide."
+
+        other = photos[swap_index]
+        self.order, other.order = other.order, self.order
+        self.save()
+        other.save()
+
+        return True, None
+
+    def safe_delete(self):
+        # Delete the image file from the storage backend (local or remote)
+        if self.image and self.image.name:
+            self.image.delete(save=False)
+
+        self.delete()
+
+    def rotate(self, degrees):
+        self.rotation = (self.rotation - degrees) % 360
+        self.save()
 
 
 @receiver(models.signals.post_delete, sender=Photo)
@@ -452,6 +491,8 @@ class Reservation(models.Model):
 
         # Round the result to 2 decimal places
         return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    
 
 
 class airbnb_booking(models.Model):

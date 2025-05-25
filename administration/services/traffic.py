@@ -10,6 +10,28 @@ from administration.models import (
 )  # Assuming you have a SiteVisit model for tracking visits
 
 
+def get_traffic_dashboard_data(period="day"):
+    labels, data = get_traffic_data(period)
+    total_visits = get_visits_count(since_days=30)
+    unique_visitors = get_unique_visitors_count(since_days=30)
+    online_users = get_online_users()
+    online_visitors = get_online_visitors()
+
+    logs = get_recent_logs(limit=20)
+    for log in logs:
+        log.timestamp = log.timestamp.isoformat()
+
+    return {
+        "labels": labels,
+        "data": data,
+        "total_visits": total_visits,
+        "unique_visitors": unique_visitors,
+        "online_users": online_users,
+        "online_visitors": online_visitors,
+        "recent_logs": logs,
+    }
+
+
 def get_online_users():
     """
     Returns the number of online authenticated users based on activity within the last 5 minutes.

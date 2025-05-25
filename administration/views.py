@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import os
-import re
 import logging
 import json
 from django.http import QueryDict
@@ -38,23 +37,20 @@ from .serializers import DailyPriceSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Sum, F
-from calendar import month_name
+from administration.services.revenu import get_economie_stats
 from django.http import JsonResponse, HttpResponseBadRequest
-from logement.services.reservation_service import calculate_price, get_reservations
+from logement.services.reservation_service import (
+    calculate_price,
+    get_valid_reservations_for_admin,
+    get_reservation_years_and_months,
+    mark_reservation_cancelled,
+)
 from logement.services.logement import get_logements
 from common.views import is_admin
 from logement.services.payment_service import refund_payment, charge_payment
 from decimal import Decimal, InvalidOperation
-from administration.services.traffic import (
-    get_online_users,
-    get_connected_users,
-    get_online_visitors,
-    get_traffic_data,
-    get_visits_count,
-    get_unique_visitors_count,
-    get_recent_logs,
-)
+from administration.services.traffic import get_traffic_dashboard_data
+from administration.services.logs import parse_log_file
 from common.decorators import (
     user_is_logement_admin,
     user_has_logement,
@@ -146,12 +142,11 @@ def delete_room(request, room_id):
 def upload_photos(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
     room_id = request.POST.get("room_id")
-    room = (
-        Room.objects.filter(id=room_id, logement=logement).first() if room_id else None
-    )
+    room = get_object_or_404(Room, id=room_id, logement=logement)
 
     for uploaded_file in request.FILES.getlist("photo"):
         Photo.objects.create(logement=logement, room=room, image=uploaded_file)
+
     return redirect("administration:edit_logement", logement_id)
 
 
@@ -161,16 +156,20 @@ def upload_photos(request, logement_id):
 @require_POST
 def change_photo_room(request, photo_id):
     photo = get_object_or_404(Photo, id=photo_id)
-    data = json.loads(request.body)  # <- THIS IS REQUIRED for JSON body
-    room_id = data.get("room_id")
+    try:
+        data = json.loads(request.body)
+        room_id = data.get("room_id")
+        if not room_id:
+            return JsonResponse(
+                {"success": False, "error": "Missing room_id"}, status=400
+            )
 
-    if room_id:
-        room = Room.objects.filter(id=room_id).first()
-        if room:
-            photo.room = room
-            photo.save()
-            return JsonResponse({"success": True})
-    return JsonResponse({"success": False}, status=400)
+        room = get_object_or_404(Room, id=room_id, logement=photo.logement)
+        photo.assign_room(room)
+        return JsonResponse({"success": True})
+
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
 
 
 # Move photo up or down
@@ -179,46 +178,20 @@ def change_photo_room(request, photo_id):
 @require_POST
 def move_photo(request, photo_id, direction):
     photo = get_object_or_404(Photo, id=photo_id)
-    logement_photos = list(
-        Photo.objects.filter(logement=photo.logement).order_by("order")
-    )
 
-    if len(logement_photos) < 2:
-        return JsonResponse(
-            {"success": False, "message": "Pas assez de photos."}, status=400
-        )
-
-    index = next((i for i, p in enumerate(logement_photos) if p.id == photo.id), None)
-    if index is None:
-        return JsonResponse(
-            {"success": False, "message": "Photo introuvable."}, status=404
-        )
-
-    if direction == "up":
-        swap_index = (index - 1) % len(logement_photos)
-    elif direction == "down":
-        swap_index = (index + 1) % len(logement_photos)
-    else:
-        return JsonResponse(
-            {"success": False, "message": "Direction invalide."}, status=400
-        )
-
-    other_photo = logement_photos[swap_index]
-    photo.order, other_photo.order = other_photo.order, photo.order
-    photo.save()
-    other_photo.save()
-
-    return JsonResponse({"success": True})
+    success, message = photo.move_in_order(direction)
+    if success:
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": message}, status=400)
 
 
-# Delete photo
 @login_required
 @user_is_logement_admin
+@require_http_methods(["DELETE"])
 def delete_photo(request, photo_id):
-    if request.method == "DELETE":
-        photo = get_object_or_404(Photo, id=photo_id)
-        photo.delete()
-        return JsonResponse({"success": True})
+    photo = get_object_or_404(Photo, id=photo_id)
+    photo.safe_delete()
+    return JsonResponse({"success": True})
 
 
 @login_required
@@ -226,7 +199,10 @@ def delete_photo(request, photo_id):
 @require_POST
 def delete_all_photos(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
-    logement.photos.all().delete()
+
+    for photo in logement.photos.all():
+        photo.safe_delete()
+
     return JsonResponse({"status": "ok"})
 
 
@@ -235,15 +211,10 @@ def delete_all_photos(request, logement_id):
 @require_POST
 def rotate_photo(request, photo_id):
     degrees = int(request.POST.get("degrees", 90))
-    try:
-        photo = Photo.objects.get(pk=photo_id)
-        photo.rotation = (photo.rotation - degrees) % 360
-        photo.save()
-        return JsonResponse({"status": "ok", "rotation": photo.rotation})
-    except Photo.DoesNotExist:
-        return JsonResponse(
-            {"status": "error", "message": "Photo not found"}, status=404
-        )
+    photo = get_object_or_404(Photo, pk=photo_id)
+
+    photo.rotate(degrees)
+    return JsonResponse({"status": "ok", "rotation": photo.rotation})
 
 
 @login_required
@@ -261,60 +232,31 @@ def update_equipment(request, logement_id):
 @login_required
 @user_passes_test(is_admin)
 def traffic_dashboard(request):
-    # Get the statistics for online users and online visitors
-    online_visitors = get_online_visitors()
-    online_users = get_online_users()
+    period = (
+        request.POST.get("period")
+        if request.method == "POST"
+        else request.GET.get("period", "day")
+    )
 
-    # Handle the POST request for the selected period
+    stats = get_traffic_dashboard_data(period=period)
+
     if request.method == "POST":
-        period = request.POST.get("period", "day")  # Default to "day" if not provided
+        return JsonResponse(stats)
 
-        # Get the traffic data (labels and data for the chart)
-        labels, data = get_traffic_data(period)
-
-        # Get other statistics
-        total_visits = get_visits_count(since_days=30)
-        unique_visitors = get_unique_visitors_count(since_days=30)
-
-        # Return JSON response with labels, data, and other stats
-        return JsonResponse(
-            {
-                "labels": labels,
-                "data": data,
-                "total_visits": total_visits,
-                "unique_visitors": unique_visitors,
-                "online_visitors": online_visitors,
-                "online_users": online_users,
-            }
-        )
-
-    # Handle the initial page load (GET request)
-    else:
-        # Get the traffic data for the initial page load
-        period = request.GET.get("period", "day")  # Default to "day"
-        labels, data = get_traffic_data(period)
-
-        # Get other statistics
-        total_visits = get_visits_count(since_days=30)
-        unique_visitors = get_unique_visitors_count(since_days=30)
-
-        # Get recent logs and format the timestamp to a serializable string
-        recent_logs = get_recent_logs(limit=20)
-        for log in recent_logs:
-            log.timestamp = log.timestamp.isoformat()  # Convert datetime to string
-
-        # Render the page with the initial data
-        context = {
-            "online_visitors": online_visitors,
-            "online_users": online_users,
-            "labels": json.dumps(labels),
-            "data": json.dumps(data),
-            "total_visits": total_visits,
-            "unique_visitors": unique_visitors,
-            "recent_logs": recent_logs,
+    return render(
+        request,
+        "administration/traffic.html",
+        {
+            "online_visitors": stats["online_visitors"],
+            "online_users": stats["online_users"],
+            "labels": json.dumps(stats["labels"]),
+            "data": json.dumps(stats["data"]),
+            "total_visits": stats["total_visits"],
+            "unique_visitors": stats["unique_visitors"],
+            "recent_logs": stats["recent_logs"],
             "selected_period": period,
-        }
-        return render(request, "administration/traffic.html", context)
+        },
+    )
 
 
 @login_required
@@ -581,7 +523,7 @@ def manage_discounts(request):
                         "logement": logement,
                         "discounts": discounts,
                         "discount_types": discount_types,
-                        "all_logements": all_logements,
+                        "all_logements": logements,
                         "form": form,
                     },
                 )
@@ -597,7 +539,7 @@ def manage_discounts(request):
             "logement": logement,
             "discounts": discounts,
             "discount_types": discount_types,
-            "all_logements": all_logements,
+            "all_logements": logements,
             "form": DiscountForm(),
         },
     )
@@ -637,102 +579,41 @@ def api_economie_data(request, logement_id):
     year = int(request.GET.get("year", datetime.now().year))
     month = request.GET.get("month", "all")
 
-    qs = Reservation.objects.filter(
-        logement_id=logement_id, start__year=year, statut="confirmee"
-    )
-    if month != "all":
-        qs = qs.filter(start__month=int(month))
-
-    # Calcul brut
-    total_revenue = qs.aggregate(total=Sum("price"))["total"] or 0
-    total_taxes = qs.aggregate(taxes=Sum("tax"))["taxes"] or 0
-    net_profit = total_revenue - total_taxes
-
-    # Graph par mois
-    monthly_data = (
-        qs.annotate(month=F("start__month"))
-        .values("month")
-        .annotate(monthly_total=Sum("price"))
-        .order_by("month")
-    )
-
-    labels = []
-    values = []
-    for m in range(1, 13):
-        labels.append(month_name[m][:3])
-        month_entry = next((x for x in monthly_data if x["month"] == m), None)
-        values.append(float(month_entry["monthly_total"]) if month_entry else 0)
-
-    return JsonResponse(
-        {
-            "total_revenue": total_revenue,
-            "total_taxes": total_taxes,
-            "net_profit": net_profit,
-            "chart_labels": labels,
-            "chart_values": values,
-        }
-    )
+    data = get_economie_stats(logement_id=logement_id, year=year, month=month)
+    return JsonResponse(data)
 
 
 @login_required
 @user_passes_test(is_admin)
 def log_viewer(request):
     log_file_path = os.path.join(settings.LOG_DIR, "django.log")
-    log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
     selected_level = request.GET.get("level")
     selected_logger = request.GET.get("logger")
     query = request.GET.get("query", "").strip().lower()
 
-    logs = []
-    all_logs = []
-    if os.path.exists(log_file_path):
-        try:
-            with open(log_file_path, encoding="utf-8", errors="replace") as f:
-                lines = f.readlines()
-                lines.reverse()  # latest logs first
-                for line in lines:
-                    match = re.match(r"\[(.*?)\] (\w+) ([^\s]+) \((.*?)\) (.*)", line)
-                    if match:
-                        timestamp, level, logger, location, message = match.groups()
+    try:
+        logs, all_loggers = parse_log_file(
+            path=log_file_path,
+            level=selected_level,
+            logger_filter=selected_logger,
+            query=query,
+        )
+    except Exception as e:
+        logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
+        logs = []
+        all_loggers = []
 
-                        all_logs.append(
-                            {
-                                "timestamp": timestamp,
-                                "level": level,
-                                "logger": logger,
-                                "location": location,
-                                "message": message,
-                            }
-                        )
-
-                        if selected_level and level != selected_level:
-                            continue
-                        if selected_logger and logger != selected_logger:
-                            continue
-                        if query and query not in message.lower():
-                            continue
-
-                        logs.append(
-                            {
-                                "timestamp": timestamp,
-                                "level": level,
-                                "logger": logger,
-                                "location": location,
-                                "message": message,
-                            }
-                        )
-        except Exception as e:
-            logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
-            lines = []
-    loggers = sorted(set(entry["logger"] for entry in all_logs))
-    context = {
-        "query": query,
-        "loggers": loggers,
-        "logs": logs,
-        "levels": log_levels,
-        "selected_level": selected_level,
-    }
-    return render(request, "administration/log_viewer.html", context)
+    return render(
+        request,
+        "administration/log_viewer.html",
+        {
+            "logs": logs,
+            "loggers": sorted(all_loggers),
+            "levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            "selected_level": selected_level,
+            "query": query,
+        },
+    )
 
 
 @csrf_exempt
@@ -772,45 +653,23 @@ def js_logger(request):
 @user_has_logement
 def reservation_dashboard(request, logement_id=None):
     try:
-        # Step 1: Get reservations based on user and logement_id
-        qs = get_reservations(request.user, logement_id)
-
-        # Step 2: Apply the exclusions and ordering
-        qs = (
-            qs.exclude(statut="en_attente")
-            .order_by("-start")
-            .select_related("user", "logement")
-            .prefetch_related("logement__photos")
-        )
-
-        # Step 3: Filter by year and month (from query params)
         year = request.GET.get("year")
         month = request.GET.get("month")
-        if year:
-            qs = qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
-        if month:
-            qs = qs.annotate(res_month=ExtractMonth("start")).filter(res_month=month)
 
-        # Step 4: For dropdowns: list all available years and months
-        years = (
-            Reservation.objects.annotate(y=ExtractYear("start"))
-            .values_list("y", flat=True)
-            .distinct()
-            .order_by("y")
-        )
-        months = (
-            Reservation.objects.annotate(m=ExtractMonth("start"))
-            .values_list("m", flat=True)
-            .distinct()
-            .order_by("m")
+        reservations = get_valid_reservations_for_admin(
+            user=request.user,
+            logement_id=logement_id,
+            year=year,
+            month=month,
         )
 
-        # Step 5: Return the render with filtered data
+        years, months = get_reservation_years_and_months()
+
         return render(
             request,
             "administration/reservations.html",
             {
-                "reservations": qs,
+                "reservations": reservations,
                 "available_years": years,
                 "available_months": months,
                 "current_year": year,
@@ -819,10 +678,7 @@ def reservation_dashboard(request, logement_id=None):
         )
 
     except Exception as e:
-        # Log the error but do not raise it
-        logger.error(f"Error occurred in reservation_dashboard: {e}", exc_info=True)
-
-        # Optionally, return a safe fallback response (like an error message) instead of raising an exception
+        logger.error(f"Error in reservation_dashboard: {e}", exc_info=True)
         return render(
             request,
             "common/error.html",
@@ -922,8 +778,7 @@ def reservation_detail(request, pk):
 def cancel_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
     if reservation.statut != "annulee":
-        reservation.statut = "annulee"
-        reservation.save()
+        mark_reservation_cancelled(reservation)
         messages.success(request, "Réservation annulée avec succès.")
     else:
         messages.warning(request, "La réservation est déjà annulée.")
@@ -938,21 +793,19 @@ def refund_reservation(request, pk):
 
     if not reservation.refunded:
         try:
-            refund_fee = reservation.price * 0.01
-            total_to_refund = reservation.price - refund_fee
-            amount_in_cents = int(total_to_refund * 100)
+            amount_in_cents = int(reservation.refundable_amount * 100)
 
             refund = refund_payment(reservation, amount_in_cents)
 
             messages.success(
                 request,
-                f"Remboursement de {total_to_refund:.2f} € effectué avec succès.",
+                f"Une demande de remboursement de {reservation.refundable_amount:.2f} € a été effectuée avec succès.",
             )
         except Exception as e:
             messages.error(request, f"Erreur de remboursement Stripe : {e}")
             logger.exception("Stripe refund failed")
     else:
-        messages.warning(request, "Remboursement non possible.")
+        messages.warning(request, "Cette réservation a déjà été remboursée.")
 
     return redirect("administration:reservation_detail", pk=pk)
 

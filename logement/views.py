@@ -28,10 +28,6 @@ from logement.services.reservation_service import (
 from logement.services.calendar_service import generate_ical
 from logement.services.payment_service import (
     create_stripe_checkout_session_with_deposit,
-    handle_charge_refunded,
-    handle_payment_failed,
-    handle_payment_intent_succeeded,
-    handle_checkout_session_completed,
 )
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
@@ -154,22 +150,8 @@ def book(request, logement_id):
                         logement, user, start, end, guest, price, tax
                     )
 
-                    # Create the URLs based on the URL name
-                    success_url = reverse(
-                        "logement:payment_success", args=[reservation.id]
-                    )
-                    cancel_url = reverse(
-                        "logement:payment_cancel", args=[reservation.id]
-                    )
-
-                    # Build full URLs with request.build_absolute_uri
-                    success_url = request.build_absolute_uri(success_url)
-                    cancel_url = request.build_absolute_uri(cancel_url)
-
                     # Create a Stripe session and pass reservation details
-                    session = create_stripe_checkout_session_with_deposit(
-                        reservation, success_url, cancel_url
-                    )
+                    session = create_stripe_checkout_session_with_deposit(reservation)
 
                     return redirect(session["checkout_session_url"])
             else:
