@@ -229,7 +229,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
 
 
 def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
-    metadata = data.metadata or {}
+    metadata = data.object.metadata or {}
     payment_type = metadata.get("type")
 
     if not payment_type:
@@ -237,9 +237,9 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
         return
 
     if payment_type == "deposit":
-        payment_intent_id = data.id
+        payment_intent_id = data.object.id
         reservation_id = metadata.get("reservation_id")
-        amount = data.amount_received / 100  # Convert to euros
+        amount = data.object.amount_received / 100  # Convert to euros
 
         logger.info(
             f"✅ Deposit received: {amount:.2f} € via PaymentIntent {payment_intent_id}"
@@ -321,7 +321,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                         not payment_method.customer
                         or payment_method.customer != reservation.user.customer_id
                     ):
-                        logger.nfo(
+                        logger.info(
                             f"Attaching Payment Method {payment_method} to customer {reservation.user.customer_id}"
                         )
                         # Try to attach the payment method to the Customer

@@ -104,8 +104,6 @@ def handle_webhook_event(event):
 
     try:
         logger.info(f"📩 Handling Stripe event type: {event['type']}")
-        # Assuming `event['data']` is the part you want to log
-        log_event_data(event)
 
         e = StripeEvent(event=event)
     except ValidationError as err:
