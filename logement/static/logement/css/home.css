@@ -34,6 +34,17 @@ p, a, li {
   color: var(--text-color);
 }
 
+.description-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 40px;  /* Adjust the top margin as needed */
+  margin-bottom: 40px;  /* Adjust the bottom margin as needed */
+  padding: 0 20px;  /* Optional: adds horizontal padding to prevent content from touching the sides */
+}
+
 /* Optional underline */
 section h2::after {
   content: "";

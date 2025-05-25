@@ -18,10 +18,12 @@
         </div>
     </header>
 
-    {% if config.description %}
-        {{ config.description|safe }}
-    {% endif %}
-
+    <section class="description-section fade-in-up">
+        {% if config.description %}
+            {{ config.description|safe }}
+        {% endif %}
+    </div>
+    
     <div class="wave-separator">
         <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
           <path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path>
