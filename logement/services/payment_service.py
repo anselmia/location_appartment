@@ -304,7 +304,11 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 intent = stripe.PaymentIntent.retrieve(
                     payment_intent_id, expand=["payment_method"]
                 )
+                logger.info(intent)
+
                 payment_method = intent.payment_method
+
+                logger.info(payment_method)
 
                 # Validate if payment method exists
                 if not payment_method:
@@ -313,7 +317,13 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                     )
 
                 try:
-                    if payment_method.customer != reservation.user.customer_id:
+                    if (
+                        not payment_method.customer
+                        or payment_method.customer != reservation.user.customer_id
+                    ):
+                        logger.nfo(
+                            f"Attaching Payment Method {payment_method} to customer {reservation.user.customer_id}"
+                        )
                         # Try to attach the payment method to the Customer
                         stripe.PaymentMethod.attach(
                             payment_method, customer=reservation.user.customer_id
