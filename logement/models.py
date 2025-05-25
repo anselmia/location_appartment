@@ -137,6 +137,21 @@ class Logement(models.Model):
     def booking_limit(self):
         return timezone.now().date() + timedelta(days=self.ready_period)
 
+    @property
+    def mail_list(self):
+        # Get the owner's email
+        owner_email = self.owner.email
+
+        # Get emails of all admins associated with the logement
+        admin_emails = self.admins.values_list("email", flat=True)
+
+        # Combine the owner's email with admin emails and remove duplicates using a set
+        email_list = set(admin_emails)  # Use a set to automatically remove duplicates
+        email_list.add(owner_email)  # Add the owner's email to the set
+
+        # Return the list of emails as a sorted list (optional)
+        return sorted(email_list)
+
     def is_logement_admin(self, user):
         return user.is_admin or user == self.owner or user in self.admins.all()
 

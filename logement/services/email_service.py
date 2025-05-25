@@ -21,9 +21,11 @@ def send_mail_on_new_reservation(logement, reservation, user):
         admin_message = render_to_string("email/new_reservation.txt", email_context)
 
         # Send email to admins
-        mail_admins(
+        send_mail(
             subject=f"🆕 Nouvelle réservation pour {logement.name}",
             message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=logement.mail_list,
             fail_silently=False,  # Raise in dev, log in prod
         )
 
@@ -65,9 +67,11 @@ def send_mail_on_refund(logement, reservation, user):
         # ===== ADMIN EMAIL =====
         admin_message = render_to_string("email/refund_admin.txt", email_context)
 
-        mail_admins(
+        send_mail(
             subject=f"💸 Remboursement effectué - {logement.name}",
             message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=logement.mail_list,
             fail_silently=False,
         )
 

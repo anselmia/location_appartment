@@ -42,6 +42,7 @@ from django.db.models import Sum, F
 from calendar import month_name
 from django.http import JsonResponse, HttpResponseBadRequest
 from logement.services.reservation_service import calculate_price, get_reservations
+from logement.services.logement import get_logements
 from common.views import is_admin
 from logement.services.payment_service import refund_payment, charge_payment
 from decimal import Decimal, InvalidOperation
@@ -54,20 +55,26 @@ from administration.services.traffic import (
     get_unique_visitors_count,
     get_recent_logs,
 )
+from common.decorators import (
+    user_is_logement_admin,
+    user_has_logement,
+    user_is_reservation_admin,
+)
 
 
 logger = logging.getLogger(__name__)
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 def admin_dashboard(request):
-    logements = Logement.objects.all()
+    # Get the logements based on the user
+    logements = get_logements(request.user)
     return render(request, "administration/dashboard.html", {"logements": logements})
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 def add_logement(request):
     if request.method == "POST":
         form = LogementForm(request.POST)
@@ -80,7 +87,7 @@ def add_logement(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 def edit_logement(request, logement_id):
     logement = get_object_or_404(
         Logement.objects.prefetch_related(
@@ -116,7 +123,7 @@ def edit_logement(request, logement_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 def add_room(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
     Room.objects.create(name=request.POST["name"], logement=logement)
@@ -124,7 +131,7 @@ def add_room(request, logement_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def delete_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
@@ -134,7 +141,7 @@ def delete_room(request, room_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def upload_photos(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
@@ -150,7 +157,7 @@ def upload_photos(request, logement_id):
 
 # Change the room of a photo
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def change_photo_room(request, photo_id):
     photo = get_object_or_404(Photo, id=photo_id)
@@ -168,7 +175,7 @@ def change_photo_room(request, photo_id):
 
 # Move photo up or down
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def move_photo(request, photo_id, direction):
     photo = get_object_or_404(Photo, id=photo_id)
@@ -206,7 +213,7 @@ def move_photo(request, photo_id, direction):
 
 # Delete photo
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 def delete_photo(request, photo_id):
     if request.method == "DELETE":
         photo = get_object_or_404(Photo, id=photo_id)
@@ -215,7 +222,7 @@ def delete_photo(request, photo_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def delete_all_photos(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
@@ -224,7 +231,7 @@ def delete_all_photos(request, logement_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 @require_POST
 def rotate_photo(request, photo_id):
     degrees = int(request.POST.get("degrees", 90))
@@ -240,7 +247,7 @@ def rotate_photo(request, photo_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_logement_admin
 def update_equipment(request, logement_id):
     logement = get_object_or_404(Logement, id=logement_id)
 
@@ -311,19 +318,36 @@ def traffic_dashboard(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 def calendar(request):
-    logements = Logement.objects.prefetch_related("photos").all()
-    return render(
-        request,
-        "administration/calendar.html",
-        {
-            "logements": logements,
-            "logements_json": json.dumps(
-                [{"id": l.id, "name": l.name} for l in logements]
-            ),
-        },
-    )
+    try:
+        # Get the logements based on the user
+        logements = get_logements(request.user)
+
+        # Return the rendered page with logements data
+        return render(
+            request,
+            "administration/calendar.html",
+            {
+                "logements": logements,
+                "logements_json": json.dumps(
+                    [{"id": l.id, "name": l.name} for l in logements]
+                ),
+            },
+        )
+
+    except Exception as e:
+        # Log the error with the exception details
+        logger.error(f"Error occurred in calendar view: {e}", exc_info=True)
+
+        # Optionally, return a safe error page with a user-friendly message
+        return render(
+            request,
+            "common/error.html",  # Reuse the error template from the common app
+            {
+                "error_message": "Une erreur est survenue en essayant d'accéder au calendrier"
+            },
+        )
 
 
 class DailyPriceViewSet(viewsets.ModelViewSet):
@@ -490,14 +514,16 @@ def normalize_decimal_input(data):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 def manage_discounts(request):
-    all_logements = Logement.objects.all()
+    # Get the logements based on the user
+    logements = get_logements(request.user)
+
     logement_id = request.GET.get("logement_id") or request.POST.get("logement_id")
     logement = (
         get_object_or_404(Logement, id=logement_id)
         if logement_id
-        else all_logements.first()
+        else logements.first()
     )
 
     if not logement:
@@ -578,10 +604,12 @@ def manage_discounts(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 @require_http_methods(["GET", "POST"])
 def economie_view(request):
-    logements = Logement.objects.all()
+    # Get the logements based on the user
+    logements = get_logements(request.user)
+
     selected_logement_id = (
         request.POST.get("logement_id") or logements.first().id if logements else None
     )
@@ -741,7 +769,7 @@ def js_logger(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_has_logement
 def reservation_dashboard(request, logement_id=None):
     try:
         # Step 1: Get reservations based on user and logement_id
@@ -880,7 +908,7 @@ def edit_entreprise(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_reservation_admin
 def reservation_detail(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
     return render(
@@ -889,7 +917,7 @@ def reservation_detail(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_reservation_admin
 @require_POST
 def cancel_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
@@ -903,7 +931,7 @@ def cancel_reservation(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_reservation_admin
 @require_POST
 def refund_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
@@ -930,7 +958,7 @@ def refund_reservation(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_reservation_admin
 @require_POST
 def refund_partially_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
@@ -968,7 +996,7 @@ def refund_partially_reservation(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_is_reservation_admin
 @require_POST
 def charge_deposit(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
