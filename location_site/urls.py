@@ -55,3 +55,9 @@ urlpatterns = [
 # Append the static files URLs
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+handler400 = "common.views.custom_bad_request"
+handler403 = "common.views.custom_permission_denied"
+handler404 = "common.views.custom_page_not_found"
+handler500 = "common.views.custom_server_error"

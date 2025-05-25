@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'common/css/errors.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="error-container">
+  <div class="error-box">
+    <h1 class="error-title">Erreur 403</h1>
+    <p class="error-subtitle">Accès interdit</p>
+    <p class="error-description">
+      Vous n’avez pas la permission d’accéder à cette ressource. Si vous pensez que c’est une erreur, veuillez contacter l’administrateur.
+    </p>
+    <a href="{% url 'logement:home' %}" class="error-button">Retour à l’accueil</a>
+  </div>
+</section>
+{% endblock %}

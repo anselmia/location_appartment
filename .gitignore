@@ -25,3 +25,4 @@ build/
 migrations/
 media/
 db.sqlite3
+staticfiles/

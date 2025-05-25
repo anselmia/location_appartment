@@ -70,7 +70,7 @@ def user_has_saved_card(stripe_customer_id):
         return False
 
 
-def create_stripe_checkout_session_with_deposit(reservation, success_url, cancel_url):
+def create_stripe_checkout_session_with_deposit(reservation, request):
     try:
         logger.info(
             f"Creating Stripe checkout session with deposit for reservation {reservation.id}."

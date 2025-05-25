@@ -5,11 +5,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 def is_admin(user):
     return user.is_authenticated and (
         getattr(user, "is_admin", False) or user.is_superuser
     )
+
 
 def cgu_view(request):
     return render(request, "common/cgu.html")
@@ -35,3 +35,19 @@ def error_view(request, error_message="An unexpected error occurred."):
         "common/error.html",  # Common error template
         {"error_message": error_message},
     )
+
+
+def custom_bad_request(request, exception):
+    return render(request, "400.html", status=400)
+
+
+def custom_permission_denied(request, exception):
+    return render(request, "403.html", status=403)
+
+
+def custom_page_not_found(request, exception):
+    return render(request, "404.html", status=404)
+
+
+def custom_server_error(request):
+    return render(request, "500.html", status=500)

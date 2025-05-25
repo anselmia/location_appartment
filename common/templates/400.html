@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'common/css/errors.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="error-container">
+  <div class="error-box">
+    <h1 class="error-title">Erreur 400</h1>
+    <p class="error-subtitle">Votre requête ne peut pas être traitée</p>
+    <p class="error-description">
+      Il semble que les informations envoyées ne soient pas valides. Veuillez vérifier les champs ou réessayer plus tard.
+    </p>
+    <a href="{% url 'logement:home' %}" class="error-button">Retour à l’accueil</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'common/css/errors.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="error-container">
+  <div class="error-box">
+    <h1 class="error-title">Erreur 404</h1>
+    <p class="error-subtitle">Page introuvable</p>
+    <p class="error-description">
+      La page que vous recherchez n’existe pas ou a été déplacée. Assurez-vous que l’URL est correcte.
+    </p>
+    <a href="{% url 'logement:home' %}" class="error-button">Retour à l’accueil</a>
+  </div>
+</section>
+{% endblock %}

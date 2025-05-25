@@ -16,12 +16,13 @@ SECRET_KEY = os.environ.get(
 )  # Set securely in env
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "logement/static")]
+STATIC_URL = "/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
 DATABASES = {
