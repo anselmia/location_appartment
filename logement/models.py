@@ -137,6 +137,9 @@ class Logement(models.Model):
     def booking_limit(self):
         return timezone.now().date() + timedelta(days=self.ready_period)
 
+    def is_logement_admin(self, user):
+        return user.is_admin or user == self.owner or user in self.admins.all()
+
 
 class Price(models.Model):
     logement = models.ForeignKey(

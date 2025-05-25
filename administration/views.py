@@ -32,8 +32,7 @@ from .forms import (
     CommitmentForm,
     EntrepriseForm,
 )
-from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
-from django.db.models import Count
+
 from .models import SiteVisit, HomePageConfig, Entreprise
 from .serializers import DailyPriceSerializer
 from rest_framework import viewsets
@@ -42,7 +41,7 @@ from rest_framework.decorators import action
 from django.db.models import Sum, F
 from calendar import month_name
 from django.http import JsonResponse, HttpResponseBadRequest
-from logement.services.reservation_service import calculate_price
+from logement.services.reservation_service import calculate_price, get_reservations
 from common.views import is_admin
 from logement.services.payment_service import refund_payment, charge_payment
 from decimal import Decimal, InvalidOperation
@@ -744,56 +743,65 @@ def js_logger(request):
 @login_required
 @user_passes_test(is_admin)
 def reservation_dashboard(request, logement_id=None):
-    if logement_id:
-        logement = get_object_or_404(
-            Logement.objects.prefetch_related("photos"), id=logement_id
-        )
-        base_qs = Reservation.objects.filter(logement=logement)
-    else:
-        base_qs = Reservation.objects.all()
+    try:
+        # Step 1: Get reservations based on user and logement_id
+        qs = get_reservations(request.user, logement_id)
 
-    base_qs = (
-        base_qs.exclude(statut="en_attente")
-        .order_by("-start")
-        .select_related("user", "logement")
-        .prefetch_related("logement__photos")
-    )
-
-    # Filter by year and month (from query params)
-    year = request.GET.get("year")
-    month = request.GET.get("month")
-    if year:
-        base_qs = base_qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
-    if month:
-        base_qs = base_qs.annotate(res_month=ExtractMonth("start")).filter(
-            res_month=month
+        # Step 2: Apply the exclusions and ordering
+        qs = (
+            qs.exclude(statut="en_attente")
+            .order_by("-start")
+            .select_related("user", "logement")
+            .prefetch_related("logement__photos")
         )
 
-    # For dropdowns: list all available years and months
-    years = (
-        Reservation.objects.annotate(y=ExtractYear("start"))
-        .values_list("y", flat=True)
-        .distinct()
-        .order_by("y")
-    )
-    months = (
-        Reservation.objects.annotate(m=ExtractMonth("start"))
-        .values_list("m", flat=True)
-        .distinct()
-        .order_by("m")
-    )
+        # Step 3: Filter by year and month (from query params)
+        year = request.GET.get("year")
+        month = request.GET.get("month")
+        if year:
+            qs = qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
+        if month:
+            qs = qs.annotate(res_month=ExtractMonth("start")).filter(res_month=month)
 
-    return render(
-        request,
-        "administration/reservations.html",
-        {
-            "reservations": base_qs,
-            "available_years": years,
-            "available_months": months,
-            "current_year": year,
-            "current_month": month,
-        },
-    )
+        # Step 4: For dropdowns: list all available years and months
+        years = (
+            Reservation.objects.annotate(y=ExtractYear("start"))
+            .values_list("y", flat=True)
+            .distinct()
+            .order_by("y")
+        )
+        months = (
+            Reservation.objects.annotate(m=ExtractMonth("start"))
+            .values_list("m", flat=True)
+            .distinct()
+            .order_by("m")
+        )
+
+        # Step 5: Return the render with filtered data
+        return render(
+            request,
+            "administration/reservations.html",
+            {
+                "reservations": qs,
+                "available_years": years,
+                "available_months": months,
+                "current_year": year,
+                "current_month": month,
+            },
+        )
+
+    except Exception as e:
+        # Log the error but do not raise it
+        logger.error(f"Error occurred in reservation_dashboard: {e}", exc_info=True)
+
+        # Optionally, return a safe fallback response (like an error message) instead of raising an exception
+        return render(
+            request,
+            "common/error.html",
+            {
+                "error_message": "Une erreur est survenue en récupérant les réservations."
+            },
+        )
 
 
 @login_required

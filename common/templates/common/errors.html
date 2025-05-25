@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'common/css/errors.css' %}"> 
+{% endblock %}
+
+{% block content %}
+    <h1>Oops! Something went wrong.</h1>
+    <p>{{ error_message }}</p>
+    <a href="{% url 'logement:home' %}">Retour à la page d'acceuil</a>
+{% endblock %}

@@ -309,11 +309,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 intent = stripe.PaymentIntent.retrieve(
                     payment_intent_id, expand=["payment_method"]
                 )
-                logger.info(intent)
-
                 payment_method = intent.payment_method
-
-                logger.info(payment_method)
 
                 # Validate if payment method exists
                 if not payment_method:

@@ -3,6 +3,7 @@ from decimal import Decimal
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 import logging
 from django.db.models import Q
 from logement.models import (
@@ -17,6 +18,37 @@ from logement.services.payment_service import refund_payment
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_reservations(user, logement_id=None):
+    try:
+        if logement_id:
+            # Use get_object_or_404 for safe retrieval of the logement
+            logement = get_object_or_404(Logement, id=logement_id)
+
+            # Check if the user is an admin or part of the admins for the logement
+            if logement.is_logement_admin(user):
+                qs = Reservation.objects.filter(logement=logement)
+            else:
+                qs = Reservation.objects.none()
+        else:
+            if user.is_admin:
+                # Admin users can see all reservations
+                qs = Reservation.objects.all()
+            else:
+                # Non-admin users: filter logements where the user is either the owner or an admin
+                logements = Logement.objects.filter(Q(owner=user) | Q(admins=user))
+                qs = Reservation.objects.filter(logement__in=logements)
+
+        return qs
+
+    except Exception as e:
+        # Log the error and raise an exception
+        logger.error(
+            f"Error occurred while retrieving reservations: {e}", exc_info=True
+        )
+        # Optionally, you can re-raise the error or return a safe result, depending on the use case
+        raise
 
 
 def get_available_logement_in_period(start, end, logements):
