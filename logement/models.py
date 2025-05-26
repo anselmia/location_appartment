@@ -487,6 +487,7 @@ class Reservation(models.Model):
             return False
         if self.refundable_period_passed:
             return False
+        return True
 
     @property
     def refundable_amount(self):

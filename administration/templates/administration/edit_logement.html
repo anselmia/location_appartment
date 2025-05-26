@@ -53,6 +53,7 @@
                         {{ form.owner|add_class:"form-input" }}
                     </div>
                     <div class="form-field">
+                        <label for="{{ form.admins.id_for_label }}">{{ form.admins.label }}</label>
                         <div class="admin-checkboxes">
                             {% for checkbox in form.admins %}
                                 <div class="checkbox-wrapper">
