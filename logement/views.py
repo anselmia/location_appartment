@@ -327,9 +327,9 @@ def cancel_booking(request, code):
     return redirect("accounts:dashboard")
 
 
-def export_ical(request):
+def export_ical(request, code):
     try:
-        ics_content = generate_ical()
+        ics_content = generate_ical(code)
         if ics_content:
             response = HttpResponse(ics_content, content_type="text/calendar")
             response["Content-Disposition"] = (

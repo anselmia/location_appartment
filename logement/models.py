@@ -58,6 +58,7 @@ class Equipment(models.Model):
 
 class Logement(models.Model):
     name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)
@@ -135,6 +136,21 @@ class Logement(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.code:
+            # Ensure uniqueness
+            for _ in range(10):  # up to 10 retries
+                code = generate_unique_code()
+                if not Reservation.objects.filter(code=code).exists():
+                    self.code = code
+                    break
+            else:
+                raise ValueError("Could not generate a unique reservation code.")
+        super().save(*args, **kwargs)
+
+    def is_logement_admin(self, user):
+        return user.is_admin or user == self.owner or user in self.admins.all()
+
     @property
     def booking_limit(self):
         return timezone.now().date() + timedelta(days=self.ready_period)
@@ -154,8 +170,9 @@ class Logement(models.Model):
         # Return the list of emails as a sorted list (optional)
         return sorted(email_list)
 
-    def is_logement_admin(self, user):
-        return user.is_admin or user == self.owner or user in self.admins.all()
+    @property
+    def calendar_link(self):
+        return f"https://valrose.home-arnaud.ovh/api/export/ical/{self.code}/"
 
 
 class Price(models.Model):
