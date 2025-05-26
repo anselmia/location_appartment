@@ -69,11 +69,6 @@ section h2::after {
   height: 100%;
 }
 
-.scroll-down {
-  position: absolute; bottom: 20px; left: 50%;
-  transform: translateX(-50%);
-  animation: bounce 2s infinite;
-}
 @keyframes bounce {
   0%, 100% { transform: translateY(0) translateX(-50%); }
   50% { transform: translateY(-8px) translateX(-50%); }

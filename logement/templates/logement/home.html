@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="scroll-down"><i class="fas fa-angle-down"></i></div>
 <div class="home-page">
     <header class="hero-banner" style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}');">
         <div class="overlay">
