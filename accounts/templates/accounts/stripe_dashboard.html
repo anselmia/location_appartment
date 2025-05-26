@@ -3,45 +3,83 @@
 {% load static %}
 {% load extra_tags %}
 
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'accounts/css/stripe_dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">Mon Compte Stripe</h2>
+<div class="container client-dashboard mt-5">
+  <h2 class="text-center fw-semibold mb-4">Mon Compte Stripe</h2>
 
-    {% if error %}
-        <div class="alert alert-warning">{{ error }}</div>
-    {% else %}
-        <div class="card mb-4 shadow">
-            <div class="card-body">
-                <h5 class="card-title">Informations du Compte</h5>
-                <p><strong>ID Stripe:</strong> {{ account.id }}</p>
-                <p><strong>Email:</strong> {{ account.email }}</p>
-                <p><strong>Payouts activés:</strong> {{ account.payouts_enabled }}</p>
-                <p><strong>Charges autorisées:</strong> {{ account.charges_enabled }}</p>
-            </div>
+  {% if error %}
+    <div class="alert alert-warning text-center">{{ error }}</div>
+  {% else %}
+    <!-- Account Info Card -->
+    <div class="card shadow-sm mb-5 rounded-4">
+      <div class="card-header bg-dark text-white rounded-top-4">
+        <h5 class="mb-0">Informations du Compte Stripe</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6"><strong>ID Stripe :</strong> {{ account.id }}</div>
+          <div class="col-md-6"><strong>Email :</strong> {{ account.email }}</div>
+          <div class="col-md-6"><strong>Payouts activés :</strong> 
+            {% if account.payouts_enabled %}<span class="text-success">✔️ Oui</span>{% else %}<span class="text-danger">❌ Non</span>{% endif %}
+          </div>
+          <div class="col-md-6"><strong>Charges autorisées :</strong> 
+            {% if account.charges_enabled %}<span class="text-success">✔️ Oui</span>{% else %}<span class="text-danger">❌ Non</span>{% endif %}
+          </div>
         </div>
+      </div>
+    </div>
 
-        <h4 class="mb-3">Paiements & Réservations</h4>
-        {% for item in stripe_data %}
-            <div class="card mb-3 shadow-sm">
-                <div class="card-body">
-                    <h5>Réservation {{ item.reservation.code }}</h5>
-                    <p><strong>Logement:</strong> {{ item.reservation.logement.name }}</p>
-                    <p><strong>Montant:</strong> {{ item.reservation.price }} €</p>
-                    <p><strong>Dates:</strong> {{ item.reservation.start }} - {{ item.reservation.end }}</p>
-                    {% if item.payment_intent %}
-                        <hr>
-                        <p><strong>Stripe PaymentIntent:</strong> {{ item.payment_intent.id }}</p>
-                        <p><strong>Status:</strong> {{ item.payment_intent.status }}</p>
-                        <p><strong>Montant payé:</strong> {{ item.payment_intent.amount_received|cents_to_euros|floatformat:2 }} €</p>
-                        {% if item.refund %}
-                            <p class="text-danger">💸 Remboursé</p>
-                        {% endif %}
-                    {% else %}
-                        <p class="text-muted">Aucun paiement associé</p>
-                    {% endif %}
-                </div>
+    <!-- Payment Section -->
+    <h4 class="mb-4 text-center text-dark">Paiements & Réservations</h4>
+
+    {% for item in stripe_data %}
+      <div class="card mb-4 shadow rounded-4">
+        <div class="card-body">
+          <div class="row g-4 align-items-center">
+            <div class="col-md-6">
+              <h5 class="fw-semibold">Réservation : {{ item.reservation.code }}</h5>
+              <p class="mb-1"><strong>Logement :</strong> {{ item.reservation.logement.name }}</p>
+              <p class="mb-1"><strong>Montant :</strong> {{ item.reservation.price }} €</p>
+              <p class="mb-1"><strong>Dates :</strong> {{ item.reservation.start|date:"d M Y" }} → {{ item.reservation.end|date:"d M Y" }}</p>
             </div>
-        {% endfor %}
-    {% endif %}
+
+            <div class="col-md-6">
+              {% if item.payment_intent %}
+                <p class="mb-1"><strong>💳 Paiement :</strong> {{ item.payment_intent.id }}</p>
+                <p class="mb-1"><strong>Status :</strong> 
+                  {% if item.payment_intent.status == "succeeded" %}
+                    <span class="badge bg-success">Succès</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">{{ item.payment_intent.status }}</span>
+                  {% endif %}
+                </p>
+                <p class="mb-1"><strong>Montant reçu :</strong> {{ item.payment_intent.amount_received|cents_to_euros|floatformat:2 }} €</p>
+              {% else %}
+                <p class="text-muted">Aucun paiement associé</p>
+              {% endif %}
+
+              {% if item.deposit_intent %}
+                <hr class="my-2">
+                <p class="mb-1"><strong>🔒 Dépôt :</strong> {{ item.deposit_intent.id }}</p>
+                <p class="mb-1"><strong>Status :</strong> {{ item.deposit_intent.status }}</p>
+                <p class="mb-1"><strong>Montant :</strong> {{ item.deposit_intent.amount|cents_to_euros|floatformat:2 }} €</p>
+              {% endif %}
+
+              {% if item.refund %}
+                <p class="mt-2 text-danger fw-semibold">💸 Remboursé : {{ item.refund_amount }} €</p>
+              {% elif item.refunded_flag %}
+                <p class="mt-2 text-success fw-semibold">✅ Remboursement traité</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
 </div>
 {% endblock %}

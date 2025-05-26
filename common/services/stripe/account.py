@@ -58,6 +58,7 @@ def get_reservation_stripe_data(user):
 
     for r in reservations:
         payment_intent = refund = None
+        # Main payment intent
         if r.stripe_payment_intent_id:
             try:
                 payment_intent = stripe.PaymentIntent.retrieve(
@@ -65,16 +66,33 @@ def get_reservation_stripe_data(user):
                 )
                 if payment_intent.latest_charge:
                     charge = stripe.Charge.retrieve(payment_intent.latest_charge)
-                    refund = charge.get("refunds", {}).data if charge.refunded else None
+                    if charge.refunded:
+                        refund = charge.refunds.data
             except Exception as e:
                 logger.warning(
-                    f"Failed to fetch payment data for reservation {r.code}: {e}"
+                    f"[Stripe] Error fetching payment intent for {r.code}: {e}"
                 )
-        data.append(
-            {
-                "reservation": r,
-                "payment_intent": payment_intent,
-                "refund": refund,
-            }
-        )
+
+        # Deposit payment intent
+        if r.stripe_deposit_payment_intent_id:
+            try:
+                deposit_intent = stripe.PaymentIntent.retrieve(
+                    r.stripe_deposit_payment_intent_id
+                )
+            except Exception as e:
+                logger.warning(
+                    f"[Stripe] Error fetching deposit intent for {r.code}: {e}"
+                )
+        data.append({
+            "reservation": r,
+            "payment_intent": payment_intent,
+            "deposit_intent": deposit_intent,
+            "refund": refund,
+            "refunded_flag": r.refunded,
+            "refund_amount": r.refund_amount,
+            "stripe_refund_id": r.stripe_refund_id,
+            "caution_charged": r.caution_charged,
+            "amount_charged": r.amount_charged,
+            "saved_payment_method": r.stripe_saved_payment_method_id,
+        })
     return data
