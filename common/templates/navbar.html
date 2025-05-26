@@ -22,7 +22,7 @@
                 <a href="{% url 'logement:logement_search' %}">{% trans "Réserver" %}</a>
         
                 {% if user.is_authenticated %}
-                    {% if user.is_superuser or user.is_admin %}
+                    {% if user.is_superuser or user.is_admin or user.is_owner or user.is_owner_admin %}
                         <div class="dropdown">
                             <a href="#" class="dropdown-toggle">{% trans "Logements" %}</a>
                             <div class="dropdown-menu">
@@ -48,7 +48,7 @@
                         <a href="#" class="dropdown-toggle">{% trans "Mon compte" %} ({{ user.username }})</a>
                         <div class="dropdown-menu">
                             <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
-                            {% if user.is_owner or user.is_superuser or user.is_admin %}
+                            {% if user.is_owner or user.is_owner_admin or user.is_superuser or user.is_admin %}
                                 <a href="{% url 'accounts:owner_stripe_dashboard' %}">{% trans "Compte Stripe" %}</a>
                             {% endif %}   
                             <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
