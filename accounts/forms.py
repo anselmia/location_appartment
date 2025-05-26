@@ -98,6 +98,10 @@ class CustomUserChangeForm(UserChangeForm):
         self.fields["last_name"].disabled = True
         self.fields["email"].disabled = True
 
+        # Remove the password field
+        if "password" in self.fields:
+            self.fields.pop("password")
+
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
         user = self.instance
