@@ -33,7 +33,9 @@
                                 <a href="{% url 'administration:revenu' %}">{% trans "Revenus" %}</a>
                             </div>
                         </div>
-
+                    {% endif %}
+                    
+                    {% if user.is_superuser or user.is_admin %}
                         <div class="dropdown">
                             <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
                             <div class="dropdown-menu">
