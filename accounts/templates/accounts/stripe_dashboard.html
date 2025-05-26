@@ -24,12 +24,6 @@
         <div class="row g-3">
           <div class="col-md-6"><strong>ID Stripe :</strong> {{ account.id }}</div>
           <div class="col-md-6"><strong>Email :</strong> {{ account.email }}</div>
-          <div class="col-md-6"><strong>Payouts activés :</strong> 
-            {% if account.payouts_enabled %}<span class="text-success">✔️ Oui</span>{% else %}<span class="text-danger">❌ Non</span>{% endif %}
-          </div>
-          <div class="col-md-6"><strong>Charges autorisées :</strong> 
-            {% if account.charges_enabled %}<span class="text-success">✔️ Oui</span>{% else %}<span class="text-danger">❌ Non</span>{% endif %}
-          </div>
         </div>
       </div>
     </div>
