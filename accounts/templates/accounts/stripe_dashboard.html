@@ -89,7 +89,7 @@
                 {% if item.refund %}
                 <hr class="my-2">
                     <p class="mt-2 text-danger fw-semibold">
-                        💸 Remboursé : {{ item.refund.amount|divisibleby:100|floatformat:2 }} €
+                        💸 Remboursé : {{ item.refund.amount|cents_to_euros|floatformat:2 }} {{ item.refund.currency}}
                     </p>
                     <p class="mb-1"><strong>Status :</strong>
                         {% if item.refund.status == "succeeded" %}
