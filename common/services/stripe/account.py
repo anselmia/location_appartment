@@ -102,4 +102,5 @@ def get_reservation_stripe_data(user):
                 "saved_payment_method": r.stripe_saved_payment_method_id,
             }
         )
+        logger.log(data)
     return data
