@@ -1,32 +1,32 @@
 {% load static %}
 {% load widget_tweaks %}
 
-<div class="card-body">
-    <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
-        {% csrf_token %}
-        <!-- User Profile Form Fields -->
+<div class="card shadow rounded-4 border-0">
+  <div class="card-header bg-dark text-white rounded-top-4">
+    <h5 class="mb-0">Informations personnelles</h5>
+  </div>
+  <div class="card-body">
+    <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}" class="needs-validation" novalidate>
+      {% csrf_token %}
+
+      {% for field in formUser.visible_fields %}
         <div class="mb-3">
-            <label for="id_username" class="form-label">Identifiant</label>
-            {{ formUser.username|add_class:"form-control" }}
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field|add_class:"form-control" }}
+          {% if field.help_text %}
+            <small class="form-text text-muted">{{ field.help_text }}</small>
+          {% endif %}
+          {% if field.errors %}
+            <div class="text-danger small">{{ field.errors.0 }}</div>
+          {% endif %}
         </div>
-        <div class="mb-3">
-            <label for="id_name" class="form-label">Nom</label>
-            {{ formUser.name|add_class:"form-control" }}
-        </div>
-        <div class="mb-3">
-            <label for="id_last_name" class="form-label">Prénom</label>
-            {{ formUser.last_name|add_class:"form-control" }}
-        </div>
-        <div class="mb-3">
-            <label for="id_email" class="form-label">Email</label>
-            {{ formUser.email|add_class:"form-control" }}
-        </div>
-        <div class="mb-3">
-            <label for="id_phone" class="form-label">Téléphone</label>
-            {{ formUser.phone|add_class:"form-control" }}
-        </div>
-        <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-primary">Mettre à jour mes informations</button>
-        </div>
+      {% endfor %}
+
+      <div class="d-flex justify-content-center mt-4">
+        <button type="submit" class="btn btn-primary px-4">
+          ✅ Mettre à jour mes informations
+        </button>
+      </div>
     </form>
+  </div>
 </div>
