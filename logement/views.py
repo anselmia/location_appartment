@@ -34,6 +34,7 @@ from administration.models import HomePageConfig
 from accounts.forms import ContactForm
 from collections import defaultdict
 from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
+from common.decorators import user_has_reservation
 
 
 logger = logging.getLogger(__name__)
@@ -256,6 +257,7 @@ def check_booking_input(request, logement_id):
 
 
 @login_required
+@user_has_reservation
 def payment_success(request, code):
     try:
         reservation = Reservation.objects.get(code=code)
@@ -287,6 +289,7 @@ def payment_success(request, code):
 
 
 @login_required
+@user_has_reservation
 def payment_cancel(request, code):
     try:
         reservation = get_object_or_404(Reservation, code=code)
@@ -313,6 +316,7 @@ def payment_cancel(request, code):
 
 
 @login_required
+@user_has_reservation
 def cancel_booking(request, code):
     try:
         reservation = get_object_or_404(Reservation, code=code, user=request.user)

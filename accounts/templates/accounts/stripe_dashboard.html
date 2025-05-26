@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Mon Compte Stripe</h2>
+
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h5 class="card-title">Informations du Compte</h5>
+                <p><strong>ID Stripe:</strong> {{ account.id }}</p>
+                <p><strong>Email:</strong> {{ account.email }}</p>
+                <p><strong>Payouts activés:</strong> {{ account.payouts_enabled }}</p>
+                <p><strong>Charges autorisées:</strong> {{ account.charges_enabled }}</p>
+            </div>
+        </div>
+
+        <h4 class="mb-3">Paiements & Réservations</h4>
+        {% for item in stripe_data %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5>Réservation {{ item.reservation.code }}</h5>
+                    <p><strong>Logement:</strong> {{ item.reservation.logement.name }}</p>
+                    <p><strong>Montant:</strong> {{ item.reservation.price }} €</p>
+                    <p><strong>Dates:</strong> {{ item.reservation.start }} - {{ item.reservation.end }}</p>
+                    {% if item.payment_intent %}
+                        <hr>
+                        <p><strong>Stripe PaymentIntent:</strong> {{ item.payment_intent.id }}</p>
+                        <p><strong>Status:</strong> {{ item.payment_intent.status }}</p>
+                        <p><strong>Montant payé:</strong> {{ item.payment_intent.amount_received|floatformat:2 }} €</p>
+                        {% if item.refund %}
+                            <p class="text-danger">💸 Remboursé</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">Aucun paiement associé</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

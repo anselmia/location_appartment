@@ -43,6 +43,7 @@ class CustomUser(AbstractUser):
         return f"{self.name} {self.last_name}"
 
     def save(self, *args, **kwargs):
+        from common.services.stripe.account import get_or_create_stripe_account
         if self.is_owner or self.is_owner_admin:
             if not self.stripe_account_id:
                 account_id = get_or_create_stripe_account(self)

@@ -1,7 +1,8 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from logement.models import Logement, Room, Photo, Reservation
 from django.db.models import Q
+from django.contrib import messages
 
 
 def user_is_logement_admin(view_func):
@@ -80,5 +81,19 @@ def user_is_reservation_admin(view_func):
 
         # If the user is not authorized, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
+def user_has_reservation(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        code = kwargs["code"]
+
+        if Reservation.objects.filter(code=code, user=request.user).exists():
+            return view_func(request, *args, **kwargs)
+
+        # If the user is not authorized, redirect to dashboard
+        messages.error(request, "Accès refusé : vous n'avez pas réservé ce logement.")
+        return redirect("accounts:dashboard")
 
     return _wrapped_view

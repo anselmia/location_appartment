@@ -14,6 +14,10 @@ from logement.models import Reservation
 from django.db.models import Q
 from .models import Message, CustomUser
 from django.core.mail import send_mail
+from common.services.stripe.account import (
+    get_stripe_account_info,
+    get_reservation_stripe_data,
+)
 
 import logging
 
@@ -196,3 +200,27 @@ def delete_account(request):
     user.delete()
     messages.success(request, "✅ Votre compte a été supprimé avec succès.")
     return redirect("logement:home")
+
+
+@login_required
+def owner_stripe_dashboard(request):
+    user = request.user
+
+    if not user.is_owner or not user.stripe_account_id:
+        return render(
+            request,
+            "accounts/stripe_dashboard.html",
+            {"error": "Aucun compte Stripe associé."},
+        )
+
+    account = get_stripe_account_info(user)
+    stripe_data = get_reservation_stripe_data(user)
+
+    return render(
+        request,
+        "accounts/stripe_dashboard.html",
+        {
+            "account": account,
+            "stripe_data": stripe_data,
+        },
+    )

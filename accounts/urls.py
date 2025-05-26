@@ -17,4 +17,5 @@ urlpatterns = [
     path('messages/', views.messages_view, name='messages'),
     path("contact/", views.contact_view, name="contact"),    
     path("delete-account/", views.delete_account, name="delete_account"),
+    path("stripe-dashboard/", views.owner_stripe_dashboard, name="owner_stripe_dashboard"),
 ]
