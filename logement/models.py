@@ -491,13 +491,14 @@ class Reservation(models.Model):
 
     @property
     def refundable_amount(self):
+        from logement.services.reservation_service import get_platform_fee
+
         # Calculate the refundable amount
         __refundable_amount = max(
             self.price
-            - (
-                self.price * (self.logement.refund_charge / Decimal("100"))
-                - self.refund_amount
-            ),
+            - get_platform_fee(self.price)
+            - (self.price * (self.logement.refund_charge / Decimal("100")))
+            - self.refund_amount,
             Decimal("0"),  # Ensure we return 0 if the result is negative
         )
 

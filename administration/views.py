@@ -503,6 +503,8 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
             details["Taxe de séjour"] = f"+ {round(price_data['taxAmount'], 2)} €"
 
+            details["Frais de transaction"] = f"+ {round(price_data['platform_fee'], 2)} €"
+
             return Response(
                 {
                     "final_price": round(price_data["total_price"], 2),
