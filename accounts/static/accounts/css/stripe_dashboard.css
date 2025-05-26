@@ -1,3 +1,12 @@
+:root {
+  --primary-color: #bfa66b;
+  --secondary-color: #3b2f2f;
+  --light-bg: #f8f5f2;
+  --text-color: #d4af7f;
+  --font-family: 'Playfair Display', serif;
+}
+
+
 /* Root dashboard container */
 .client-dashboard {
   font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
