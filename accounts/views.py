@@ -20,6 +20,7 @@ from common.services.stripe.account import (
     get_reservation_stripe_data,
 )
 from django.contrib.auth import update_session_auth_hash
+from common.decorators import user_has_logement
 
 import logging
 
@@ -217,6 +218,7 @@ def delete_account(request):
 
 
 @login_required
+@user_has_logement
 def owner_stripe_dashboard(request):
     user = request.user
 
@@ -228,7 +230,13 @@ def owner_stripe_dashboard(request):
         )
 
     account = get_stripe_account_info(user)
+
+    # Handle optional search filter
+    code_filter = request.GET.get("code", "").strip()
     stripe_data = get_reservation_stripe_data(user)
+
+    if code_filter:
+        stripe_data = [entry for entry in stripe_data if code_filter.lower() in entry["reservation"].code.lower()]
 
     return render(
         request,
@@ -236,5 +244,6 @@ def owner_stripe_dashboard(request):
         {
             "account": account,
             "stripe_data": stripe_data,
+            "code_filter": code_filter,
         },
     )

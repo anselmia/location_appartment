@@ -35,6 +35,15 @@
     </div>
 
     <!-- Payment Section -->
+     <!-- Filter -->
+    <form method="get" class="d-flex justify-content-center mb-4" role="search">
+        <input type="text" name="code" value="{{ code_filter }}" class="form-control w-50 rounded-start"
+                placeholder="Filtrer par code de réservation...">
+        <button class="btn btn-outline-primary rounded-end ms-2" type="submit">Filtrer</button>
+        {% if code_filter %}
+            <a href="{% url 'accounts:owner_stripe_dashboard' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
+        {% endif %}
+    </form>
     <h4 class="mb-4 text-center text-dark">Paiements & Réservations</h4>
 
     {% for item in stripe_data %}
