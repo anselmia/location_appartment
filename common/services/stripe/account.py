@@ -75,7 +75,7 @@ def get_reservation_stripe_data(user):
 
             except Exception as e:
                 logger.warning(
-                    f"[Stripe] Error fetching payment intent for {r.code}: {e}"
+                    f"[Stripe] Error fetching refund for {r.code}: {e}"
                 )
 
         # Deposit payment intent
@@ -102,5 +102,5 @@ def get_reservation_stripe_data(user):
                 "saved_payment_method": r.stripe_saved_payment_method_id,
             }
         )
-        logger.log(data)
+        logger.info(data)
     return data
