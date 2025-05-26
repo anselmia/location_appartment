@@ -64,10 +64,15 @@ def get_reservation_stripe_data(user):
                 payment_intent = stripe.PaymentIntent.retrieve(
                     r.stripe_payment_intent_id
                 )
-                if payment_intent.latest_charge:
-                    charge = stripe.Charge.retrieve(payment_intent.latest_charge)
-                    if charge.refunded:
-                        refund = charge.refunds.data
+            except Exception as e:
+                logger.warning(
+                    f"[Stripe] Error fetching payment intent for {r.code}: {e}"
+                )
+
+        if r.stripe_refund_id:
+            try:
+                refund = stripe.Refund.retrieve(r.stripe_refund_id)
+
             except Exception as e:
                 logger.warning(
                     f"[Stripe] Error fetching payment intent for {r.code}: {e}"
@@ -83,16 +88,18 @@ def get_reservation_stripe_data(user):
                 logger.warning(
                     f"[Stripe] Error fetching deposit intent for {r.code}: {e}"
                 )
-        data.append({
-            "reservation": r,
-            "payment_intent": payment_intent,
-            "deposit_intent": deposit_intent,
-            "refund": refund,
-            "refunded_flag": r.refunded,
-            "refund_amount": r.refund_amount,
-            "stripe_refund_id": r.stripe_refund_id,
-            "caution_charged": r.caution_charged,
-            "amount_charged": r.amount_charged,
-            "saved_payment_method": r.stripe_saved_payment_method_id,
-        })
+        data.append(
+            {
+                "reservation": r,
+                "payment_intent": payment_intent,
+                "deposit_intent": deposit_intent,
+                "refund": refund,
+                "refunded_flag": r.refunded,
+                "refund_amount": r.refund_amount,
+                "stripe_refund_id": r.stripe_refund_id,
+                "caution_charged": r.caution_charged,
+                "amount_charged": r.amount_charged,
+                "saved_payment_method": r.stripe_saved_payment_method_id,
+            }
+        )
     return data

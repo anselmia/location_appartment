@@ -75,15 +75,33 @@
               {% if item.deposit_intent %}
                 <hr class="my-2">
                 <p class="mb-1"><strong>🔒 Dépôt :</strong> {{ item.deposit_intent.id }}</p>
-                <p class="mb-1"><strong>Status :</strong> {{ item.deposit_intent.status }}</p>
+                <p class="mb-1"><strong>Status :</strong>
+                    {% if item.deposit_intent.status == "succeeded" %}
+                        <span class="badge bg-success">Succès</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">{{ item.deposit_intent.status }}</span>
+                    {% endif %}
+                </p>
+                    
                 <p class="mb-1"><strong>Montant :</strong> {{ item.deposit_intent.amount|cents_to_euros|floatformat:2 }} €</p>
               {% endif %}
 
-              {% if item.refund %}
-                <p class="mt-2 text-danger fw-semibold">💸 Remboursé : {{ item.refund_amount }} €</p>
-              {% elif item.refunded_flag %}
-                <p class="mt-2 text-success fw-semibold">✅ Remboursement traité</p>
-              {% endif %}
+                {% if item.refund %}
+                    <p class="mt-2 text-danger fw-semibold">
+                        💸 Remboursé : {{ item.refund.amount|divisibleby:100|floatformat:2 }} €
+                    </p>
+                    <p class="mb-1"><strong>Status :</strong>
+                        {% if item.refund.status == "succeeded" %}
+                        <span class="badge bg-success">Succès</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{{ item.refund.status }}</span>
+                        {% endif %}
+                    </p>
+                {% elif item.refunded_flag %}
+                    <p class="mt-2 text-success fw-semibold">
+                        ✅ Remboursement traité ({{ item.refund_amount|floatformat:2 }} €)
+                    </p>
+                {% endif %}
             </div>
           </div>
         </div>
