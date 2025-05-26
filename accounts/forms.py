@@ -4,6 +4,7 @@ from .models import CustomUser, Message
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.contrib.auth.forms import PasswordChangeForm
 
 import logging
 
@@ -140,3 +141,18 @@ class ContactForm(forms.Form):
 
         self.fields["name"].initial = name
         self.fields["email"].initial = email
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Mot de passe actuel",
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )
+    new_password1 = forms.CharField(
+        label="Nouveau mot de passe",
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )
+    new_password2 = forms.CharField(
+        label="Confirmation du nouveau mot de passe",
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )

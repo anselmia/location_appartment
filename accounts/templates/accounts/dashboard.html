@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load extra_tags %}
 {% load widget_tweaks %}
 
 {% block extrahead %}
@@ -10,124 +9,44 @@
 
 {% block content %}
 <div class="container client-dashboard mt-5">
-    <h2 class="mb-5 text-center fw-semibold display-5 text-dark">Tableau de bord</h2>
-
-    <div class="row g-4">
-        <!-- Profile -->
-        <div class="col-md-4">
-            <div class="card shadow rounded-4 border-0">
-                <div class="card-header bg-dark text-white rounded-top-4">
-                    <h5 class="mb-0">Mon Profil</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
-                        {% csrf_token %}
-                        <!-- User Profile Form Fields -->
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Identifiant</label>
-                            {{ formUser.username|add_class:"form-control" }}
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_name" class="form-label">Nom</label>
-                            {{ formUser.name|add_class:"form-control" }}
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_last_name" class="form-label">Prénom</label>
-                            {{ formUser.last_name|add_class:"form-control" }}
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_email" class="form-label">Email</label>
-                            {{ formUser.email|add_class:"form-control" }}
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_phone" class="form-label">Téléphone</label>
-                            {{ formUser.phone|add_class:"form-control" }}
-                        </div>
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary">Mettre à jour mes informations</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <h2 class="mb-5 text-center fw-semibold display-5 text-dark">Tableau de bord</h2>
+  <div class="row dashboard">
+    <!-- Tabs on the left -->
+        <div class="col-md-3 mb-4">
+        <ul class="nav flex-column nav-pills" id="dashboardTabs" role="tablist">
+            <li class="nav-item mb-2">
+            <a class="nav-link active w-100" id="profile-tab-link" data-toggle="pill" href="#profile-tab" role="tab">Informations personnelles</a>
+            </li>
+            <li class="nav-item mb-2">
+            <a class="nav-link w-100" id="password-tab-link" data-toggle="pill" href="#password-tab" role="tab">Changer mon mot de passe</a>
+            </li>
+            <li class="nav-item mb-2">
+            <a class="nav-link w-100" id="reservations-tab-link" data-toggle="pill" href="#reservations-tab" role="tab">Mes Réservations</a>
+            </li>
+        </ul>
         </div>
 
-        <!-- Reservations -->
-        <div class="col-md-8">
-            <div class="card shadow rounded-4 border-0">
-                <div class="card-header bg-dark text-white rounded-top-4">
-                    <h5 class="mb-0">Mes Réservations</h5>
-                </div>
-                <div class="card-body">
-                    {% if reservations %}
-                        <ul class="list-group list-group-flush">
-                            {% for r in reservations %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap py-3 px-2">
-                                    <div class="pe-3">
-                                        <div class="fw-semibold text-dark">{{ r.logement.name }}</div>
-                                        <small class="text-dark">{{ r.code }}</small><br>
-                                        <small class="text-muted">Du {{ r.start|date:"d/m/Y" }} au {{ r.end|date:"d/m/Y" }}</small><br>
-                                        <small>{{ r.guest }} voyageur(s)</small><br>
-                                        <small class="text-dark fw-semibold">{{ r.price|floatformat:2 }} €</small><br>
-                                        <small class="text-muted">Réservation le {{ r.date_reservation|date:"d/m/Y" }}</small><br>
-                                        <small class="text-muted">Caution: {{ r.logement.caution }} €</small>
-                                        {% if r.amount_charged != 0 %}
-                                            <small class="text-muted">(Montant Prélevé: {{ r.logement.amount_charged|floatformat:2  }})</small>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Badges in a row -->
-                                    <div class="badge-container">
-                                        {% if r.ended %}
-                                            <span class="badge rounded-pill bg-secondary">Terminée</span>
-                                        {% elif r.ongoing %}
-                                            <span class="badge rounded-pill bg-warning text-dark">En cours</span>
-                                        {% elif r.coming %}
-                                            <span class="badge rounded-pill bg-info text-dark">A venir</span>
-                                        {% elif r.statut == "annulee" %}
-                                            <span class="badge rounded-pill bg-danger text-dark">Annulée</span>
-                                        {% endif %}
-                                    
-                                        <!-- Refund or refundable badge -->
-                                        {% if r.refundable %}
-                                            <span class="badge bg-info">Remboursable : {{ r.refundable_amount|floatformat:2 }} €</span>
-                                        {% elif r.refunded %}
-                                            <span class="badge bg-success">Remboursé : {{ r.refund_amount|floatformat:2 }} €</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Non Remboursable</span>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Cancel Button -->
-                                    {% if r.coming and r.can_cancel %}
-                                        <div class="text-end">
-                                            <form method="post" action="{% url 'logement:cancel_booking' r.code %}"
-                                                  onsubmit="return confirm('Confirmez-vous l\'annulation de cette réservation ? Cette action est définitive.');">
-                                                {% csrf_token %}
-                                                <button class="btn btn-outline-danger btn-sm">Annuler</button>
-                                            </form>
-                                        </div>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-center text-muted my-4">Vous n'avez pas encore de réservations enregistrées.</p>
-                    {% endif %}
-                </div>
+        <!-- Tab content on the right -->
+        <div class="col-md-9">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="profile-tab" role="tabpanel" aria-labelledby="profile-tab-link">
+            {% include "accounts/partials/profile_form.html" %}
+            </div>
+            <div class="tab-pane fade" id="password-tab" role="tabpanel" aria-labelledby="password-tab-link">
+            {% include "accounts/partials/password_form.html" %}
+            </div>
+            <div class="tab-pane fade" id="reservations-tab" role="tabpanel" aria-labelledby="reservations-tab-link">
+            {% include "accounts/partials/reservation_list.html" %}
             </div>
         </div>
-    </div>
+        </div>
+  </div>
 
-    <!-- Suppression du compte -->
-    <div class="d-flex justify-content-center mt-5">
-        <form method="post" action="{% url 'accounts:delete_account' %}"
-              onsubmit="return confirm('Confirmez-vous la suppression de votre compte ? Cette action est irréversible.')"
-              class="w-100" style="max-width: 320px;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger w-100">
-                Supprimer mon compte
-            </button>
-        </form>
-    </div>
+  <div class="d-flex justify-content-center mt-5">
+    <form method="post" action="{% url 'accounts:delete_account' %}" onsubmit="return confirm('Confirmez-vous la suppression de votre compte ? Cette action est irréversible.')" class="w-100" style="max-width: 320px;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger w-100">Supprimer mon compte</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

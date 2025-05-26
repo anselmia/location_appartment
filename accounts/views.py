@@ -5,6 +5,7 @@ from .forms import (
     CustomUserChangeForm,
     MessageForm,
     ContactForm,
+    CustomPasswordChangeForm,
 )
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -75,7 +76,18 @@ def client_dashboard(request):
     reservations = Reservation.objects.filter(
         user=user, statut__in=["confirmee", "annulee"]
     ).order_by("-start")
+
     formUser = CustomUserChangeForm(instance=user)
+    password_form = CustomPasswordChangeForm(user=user, data=request.POST or None)
+
+    if request.method == "POST" and "change_password" in request.POST:
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, password_form.user)
+            messages.success(request, "Mot de passe mis à jour avec succès.")
+            return redirect("accounts:dashboard")
+        else:
+            messages.error(request, "Veuillez corriger les erreurs du formulaire.")
 
     return render(
         request,
@@ -84,6 +96,7 @@ def client_dashboard(request):
             "user": user,
             "reservations": reservations,
             "formUser": formUser,
+            "password_form": password_form,
         },
     )
 

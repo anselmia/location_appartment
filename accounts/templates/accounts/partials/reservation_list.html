@@ -1,0 +1,57 @@
+{% load static %}
+{% load widget_tweaks %}
+
+
+<div class="card shadow rounded-4 border-0">
+  <div class="card-header bg-dark text-white rounded-top-4">
+    <h5 class="mb-0">Mes Réservations</h5>
+  </div>
+  <div class="card-body">
+    {% if reservations %}
+      <ul class="list-group list-group-flush">
+        {% for r in reservations %}
+          <li class="list-group-item d-flex justify-content-between flex-wrap">
+            <div class="pe-3">
+              <div class="fw-semibold text-dark">{{ r.logement.name }}</div>
+              <small class="text-muted">Du {{ r.start|date:"d/m/Y" }} au {{ r.end|date:"d/m/Y" }}</small><br>
+              <small>{{ r.guest }} voyageur(s)</small><br>
+              <small class="text-dark fw-semibold">{{ r.price|floatformat:2 }} €</small><br>
+              <small class="text-muted">Réservé le {{ r.date_reservation|date:"d/m/Y" }}</small><br>
+              <small class="text-muted">Caution: {{ r.logement.caution }} €</small>
+              {% if r.amount_charged %}
+                <small class="text-muted"> (Prélevé: {{ r.amount_charged|floatformat:2 }} €)</small>
+              {% endif %}
+            </div>
+            <div class="text-end">
+              {% if r.ended %}
+                <span class="badge bg-secondary">Terminée</span>
+              {% elif r.ongoing %}
+                <span class="badge bg-warning text-dark">En cours</span>
+              {% elif r.coming %}
+                <span class="badge bg-info text-dark">À venir</span>
+              {% elif r.statut == "annulee" %}
+                <span class="badge bg-danger">Annulée</span>
+              {% endif %}
+              {% if r.refundable %}
+                <span class="badge bg-info">Remboursable : {{ r.refundable_amount|floatformat:2 }} €</span>
+              {% elif r.refunded %}
+                <span class="badge bg-success">Remboursé : {{ r.refund_amount|floatformat:2 }} €</span>
+              {% else %}
+                <span class="badge bg-danger">Non remboursable</span>
+              {% endif %}
+              {% if r.coming and r.can_cancel %}
+                <form method="post" action="{% url 'logement:cancel_booking' r.code %}" class="mt-2"
+                      onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                </form>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted text-center">Aucune réservation enregistrée.</p>
+    {% endif %}
+  </div>
+</div>

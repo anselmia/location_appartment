@@ -1,228 +1,212 @@
-/* Root container */
+:root {
+  --primary-color: #bfa66b;
+  --secondary-color: #3b2f2f;
+  --light-bg: #f8f5f2;
+  --text-color: #d4af7f;
+  --font-family: 'Playfair Display', serif;
+}
+
+/* Dashboard base styling */
 .client-dashboard {
-    font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
-    background-color: #f5f7fa;
-    padding: 40px 20px;
+  font-family: var(--font-family);
+  background-color: var(--light-bg);
+  padding: 2rem 1rem;
 }
 
-/* Section titles */
+/* Page Title */
 .client-dashboard h2 {
-    color: #1c2d41;
-    font-weight: 600;
-    font-size: 2.2rem;
+  color: var(--secondary-color);
+  font-weight: 600;
+  font-size: 2.2rem;
 }
 
-/* Card styles */
-.client-dashboard .card {
-    background: #ffffff;
-    border-radius: 1.25rem;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-    border: none;
+/* Vertical Nav Pills */
+.nav-pills .nav-link {
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: #eae6e2;
+  color: var(--secondary-color);
+  transition: all 0.3s ease;
 }
 
-.client-dashboard .card-header {
-    background-color: #1c2d41;
-    color: white;
-    padding: 1rem 1.25rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-top-left-radius: 1.25rem;
-    border-top-right-radius: 1.25rem;
+.nav-pills .nav-link:hover {
+  background-color: #e1ddd9;
 }
 
-/* Card body spacing */
-.client-dashboard .card-body {
-    padding: 2rem 1.5rem;
+.nav-pills .nav-link.active {
+  background-color: var(--primary-color);
+  color: white;
 }
 
-/* Form elements */
-.client-dashboard .form-label {
-    font-weight: 500;
-    color: #1c2d41;
-    margin-bottom: 0.3rem;
+/* Card Styling */
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+  border: none;
+  background: white;
+  margin-bottom: 2rem;
 }
 
-.client-dashboard .form-control {
-    border-radius: 0.5rem;
-    border: 1px solid #ced4da;
-    box-shadow: none;
-    padding: 0.6rem 0.75rem;
-    font-size: 1rem;
+.card-header {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  background-color: var(--secondary-color);
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1rem 1.5rem;
 }
 
-.client-dashboard .form-control:focus {
-    border-color: #4a90e2;
-    box-shadow: 0 0 0 0.1rem rgba(74, 144, 226, 0.25);
+.card-body {
+  padding: 2rem;
 }
 
-/* Button styles */
-.client-dashboard .btn {
-    border-radius: 2rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+/* Form Controls */
+.form-label {
+  font-weight: 500;
+  color: var(--secondary-color);
+  margin-bottom: 0.3rem;
 }
 
-.client-dashboard .btn-primary {
-    background-color: #4a90e2;
-    border: none;
+.form-control {
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  box-shadow: none;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
 }
 
-.client-dashboard .btn-primary:hover {
-    background-color: #3978c5;
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.15rem rgba(191, 166, 107, 0.3);
 }
 
-.client-dashboard .btn-outline-danger {
-    border: 1px solid #dc3545;
-    color: #dc3545;
-    background-color: transparent;
+/* Buttons */
+.btn {
+  border-radius: 2rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
 }
 
-.client-dashboard .btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: white;
+.btn-primary {
+  background-color: var(--primary-color);
+  border: none;
 }
 
-.client-dashboard .btn-outline-danger:focus {
-    box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.3);
+.btn-primary:hover {
+  background-color: #a78d58;
 }
 
-/* List group reservations */
-.client-dashboard .list-group-item {
-    background-color: #fdfdfd;
-    border: 1px solid #e4e6eb;
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    transition: background-color 0.2s ease;
+.btn-outline-primary {
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
 }
 
-.client-dashboard .list-group-item:hover {
-    background-color: #f0f4ff;
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: white;
 }
 
-/* Badges - Style updates */
-/* Badge container to arrange them in a row at top-right */
-.client-dashboard .badge-container {
-    position: absolute;  /* Position the badge container absolutely */
-    top: 10px;           /* Adjust to your desired top margin */
-    right: 10px;         /* Adjust to your desired right margin */
-    display: flex;       /* Align badges in a row */
-    gap: 0.75rem;        /* Space between badges */
+.btn-outline-danger {
+  border: 1px solid #c0392b;
+  color: #c0392b;
+}
+
+.btn-outline-danger:hover {
+  background-color: #c0392b;
+  color: white;
+}
+
+/* Reservation List */
+.list-group-item {
+  background-color: white;
+  border: 1px solid #e4e6eb;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
 }
 
 /* Badge Styling */
-.client-dashboard .badge {
-    font-size: 0.6rem;
-    padding: 0.4rem 0.4rem;
-    border-radius: 1rem;
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 1rem;
+  font-weight: 500;
 }
 
-/* Badge color updates for states */
-.client-dashboard .badge.bg-secondary {
-    background-color: #6c757d;
-    color: white;
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-.client-dashboard .badge.bg-warning {
-    background-color: #ffc107;
-    color: #1c2d41;
+.badge.bg-secondary {
+  background-color: #6c757d;
+  color: white;
 }
 
-.client-dashboard .badge.bg-info {
-    background-color: #0dcaf0;
-    color: #1c2d41;
+.badge.bg-warning {
+  background-color: #ffcc80;
+  color: #3b2f2f;
 }
 
-.client-dashboard .badge.bg-success {
-    background-color: #28a745;
-    color: white;
+.badge.bg-info {
+  background-color: #a3d8f4;
+  color: #1c2d41;
 }
 
-.client-dashboard .badge.bg-danger {
-    background-color: #dc3545;
-    color: white;
+.badge.bg-success {
+  background-color: #2ecc71;
+  color: white;
 }
 
-/* Special color changes */
-.client-dashboard .badge.bg-info.text-dark {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.badge.bg-danger {
+  background-color: #e74c3c;
+  color: white;
 }
 
-.client-dashboard .badge.bg-warning.text-dark {
-    background-color: #ffdf7f;
-    color: #6c6c6c;
+/* Delete Account */
+.client-dashboard .delete-account {
+  max-width: 320px;
+  margin: 3rem auto 0;
 }
 
-/* Cancel Button Styling */
-form cancel-button {
-    margin-top: 1rem;
-    font-weight: 600;
-    position: absolute;
-    bottom: 10px;  /* Positioning the cancel button at the bottom */
-    right: 10px;   /* Right side of the container */
-    width: auto;   /* Let the cancel button size adapt to its content */
-}
-
-/* List Group Item Styling */
-.list-group-item {
-    position: relative;  /* Ensure the list item is positioned relative to its parent */
-    padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1rem;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.client-dashboard .list-group-item .badge-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.client-dashboard .list-group-item .badge {
-    margin-right: 0.75rem;  /* Add margin for horizontal spacing */
-}
-
-/* Text and badge alignment */
-.text-end {
-    text-align: right;
-}
-
-/* Responsive improvements */
+/* Responsive */
 @media (max-width: 768px) {
-    .client-dashboard {
-        padding: 20px 10px;
-    }
+  .client-dashboard {
+    padding: 1rem 0.5rem;
+  }
 
-    .client-dashboard h2 {
-        font-size: 1.75rem;
-    }
+  .client-dashboard h2 {
+    font-size: 1.75rem;
+  }
 
-    .client-dashboard .list-group-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-    }
+  .nav-pills .nav-link {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
 
-    .client-dashboard .btn {
-        width: 100%;
-        text-align: center;
-    }
+  .card-body {
+    padding: 1.5rem;
+  }
 
-    .badge {
-        position: relative;  /* Adjust positioning for small screens */
-        top: auto;
-        right: auto;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
+  .badge-container {
+    justify-content: start;
+  }
 
-    form button {
-        position: relative;
-        width: 100%;  /* Let the button take the full width on small screens */
-        margin-top: 0;
-    }
+  .list-group-item {
+    padding: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }

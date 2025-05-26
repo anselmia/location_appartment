@@ -1,0 +1,32 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<div class="card-body">
+    <form method="post" id="user-form" action="{% url 'accounts:update_profile' %}">
+        {% csrf_token %}
+        <!-- User Profile Form Fields -->
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Identifiant</label>
+            {{ formUser.username|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="id_name" class="form-label">Nom</label>
+            {{ formUser.name|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="id_last_name" class="form-label">Prénom</label>
+            {{ formUser.last_name|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            {{ formUser.email|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="id_phone" class="form-label">Téléphone</label>
+            {{ formUser.phone|add_class:"form-control" }}
+        </div>
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary">Mettre à jour mes informations</button>
+        </div>
+    </form>
+</div>
