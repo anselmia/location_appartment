@@ -473,7 +473,9 @@ def create_bank_account():
 
 def charge_reservation(reservation):
     try:
-        logger.info(f"💼 Splitting funds for reservation {reservation.code}")
+        logger.info(
+            f"💼 Splitting and Transferring funds for reservation {reservation.code}"
+        )
 
         platform_fee = Decimal(reservation.price) * Decimal(PLATFORM_FEE)
         owner_amount = Decimal(reservation.price) - platform_fee
@@ -484,7 +486,8 @@ def charge_reservation(reservation):
             destination="acct_PLATFORM_ID",  # replace with platform account
             transfer_group=f"group_{reservation.code}",
         )
-        logger.info(f"✅ Platform fee transferred")
+
+        logger.info("✅ Platform fee transferred")
 
         stripe.Transfer.create(
             amount=int(owner_amount * 100),
@@ -492,7 +495,7 @@ def charge_reservation(reservation):
             destination=reservation.logement.owner.stripe_account_id,
             transfer_group=f"group_{reservation.code}",
         )
-        logger.info(f"✅ Owner payout transferred")
+        logger.info("✅ Owner payout transferred")
 
     except Exception as e:
         logger.exception(

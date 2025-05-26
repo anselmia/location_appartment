@@ -458,13 +458,18 @@ class Reservation(models.Model):
         return True
 
     @property
+    def refundable_period_passed(self):
+        cancel_limit = self.start - timedelta(days=self.logement.cancelation_period)
+        return timezone.now().date() > cancel_limit
+
+    @property
     def refundable(self):
         if self.refundable_amount == 0:
             return False
         if self.refunded:
             return False
-        cancel_limit = self.start - timedelta(days=self.logement.cancelation_period)
-        return timezone.now().date() < cancel_limit
+        if self.refundable_period_passed:
+            return False
 
     @property
     def refundable_amount(self):

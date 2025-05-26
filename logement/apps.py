@@ -6,40 +6,40 @@ class LogementConfig(AppConfig):
     name = "logement"
 
     def ready(self):
-        from django_celery_beat.models import PeriodicTask, IntervalSchedule
-
-        # Avoid running this code multiple times (e.g., migrations, shell)
+        from django_q.models import Schedule
         from django.db.utils import OperationalError, ProgrammingError
 
         try:
-            schedule, _ = IntervalSchedule.objects.get_or_create(
-                every=10,
-                period=IntervalSchedule.MINUTES,
-            )
-            PeriodicTask.objects.get_or_create(
-                interval=schedule,
+            Schedule.objects.get_or_create(
                 name="Delete expired reservations",
-                task="logement.tasks.delete_expired_pending_reservations",
+                func="logement.tasks.delete_expired_pending_reservations",
+                schedule_type=Schedule.MINUTES,
+                minutes=30,
+                repeats=-1,
             )
 
-            schedule, _ = IntervalSchedule.objects.get_or_create(
-                every=30,
-                period=IntervalSchedule.MINUTES,
-            )
-            PeriodicTask.objects.get_or_create(
-                interval=schedule,
-                name="end terminated reservations",
-                task="logement.tasks.end_reservations",
+            Schedule.objects.get_or_create(
+                name="End terminated reservations",
+                func="logement.tasks.end_reservations",
+                schedule_type=Schedule.CRON,
+                cron="0 2 * * *",  # At 02:00 AM every day
+                repeats=-1,
             )
 
-            schedule, _ = IntervalSchedule.objects.get_or_create(
-                every=30,
-                period=IntervalSchedule.MINUTES,
-            )
-            PeriodicTask.objects.get_or_create(
-                interval=schedule,
+            Schedule.objects.get_or_create(
                 name="Sync calendar",
-                task="logement.tasks.sync_calendar",
+                func="logement.tasks.sync_calendar",
+                schedule_type=Schedule.MINUTES,
+                minutes=30,
+                repeats=-1,
+            )
+
+            Schedule.objects.get_or_create(
+                name="Transfert Funds",
+                func="logement.tasks.transfert_funds",
+                schedule_type=Schedule.CRON,
+                cron="0 1 * * *",  # At 01:00 AM every day
+                repeats=-1,
             )
 
         except (OperationalError, ProgrammingError):

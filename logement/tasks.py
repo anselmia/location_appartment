@@ -1,6 +1,5 @@
 import logging
 import requests
-from celery import shared_task
 from icalendar import Calendar
 from django.utils import timezone
 from datetime import datetime, date, time, timedelta
@@ -147,53 +146,80 @@ def delete_old_reservations(event_dates, source):
         raise ValueError(f"Error deleting old reservations from {source}: {str(e)}")
 
 
-@shared_task
 def sync_calendar():
-    # Define the URLs
-    airbnb_url = "https://www.airbnb.fr/calendar/ical/48121442.ics?s=610867e1dc2cc14aba2f7b792ed5a4b1"
-    booking_url = (
-        "https://ical.booking.com/v1/export?t=daf9d628-a484-45c2-94fd-60ff6beb6c91"
-    )
+    results = {}
 
-    # Sync Airbnb Calendar
-    logger.info("Syncing Airbnb calendar...")
-    airbnb_added, airbnb_updated, airbnb_deleted = process_calendar(
-        airbnb_url, source="airbnb"
-    )
+    for logement in Logement.objects.all():
+        logement_results = {}
 
-    # Sync Booking Calendar
-    logger.info("Syncing Booking calendar...")
-    booking_added, booking_updated, booking_deleted = process_calendar(
-        booking_url, source="booking"
-    )
+        airbnb_url = logement.airbnb_calendar_link
+        booking_url = logement.booking_calendar_link
 
-    return {
-        "airbnb": {
-            "added": airbnb_added,
-            "updated": airbnb_updated,
-            "deleted": airbnb_deleted,
-        },
-        "booking": {
-            "added": booking_added,
-            "updated": booking_updated,
-            "deleted": booking_deleted,
-        },
-    }
+        if airbnb_url:
+            try:
+                logger.info(f"Syncing Airbnb calendar for logement {logement.id}...")
+                added, updated, deleted = process_calendar(airbnb_url, source="airbnb")
+                logement_results["airbnb"] = {
+                    "added": added,
+                    "updated": updated,
+                    "deleted": deleted,
+                }
+                logger.info(f"Airbnb sync completed for logement {logement.id}.")
+            except Exception as e:
+                logger.error(f"Airbnb sync failed for logement {logement.id}: {e}")
+                logement_results["airbnb"] = "error"
+
+        if booking_url:
+            try:
+                logger.info(f"Syncing Booking calendar for logement {logement.id}...")
+                added, updated, deleted = process_calendar(
+                    booking_url, source="booking"
+                )
+                logement_results["booking"] = {
+                    "added": added,
+                    "updated": updated,
+                    "deleted": deleted,
+                }
+                logger.info(f"Booking sync completed for logement {logement.id}.")
+            except Exception as e:
+                logger.error(f"Booking sync failed for logement {logement.id}: {e}")
+                logement_results["booking"] = "error"
+
+        results[logement.id] = logement_results
+
+    return results
 
 
-@shared_task
 def delete_expired_pending_reservations():
-    expiry_time = timezone.now() - timedelta(minutes=30)
-    count, _ = Reservation.objects.filter(
-        statut="en_attente", date_reservation__lt=expiry_time
-    ).delete()
-    return f"Deleted {count} expired pending reservations"
+    try:
+        expiry_time = timezone.now() - timedelta(minutes=30)
+        count, _ = Reservation.objects.filter(
+            statut="en_attente", date_reservation__lt=expiry_time
+        ).delete()
+        logger.info(f"Deleted {count} expired pending reservations")
+        return f"Deleted {count} expired pending reservations"
+    except Exception as e:
+        logger.exception(f"Error deleting expired reservations: {e}")
+        return "Failed to delete expired pending reservations"
 
 
-@shared_task
 def end_reservations():
-    today = timezone.now()
-    ended = Reservation.objects.filter(statut="confirmee", end__lt=today)
-    count = ended.count()
-    ended.update(statut="terminee")
-    return f"Ended {count} reservations"
+    try:
+        today = timezone.now()
+        ended = Reservation.objects.filter(statut="confirmee", end__lt=today)
+        count = ended.count()
+        ended.update(statut="terminee")
+        logger.info(f"Ended {count} reservations")
+        return f"Ended {count} reservations"
+    except Exception as e:
+        logger.exception(f"Error ending reservations: {e}")
+        return "Failed to end reservations"
+
+
+def transfert_funds():
+    from logement.services.payment_service import charge_reservation
+
+    reservations = Reservation.objects.filter(statut="confirmee")
+    for reservation in reservations:
+        if reservation.refundable_period_passed:
+            charge_reservation(reservation)

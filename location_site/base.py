@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "django_celery_beat",
     "widget_tweaks",
+    "django_q",
     "common",
     "accounts",
     "administration",
@@ -140,3 +141,14 @@ SESSION_SAVE_EVERY_REQUEST = (
 )
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Close session when browser is closed
+
+Q_CLUSTER = {
+    "name": "DjangoQCluster",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 60,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
