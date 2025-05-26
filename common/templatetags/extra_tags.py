@@ -17,3 +17,10 @@ def to_month_range(value):
 @register.filter
 def get(dict_data, key):
     return dict_data.get(key)
+
+@register.filter
+def cents_to_euros(value):
+    try:
+        return float(value) / 100
+    except (ValueError, TypeError):
+        return 0.00

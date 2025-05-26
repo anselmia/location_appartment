@@ -19,6 +19,7 @@ from common.services.stripe.account import (
     get_stripe_account_info,
     get_reservation_stripe_data,
 )
+from django.contrib.auth import update_session_auth_hash
 
 import logging
 

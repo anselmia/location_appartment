@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load static %}
+{% load extra_tags %}
 
 {% block content %}
 <div class="container mt-5">
@@ -31,7 +32,7 @@
                         <hr>
                         <p><strong>Stripe PaymentIntent:</strong> {{ item.payment_intent.id }}</p>
                         <p><strong>Status:</strong> {{ item.payment_intent.status }}</p>
-                        <p><strong>Montant payé:</strong> {{ item.payment_intent.amount_received|floatformat:2 }} €</p>
+                        <p><strong>Montant payé:</strong> {{ item.payment_intent.amount_received|cents_to_euros|floatformat:2 }} €</p>
                         {% if item.refund %}
                             <p class="text-danger">💸 Remboursé</p>
                         {% endif %}
