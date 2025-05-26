@@ -40,6 +40,7 @@ admin.site.register(Photo)
 class ReservationAdmin(admin.ModelAdmin):
     list_display = [
         "id",
+        "code",
         "logement",
         "user",
         "start",

@@ -1,5 +1,6 @@
 from django import forms
 from logement.models import Discount, Logement, City
+from accounts.models import CustomUser
 
 
 class LogementForm(forms.ModelForm):
@@ -105,6 +106,16 @@ class LogementForm(forms.ModelForm):
             self.fields["ville"].queryset = City.objects.all().order_by(
                 "code_postal", "name"
             )
+
+        if "admins" in self.fields:
+            self.fields["admins"].queryset = CustomUser.objects.filter(
+                is_owner_admin=True
+            ).order_by("username")
+
+        if "owner" in self.fields:
+            self.fields["owner"].queryset = CustomUser.objects.filter(
+                is_owner=True
+            ).order_by("username")
 
         # Fields that should have numeric step=1
         step_1_fields = [

@@ -26,7 +26,7 @@ def generate_ical():
                 "dtend", make_aware(datetime.combine(res.end, datetime.min.time()))
             )
             event.add("dtstamp", datetime.now())
-            event["uid"] = f"{res.id}@valrose.home-arnaud.ovh"
+            event["uid"] = f"{res.code}"
             cal.add_component(event)
 
         return cal.to_ical()

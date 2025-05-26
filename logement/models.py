@@ -1,4 +1,6 @@
 import os
+import random
+import string
 from datetime import time
 from django.db import models
 from django.dispatch import receiver
@@ -392,7 +394,12 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
             os.remove(instance.image.path)
 
 
+def generate_unique_code(length=8):
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+
 class Reservation(models.Model):
+    code = models.CharField(max_length=20, unique=True)
     logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
     user = models.ForeignKey(
         CustomUser,
@@ -431,6 +438,18 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            # Ensure uniqueness
+            for _ in range(10):  # up to 10 retries
+                code = generate_unique_code()
+                if not Reservation.objects.filter(code=code).exists():
+                    self.code = code
+                    break
+            else:
+                raise ValueError("Could not generate a unique reservation code.")
+        super().save(*args, **kwargs)
 
     @property
     def can_cancel(self):
@@ -491,8 +510,6 @@ class Reservation(models.Model):
 
         # Round the result to 2 decimal places
         return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-    
 
 
 class airbnb_booking(models.Model):

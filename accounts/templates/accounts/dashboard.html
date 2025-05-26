@@ -64,6 +64,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap py-3 px-2">
                                     <div class="pe-3">
                                         <div class="fw-semibold text-dark">{{ r.logement.name }}</div>
+                                        <small class="text-dark">{{ r.code }}</small><br>
                                         <small class="text-muted">Du {{ r.start|date:"d/m/Y" }} au {{ r.end|date:"d/m/Y" }}</small><br>
                                         <small>{{ r.guest }} voyageur(s)</small><br>
                                         <small class="text-dark fw-semibold">{{ r.price|floatformat:2 }} €</small><br>
@@ -99,7 +100,7 @@
                                     <!-- Cancel Button -->
                                     {% if r.coming and r.can_cancel %}
                                         <div class="text-end">
-                                            <form method="post" action="{% url 'logement:cancel_booking' r.id %}"
+                                            <form method="post" action="{% url 'logement:cancel_booking' r.code %}"
                                                   onsubmit="return confirm('Confirmez-vous l\'annulation de cette réservation ? Cette action est définitive.');">
                                                 {% csrf_token %}
                                                 <button class="btn btn-outline-danger btn-sm">Annuler</button>

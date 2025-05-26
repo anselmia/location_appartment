@@ -122,6 +122,7 @@
                     {{ form.start.as_hidden }}
                     {{ form.end.as_hidden }}
                     <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                    <input type="hidden" name="reservation_code" value="{{ reservation.code }}">
                     <input type="hidden" id="reservation-price" name="reservation_price" value="0">
                     <input type="hidden" id="reservation-tax" name="reservation_tax" value="0">
                     </div>
@@ -180,7 +181,6 @@
     const logementId = {{ logement.id }};  
     const csrfToken = "{{ csrf_token }}";
     const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
-    const reservationId = {% if reservation_id %}{{ reservation_id|escapejs }}{% else %}null{% endif %};
     const reservedDatesStart = {{ reserved_dates_start_json|safe }};
     const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
     const today = new Date().toISOString().slice(0, 10);

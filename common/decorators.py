@@ -65,7 +65,7 @@ def user_has_logement(view_func):
 def user_is_reservation_admin(view_func):
     def _wrapped_view(request, *args, **kwargs):
         # Get the reservation instance from the URL parameter
-        reservation = get_object_or_404(Reservation, pk=kwargs["pk"])
+        reservation = get_object_or_404(Reservation, code=kwargs["code"])
 
         # Get the associated logement
         logement = reservation.logement

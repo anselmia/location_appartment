@@ -256,10 +256,20 @@ def check_booking_input(request, logement_id):
 
 
 @login_required
-def payment_success(request, reservation_id):
+def payment_success(request, code):
     try:
-        time.sleep(1)
-        reservation = Reservation.objects.get(id=reservation_id)
+        reservation = Reservation.objects.get(code=code)
+
+        # Wait up to 3 seconds for the reservation to be confirmed
+        max_wait = 3  # seconds
+        interval = 0.5  # seconds
+        waited = 0
+
+        while reservation.statut != "confirmee" and waited < max_wait:
+            time.sleep(interval)
+            waited += interval
+            reservation.refresh_from_db()
+
         if reservation.statut != "confirmee":
             messages.warning(
                 request,
@@ -269,7 +279,7 @@ def payment_success(request, reservation_id):
             request, "logement/payment_success.html", {"reservation": reservation}
         )
     except Reservation.DoesNotExist:
-        messages.error(request, "Réservation introuvable.")
+        messages.error(request, f"Réservation {code} introuvable.")
         return redirect("logement:book", logement_id=1)
     except Exception as e:
         logger.exception(f"Error handling payment success: {e}")
@@ -277,9 +287,9 @@ def payment_success(request, reservation_id):
 
 
 @login_required
-def payment_cancel(request, reservation_id):
+def payment_cancel(request, code):
     try:
-        reservation = get_object_or_404(Reservation, id=reservation_id)
+        reservation = get_object_or_404(Reservation, code=code)
         logement = Logement.objects.prefetch_related("photos").first()
         messages.info(
             request,
@@ -290,7 +300,7 @@ def payment_cancel(request, reservation_id):
                 "start": reservation.start.isoformat(),
                 "end": reservation.end.isoformat(),
                 "guest": reservation.guest,
-                "reservation_id": reservation.id,
+                "code": reservation.code,
             }
         )
         return redirect(
@@ -303,11 +313,9 @@ def payment_cancel(request, reservation_id):
 
 
 @login_required
-def cancel_booking(request, reservation_id):
+def cancel_booking(request, code):
     try:
-        reservation = get_object_or_404(
-            Reservation, id=reservation_id, user=request.user
-        )
+        reservation = get_object_or_404(Reservation, code=code, user=request.user)
         success_message, error_message = cancel_and_refund_reservation(reservation)
         if success_message:
             messages.success(request, success_message)

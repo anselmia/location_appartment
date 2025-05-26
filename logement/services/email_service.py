@@ -22,18 +22,18 @@ def send_mail_on_new_reservation(logement, reservation, user):
 
         # Send email to admins
         send_mail(
-            subject=f"🆕 Nouvelle réservation pour {logement.name}",
+            subject=f"🆕 Nouvelle Réservation {reservation.code} pour {logement.name}",
             message=admin_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=logement.mail_list,
             fail_silently=False,  # Raise in dev, log in prod
         )
 
-        logger.info(f"✅ Mail sent for reservation {reservation.id} to admins.")
+        logger.info(f"✅ Mail sent for reservation {reservation.code} to admins.")
 
         # ========== CUSTOMER CONFIRMATION ==========
         if user.email:
-            subject = f"Confirmation de votre réservation - {logement.name}"
+            subject = f"Confirmation de votre Réservation {reservation.code} - {logement.name}"
             user_message = render_to_string(
                 "email/new_reservation_customer.txt", email_context
             )
@@ -46,12 +46,12 @@ def send_mail_on_new_reservation(logement, reservation, user):
                 fail_silently=False,
             )
             logger.info(
-                f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.id}"
+                f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}"
             )
 
     except Exception as e:
         logger.exception(
-            f"❌ Failed to send admin mail for reservation {reservation.id}: {e}"
+            f"❌ Failed to send admin mail for reservation {reservation.code}: {e}"
         )
 
 
@@ -68,21 +68,23 @@ def send_mail_on_refund(logement, reservation, user):
         admin_message = render_to_string("email/refund_admin.txt", email_context)
 
         send_mail(
-            subject=f"💸 Remboursement effectué - {logement.name}",
+            subject=f"💸 Remboursement effectué - {logement.name} - Réservation {reservation.code}",
             message=admin_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=logement.mail_list,
             fail_silently=False,
         )
 
-        logger.info(f"✅ Refund email sent to admins for reservation {reservation.id}.")
+        logger.info(
+            f"✅ Refund email sent to admins for reservation {reservation.code}."
+        )
 
         # ===== USER EMAIL =====
         if user.email:
             user_message = render_to_string("email/refund_customer.txt", email_context)
 
             send_mail(
-                subject=f"Remboursement de votre réservation - {logement.name}",
+                subject=f"Remboursement de votre Réservation {reservation.code} - {logement.name}",
                 message=user_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
@@ -90,10 +92,10 @@ def send_mail_on_refund(logement, reservation, user):
             )
 
             logger.info(
-                f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.id}"
+                f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}"
             )
 
     except Exception as e:
         logger.exception(
-            f"❌ Failed to send refund email for reservation {reservation.id}: {e}"
+            f"❌ Failed to send refund email for reservation {reservation.code}: {e}"
         )

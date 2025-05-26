@@ -26,17 +26,17 @@ urlpatterns = [
         name="check_booking_input",
     ),
     path(
-        "payment/success/<int:reservation_id>/",
+        "payment/success/<str:code>/",
         views.payment_success,
         name="payment_success",
     ),
     path(
-        "payment/cancel/<int:reservation_id>/",
+        "payment/cancel/<str:code>/",
         views.payment_cancel,
         name="payment_cancel",
     ),
     path(
-        "cancel-booking/<int:reservation_id>/",
+        "cancel-booking/<str:code>/",
         views.cancel_booking,
         name="cancel_booking",
     ),

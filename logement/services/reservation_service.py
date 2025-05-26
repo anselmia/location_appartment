@@ -1,5 +1,4 @@
-import stripe
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
@@ -189,7 +188,7 @@ def is_period_booked(start, end, logement_id, user):
 def create_or_update_reservation(logement, user, start, end, guest, price, tax):
     try:
         logger.info(
-            f"Creating or updating reservation for logement {logement.id}, user {user.id}, dates {start} to {end}."
+            f"Creating or updating reservation for logement {logement.id}, user {user}, dates {start} to {end}."
         )
         reservation = Reservation.objects.filter(
             logement=logement, user=user, start=start, end=end, statut="en_attente"
@@ -201,7 +200,7 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
             reservation.price = price
             reservation.tax = tax
             reservation.save()
-            logger.info(f"Reservation {reservation.id} updated.")
+            logger.info(f"Reservation {reservation.code} updated.")
         else:
             reservation = Reservation.objects.create(
                 logement=logement,
@@ -213,7 +212,7 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
                 tax=tax,
                 statut="en_attente",
             )
-            logger.info(f"Reservation {reservation.id} created.")
+            logger.info(f"Reservation {reservation.code} created.")
         return reservation
     except Exception as e:
         logger.exception(f"Error creating or updating reservation: {e}")
@@ -441,43 +440,53 @@ def validate_reservation_inputs(
 
 def mark_reservation_cancelled(reservation):
     try:
-        logger.info(f"Marking reservation {reservation.id} as cancelled.")
+        logger.info(f"Marking reservation {reservation.code} as cancelled.")
         reservation.statut = "annulee"
         reservation.save()
-        logger.info(f"Reservation {reservation.id} has been marked as cancelled.")
+        logger.info(f"Reservation {reservation.code} has been marked as cancelled.")
     except Exception as e:
-        logger.exception(f"Error cancelling reservation {reservation.id}: {e}")
+        logger.exception(f"Error cancelling reservation {reservation.code}: {e}")
         raise
 
 
 def cancel_and_refund_reservation(reservation):
-    today = timezone.now().date()
-    logger.info(f"Attempting to cancel and refund reservation {reservation.id}")
-    if reservation.start <= today:
-        return (
-            None,
-            "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
+    try:
+        today = timezone.now().date()
+        logger.info(f"Attempting to cancel and refund reservation {reservation.code}")
+        if reservation.start <= today:
+            return (
+                None,
+                "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
+            )
+        mark_reservation_cancelled(reservation)
+        if reservation.refundable:
+            if reservation.stripe_payment_intent_id:
+                try:
+                    refund_amount = reservation.refundable_amount * 100
+                    refund_payment(reservation, refund_amount)
+                    logger.info(
+                        f"Refund successfully processed for reservation {reservation.code}."
+                    )
+                    return ("✅ Réservation annulée et remboursée avec succès.", None)
+                except Exception as e:
+                    logger.error(
+                        f"Refund failed for reservation {reservation.code}: {e}"
+                    )
+                    return (
+                        "⚠️ Réservation annulée, mais remboursement échoué.",
+                        "❗ Le remboursement a échoué. Contactez l’assistance.",
+                    )
+            logger.warning(
+                f"No Stripe payment intent for reservation {reservation.code}."
+            )
+            return (
+                "⚠️ Réservation annulée, mais remboursement échoué.",
+                "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
+            )
+        logger.info(f"Reservation {reservation.code} cancelled without refund.")
+        return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
+    except Exception as e:
+        logger.exception(
+            f"Error cancelling and refunding reservation {reservation.code}: {e}"
         )
-    mark_reservation_cancelled(reservation)
-    if reservation.refundable:
-        if reservation.stripe_payment_intent_id:
-            try:
-                refund_amount = reservation.refundable_amount * 100
-                refund_payment(reservation, refund_amount)
-                logger.info(
-                    f"Refund successfully processed for reservation {reservation.id}."
-                )
-                return ("✅ Réservation annulée et remboursée avec succès.", None)
-            except Exception as e:
-                logger.error(f"Refund failed for reservation {reservation.id}: {e}")
-                return (
-                    "⚠️ Réservation annulée, mais remboursement échoué.",
-                    "❗ Le remboursement a échoué. Contactez l’assistance.",
-                )
-        logger.warning(f"No Stripe payment intent for reservation {reservation.id}.")
-        return (
-            "⚠️ Réservation annulée, mais remboursement échoué.",
-            "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
-        )
-    logger.info(f"Reservation {reservation.id} cancelled without refund.")
-    return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
+        raise

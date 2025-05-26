@@ -58,24 +58,26 @@ urlpatterns = [
     path("logs/", views.log_viewer, name="log_viewer"),
     path("api/log-js/", views.js_logger, name="js_logger"),
     path("reservations/", views.reservation_dashboard, name="reservation_dashboard"),
-    path("reservations/<int:pk>/", views.reservation_detail, name="reservation_detail"),
     path(
-        "reservations/<int:pk>/cancel/",
+        "reservations/<str:code>/", views.reservation_detail, name="reservation_detail"
+    ),
+    path(
+        "reservations/<str:code>/cancel/",
         views.cancel_reservation,
         name="cancel_reservation",
     ),
     path(
-        "reservations/<int:pk>/refund/",
+        "reservations/<str:code>/refund/",
         views.refund_reservation,
         name="refund_reservation",
     ),
     path(
-        "reservations/<int:pk>/refund-partially/",
+        "reservations/<str:code>/refund-partially/",
         views.refund_partially_reservation,
         name="refund_partially_reservation",
     ),
     path(
-        "reservations/<int:pk>/charge-deposit/",
+        "reservations/<str:code>/charge-deposit/",
         views.charge_deposit,
         name="charge_deposit",
     ),

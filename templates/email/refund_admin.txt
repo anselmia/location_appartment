@@ -1,7 +1,7 @@
 💸 Un remboursement a été effectué.
 
 Logement: {{ logement.name }}
-Réservation ID: {{ reservation.id }}
+Réservation Code: {{ reservation.code }}
 Voyageur: {{ user.name }} {{ user.last_name }}
 Montant remboursé: {{ reservation.price|floatformat:2 }} €
 Date de réservation: {{ reservation.date_reservation|date:"d M Y H:i" }}

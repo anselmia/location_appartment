@@ -837,8 +837,8 @@ def edit_entreprise(request):
 
 @login_required
 @user_is_reservation_admin
-def reservation_detail(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+def reservation_detail(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
     return render(
         request, "administration/reservation_detail.html", {"reservation": reservation}
     )
@@ -847,21 +847,21 @@ def reservation_detail(request, pk):
 @login_required
 @user_is_reservation_admin
 @require_POST
-def cancel_reservation(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+def cancel_reservation(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
     if reservation.statut != "annulee":
         mark_reservation_cancelled(reservation)
         messages.success(request, "Réservation annulée avec succès.")
     else:
         messages.warning(request, "La réservation est déjà annulée.")
-    return redirect("administration:reservation_detail", pk=pk)
+    return redirect("administration:reservation_detail", code=code)
 
 
 @login_required
 @user_is_reservation_admin
 @require_POST
-def refund_reservation(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+def refund_reservation(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
 
     if not reservation.refunded:
         try:
@@ -879,18 +879,18 @@ def refund_reservation(request, pk):
     else:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
 
-    return redirect("administration:reservation_detail", pk=pk)
+    return redirect("administration:reservation_detail", code=code)
 
 
 @login_required
 @user_is_reservation_admin
 @require_POST
-def refund_partially_reservation(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+def refund_partially_reservation(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
 
     if reservation.refunded:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
-        return redirect("administration:reservation_detail", pk=pk)
+        return redirect("administration:reservation_detail", code=code)
 
     try:
         amount_str = request.POST.get("refund_amount")
@@ -901,7 +901,7 @@ def refund_partially_reservation(request, pk):
                 request,
                 "Montant invalide. Il doit être supérieur à 0 et inférieur ou égal au montant total.",
             )
-            return redirect("administration:reservation_detail", pk=pk)
+            return redirect("administration:reservation_detail", code=code)
 
         amount_in_cents = int(refund_amount * 100)
         refund = refund_payment(reservation, amount_in_cents)
@@ -917,21 +917,21 @@ def refund_partially_reservation(request, pk):
         messages.error(request, f"Erreur de remboursement Stripe : {e}")
         logger.exception("Stripe refund failed")
 
-    return redirect("administration:reservation_detail", pk=pk)
+    return redirect("administration:reservation_detail", code=code)
 
 
 @login_required
 @user_is_reservation_admin
 @require_POST
-def charge_deposit(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+def charge_deposit(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
 
     try:
         amount = Decimal(request.POST.get("deposit_amount"))
 
         if amount <= 0:
             messages.error(request, "Le montant doit être supérieur à 0.")
-            return redirect("administration:reservation_detail", pk=pk)
+            return redirect("administration:reservation_detail", code=code)
 
         logement_caution = getattr(reservation.logement, "caution", None)
         if logement_caution is not None and amount > reservation.chargeable_deposit:
@@ -939,7 +939,7 @@ def charge_deposit(request, pk):
                 request,
                 f"Le montant de la caution ({amount:.2f} €) dépasse la limite autorisée pour ce logement ({logement_caution:.2f} €).",
             )
-            return redirect("administration:reservation_detail", pk=pk)
+            return redirect("administration:reservation_detail", code=code)
 
         amount_in_cents = int(amount * 100)
 
@@ -961,4 +961,4 @@ def charge_deposit(request, pk):
         messages.error(request, f"Erreur lors du chargement Stripe : {e}")
         logger.exception("Stripe deposit charge failed")
 
-    return redirect("administration:reservation_detail", pk=pk)
+    return redirect("administration:reservation_detail", code=code)

@@ -69,6 +69,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Logement</th>
+                    <th>Code</th>
                     <th>Statut</th>
                     <th>Voyageur</th>
                     <th>Arrivée</th>
@@ -97,6 +98,7 @@
                             <span class="logement-name d-none d-md-inline">{{ r.logement.name }}</span>
                         </div>
                     </td>
+                    <td data-label="Code">{{ r.code }}</td>
                     <td data-label="Statut">
                         <span class="badge status-badge {{ r.statut|lower }}">{{ r.get_statut_display|title }}</span>
                     </td>
@@ -108,7 +110,7 @@
                     <td data-label="Prix">{{ r.price|floatformat:2 }} €</td>
                     <td data-label="Taxes">{{ r.tax|floatformat:2 }} €</td>
                     <td data-label="Détail">
-                        <a href="{% url 'administration:reservation_detail' r.id %}" class="btn btn-sm btn-primary">
+                        <a href="{% url 'administration:reservation_detail' r.code %}" class="btn btn-sm btn-primary">
                             Voir
                         </a>
                     </td>

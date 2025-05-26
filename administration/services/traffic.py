@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.sessions.models import Session
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
-from accounts.models import CustomUser
+
 from administration.models import (
     SiteVisit,
 )  # Assuming you have a SiteVisit model for tracking visits
@@ -36,6 +36,8 @@ def get_online_users():
     """
     Returns the number of online authenticated users based on activity within the last 5 minutes.
     """
+    from accounts.models import CustomUser
+
     now = timezone.now()
     online_threshold = now - timedelta(minutes=5)
     online_users = CustomUser.objects.filter(last_activity__gte=online_threshold)
@@ -46,6 +48,7 @@ def get_connected_users():
     """
     Returns the number of authenticated users currently logged in.
     """
+    from accounts.models import CustomUser
     return CustomUser.objects.filter(is_authenticated=True).count()
 
 

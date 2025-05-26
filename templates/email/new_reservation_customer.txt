@@ -1,8 +1,10 @@
-Bonjour {{ user.full_name }},
+Bonjour {{ user.name }} {{ user.last_name }},
 
 Merci pour votre réservation du logement "{{ logement.name }}".
 Dates : du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
 Nombre de voyageurs : {{ reservation.guest }}
+
+Reservation code :  {reservation.code}
 
 Total payé : {{ reservation.price }} € TTC
 
