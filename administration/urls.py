@@ -90,7 +90,7 @@ urlpatterns = [
     path("entreprise/", views.edit_entreprise, name="edit_entreprise"),
     path("admin-reservations/", views.manage_reservations, name="manage_reservations"),
     path(
-        "transfer-reservation/",
+        "transfer-reservation/<str:code>/",
         views.transfer_reservation_payment,
         name="transfer_reservation",
     ),
