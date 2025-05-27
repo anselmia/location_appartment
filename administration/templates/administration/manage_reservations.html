@@ -36,17 +36,21 @@
             <span class="badge bg-light text-dark">{{ r.get_statut_display }}</span>
           {% endif %}
         </div>
-        
+
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
           <h5 class="mb-0">{{ r.code }} - {{ r.logement.name }}</h5>
           <small class="text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</small>
         </div>
 
-        <p class="mb-2"><strong>Prix:</strong> {{ r.price }} € | <strong>Frais:</strong> {{ r.platform_fee }} € | <strong>Taxes:</strong> {{ r.tax }} €</p>
+        <p class="mb-2"><strong>Prix:</strong> {{ r.price }} € | <strong>Frais:</strong> {{ r.platform_fee|floatformat:2 }} € | <strong>Taxes:</strong> {{ r.tax|floatformat:2 }} €</p>
         <p><strong>PaymentIntent:</strong> {{ r.stripe_payment_intent_id|default:"—" }}<br>
            <strong>Méthode de paiement:</strong> {{ r.stripe_saved_payment_method_id|default:"—" }}</p>
 
         <!-- Refund + Deposit -->
+        {% if r.refunded %}
+          <p class="mt-2 text-success fw-semibold">💸 Remboursé : {{ r.refund_amount|floatformat:2 }} €</p>
+        {% endif %}
+
         <div class="d-flex flex-wrap gap-3 mt-3">
           {% if r.stripe_payment_intent_id %}
             <form method="post" action="{% url 'administration:refund_reservation' r.code %}" onsubmit="return confirm('Confirmer le remboursement ?');">
@@ -54,9 +58,7 @@
               <input type="number" name="amount" placeholder="Montant (€)" class="form-control form-control-sm d-inline-block" style="width: 120px;" min="0" step="0.01" max="{{ r.refundable_amount|stringformat:'f' }}">>
               <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
             </form>
-          {% endif %}
 
-          {% if not r.caution_charged and r.stripe_deposit_payment_intent_id %}
             <form method="post" action="{% url 'administration:charge_deposit' r.code %}" onsubmit="return confirm('Charger la caution ?');">
               {% csrf_token %}
               <input type="number" name="deposit_amount" class="form-control form-control-sm" style="width: 100px;" min="0" step="0.01" max="{{ r.chargeable_deposit|stringformat:'f' }}">
@@ -64,10 +66,6 @@
             </form>
           {% endif %}
         </div>
-
-        {% if r.refunded %}
-          <p class="mt-2 text-success fw-semibold">💸 Remboursé : {{ r.refund_amount|floatformat:2 }} €</p>
-        {% endif %}
       </div>
     </div>
   {% empty %}
