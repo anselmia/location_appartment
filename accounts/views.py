@@ -76,82 +76,83 @@ def user_logout(request):
 
 @login_required
 def client_dashboard(request):
-    user = request.user
-    logger.info(f"🔐 Accessing client dashboard for user {user.id} ({user.email})")
-
-    dashboard_link = None
-    stripe_account = None
-    reservations = []
-    code_filter = request.GET.get("code", None)
-
     try:
-        reservations = Reservation.objects.filter(
-            user=user, statut__in=["confirmee", "annulee", "terminee"]
-        ).order_by("-start")
-    except Exception as e:
-        logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
-        messages.error(request, "Impossible de charger vos réservations.")
+        user = request.user
+        logger.info(f"🔐 Accessing client dashboard for user {user.id} ({user.email})")
 
-    # User forms
-    formUser = CustomUserChangeForm(instance=user)
-    password_form = CustomPasswordChangeForm(user=user, data=request.POST or None)
+        dashboard_link = None
+        stripe_account = None
+        reservations = []
+        code_filter = request.GET.get("code", None)
 
-    # Handle password change securely
-    if request.method == "POST" and "change_password" in request.POST:
-        if password_form.is_valid():
-            try:
-                password_form.save()
-                update_session_auth_hash(request, password_form.user)
-                logger.info(f"🔐 Password changed for user {user.id}")
-                messages.success(request, "Mot de passe mis à jour avec succès.")
-                return redirect("accounts:dashboard")
-            except Exception as e:
-                logger.exception(f"❌ Error updating password for user {user.id}: {e}")
-                messages.error(
-                    request, "Erreur lors de la mise à jour du mot de passe."
-                )
-        else:
-            logger.warning(f"⚠️ Password form invalid for user {user.id}")
-            messages.error(request, "Veuillez corriger les erreurs du formulaire.")
-
-    # Stripe integration (only if admin + has account)
-    user_is_stripe_admin = is_stripe_admin(user)
-
-    if user_is_stripe_admin and user.stripe_account_id:
         try:
-            from common.services.stripe.account import (
-                get_stripe_account_info,
-                get_stripe_dashboard_link,
-            )
-
-            stripe_account = get_stripe_account_info(user)
-            if stripe_account:
-                dashboard_link = get_stripe_dashboard_link(user)
-                logger.info(f"💳 Stripe account loaded for user {user.id}")
-            else:
-                logger.warning(f"⚠️ No Stripe account data returned for user {user.id}")
-
+            reservations = Reservation.objects.filter(
+                user=user, statut__in=["confirmee", "annulee", "terminee"]
+            ).order_by("-start")
         except Exception as e:
-            logger.exception(f"❌ Stripe integration failed for user {user.id}: {e}")
-            messages.error(
-                request,
-                "Une erreur est survenue lors du chargement de vos données Stripe.",
-            )
+            logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
+            messages.error(request, "Impossible de charger vos réservations.")
 
-    return render(
-        request,
-        "accounts/dashboard.html",
-        {
-            "user": user,
-            "reservations": reservations,
-            "formUser": formUser,
-            "password_form": password_form,
-            "stripe_account": stripe_account,
-            "is_stripe_admin": user_is_stripe_admin,
-            "dashboard_link": dashboard_link,
-            "code_filter": code_filter,
-        },
-    )
+        formUser = CustomUserChangeForm(instance=user)
+        password_form = CustomPasswordChangeForm(user=user, data=request.POST or None)
+
+        if request.method == "POST" and "change_password" in request.POST:
+            if password_form.is_valid():
+                try:
+                    password_form.save()
+                    update_session_auth_hash(request, password_form.user)
+                    logger.info(f"🔐 Password changed for user {user.id}")
+                    messages.success(request, "Mot de passe mis à jour avec succès.")
+                    return redirect("accounts:dashboard")
+                except Exception as e:
+                    logger.exception(f"❌ Error updating password for user {user.id}: {e}")
+                    messages.error(request, "Erreur lors de la mise à jour du mot de passe.")
+            else:
+                logger.warning(f"⚠️ Password form invalid for user {user.id}")
+                messages.error(request, "Veuillez corriger les erreurs du formulaire.")
+
+        user_is_stripe_admin = is_stripe_admin(user)
+
+        if user_is_stripe_admin and user.stripe_account_id:
+            try:
+                from common.services.stripe.account import (
+                    get_stripe_account_info,
+                    get_stripe_dashboard_link,
+                )
+
+                stripe_account = get_stripe_account_info(user)
+                if stripe_account:
+                    dashboard_link = get_stripe_dashboard_link(user)
+                    logger.info(f"💳 Stripe account loaded for user {user.id}")
+                else:
+                    logger.warning(f"⚠️ No Stripe account data returned for user {user.id}")
+
+            except Exception as e:
+                logger.exception(f"❌ Stripe integration failed for user {user.id}: {e}")
+                messages.error(
+                    request,
+                    "Une erreur est survenue lors du chargement de vos données Stripe.",
+                )
+
+        return render(
+            request,
+            "accounts/dashboard.html",
+            {
+                "user": user,
+                "reservations": reservations,
+                "formUser": formUser,
+                "password_form": password_form,
+                "stripe_account": stripe_account,
+                "is_stripe_admin": user_is_stripe_admin,
+                "dashboard_link": dashboard_link,
+                "code_filter": code_filter,
+            },
+        )
+
+    except Exception as e:
+        logger.exception(f"❌ Unexpected error in client_dashboard for user {request.user.id}: {e}")
+        messages.error(request, "Une erreur inattendue est survenue.")
+        return redirect("homepage")  # Fallback route in case rendering fails
 
 
 @login_required
