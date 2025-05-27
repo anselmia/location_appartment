@@ -10,6 +10,7 @@ from logement.services.payment_service import (
     handle_checkout_session_completed,
     handle_payment_failed,
     handle_charge_refunded,
+    handle_transfer_paid,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,28 +78,6 @@ def _handle_event_type_validation_error(err: ValidationError):
         raise err
 
 
-def log_event_data(event_data, parent_key=""):
-    try:
-        # Check if the event_data is a dictionary or a list
-        if isinstance(event_data, dict):
-            for key, value in event_data.items():
-                new_key = f"{parent_key}.{key}" if parent_key else key
-                # Recursively log nested data
-                if value is None:
-                    logger.info(f"{new_key}: None")
-                else:
-                    log_event_data(value, new_key)
-        elif isinstance(event_data, list):
-            for index, item in enumerate(event_data):
-                new_key = f"{parent_key}[{index}]"
-                log_event_data(item, new_key)
-        else:
-            # If it's a leaf node (not a list or dict), log the value
-            logger.info(f"{parent_key}: {event_data}")
-    except Exception as e:
-        logger.error(f"Error logging event data: {e}")
-
-
 def handle_webhook_event(event):
     """Perform actions given Stripe Webhook event data."""
 
@@ -128,6 +107,9 @@ def handle_webhook_event(event):
 
         elif event_type == EventType.REFUND_UPDATED:
             handle_charge_refunded(e.event.data)
+
+        elif event_type == EventType.TRANSFER_REVERSED:
+            handle_transfer_paid(e.event.data)
 
         else:
             logger.warning(f"⚠️ Unsupported event type: {event_type}")

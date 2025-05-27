@@ -1,0 +1,29 @@
+<h4 class="mt-4">Refunds</h4>
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Reservation</th>
+      <th>User</th>
+      <th>Refund ID</th>
+      <th>Amount</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for res in reservations %}
+      {% if res.refunded %}
+        <tr>
+          <td>{{ res.code }}</td>
+          <td>{{ res.user.username }}</td>
+          <td>{{ res.stripe_refund_id }}</td>
+          <td>{{ res.refund_amount|floatformat:2  }} €</td>
+          <td>{{ res.updated|date:"Y-m-d" }}</td>
+        </tr>
+      {% endif %}
+    {% empty %}
+      <tr>
+        <td colspan="5">No refunds recorded.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

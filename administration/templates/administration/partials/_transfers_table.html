@@ -1,0 +1,29 @@
+<h4 class="mt-4">Transfers</h4>
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Reservation</th>
+      <th>Owner</th>
+      <th>Transfer ID</th>
+      <th>Status</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for res in reservations %}
+      {% if res.stripe_transfer_id %}
+        <tr>
+          <td>{{ res.code }}</td>
+          <td>{{ res.logement.owner.username }}</td>
+          <td>{{ res.stripe_transfer_id }}</td>
+          <td>{{ res.transfer_status }}</td>
+          <td>{{ res.price|floatformat:2 }} €</td>
+        </tr>
+      {% endif %}
+    {% empty %}
+      <tr>
+        <td colspan="5">No transfers recorded.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

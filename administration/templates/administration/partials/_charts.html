@@ -1,0 +1,28 @@
+<h4 class="mt-4">Revenue Chart (Placeholder)</h4>
+<canvas id="revenueChart" width="400" height="150"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById("revenueChart").getContext("2d");
+  const chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      datasets: [{
+        label: "Total Revenue",
+        data: [1200, 1500, 1000, 1800],
+        borderColor: "rgba(75, 192, 192, 1)",
+        tension: 0.1,
+        fill: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true }
+      }
+    }
+  });
+});
+</script>

@@ -1,4 +1,4 @@
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_UP
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
@@ -315,9 +315,8 @@ def apply_discounts(base_price, current_day, discounts_by_type):
 
 
 def get_platform_fee(price):
-    return (Decimal(str(PLATFORM_FEE_VARIABLE)) * price) + Decimal(
-        str(PLATFORM_FEE_FIX)
-    )
+    fee = (Decimal(str(PLATFORM_FEE_VARIABLE)) * price) + Decimal(str(PLATFORM_FEE_FIX))
+    return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
 
 
 def calculate_price(logement, start, end, guestCount, base_price=None):

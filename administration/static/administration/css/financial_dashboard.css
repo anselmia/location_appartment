@@ -1,0 +1,95 @@
+
+/* Scoped Financial Dashboard CSS */
+
+#financial-dashboard-page {
+    padding: 1rem 2rem;
+}
+
+/* Summary Cards */
+#financial-dashboard-page .card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#financial-dashboard-page .card .card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+#financial-dashboard-page .card-header {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Tabs Navigation */
+#financial-dashboard-page .nav-tabs {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#financial-dashboard-page .nav-tabs .nav-link {
+    font-weight: 500;
+    color: #495057;
+    border: none;
+    border-bottom: 3px solid transparent;
+}
+
+#financial-dashboard-page .nav-tabs .nav-link.active {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+/* Tables */
+#financial-dashboard-page .table {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+#financial-dashboard-page .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+#financial-dashboard-page .table td,
+#financial-dashboard-page .table th {
+    vertical-align: middle;
+}
+
+#financial-dashboard-page .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f2f2f2;
+}
+
+/* Charts */
+#financial-dashboard-page canvas {
+    margin-top: 2rem;
+    max-width: 100%;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+    #financial-dashboard-page .card .card-title {
+        font-size: 1.1rem;
+    }
+
+    #financial-dashboard-page .table {
+        font-size: 0.9rem;
+    }
+
+    #financial-dashboard-page .nav-tabs .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Theme Integration */
+#financial-dashboard-page body {
+    background-color: #ffffff;
+    color: #333;
+}
+
+#financial-dashboard-page h1,
+#financial-dashboard-page h4 {
+    font-weight: 600;
+    color: #212529;
+}

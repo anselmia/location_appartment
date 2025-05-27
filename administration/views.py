@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import os
 import logging
 import json
+import stripe
 from django.http import QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -47,7 +48,11 @@ from logement.services.reservation_service import (
 )
 from logement.services.logement import get_logements
 from common.views import is_admin
-from logement.services.payment_service import refund_payment, charge_payment, charge_reservation
+from logement.services.payment_service import (
+    refund_payment,
+    charge_payment,
+    charge_reservation,
+)
 from decimal import Decimal, InvalidOperation
 from administration.services.traffic import get_traffic_dashboard_data
 from administration.services.logs import parse_log_file
@@ -57,7 +62,13 @@ from common.decorators import (
     user_is_reservation_admin,
 )
 from django.core.cache import cache
+from django.views.generic import TemplateView
+from django.db.models import Sum, Avg, Count
+from django.utils.timezone import now
+from django.contrib.auth.mixins import LoginRequiredMixin
+from common.mixins import AdminRequiredMixin
 
+stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -888,8 +899,12 @@ def refund_reservation(request, code):
     attempts = cache.get(key, 0)
 
     if attempts >= 5:
-        logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
-        messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
+        logger.warning(
+            f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}"
+        )
+        messages.error(
+            request, "Trop de tentatives de remboursement. Réessayez plus tard."
+        )
         return redirect("administration:reservation_dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
@@ -999,7 +1014,9 @@ def charge_deposit(request, code):
 @user_passes_test(is_admin)
 def manage_reservations(request):
     query = request.GET.get("q")
-    reservations = Reservation.objects.select_related("logement", "user").exclude(statut="en_attente")
+    reservations = Reservation.objects.select_related("logement", "user").exclude(
+        statut="en_attente"
+    )
 
     if query:
         reservations = reservations.filter(code__icontains=query)
@@ -1024,3 +1041,41 @@ def transfer_reservation_payment(request, code):
         messages.error(request, f"Erreur lors du transfert : {str(e)}")
 
     return redirect("administration:manage_reservations")
+
+
+class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    template_name = "administration/financial_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Aggregate financial data
+        reservations = Reservation.objects.filter(statut="confirmee")
+        context["total_revenue"] = reservations.aggregate(Sum("price"))[
+            "price__sum"
+        ] or Decimal("0.00")
+        context["platform_earnings"] = sum(
+            (r.platform_fee or Decimal("0.00")) for r in reservations
+        ) or Decimal("0.00")
+        context["total_deposits"] = reservations.aggregate(Sum("amount_charged"))[
+            "amount_charged__sum"
+        ] or Decimal("0.00")
+        context["total_refunds"] = reservations.aggregate(Sum("refund_amount"))[
+            "refund_amount__sum"
+        ] or Decimal("0.00")
+        context["total_reservations"] = reservations.count()
+        context["average_price"] = reservations.aggregate(Avg("price"))[
+            "price__avg"
+        ] or Decimal("0.00")
+
+        try:
+            balance = stripe.Balance.retrieve()
+            context["stripe_balance"] = balance
+        except Exception:
+            context["stripe_balance"] = None
+
+        context["reservations"] = reservations.order_by("-date_reservation")[
+            :100
+        ]  # Latest 100
+
+        return context

@@ -1,0 +1,29 @@
+<h4 class="mt-4">Deposits Charged</h4>
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Reservation</th>
+      <th>User</th>
+      <th>PaymentIntent</th>
+      <th>Amount</th>
+      <th>Charged</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for res in reservations %}
+      {% if res.caution_charged %}
+        <tr>
+          <td>{{ res.code }}</td>
+          <td>{{ res.user.username }}</td>
+          <td>{{ res.stripe_deposit_payment_intent_id }}</td>
+          <td>{{ res.amount_charged|floatformat:2  }} €</td>
+          <td>✔</td>
+        </tr>
+      {% endif %}
+    {% empty %}
+      <tr>
+        <td colspan="5">No deposits charged.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

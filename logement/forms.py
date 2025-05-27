@@ -155,12 +155,34 @@ class LogementForm(forms.ModelForm):
                     "Le nombre de voyageurs inclus ne peut pas dépasser le maximum autorisé.",
                 )
 
-        # Custom validation for caution (positive number)
         caution = cleaned_data.get("caution")
         if caution is not None and caution < 0:
             self.add_error(
                 "caution", "Le montant de la caution ne peut pas être négatif."
             )
+
+        statut = cleaned_data.get("statut")
+        owner = cleaned_data.get("owner")
+        admins = cleaned_data.get("admins")
+
+        if statut == "open":
+            if not owner:
+                self.add_error(
+                    "owner", "Le logement ne peut pas être ouvert sans propriétaire."
+                )
+            else:
+                if not getattr(owner, "stripe_account_id", None):
+                    self.add_error(
+                        "owner", "Le propriétaire doit avoir un compte Stripe connecté."
+                    )
+
+            if admins:
+                for admin in admins:
+                    if not getattr(admin, "stripe_account_id", None):
+                        self.add_error(
+                            "admins",
+                            f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
+                        )
 
 
 class ReservationForm(forms.Form):

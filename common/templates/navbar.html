@@ -39,9 +39,10 @@
                         <div class="dropdown">
                             <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
                             <div class="dropdown-menu">
+                                <a href="{% url 'administration:financial_dashboard' %}">{% trans "Tableau de bord" %}</a>
                                 <a href="{% url 'administration:edit_entreprise' %}">{% trans "Entreprise" %}</a>
                                 <a href="{% url 'administration:homepage_admin_view' %}">{% trans "Home page" %}</a>
-                                 <a href="{% url 'administration:manage_reservations' %}">{% trans "Gestion des réservations" %}</a>
+                                <a href="{% url 'administration:manage_reservations' %}">{% trans "Gestion des réservations" %}</a>
                                 <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
                                 <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>
                             </div>

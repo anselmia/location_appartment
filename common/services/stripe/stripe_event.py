@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from common.services.stripe.checkout import StripeCheckoutSessionEventData
 from .payment_intent import StripePaymentIntentEventData
 from .charge import StripeChargeEventData
+from .transfer import StripeTransferEventData
 
 
 class EventType(str, Enum):
@@ -15,6 +16,7 @@ class EventType(str, Enum):
     REFUND_UPDATED = "refund.updated"
     PAYMENT_INTENT_FAILED = "payment_intent.payment_failed"
     PAYMENT_INTENT_SUCCEEDED = "payment_intent.succeeded"
+    TRANSFER_REVERSED = "transfer.reversed"
 
 
 class StripeEventRequest(BaseModel):
@@ -54,6 +56,11 @@ class StripePaymentIntentEvent(StripeBaseEvent):
     ]
 
 
+class StripeTransferEvent(StripeBaseEvent):
+    data: StripeTransferEventData
+    type: Literal[EventType.TRANSFER_REVERSED,]
+
+
 class StripeEvent(BaseModel):
     # Add event classes to this attribute as they are implemented, more specific types first.
     # see https://pydantic-docs.helpmanual.io/usage/types/#discriminated-unions-aka-tagged-unions
@@ -61,5 +68,6 @@ class StripeEvent(BaseModel):
         StripePaymentIntentEvent,
         StripeCheckoutEvent,
         StripeChargeEvent,
-        StripeBaseEvent,  # needed here so unimplemented event types can pass through validation
+        StripeTransferEvent,
+        StripeBaseEvent,
     ] = Field(discriminator="type")

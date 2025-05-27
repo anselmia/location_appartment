@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
-from common.services.stripe.account import get_or_create_stripe_account
+
 
 phone_validator = RegexValidator(
     regex=r"^\+?1?\d{9,15}$",
@@ -41,15 +41,6 @@ class CustomUser(AbstractUser):
     @property
     def full_name(self):
         return f"{self.name} {self.last_name}"
-
-    def save(self, *args, **kwargs):
-        from common.services.stripe.account import get_or_create_stripe_account
-        if self.is_owner or self.is_owner_admin:
-            if not self.stripe_account_id:
-                account_id = get_or_create_stripe_account(self)
-                self.stripe_account_id = account_id
-
-        super().save(*args, **kwargs)
 
 
 class Message(models.Model):

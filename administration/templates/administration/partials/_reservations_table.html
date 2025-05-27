@@ -1,0 +1,35 @@
+<h4 class="mt-4">Latest Reservations</h4>
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>User</th>
+      <th>Logement</th>
+      <th>Price</th>
+      <th>Platform Fee</th>
+      <th>Deposit Charged</th>
+      <th>Refund</th>
+      <th>Status</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for res in reservations %}
+      <tr>
+        <td>{{ res.code }}</td>
+        <td>{{ res.user.username }}</td>
+        <td>{{ res.logement.name }}</td>
+        <td>{{ res.price|floatformat:2  }} €</td>
+        <td>{{ res.platform_fee|floatformat:2  }} €</td>
+        <td>{{ res.amount_charged|floatformat:2  }} €</td>
+        <td>{{ res.refund_amount|floatformat:2  }} €</td>
+        <td>{{ res.statut }}</td>
+        <td>{{ res.created|date:"Y-m-d" }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="9">No reservations found.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

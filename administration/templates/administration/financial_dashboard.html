@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}  
+  <link rel="stylesheet" href="{% static 'administration/css/financial_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="financial-dashboard-page">
+    <div class="container-fluid">
+        <h1 class="mt-4">Financial Dashboard</h1>
+        {% include "administration/partials/_summary_cards.html" %}
+
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="reservations-tab" data-toggle="tab" href="#reservations" role="tab">Réservations</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="transfers-tab" data-toggle="tab" href="#transfers" role="tab">Transferts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="refunds-tab" data-toggle="tab" href="#refunds" role="tab">Remboursements</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="deposits-tab" data-toggle="tab" href="#deposits" role="tab">Cautions</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="charts-tab" data-toggle="tab" href="#charts" role="tab">Graphiques</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="dashboardTabsContent">
+            <div class="tab-pane fade show active" id="reservations" role="tabpanel">
+                {% include "administration/partials/_reservations_table.html" %}
+            </div>
+            <div class="tab-pane fade" id="transfers" role="tabpanel">
+                {% include "administration/partials/_transfers_table.html" %}
+            </div>
+            <div class="tab-pane fade" id="refunds" role="tabpanel">
+                {% include "administration/partials/_refunds_table.html" %}
+            </div>
+            <div class="tab-pane fade" id="deposits" role="tabpanel">
+                {% include "administration/partials/_deposits_table.html" %}
+            </div>
+            <div class="tab-pane fade" id="charts" role="tabpanel">
+                {% include "administration/partials/_charts.html" %}
+            </div>            
+        </div>
+    </div>
+</div>
+{% endblock %}

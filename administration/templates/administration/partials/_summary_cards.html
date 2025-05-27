@@ -1,0 +1,36 @@
+{% load extra_tags %}
+
+<div class="row my-4">
+  <div class="col-md-3">
+    <div class="card text-white bg-primary mb-3">
+      <div class="card-header">Total Revenue</div>
+      <div class="card-body">
+        <h5 class="card-title">{{ total_revenue|floatformat:2  }} €</h5>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-success mb-3">
+      <div class="card-header">Platform Earnings</div>
+      <div class="card-body">
+        <h5 class="card-title">{{ platform_earnings|floatformat:2  }} €</h5>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-info mb-3">
+      <div class="card-header">Deposits Charged</div>
+      <div class="card-body">
+        <h5 class="card-title">{{ total_deposits|floatformat:2  }} €</h5>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-danger mb-3">
+      <div class="card-header">Refunds Issued</div>
+      <div class="card-body">
+        <h5 class="card-title">{{ total_refunds|floatformat:2  }} €</h5>
+      </div>
+    </div>
+  </div>
+</div>

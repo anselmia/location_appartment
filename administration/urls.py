@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from rest_framework.routers import DefaultRouter
 from .views import DailyPriceViewSet
+from .views import FinancialDashboardView
 
 app_name = "administration"
 
@@ -94,6 +95,7 @@ urlpatterns = [
         views.transfer_reservation_payment,
         name="transfer_reservation",
     ),
+    path("financial-dashboard/", FinancialDashboardView.as_view(), name="financial_dashboard"),
 ]
 
 urlpatterns += router.urls
