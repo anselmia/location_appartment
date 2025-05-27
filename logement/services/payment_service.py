@@ -11,7 +11,7 @@ from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
     StripeChargeEventData,
     StripePaymentIntentEventData,
-    StripeTransferEventData
+    StripeTransferEventData,
 )
 from decimal import Decimal
 
@@ -519,7 +519,7 @@ def charge_payment(
             description=f"Charge sur caution location {reservation.logement.name}",
             metadata={
                 "type": "deposit",
-                "reservation_code": str(reservation.code),
+                "code": str(reservation.code),
                 "logement_id": reservation.logement.id,
             },
         )
@@ -568,7 +568,8 @@ def charge_reservation(reservation):
         logger.info(f"💼 Preparing transfer for reservation {reservation.code}")
 
         # Calculate amounts
-        platform_amount = Decimal(settings.PLATFORM_FEE) * Decimal(reservation.price)
+        from logement.services.payment_service import PLATFORM_FEE
+        platform_amount = Decimal(PLATFORM_FEE) * Decimal(reservation.price)
         owner_amount = (
             Decimal(reservation.price)
             - Decimal(reservation.platform_fee)
@@ -642,9 +643,7 @@ def handle_transfer_paid(data: StripeTransferEventData):
                 reservation = Reservation.objects.get(code=reservation_code)
                 reservation.transferred = True
                 reservation.stripe_transfer_id = transfer_id
-                reservation.save(
-                    update_fields=["transferred", "stripe_transfer_id"]
-                )
+                reservation.save(update_fields=["transferred", "stripe_transfer_id"])
                 logger.info(f"📦 Transfer recorded for reservation {reservation_code}")
             except Reservation.DoesNotExist:
                 logger.warning(
@@ -676,12 +675,18 @@ def handle_transfer_failed(data: StripeTransferEventData):
                 reservation = Reservation.objects.get(code=reservation_code)
                 reservation.transfer_status = "failed"
                 reservation.save(update_fields=["transfer_status"])
-                logger.warning(f"🔁 Transfer marked as failed on reservation {reservation_code}")
+                logger.warning(
+                    f"🔁 Transfer marked as failed on reservation {reservation_code}"
+                )
                 # Optional: notify admin via email or dashboard
             except Reservation.DoesNotExist:
-                logger.warning(f"⚠️ Reservation {reservation_code} not found for failed transfer {transfer_id}")
+                logger.warning(
+                    f"⚠️ Reservation {reservation_code} not found for failed transfer {transfer_id}"
+                )
         else:
-            logger.warning(f"⚠️ No valid transfer group in failed transfer {transfer_id}")
+            logger.warning(
+                f"⚠️ No valid transfer group in failed transfer {transfer_id}"
+            )
 
     except Exception as e:
         logger.exception(f"❌ Error handling transfer.failed: {e}")
