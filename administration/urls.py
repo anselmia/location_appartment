@@ -88,6 +88,7 @@ urlpatterns = [
     ),
     path("gestion-home/", views.homepage_admin_view, name="homepage_admin_view"),
     path("entreprise/", views.edit_entreprise, name="edit_entreprise"),
+    path("admin-reservations/", views.manage_reservations, name="manage_reservations"),
 ]
 
 urlpatterns += router.urls

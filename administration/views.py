@@ -503,7 +503,9 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
             details["Taxe de séjour"] = f"+ {round(price_data['taxAmount'], 2)} €"
 
-            details["Frais de transaction"] = f"+ {round(price_data['platform_fee'], 2)} €"
+            details["Frais de transaction"] = (
+                f"+ {round(price_data['platform_fee'], 2)} €"
+            )
 
             return Response(
                 {
@@ -623,7 +625,9 @@ def economie_view(request):
     try:
         logements = get_logements(request.user)
         selected_logement_id = (
-            request.POST.get("logement_id") or logements.first().id if logements else None
+            request.POST.get("logement_id") or logements.first().id
+            if logements
+            else None
         )
         current_year = datetime.now().year
         years = list(
@@ -644,7 +648,9 @@ def economie_view(request):
         )
     except Exception as e:
         logger.exception(f"Erreur dans economie_view: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
+        return render(
+            request, "common/error.html", {"error_message": "Erreur interne serveur"}
+        )
 
 
 def api_economie_data(request, logement_id):
@@ -656,6 +662,7 @@ def api_economie_data(request, logement_id):
     except Exception as e:
         logger.exception(f"Erreur dans api_economie_data: {e}")
         return JsonResponse({"error": "Erreur interne serveur"}, status=500)
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -776,9 +783,13 @@ def homepage_admin_view(request):
             if "delete_service_id" in request.POST:
                 config.services.filter(id=request.POST["delete_service_id"]).delete()
             elif "delete_testimonial_id" in request.POST:
-                config.testimonials.filter(id=request.POST["delete_testimonial_id"]).delete()
+                config.testimonials.filter(
+                    id=request.POST["delete_testimonial_id"]
+                ).delete()
             elif "delete_commitment_id" in request.POST:
-                config.commitments.filter(id=request.POST["delete_commitment_id"]).delete()
+                config.commitments.filter(
+                    id=request.POST["delete_commitment_id"]
+                ).delete()
             elif "add_service" in request.POST:
                 service_form = ServiceForm(request.POST, request.FILES)
                 if service_form.is_valid():
@@ -798,7 +809,9 @@ def homepage_admin_view(request):
                     instance.config = config
                     instance.save()
             else:
-                main_form = HomePageConfigForm(request.POST, request.FILES, instance=config)
+                main_form = HomePageConfigForm(
+                    request.POST, request.FILES, instance=config
+                )
                 if main_form.is_valid():
                     main_form.save()
 
@@ -815,7 +828,9 @@ def homepage_admin_view(request):
         return render(request, "administration/base_site.html", context)
     except Exception as e:
         logger.exception(f"Erreur dans homepage_admin_view: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
+        return render(
+            request, "common/error.html", {"error_message": "Erreur interne serveur"}
+        )
 
 
 @login_required
@@ -834,7 +849,9 @@ def edit_entreprise(request):
         return render(request, "administration/edit_entreprise.html", {"form": form})
     except Exception as e:
         logger.exception(f"Erreur dans edit_entreprise: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
+        return render(
+            request, "common/error.html", {"error_message": "Erreur interne serveur"}
+        )
 
 
 @login_required
@@ -964,3 +981,19 @@ def charge_deposit(request, code):
         logger.exception("Stripe deposit charge failed")
 
     return redirect("administration:reservation_detail", code=code)
+
+
+@login_required
+@user_passes_test(is_admin)
+def manage_reservations(request):
+    query = request.GET.get("q")
+    reservations = Reservation.objects.select_related("logement", "user").exclude(statut="en_attente")
+
+    if query:
+        reservations = reservations.filter(code__icontains=query)
+
+    context = {
+        "reservations": reservations.order_by("-date_reservation"),
+        "query": query,
+    }
+    return render(request, "administration/manage_reservations.html", context)

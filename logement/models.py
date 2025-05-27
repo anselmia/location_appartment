@@ -475,6 +475,12 @@ class Reservation(models.Model):
         return True
 
     @property
+    def platform_fee(self):
+        from logement.services.reservation_service import get_platform_fee
+
+        return get_platform_fee(self.price)
+
+    @property
     def refundable_period_passed(self):
         cancel_limit = self.start - timedelta(days=self.logement.cancelation_period)
         return timezone.now().date() > cancel_limit

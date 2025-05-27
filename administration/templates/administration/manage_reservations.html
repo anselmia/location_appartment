@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet" href="{% static 'administration/css/manage_reservations.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Gestion des Réservations</h2>
+
+  <!-- Search form -->
+  <form method="get" class="mb-4">
+  <input type="text"
+         name="q"
+         class="form-control form-control-lg rounded-pill"
+         placeholder="🔍 Numéro de réservation"
+         {% if query %} value="{{ query }}" {% endif %}>
+  </form>
+
+  {% for r in reservations %}
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <div class="card-body">
+        <!-- Badge Statut -->
+        <div class="mb-2">
+          {% if r.statut == "confirmee" %}
+            <span class="badge bg-success">Confirmée</span>
+          {% elif r.statut == "en_attente" %}
+            <span class="badge bg-warning text-dark">En attente</span>
+          {% elif r.statut == "annulee" %}
+            <span class="badge bg-danger">Annulée</span>
+          {% elif r.statut == "terminee" %}
+            <span class="badge bg-secondary">Terminée</span>
+          {% else %}
+            <span class="badge bg-light text-dark">{{ r.get_statut_display }}</span>
+          {% endif %}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+          <h5 class="mb-0">{{ r.code }} - {{ r.logement.name }}</h5>
+          <small class="text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</small>
+        </div>
+
+        <p class="mb-2"><strong>Prix:</strong> {{ r.price }} € | <strong>Frais:</strong> {{ r.platform_fee }} € | <strong>Taxes:</strong> {{ r.tax }} €</p>
+        <p><strong>PaymentIntent:</strong> {{ r.stripe_payment_intent_id|default:"—" }}<br>
+           <strong>Méthode de paiement:</strong> {{ r.stripe_saved_payment_method_id|default:"—" }}</p>
+
+        <!-- Refund + Deposit -->
+        <div class="d-flex flex-wrap gap-3 mt-3">
+          {% if r.stripe_payment_intent_id %}
+            <form method="post" action="{% url 'administration:refund_reservation' r.code %}" onsubmit="return confirm('Confirmer le remboursement ?');">
+              {% csrf_token %}
+              <input type="number" name="amount" placeholder="Montant (€)" class="form-control form-control-sm d-inline-block" style="width: 120px;" min="0" step="0.01" max="{{ r.refundable_amount|stringformat:'f' }}">>
+              <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
+            </form>
+          {% endif %}
+
+          {% if not r.caution_charged and r.stripe_deposit_payment_intent_id %}
+            <form method="post" action="{% url 'administration:charge_deposit' r.code %}" onsubmit="return confirm('Charger la caution ?');">
+              {% csrf_token %}
+              <input type="number" name="deposit_amount" class="form-control form-control-sm" style="width: 100px;" min="0" step="0.01" max="{{ r.chargeable_deposit|stringformat:'f' }}">
+              <button type="submit" class="btn btn-sm btn-outline-primary">🔒 Charger caution</button>
+            </form>
+          {% endif %}
+        </div>
+
+        {% if r.refunded %}
+          <p class="mt-2 text-success fw-semibold">💸 Remboursé : {{ r.refund_amount|floatformat:2 }} €</p>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted text-center mt-5">Aucune réservation trouvée.</p>
+  {% endfor %}
+</div>
+{% endblock %}
