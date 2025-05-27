@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load widget_tweaks %}
+{% load extra_tags %}
 
 {% block extrahead %}
   {{ block.super }}
@@ -23,6 +24,13 @@
             <li class="nav-item mb-2">
             <a class="nav-link w-100" id="reservations-tab-link" data-toggle="pill" href="#reservations-tab" role="tab">Mes Réservations</a>
             </li>
+            {% if is_stripe_admin %}
+                <li class="nav-item mb-2">
+                    <a class="nav-link w-100" id="stripe-tab-link" data-toggle="pill" href="#stripe-tab" role="tab">
+                    Compte Stripe
+                    </a>
+                </li>
+            {% endif %}
         </ul>
         </div>
 
@@ -38,6 +46,11 @@
             <div class="tab-pane fade" id="reservations-tab" role="tabpanel" aria-labelledby="reservations-tab-link">
             {% include "accounts/partials/reservation_list.html" %}
             </div>
+            {% if is_stripe_admin %}
+            <div class="tab-pane fade" id="stripe-tab" role="tabpanel" aria-labelledby="stripe-tab-link">
+                {% include "accounts/partials/stripe_dashboard.html" %}
+            </div>
+            {% endif %}
         </div>
         </div>
   </div>

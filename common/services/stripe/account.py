@@ -74,9 +74,7 @@ def get_reservation_stripe_data(user):
                 refund = stripe.Refund.retrieve(r.stripe_refund_id)
 
             except Exception as e:
-                logger.warning(
-                    f"[Stripe] Error fetching refund for {r.code}: {e}"
-                )
+                logger.warning(f"[Stripe] Error fetching refund for {r.code}: {e}")
 
         # Deposit payment intent
         if r.stripe_deposit_payment_intent_id:
@@ -104,3 +102,61 @@ def get_reservation_stripe_data(user):
         )
         logger.info(data)
     return data
+
+
+def get_stripe_dashboard_link(user):
+    """
+    Crée un lien vers le tableau de bord Stripe Express du propriétaire.
+    """
+    if not user.stripe_account_id:
+        raise ValueError("Aucun compte Stripe associé à l'utilisateur.")
+
+    try:
+        login_link = stripe.Account.create_login_link(user.stripe_account_id)
+        return login_link.url
+    except stripe.error.StripeError as e:
+        raise RuntimeError(f"Erreur Stripe : {e.user_message or str(e)}")
+
+
+def create_stripe_connect_account(user, refresh_url, return_url):
+    """
+    Creates a Stripe Connect Express account and an onboarding link for the user.
+    Returns a tuple: (account, account_link)
+    Raises stripe.error.StripeError on failure.
+    """
+
+    # Create the Express account
+    account = stripe.Account.create(
+        type="express",
+        country="FR",
+        email=user.email,
+        business_type="individual",
+        capabilities={
+            "transfers": {"requested": True},
+        },
+    )
+
+    # Create the onboarding link
+    account_link = stripe.AccountLink.create(
+        account=account.id,
+        refresh_url=refresh_url,
+        return_url=return_url,
+        type="account_onboarding",
+    )
+
+    return account, account_link
+
+
+def update_stripe_account(account_id, update_data=None):
+    """
+    Met à jour un compte Stripe avec les données fournies.
+    """
+    try:
+        if update_data:
+            account = stripe.Account.modify(account_id, **update_data)
+        else:
+            account = stripe.Account.retrieve(account_id)
+        return account
+    except Exception as e:
+        logger.error(f"Erreur mise à jour Stripe Account {account_id} : {e}")
+        raise

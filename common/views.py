@@ -11,6 +11,15 @@ def is_admin(user):
     )
 
 
+def is_stripe_admin(user):
+    return user.is_authenticated and (
+        getattr(user, "is_admin", False)
+        or user.is_isuperuser
+        or user.is_owner
+        or user.is_owner_admin
+    )
+
+
 def cgu_view(request):
     return render(request, "common/cgu.html")
 

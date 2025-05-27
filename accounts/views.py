@@ -15,12 +15,13 @@ from logement.models import Reservation
 from django.db.models import Q
 from .models import Message, CustomUser
 from django.core.mail import send_mail
-from common.services.stripe.account import (
-    get_stripe_account_info,
-    get_reservation_stripe_data,
-)
 from django.contrib.auth import update_session_auth_hash
 from common.decorators import user_has_logement
+from common.views import is_stripe_admin
+from django.urls import reverse
+from django.core.cache import cache
+from django_ratelimit.decorators import ratelimit
+
 
 import logging
 
@@ -45,6 +46,7 @@ def register(request):
     return render(request, "accounts/register.html", {"form": form})
 
 
+@ratelimit(key="ip", rate="5/m", block=True)
 def user_login(request):
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
@@ -74,14 +76,17 @@ def user_logout(request):
 
 @login_required
 def client_dashboard(request):
+    dashboard_link = None
     user = request.user
+
     reservations = Reservation.objects.filter(
-        user=user, statut__in=["confirmee", "annulee"]
+        user=user, statut__in=["confirmee", "annulee", "terminee"]
     ).order_by("-start")
 
     formUser = CustomUserChangeForm(instance=user)
     password_form = CustomPasswordChangeForm(user=user, data=request.POST or None)
 
+    # Handle password change
     if request.method == "POST" and "change_password" in request.POST:
         if password_form.is_valid():
             password_form.save()
@@ -91,6 +96,40 @@ def client_dashboard(request):
         else:
             messages.error(request, "Veuillez corriger les erreurs du formulaire.")
 
+    # Integrate Stripe dashboard (for owners only)
+    stripe_data = []
+    stripe_account = None
+    code_filter = request.GET.get("code", "").strip()
+    user_is_stripe_admin = is_stripe_admin(user)
+
+    if user_is_stripe_admin and user.stripe_account_id:
+        try:
+            from common.services.stripe.account import (
+                get_stripe_account_info,
+                get_reservation_stripe_data,
+                get_stripe_dashboard_link,
+            )
+
+            stripe_account = get_stripe_account_info(user)
+            stripe_data = get_reservation_stripe_data(user)
+
+            if stripe_account:
+                try:
+                    dashboard_link = get_stripe_dashboard_link(user)
+                except Exception:
+                    dashboard_link = None
+
+            if code_filter:
+                stripe_data = [
+                    entry
+                    for entry in stripe_data
+                    if code_filter.lower() in entry["reservation"].code.lower()
+                ]
+        except Exception as e:
+            messages.error(
+                request, f"Erreur lors du chargement des données Stripe : {e}"
+            )
+
     return render(
         request,
         "accounts/dashboard.html",
@@ -99,6 +138,11 @@ def client_dashboard(request):
             "reservations": reservations,
             "formUser": formUser,
             "password_form": password_form,
+            "stripe_account": stripe_account,
+            "stripe_data": stripe_data,
+            "code_filter": code_filter,
+            "is_stripe_admin": user_is_stripe_admin,
+            "dashboard_link": dashboard_link,
         },
     )
 
@@ -218,32 +262,110 @@ def delete_account(request):
 
 
 @login_required
-@user_has_logement
-def owner_stripe_dashboard(request):
+def create_stripe_account(request):
     user = request.user
+    from common.services.network import get_client_ip
 
-    if not user.is_owner or not user.stripe_account_id:
-        return render(
-            request,
-            "accounts/stripe_dashboard.html",
-            {"error": "Aucun compte Stripe associé."},
+    ip = get_client_ip(request)
+
+    key = f"stripe_account_attempts:{user.id}"
+    attempts = cache.get(key, 0)
+
+    if attempts >= 3:
+        logger.warning(
+            f"[Stripe] Limite atteinte pour création Stripe | user={user.username} | ip={ip}"
         )
+        messages.error(request, "Trop de tentatives. Réessayez plus tard.")
+        return redirect("accounts:dashboard")
 
-    account = get_stripe_account_info(user)
+    cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
 
-    # Handle optional search filter
-    code_filter = request.GET.get("code", "").strip()
-    stripe_data = get_reservation_stripe_data(user)
+    if user.stripe_account_id:
+        logger.info(
+            f"[Stripe] Création refusée — compte déjà existant pour {user.username} ({user.email}), IP: {ip}"
+        )
+        messages.info(request, "Un compte Stripe est déjà associé à votre profil.")
+        return redirect("accounts:dashboard")
 
-    if code_filter:
-        stripe_data = [entry for entry in stripe_data if code_filter.lower() in entry["reservation"].code.lower()]
+    try:
+        from common.services.stripe.account import create_stripe_connect_account
 
-    return render(
-        request,
-        "accounts/stripe_dashboard.html",
-        {
-            "account": account,
-            "stripe_data": stripe_data,
-            "code_filter": code_filter,
-        },
-    )
+        refresh_url = request.build_absolute_uri(
+            reverse("accounts:create_stripe_account")
+        )
+        return_url = request.build_absolute_uri(reverse("accounts:dashboard"))
+
+        account, account_link = create_stripe_connect_account(
+            user, refresh_url, return_url
+        )
+        user.stripe_account_id = account.id
+        user.save()
+
+        logger.info(
+            f"[Stripe] Compte Stripe créé pour {user.username} — ID: {account.id}, IP: {ip}"
+        )
+        return redirect(account_link.url)
+
+    except Exception as e:
+        logger.exception(
+            f"[Stripe] Erreur création compte pour {user.username}, IP: {ip} — {e}"
+        )
+        messages.error(request, "Erreur lors de la création du compte Stripe.")
+        return redirect("accounts:dashboard")
+
+
+@login_required
+def update_stripe_account_view(request):
+    user = request.user
+    from common.services.network import get_client_ip
+
+    ip = get_client_ip(request)
+
+    key = f"stripe_update_account_attempts:{user.id}"
+    attempts = cache.get(key, 0)
+
+    if attempts >= 3:
+        logger.warning(
+            f"[Stripe] Limite atteinte pour mse à jour du compte Stripe | user={user.username} | ip={ip}"
+        )
+        messages.error(request, "Trop de tentatives. Réessayez plus tard.")
+        return redirect("accounts:dashboard")
+
+    cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
+
+    if not user.stripe_account_id:
+        logger.warning(
+            f"[Stripe] Mise à jour refusée — aucun compte Stripe pour {user.username}, IP: {ip}"
+        )
+        messages.error(request, "Aucun compte Stripe n'est associé à votre profil.")
+        return redirect("accounts:dashboard")
+
+    if request.method == "POST":
+        try:
+            from common.services.stripe.account import update_stripe_account
+
+            update_data = {
+                "business_type": "individual",
+                "email": user.email,
+                "individual": {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                },
+            }
+
+            account = update_stripe_account(user.stripe_account_id, update_data)
+
+            logger.info(
+                f"[Stripe] Compte Stripe mis à jour pour {user.username} — ID: {user.stripe_account_id}, IP: {ip}"
+            )
+            messages.success(request, "Compte Stripe mis à jour.")
+            return redirect("accounts:dashboard")
+
+        except Exception as e:
+            logger.exception(
+                f"[Stripe] Erreur mise à jour pour {user.username}, ID: {user.stripe_account_id}, IP: {ip} — {e}"
+            )
+            messages.error(request, "Erreur lors de la mise à jour du compte Stripe.")
+            return redirect("accounts:dashboard")
+
+    return redirect("accounts:dashboard")

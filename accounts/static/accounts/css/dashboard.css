@@ -6,30 +6,28 @@
   --font-family: 'Playfair Display', serif;
 }
 
-/* Dashboard base styling */
+/* Dashboard */
 .client-dashboard {
   font-family: var(--font-family);
   background-color: var(--light-bg);
   padding: 2rem 1rem;
 }
 
-/* Page Title */
 .client-dashboard h2 {
   color: var(--secondary-color);
   font-weight: 600;
   font-size: 2.2rem;
 }
 
-/* Vertical Nav Pills */
+/* Nav Tabs */
 .nav-pills .nav-link {
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  text-align: left;
   padding: 0.75rem 1rem;
   background: #eae6e2;
   color: var(--secondary-color);
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
 }
 
 .nav-pills .nav-link:hover {
@@ -41,12 +39,12 @@
   color: white;
 }
 
-/* Card Styling */
+/* Cards */
 .card {
-  border-radius: 1rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
   border: none;
+  border-radius: 1rem;
   background: white;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
 }
 
@@ -64,7 +62,7 @@
   padding: 2rem;
 }
 
-/* Form Controls */
+/* Forms */
 .form-label {
   font-weight: 500;
   color: var(--secondary-color);
@@ -74,7 +72,6 @@
 .form-control {
   border-radius: 0.5rem;
   border: 1px solid #ccc;
-  box-shadow: none;
   padding: 0.6rem 0.75rem;
   font-size: 1rem;
   font-family: var(--font-family);
@@ -89,7 +86,7 @@
 .btn {
   border-radius: 2rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
   font-family: var(--font-family);
 }
 
@@ -113,7 +110,7 @@
 }
 
 .btn-outline-danger {
-  border: 1px solid #c0392b;
+  border-color: #c0392b;
   color: #c0392b;
 }
 
@@ -124,16 +121,15 @@
 
 /* Reservation List */
 .list-group-item {
-  background-color: white;
+  background: white;
   border: 1px solid #e4e6eb;
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin-bottom: 1rem;
-  position: relative;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
 }
 
-/* Badge Styling */
+/* Badges */
 .badge {
   font-size: 0.75rem;
   padding: 0.4rem 0.7rem;
@@ -155,12 +151,12 @@
 
 .badge.bg-warning {
   background-color: #ffcc80;
-  color: #3b2f2f;
+  color: var(--secondary-color);
 }
 
 .badge.bg-info {
   background-color: #a3d8f4;
-  color: #1c2d41;
+  color: var(--secondary-color);
 }
 
 .badge.bg-success {
@@ -177,6 +173,16 @@
 .client-dashboard .delete-account {
   max-width: 320px;
   margin: 3rem auto 0;
+}
+
+/* Search */
+form[role="search"] input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+form[role="search"] .btn {
+  white-space: nowrap;
 }
 
 /* Responsive */

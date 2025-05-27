@@ -1,0 +1,121 @@
+{% load extra_tags %}
+{% load static %}
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="mb-4 text-primary fw-bold">💼 Compte Stripe</h5>
+
+    {% if not stripe_account %}
+      <p class="text-muted mb-3">Aucun compte Stripe connecté pour le moment.</p>
+      <a href="{% url 'accounts:create_stripe_account' %}" class="btn btn-primary">
+        ➕ Créer un compte Stripe
+      </a>
+    {% else %}
+      <!-- Compte existant -->
+        <div class="mb-4">
+            <p><strong>ID Stripe :</strong> {{ stripe_account.id }}</p>
+            <p><strong>Statut :</strong> {{ stripe_account.details_submitted|yesno:"✅ Validé,❌ Incomplet" }}</p>
+            <p><strong>Pays :</strong> {{ stripe_account.country }}</p>
+            <p><strong>État :</strong> {{ stripe_account.requirements.currently_due|length }} informations manquantes</p>
+
+            {% if stripe_account.requirements.currently_due %}
+            <div class="alert alert-warning">
+                ⚠️ Vous devez fournir les informations suivantes :
+                <ul class="mb-0">
+                {% for field in stripe_account.requirements.currently_due %}
+                    <li><code>{{ field }}</code></li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <a href="{% url 'accounts:update_stripe_account' %}" class="btn btn-outline-primary">
+            📝 Mettre à jour mes informations
+            </a>
+
+            {% if dashboard_link %}
+            <a href="{{ dashboard_link }}" target="_blank" class="btn btn-outline-secondary ms-2">
+                🔗 Ouvrir Dashboard Stripe
+            </a>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <h6 class="fw-semibold text-secondary mb-3">💳 Réservations & Paiements</h6>
+
+         <!-- Filter -->
+        <form method="get" class="d-flex justify-content-center mb-4" role="search">
+            <input type="text" name="code" value="{{ code_filter }}" class="form-control w-50 rounded-start"
+                    placeholder="Filtrer par code de réservation...">
+            <button class="btn btn-outline-primary rounded-end ms-2" type="submit">Filtrer</button>
+            {% if code_filter %}
+                <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
+            {% endif %}
+        </form>
+
+        {% for item in stripe_data %}
+            <div class="card mb-4 shadow rounded-4">
+                <div class="card-body">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-6">
+                    <h5 class="fw-semibold">Réservation : {{ item.reservation.code }}</h5>
+                    <p class="mb-1"><strong>Logement :</strong> {{ item.reservation.logement.name }}</p>
+                    <p class="mb-1"><strong>Montant :</strong> {{ item.reservation.price }} €</p>
+                    <p class="mb-1"><strong>Dates :</strong> {{ item.reservation.start|date:"d M Y" }} → {{ item.reservation.end|date:"d M Y" }}</p>
+                    </div>
+
+                    <div class="col-md-6">
+                    {% if item.payment_intent %}
+                        <p class="mb-1"><strong>💳 Paiement :</strong> {{ item.payment_intent.id }}</p>
+                        <p class="mb-1"><strong>Status :</strong> 
+                        {% if item.payment_intent.status == "succeeded" %}
+                            <span class="badge bg-success">Succès</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">{{ item.payment_intent.status }}</span>
+                        {% endif %}
+                        </p>
+                        <p class="mb-1"><strong>Montant reçu :</strong> {{ item.payment_intent.amount_received|cents_to_euros|floatformat:2 }} €</p>
+                    {% else %}
+                        <p class="text-muted">Aucun paiement associé</p>
+                    {% endif %}
+                        <hr class="my-2">
+                    {% if item.deposit_intent %}
+                        <p class="mb-1"><strong>🔒 Dépôt de garantie :</strong> {{ item.deposit_intent.id }}</p>
+                        <p class="mb-1"><strong>Status :</strong>
+                            {% if item.deposit_intent.status == "succeeded" %}
+                                <span class="badge bg-success">Succès</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ item.deposit_intent.status }}</span>
+                            {% endif %}
+                        </p>
+                            
+                        <p class="mb-1"><strong>Montant :</strong> {{ item.deposit_intent.amount|cents_to_euros|floatformat:2 }} €</p>
+                        {% endif %}
+                        <hr class="my-2">
+                        {% if item.refund %}
+                            
+                            <p class="mb-1"><strong>💸 Remboursement :</strong> {{ item.refund.id }}</p>
+                            <p class="mb-1"><strong>Status :</strong>
+                                {% if item.refund.status == "succeeded" %}
+                                <span class="badge bg-success">Succès</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">{{ item.refund.status }}</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Montant :</strong> {{ item.refund.amount|cents_to_euros|floatformat:2 }} €</p>
+                        {% elif item.refunded_flag %}
+                            <p class="mt-2 text-success fw-semibold">
+                                ✅ Remboursement traité ({{ item.refund_amount|floatformat:2 }} €)
+                            </p>
+                        {% else %}
+                            <p class="text-muted">Aucun Remboursement associé</p>
+                        {% endif %}
+                    </div>
+                </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+  </div>
+</div>

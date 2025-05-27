@@ -56,6 +56,7 @@ from common.decorators import (
     user_has_logement,
     user_is_reservation_admin,
 )
+from django.core.cache import cache
 
 
 logger = logging.getLogger(__name__)
@@ -880,7 +881,18 @@ def cancel_reservation(request, code):
 @user_is_reservation_admin
 @require_POST
 def refund_reservation(request, code):
+    user = request.user
     reservation = get_object_or_404(Reservation, code=code)
+
+    key = f"refund_attempts_{code}:{user.id}"
+    attempts = cache.get(key, 0)
+
+    if attempts >= 5:
+        logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
+        messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
+        return redirect("administration:reservation_dashboard")
+
+    cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
 
     if not reservation.refunded:
         try:
