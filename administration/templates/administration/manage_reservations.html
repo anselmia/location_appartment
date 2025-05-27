@@ -69,6 +69,23 @@
           </form>
 
         </div>
+
+        <!-- Transfert -->
+        <div class="mt-3">
+          <p><strong>Transfert :</strong>
+            {% if r.transferred %}
+              <span class="text-success">✔️ Envoyé le {{ r.transfer_date|date:"d/m/Y" }}</span><br>
+              <small>ID Transfert : {{ r.stripe_transfer_id }}</small>
+            {% else %}
+              <form method="post" action="{% url 'administration:transfer_reservation' r.code %}"
+                    onsubmit="return confirm('Effectuer le transfert des fonds ?');"
+                    class="d-inline-block mt-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-success">💶 Transférer</button>
+              </form>
+            {% endif %}
+          </p>
+        </div>
         {% endif %}
       </div>
     </div>

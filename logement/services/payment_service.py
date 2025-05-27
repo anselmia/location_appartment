@@ -476,16 +476,19 @@ def charge_reservation(reservation):
         logger.info(
             f"💼 Splitting and Transferring funds for reservation {reservation.code}"
         )
-
-        platform_fee = Decimal(reservation.price) * Decimal(PLATFORM_FEE)
-        owner_amount = Decimal(reservation.price) - platform_fee
-
-        stripe.Transfer.create(
-            amount=int(platform_fee * 100),
-            currency="eur",
-            destination="acct_PLATFORM_ID",  # replace with platform account
-            transfer_group=f"group_{reservation.code}",
+        platform_amount = PLATFORM_FEE * Decimal(reservation.price)
+        owner_amount = (
+            Decimal(reservation.price)
+            - Decimal(reservation.platform_fee)
+            - platform_amount
         )
+
+        # stripe.Transfer.create(
+        #    amount=int(platform_amount * 100),
+        #    currency="eur",
+        #    destination="acct_PLATFORM_ID",  # replace with platform account
+        #    transfer_group=f"group_{reservation.code}",
+        # )
 
         logger.info("✅ Platform fee transferred")
 

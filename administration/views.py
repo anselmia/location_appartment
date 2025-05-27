@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.db.models.functions import ExtractYear, ExtractMonth
+from django.utils import timezone
 from logement.models import (
     Logement,
     Room,
@@ -47,7 +47,7 @@ from logement.services.reservation_service import (
 )
 from logement.services.logement import get_logements
 from common.views import is_admin
-from logement.services.payment_service import refund_payment, charge_payment
+from logement.services.payment_service import refund_payment, charge_payment, charge_reservation
 from decimal import Decimal, InvalidOperation
 from administration.services.traffic import get_traffic_dashboard_data
 from administration.services.logs import parse_log_file
@@ -997,3 +997,18 @@ def manage_reservations(request):
         "query": query,
     }
     return render(request, "administration/manage_reservations.html", context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def transfer_reservation_payment(request, code):
+    reservation = get_object_or_404(Reservation, code=code, transferred=False)
+
+    try:
+        charge_reservation(reservation)
+
+        messages.success(request, f"Transfert effectué pour {reservation.code}.")
+    except Exception as e:
+        messages.error(request, f"Erreur lors du transfert : {str(e)}")
+
+    return redirect("administration:manage_reservations")

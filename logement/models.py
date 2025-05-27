@@ -453,6 +453,10 @@ class Reservation(models.Model):
         max_length=100, blank=True, null=True
     )
 
+    stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
+    transferred = models.BooleanField(default=False)
+    transfer_date = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"
 
