@@ -97,9 +97,7 @@ def client_dashboard(request):
             messages.error(request, "Veuillez corriger les erreurs du formulaire.")
 
     # Integrate Stripe dashboard (for owners only)
-    stripe_data = []
     stripe_account = None
-    code_filter = request.GET.get("code", "").strip()
     user_is_stripe_admin = is_stripe_admin(user)
 
     if user_is_stripe_admin and user.stripe_account_id:
@@ -111,7 +109,6 @@ def client_dashboard(request):
             )
 
             stripe_account = get_stripe_account_info(user)
-            stripe_data = get_reservation_stripe_data(user)
 
             if stripe_account:
                 try:
@@ -119,12 +116,6 @@ def client_dashboard(request):
                 except Exception:
                     dashboard_link = None
 
-            if code_filter:
-                stripe_data = [
-                    entry
-                    for entry in stripe_data
-                    if code_filter.lower() in entry["reservation"].code.lower()
-                ]
         except Exception as e:
             messages.error(
                 request, f"Erreur lors du chargement des données Stripe : {e}"
@@ -139,7 +130,6 @@ def client_dashboard(request):
             "formUser": formUser,
             "password_form": password_form,
             "stripe_account": stripe_account,
-            "stripe_data": stripe_data,
             "code_filter": code_filter,
             "is_stripe_admin": user_is_stripe_admin,
             "dashboard_link": dashboard_link,
