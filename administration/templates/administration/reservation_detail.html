@@ -119,7 +119,31 @@
                         </dd>
                         
                         {% if not reservation.refunded %}
+                            <dt class="col-sm-5">Montant Remboursable</dt>
+                            <dd class="col-sm-7">{{ reservation.refundable_amount|floatformat:2|default:"—" }} €</dd>
+
+                            <!-- Inline form for deposit charge -->
+                            <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+                            <dd class="col-sm-7">
+                                <form method="post" action="{% url 'administration:refund_reservation' reservation.code %}"
+                                    onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                                    class="d-flex align-items-center">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                                </form>
+                            </dd>
                             
+                            <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
+                            <dd class="col-sm-7">
+                                <form method="post" action="{% url 'administration:refund_partially_reservation' reservation.code %}"
+                                    onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                                    class="d-flex align-items-center">
+                                    {% csrf_token %}
+                                    <input type="number" name="refund_amount" class="form-control" min="0"  max="{{ reservation.refundable_amount|stringformat:'f' }}" 
+                                        step="0.01" placeholder="Montant (€)" required style="max-width: 200px;">
+                                    <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                                </form>
+                            </dd>
                         {% else %}
                             <dt class="col-sm-5">Montant remboursé</dt>
                             <dd class="col-sm-7">{{ reservation.refund_amount|floatformat:2 }} €</dd>
