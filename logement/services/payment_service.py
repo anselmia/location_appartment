@@ -476,7 +476,7 @@ def charge_reservation(reservation):
         logger.info(
             f"💼 Splitting and Transferring funds for reservation {reservation.code}"
         )
-        platform_amount = PLATFORM_FEE * Decimal(reservation.price)
+        platform_amount = Decimal(PLATFORM_FEE) * Decimal(reservation.price)
         owner_amount = (
             Decimal(reservation.price)
             - Decimal(reservation.platform_fee)
