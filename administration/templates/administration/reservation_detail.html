@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extrahead %}
-  {{ block.super
-  }}
+  {{ block.super }}
   <link rel="stylesheet"
         href="{% static 'administration/css/reservation_detail.css' %}" />
-{% endblock %}
+{% endblock extrahead %}
 {% block content %}
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -132,7 +131,7 @@
               <dd class="col-sm-7">
                 {{ reservation.refund_charge|floatformat:2|default:"—" }} €
               </dd>
-               <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
+              <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
               <dd class="col-sm-7">
                 {{ reservation.platform_fee|floatformat:2|default:"—" }} €
               </dd>
@@ -239,4 +238,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}
