@@ -1006,7 +1006,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         )
 
         brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
-        total_refunds = (reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"),)
+        total_refunds = (reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"))
         total_revenu = brut_revenue - total_refunds
 
         total_reservations = reservations.count()
