@@ -394,7 +394,7 @@ class Reservation(models.Model):
     price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
-    plaform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    platform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_saved_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     refunded = models.BooleanField(default=False)
