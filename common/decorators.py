@@ -74,7 +74,7 @@ def user_is_reservation_admin(view_func):
         # Check if the user is the admin or the owner of the logement
         if (
             request.user == logement.owner
-            or request.user == logement.admin()
+            or request.user == logement.admin
             or request.user.is_admin
         ):
             return view_func(request, *args, **kwargs)

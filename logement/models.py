@@ -152,11 +152,11 @@ class Logement(models.Model):
     def mail_list(self):
         # Get the owner's email
         owner_email = self.owner.email
+        email_list = [owner_email]
 
         # Get email of admin associated with the logement
-        admin_email = self.admin.email
-
-        email_list = [owner_email, admin_email]
+        if self.admin:
+            email_list.append(self.admin.email)
 
         # Return the list of emails as a sorted list (optional)
         return sorted(email_list)
