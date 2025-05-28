@@ -95,19 +95,6 @@
               </dd>
             </dl>
           </div>
-          <div class="col-md-6">
-            {% if reservation.statut == "echec_paiement" %}
-              <div class="alert alert-danger mt-3 d-flex justify-content-between align-items-center">
-                <div>💳 Le paiement a échoué pour cette réservation.</div>
-                <form method="post"
-                      action="{% url 'administration:send_payment_link' reservation.code %}"
-                      onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-danger">🔁 Envoyer lien de paiement</button>
-                </form>
-              </div>
-            {% endif %}
-          </div>
           <!-- Paiement -->
           <div class="col-md-6">
             <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>

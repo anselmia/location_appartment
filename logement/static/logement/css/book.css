@@ -28,11 +28,11 @@ h1, h2, h3, h4 {
 /* ============ SECTIONS ============ */
 .booking-box,
 .summary-box {
-  background-color: var(--bg-white);
-  border-radius: var(--radius);
+  background-color: #fff;
+  border-radius: 12px;
   padding: 2rem;
-  box-shadow: var(--shadow);
-  margin-bottom: 2rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eaeaea;
 }
 
 /* ============ TITLES ============ */
@@ -162,6 +162,109 @@ button#submit-booking:hover {
 .pricing-summary h5 {
   color: var(--accent-color);
   font-weight: 600;
+}
+
+.summary-box h4 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.summary-box p {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 0.4rem;
+}
+
+.summary-box .summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.96rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.summary-box .summary-line strong {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.summary-box .pricing-summary {
+  background: #fdfdfc;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+}
+
+.summary-box .pricing-summary h5 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  text-align: right;
+  margin: 0;
+}
+
+.summary-box .form-check {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.summary-box .form-check-label a {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.summary-box .btn-lg {
+  font-size: 1.05rem;
+  padding: 0.75rem 2.5rem;
+  border-radius: 50px;
+  background-color: var(--primary-color);
+  color: white;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.summary-box .btn-lg:hover {
+  background-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dotted #eee;
+  font-size: 0.97rem;
+}
+
+.price-line:last-child {
+  border-bottom: none;
+}
+
+.price-line .label {
+  color: #2b3d55;
+  font-weight: 500;
+}
+
+.price-line .value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.price-line.positive .value {
+  color: #2e7d32; /* green */
+}
+
+.price-line.negative .value {
+  color: #c62828; /* red */
 }
 
 /* ============ BOOKING DETAIL ============ */
