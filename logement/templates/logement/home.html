@@ -1,192 +1,202 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block extrahead %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
-  <link rel="stylesheet" href="{% static 'logement/css/logements_grid.css' %}">
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'logement/css/home.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'logement/css/logements_grid.css' %}">
 {% endblock %}
-
 {% block content %}
-<div class="home-page">
-    <header class="hero-banner" style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}');">
-        <div class="overlay">
-        <h1 class="animate-fade-in">{{ config.nom }}</h1>
-        <p class="animate-fade-in delay">{{ config.devise }}</p>
-        <a href="#logements" class="cta-button animate-slide-up delay-2">{{ config.cta_text }}</a>
-        </div>
-    </header>
-
-    <section class="description-section fade-in-up">
-        {% if config.description %}
-            {{ config.description|safe }}
-        {% endif %}
-    </section>
-    
-    <div class="wave-separator">
-        <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-          <path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path>
-        </svg>
-    </div>
-
-    <section class="logements-section fade-in-up" id="logements"
-         style="background-image: url('{% static "logement/img/logement2.jpg" %}');">
-
-        <h2>Nos logements disponibles</h2>        
-
-        {% if logements %}
-            <div class="logements-grid">
-                {% for logement in logements|slice:":6" %}
-                    <div class="card logement-card fade-in-up">
-                        <a href="{% url 'logement:view_logement' logement.id %}">
-                        <div class="logement-img-wrapper">
-                            <picture>
-                                <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
-                                <img src="{{ logement.photos.first.image.url }}" loading="lazy" alt="{{ logement.name }}">
-                            </picture>
-
-                            <!-- Top-left badge -->
-                            <div class="logement-badge">
-                                <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
-                                {% if logement.superficie %}
-                                <span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>
-                                {% endif %}
-                            </div>
-
-                            <!-- Bottom-right icons -->
-                            <div class="logement-icons-overlay">
-                                {% for equip in logement.equipment.all %}
-                                {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
-                                    <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
-                                {% endif %}
-                                {% endfor %}
-
-                                {% if logement.animals %}
-                                <i class="fas fa-paw" title="Animaux acceptés"></i>
-                                {% else %}
-                                <i class="fas fa-paw" style="opacity: 0.4;" title="Animaux non autorisés"></i>
-                                {% endif %}
-
-                                {% if logement.smoking %}
-                                <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
-                                {% else %}
-                                <i class="fas fa-smoking-ban" title="Non fumeur"></i>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Location -->
-                            <div class="logement-location">
-                                <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
-                            </div>
-                        </div>
-                        </a>
-                        <div class="card-body">
-                            <h3 class="logement-title">{{ logement.name }}</h3>
-                            <p class="price">À partir de {{ logement.price }}€ <span>par nuit</span></p>
-                            
-                            <div class="logement-details">
-                                <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
-                                <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
-                                <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+    <div class="home-page">
+        <header class="hero-banner"
+                style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}')">
+            <div class="overlay">
+                <h1 class="animate-fade-in">{{ config.nom }}</h1>
+                <p class="animate-fade-in delay">{{ config.devise }}</p>
+                <a href="#logements" class="cta-button animate-slide-up delay-2">{{ config.cta_text }}</a>
             </div>
-        {% else %}
-            <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
-        {% endif %}
-
-        <div class="text-center " style="margin-top: 2rem;">
-            <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
+        </header>
+        <section class="description-section fade-in-up">
+            {% if config.description %}{{ config.description|safe }}{% endif %}
+        </section>
+        <div class="wave-separator">
+            <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+                <path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path>
+            </svg>
         </div>
-    </section>
-    
-    {% if config.services %}
-        <section class="services-section fade-in-up">
-            <h2>Nos Services</h2>
-            <div class="services-grid">
-            {% for service in config.services.all %}
-                <div class="service-card fade-in-up">
-                    {% if service.background_image %}
-                    <div class="service-img" style="background-image: url('{{ service.background_image.url }}');"></div>
-                    {% else %}
-                    <div class="service-img" style="background-color: #f3f4f6;"></div>
-                    {% endif %}
-                    <div class="card-body">
-                        <h3>{{ service.title }}</h3>
-                        <p>{{ service.description }}</p>
-                    </div>
+        <section class="logements-section fade-in-up"
+                 id="logements"
+                 style="background-image: url('{% static "logement/img/logement2.jpg" %}')">
+            <h2>Nos logements disponibles</h2>
+            {% if logements %}
+                <div class="logements-grid">
+                    {% for logement in logements|slice:":6" %}
+                        <div class="card logement-card fade-in-up">
+                            <a href="{% url 'logement:view_logement' logement.id %}">
+                                <div class="logement-img-wrapper">
+                                    <picture>
+                                        <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+                                        <img src="{{ logement.photos.first.image.url }}"
+                                             loading="lazy"
+                                             alt="{{ logement.name }}">
+                                    </picture>
+                                    <!-- Top-left badge -->
+                                    <div class="logement-badge">
+                                        <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                                        {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
+                                    </div>
+                                    <!-- Bottom-right icons -->
+                                    <div class="logement-icons-overlay">
+                                        {% for equip in logement.equipment.all %}
+                                            {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                                                <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if logement.animals %}
+                                            <i class="fas fa-paw" title="Animaux acceptés"></i>
+                                        {% else %}
+                                            <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
+                                        {% endif %}
+                                        {% if logement.smoking %}
+                                            <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                                        {% else %}
+                                            <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Location -->
+                                    <div class="logement-location">
+                                        <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="card-body">
+                                <h3 class="logement-title">{{ logement.name }}</h3>
+                                <p class="price">
+                                    À partir de {{ logement.price }}€ <span>par nuit</span>
+                                </p>
+                                <div class="logement-details">
+                                    <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
+                                    <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
+                                    <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            {% else %}
+                <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
+            {% endif %}
+            <div class="text-center " style="margin-top: 2rem;">
+                <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
             </div>
         </section>
-    {% endif %}
-
-    {% if config.testimonials %}
-        <section class="testimonials-section fade-in-up">
-            <h2>Ce que nos clients disent</h2>
-            <div class="testimonials-slider" id="testimonialSlider">
-                {% for avis in config.testimonials.all %}
-                    <div class="testimonial-card fade-in-up">
-                        <blockquote>“{{ avis.content }}”</blockquote>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
-    {% endif %}
-
-    {% if config.commitments %}
-        <section class="commitments-section fade-in-up">
-            <h2>Nos Engagements</h2>
-            <div class="commitments-grid">
-                {% for e in config.commitments.all %}
-                    <div class="commitment-card fade-in-up">
-                        {% if e.background_image %}
-                            <div class="commitment-img" style="background-image: url('{{ e.background_image.url }}');"></div>
-                        {% else %}
-                            <div class="commitment-img" style="background-color: #eaeaea;"></div>
-                        {% endif %}
-                        <div class="card-body">
-                            <h3 class="commitment-title">{{ e.title }}</h3>
-                            <p>{{ e.text }}</p>
+        {% if config.services %}
+            <section class="services-section fade-in-up">
+                <h2>Nos Services</h2>
+                <div class="services-grid">
+                    {% for service in config.services.all %}
+                        <div class="service-card fade-in-up">
+                            {% if service.background_image %}
+                                <div class="service-img"
+                                     style="background-image: url('{{ service.background_image.url }}')"></div>
+                            {% else %}
+                                <div class="service-img" style="background-color: #f3f4f6;"></div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h3>{{ service.title }}</h3>
+                                <p>{{ service.description }}</p>
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+        {% if config.testimonials %}
+            <section class="testimonials-section fade-in-up">
+                <h2>Ce que nos clients disent</h2>
+                <div class="testimonials-slider" id="testimonialSlider">
+                    {% for avis in config.testimonials.all %}
+                        <div class="testimonial-card fade-in-up">
+                            <blockquote>
+                                “{{ avis.content }}”
+                            </blockquote>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+        {% if config.commitments %}
+            <section class="commitments-section fade-in-up">
+                <h2>Nos Engagements</h2>
+                <div class="commitments-grid">
+                    {% for e in config.commitments.all %}
+                        <div class="commitment-card fade-in-up">
+                            {% if e.background_image %}
+                                <div class="commitment-img"
+                                     style="background-image: url('{{ e.background_image.url }}')"></div>
+                            {% else %}
+                                <div class="commitment-img" style="background-color: #eaeaea;"></div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h3 class="commitment-title">{{ e.title }}</h3>
+                                <p>{{ e.text }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+        <section class="join-us-section fade-in-up">
+            <div class="join-us-wrapper">
+                <div class="join-text">
+                    <h2>Rejoignez une plateforme locale engagée</h2>
+                    <p>
+                        Vous êtes propriétaire ou conciergerie ? Offrez à vos biens la visibilité qu’ils méritent tout en gardant le contrôle.
+                        Contrairement aux grandes plateformes impersonnelles, nous valorisons la proximité, l’humain, et une relation de confiance.
+                    </p>
+                    <p>
+                        Notre équipe locale vous accompagne à chaque étape : de la mise en ligne de votre logement à la gestion des réservations.
+                        Ensemble, construisons une offre d’hébergements authentiques et responsables.
+                    </p>
+                    <a href="{% url 'accounts:contact' %}" class="btn-join">Devenir partenaire</a>
+                </div>
+                <div class="vertical-divider"></div>
+                <div class="join-image">
+                    <img src="{% static 'logement/img/local_support.jpg' %}"
+                         alt="Plateforme locale">
+                </div>
             </div>
         </section>
-    {% endif %}
-    
-    <section class="contact-section fade-in-up" id="contact">
-        <div class="contact-wrapper">
-            <div class="contact-intro">
-                <h2>Contactez-nous</h2>
-                <p>Une question, un besoin particulier ou une demande de réservation ? Nous sommes à votre écoute.</p>
+        <section class="contact-section fade-in-up" id="contact">
+            <div class="contact-wrapper">
+                <div class="contact-intro">
+                    <h2>Contactez-nous</h2>
+                    <p>Une question, un besoin particulier ou une demande de réservation ? Nous sommes à votre écoute.</p>
+                </div>
+                <div class="contact-card">
+                    <form method="post"
+                          action="{% url 'accounts:contact' %}"
+                          class="contact-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ contact_form.name.label_tag }}
+                            {{ contact_form.name }}
+                        </div>
+                        <div class="form-group">
+                            {{ contact_form.email.label_tag }}
+                            {{ contact_form.email }}
+                        </div>
+                        <div class="form-group">
+                            {{ contact_form.message.label_tag }}
+                            {{ contact_form.message }}
+                        </div>
+                        <button type="submit" class="btn-submit">Envoyer le message</button>
+                    </form>
+                </div>
             </div>
-    
-            <div class="contact-card">
-                <form method="post" action="{% url 'accounts:contact' %}" class="contact-form">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        {{ contact_form.name.label_tag }}
-                        {{ contact_form.name }}
-                    </div>
-                    <div class="form-group">
-                        {{ contact_form.email.label_tag }}
-                        {{ contact_form.email }}
-                    </div>
-                    <div class="form-group">
-                        {{ contact_form.message.label_tag }}
-                        {{ contact_form.message }}
-                    </div>
-                    <button type="submit" class="btn-submit">Envoyer le message</button>
-                </form>
-            </div>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 {% endblock %}
-
 {% block extra_js %}
-<script src="{% static 'logement/js/home.js' %}"></script>
+    <script src="{% static 'logement/js/home.js' %}"></script>
 {% endblock %}

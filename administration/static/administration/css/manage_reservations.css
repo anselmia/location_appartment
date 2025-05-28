@@ -1,17 +1,3 @@
-:root {
-  --primary-color: #bfa66b;
-  --secondary-color: #3b2f2f;
-  --light-bg: #f8f5f2;
-  --text-color: #3b2f2f;
-  --muted-color: #888;
-  --success-color: #198754;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
-  --info-color: #0dcaf0;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --radius: 0.75rem;
-  --font-family: "Segoe UI", Roboto, sans-serif;
-}
 
 body {
   background-color: var(--light-bg);

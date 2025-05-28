@@ -26,9 +26,7 @@ from logement.services.reservation_service import (
 from logement.services.logement import filter_logements
 
 from logement.services.calendar_service import generate_ical
-from logement.services.payment_service import (
-    create_stripe_checkout_session_with_deposit,
-)
+from logement.services.payment_service import create_stripe_checkout_session_with_deposit, PAYMENT_FEE_VARIABLE
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
 from collections import defaultdict
@@ -43,15 +41,11 @@ stripe.api_key = settings.STRIPE_PRIVATE_KEY
 def home(request):
     logger.info("Rendering homepage")
     try:
-        config = HomePageConfig.objects.prefetch_related(
-            "services", "testimonials", "commitments"
-        ).first()
+        config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
         logements = Logement.objects.prefetch_related("photos").filter(statut="open")
 
         initial_data = {
-            "name": (
-                request.user.get_full_name() if request.user.is_authenticated else ""
-            ),
+            "name": (request.user.get_full_name() if request.user.is_authenticated else ""),
             "email": request.user.email if request.user.is_authenticated else "",
         }
 
@@ -76,9 +70,7 @@ def autocomplete_cities(request):
     try:
         cities = City.objects.filter(name__icontains=q).order_by("name")[:5]
         logger.info(f"Autocomplete for query '{q}', {cities.count()} results")
-        return HttpResponse(
-            "".join(f"<option value='{c.name}'></option>" for c in cities)
-        )
+        return HttpResponse("".join(f"<option value='{c.name}'></option>" for c in cities))
     except Exception as e:
         logger.exception(f"Autocomplete city search failed: {e}")
         return HttpResponse("Erreur interne serveur", status=500)
@@ -86,9 +78,7 @@ def autocomplete_cities(request):
 
 def view_logement(request, logement_id):
     try:
-        logement = get_object_or_404(
-            Logement.objects.prefetch_related("photos"), id=logement_id
-        )
+        logement = get_object_or_404(Logement.objects.prefetch_related("photos"), id=logement_id)
         rooms = logement.rooms.all()
         user = request.user
 
@@ -111,6 +101,7 @@ def view_logement(request, logement_id):
                 "photo_urls": [photo.image.url for photo in logement.photos.all()],
                 "grouped_equipment": grouped_equipment,
                 "EquipmentType": EquipmentType,
+                "payment_fee": PAYMENT_FEE_VARIABLE * 100,
             },
         )
     except Exception as e:
@@ -121,9 +112,7 @@ def view_logement(request, logement_id):
 @login_required
 def book(request, logement_id):
     try:
-        logement = get_object_or_404(
-            Logement.objects.prefetch_related("photos"), id=logement_id
-        )
+        logement = get_object_or_404(Logement.objects.prefetch_related("photos"), id=logement_id)
         user = request.user
         reserved_dates_start, reserved_dates_end = get_booked_dates(logement, user)
 
@@ -152,18 +141,10 @@ def book(request, logement_id):
                     price = float(reservation_price)
                     tax = float(reservation_tax)
 
-                    if validate_reservation_inputs(
-                        logement, user, start, end, guest, price, tax
-                    ):
-                        reservation = create_or_update_reservation(
-                            logement, user, start, end, guest, price, tax
-                        )
-                        session = create_stripe_checkout_session_with_deposit(
-                            reservation, request
-                        )
-                        logger.info(
-                            f"Reservation created and Stripe session initialized for user {user}"
-                        )
+                    if validate_reservation_inputs(logement, user, start, end, guest, price, tax):
+                        reservation = create_or_update_reservation(logement, user, start, end, guest, price, tax)
+                        session = create_stripe_checkout_session_with_deposit(reservation, request)
+                        logger.info(f"Reservation created and Stripe session initialized for user {user}")
                         return redirect(session["checkout_session_url"])
                 else:
                     messages.error(request, "Une erreur est survenue")
@@ -203,9 +184,7 @@ def get_price_for_date(request, logement_id, date):
         logement = Logement.objects.get(id=logement_id)
         price = Price.objects.filter(logement=logement, date=parsed_date).first()
         logger.info(f"Price requested for logement {logement_id} on {date}")
-        return JsonResponse(
-            {"price": str(price.value) if price else str(logement.price)}
-        )
+        return JsonResponse({"price": str(price.value) if price else str(logement.price)})
     except Logement.DoesNotExist:
         logger.warning(f"Logement {logement_id} not found")
         return JsonResponse({"error": "Logement not found"}, status=404)
@@ -250,9 +229,7 @@ def check_booking_input(request, logement_id):
         return JsonResponse({"correct": False, "error": str(e)})
     except Exception as e:
         logger.exception(f"Error validating booking input: {e}")
-        return JsonResponse(
-            {"correct": False, "error": "Erreur interne serveur."}, status=500
-        )
+        return JsonResponse({"correct": False, "error": "Erreur interne serveur."}, status=500)
 
 
 @login_required
@@ -276,9 +253,7 @@ def payment_success(request, code):
                 request,
                 "Votre paiement semble incomplet ou non encore confirmé. Veuillez vérifier plus tard ou contacter l’assistance.",
             )
-        return render(
-            request, "logement/payment_success.html", {"reservation": reservation}
-        )
+        return render(request, "logement/payment_success.html", {"reservation": reservation})
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
         return redirect("logement:book", logement_id=1)
@@ -305,9 +280,7 @@ def payment_cancel(request, code):
                 "code": reservation.code,
             }
         )
-        return redirect(
-            f"{reverse('logement:book', args=[logement.id])}?{query_params}"
-        )
+        return redirect(f"{reverse('logement:book', args=[logement.id])}?{query_params}")
     except Exception as e:
         logger.exception(f"Error handling payment cancellation: {e}")
         messages.error(request, "Une erreur est survenue.")
@@ -335,9 +308,7 @@ def export_ical(request, code):
         ics_content = generate_ical(code)
         if ics_content:
             response = HttpResponse(ics_content, content_type="text/calendar")
-            response["Content-Disposition"] = (
-                "attachment; filename=valrose_calendar.ics"
-            )
+            response["Content-Disposition"] = "attachment; filename=valrose_calendar.ics"
             return response
         else:
             return HttpResponse("Aucune donnée à exporter", status=204)

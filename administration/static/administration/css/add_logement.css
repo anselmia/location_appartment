@@ -89,17 +89,29 @@
   align-items: center;
 }
 
-.input-symbol span {
-  position: absolute;
-  right: 15px;
-  font-weight: 600;
-  color: #5c5c5c;
-  pointer-events: none;
-}
-
 .input-symbol .form-input {
   padding-right: 38px;
 }
+
+.input-symbol.with-symbol {
+  display: flex;
+  align-items: center;
+}
+
+.input-symbol.with-symbol input {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-symbol.with-symbol span.unit-label {
+  margin-left: 10px;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #555;
+  font-weight: 600;
+  color: #666;
+}
+
 
 /* CHECKBOX */
 .admin-checkboxes {

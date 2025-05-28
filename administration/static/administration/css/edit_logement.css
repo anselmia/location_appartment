@@ -108,19 +108,21 @@
 }
 
 /* === With symbol fields (€, %, etc.) === */
-.admin-logement-edit .with-symbol {
-  position: relative;
-}
-
-.admin-logement-edit .with-symbol .input-symbol {
+.input-symbol.with-symbol {
   display: flex;
   align-items: center;
-  position: relative;
 }
 
-.admin-logement-edit .with-symbol span {
-  position: absolute;
-  right: 16px;
+.input-symbol.with-symbol input {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-symbol.with-symbol span.unit-label {
+  margin-left: 10px;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #555;
   font-weight: 600;
   color: #666;
 }

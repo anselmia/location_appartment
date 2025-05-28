@@ -144,7 +144,7 @@
         <ul class="logement-list">
             <li>
                 <strong>Avant {{ logement.cancelation_period }} jours :</strong>
-                Annulation avec frais de 1% du montant de la location.
+                Annulation avec retenu des frais de paiement ({{ payment_fee }} %).
             </li>
             <li>
                 <strong>À partir de {{ logement.cancelation_period }} jours avant l’entrée :</strong>
@@ -154,7 +154,7 @@
     </section>
 
     <section class="equipment-section section-block">
-        <h2 class="equipment-title">Équipements disponibles</h2>
+        <h2 class="section-title">Équipements disponibles</h2>
         <div class="equipment-grid">
             {% for type_key, type_label in EquipmentType.choices %}
                 {% with grouped_equipment|get:type_key as current_equips %}
@@ -175,7 +175,7 @@
 
     <!-- 🗺️ Google Map container -->
     <section class="section-block">
-        <h2 class="map-title">Localisation</h2>
+        <h2 class="section-title">Localisation</h2>
         <iframe class="logement-map" src="{{ logement.map_link }}"  style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </section>
 
