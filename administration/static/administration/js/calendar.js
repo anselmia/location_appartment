@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const logements = JSON.parse(
     document.getElementById("logements-data").textContent
   );
+  console.log(logements);
   const selector = document.getElementById("logement-selector");
   const calendarEl = document.getElementById("calendar");
 
