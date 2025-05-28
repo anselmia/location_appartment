@@ -1017,7 +1017,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
                 "monthly_revenue": monthly_revenue,
                 "available_years": sorted(all_years),
                 "total_revenue": reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00"),
-                "platform_earnings": reservations.aggregate(Sum("plaform_fee"))["plaform_fee__sum"] or Decimal("0.00"),
+                "platform_earnings": reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"] or Decimal("0.00"),
                 "total_payment_fee": reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00"),
                 "total_deposits": reservations.aggregate(Sum("amount_charged"))["amount_charged__sum"]
                 or Decimal("0.00"),

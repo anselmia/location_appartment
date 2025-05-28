@@ -235,7 +235,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
         reservation.stripe_refund_id = refund_id
         if refund == "full":
             reservation.plaform_fee = 0
-        reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "plaform_fee"])
+        reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "platform_fee"])
 
         logger.info(
             f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency.upper()} recorded for reservation {reservation.code}"
