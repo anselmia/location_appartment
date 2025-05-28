@@ -43,7 +43,7 @@ class LogementForm(forms.ModelForm):
             "caution",
             "beds",
             "map_link",
-            "admin_fee"
+            "admin_fee",
         ]
         labels = {
             "name": "Nom du logement",
@@ -77,8 +77,9 @@ class LogementForm(forms.ModelForm):
             "booking_calendar_link": "Calendrier Booking",
             "caution": "Dépôt de garantie (€)",
             "map_link": "Lien Google Map",
+            "owner": "Propriétaire",
             "admin": "Administrateur du logement",
-            "admin_fee": "Frais de gestion Admin (%)",
+            "admin_fee": "Frais de gestion Administrateur (%)",
         }
         help_texts = {
             "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",
@@ -91,8 +92,8 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
-            "admin": forms.Select(attrs={"class": "form-control select2"}),  # Select for owner
-            "owner": forms.Select(attrs={"class": "form-control select2"}),  # Select for owner
+            "admin": forms.Select(attrs={"class": "form-control select2"}),  
+            "owner": forms.Select(attrs={"class": "form-control select2"}),  
         }
 
     def __init__(self, *args, **kwargs):

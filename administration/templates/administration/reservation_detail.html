@@ -120,74 +120,86 @@
               <dd class="col-sm-7">
                 {{ reservation.tax|floatformat:2 }} €
               </dd>
-              <dt class="col-sm-5">PaymentIntent</dt>
-              <dd class="col-sm-7">
-                {{ reservation.stripe_payment_intent_id|default:"—" }}
-              </dd>
-              <dt class="col-sm-5">Méthode Stripe</dt>
-              <dd class="col-sm-7">
-                {{ reservation.stripe_saved_payment_method_id|default:"—" }}
-              </dd>
-              <dt class="col-sm-5">Remboursée ?</dt>
-              <dd class="col-sm-7">
-                {% if reservation.refunded %}
-                  <span class="badge bg-success">Oui</span>
-                {% else %}
-                  <span class="badge bg-secondary">Non</span>
-                {% endif %}
-              </dd>
-              <dt class="col-sm-5">Frais de Transaction (Non Remboursable)</dt>
-              <dd class="col-sm-7">
-                {{ reservation.payment_fee|floatformat:2 }} €
-              </dd>
-              <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
-              <dd class="col-sm-7">
-                {{ reservation.platform_fee|floatformat:2|default:"—" }} €
-              </dd>
-              {% if not reservation.refunded %}
-                <dt class="col-sm-5">Montant Remboursable</dt>
-                <dd class="col-sm-7">
-                  {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
-                </dd>
-                <!-- Inline form for deposit charge -->
-                <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+              {% if reservation.statut == "echec_paiement" %}
+                <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
                 <dd class="col-sm-7">
                   <form method="post"
-                        action="{% url 'administration:refund_reservation' reservation.code %}"
-                        onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                        action="{% url 'administration:send_payment_link' reservation.code %}"
+                        onsubmit="return confirm('CEnvoyer un nouveau lien de paiement au client ?');"
                         class="d-flex align-items-center">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-warning">Remboursement complet</button>
-                  </form>
-                </dd>
-                <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
-                <dd class="col-sm-7">
-                  <form method="post"
-                        action="{% url 'administration:refund_partially_reservation' reservation.code %}"
-                        onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
-                        class="d-flex align-items-center">
-                    {% csrf_token %}
-                    <input type="number"
-                           name="refund_amount"
-                           class="form-control"
-                           min="0"
-                           max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
-                           step="0.01"
-                           placeholder="Montant (€)"
-                           required
-                           style="max-width: 200px" />
-                    <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                    <button type="submit" class="btn btn-warning">🔁 Envoyer lien de paiement</button>
                   </form>
                 </dd>
               {% else %}
-                <dt class="col-sm-5">Montant remboursé</dt>
+                <dt class="col-sm-5">PaymentIntent</dt>
                 <dd class="col-sm-7">
-                  {{ reservation.refund_amount|floatformat:2 }} €
+                  {{ reservation.stripe_payment_intent_id|default:"—" }}
                 </dd>
-                <dt class="col-sm-5">Remboursement Stripe</dt>
+                <dt class="col-sm-5">Méthode Stripe</dt>
                 <dd class="col-sm-7">
-                  {{ reservation.stripe_refund_id|default:"—" }}
+                  {{ reservation.stripe_saved_payment_method_id|default:"—" }}
                 </dd>
+                <dt class="col-sm-5">Remboursée ?</dt>
+                <dd class="col-sm-7">
+                  {% if reservation.refunded %}
+                    <span class="badge bg-success">Oui</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Non</span>
+                  {% endif %}
+                </dd>
+                <dt class="col-sm-5">Frais de Transaction (Non Remboursable)</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.payment_fee|floatformat:2 }} €
+                </dd>
+                <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.platform_fee|floatformat:2|default:"—" }} €
+                </dd>
+                {% if not reservation.refunded %}
+                  <dt class="col-sm-5">Montant Remboursable</dt>
+                  <dd class="col-sm-7">
+                    {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
+                  </dd>
+                  <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+                  <dd class="col-sm-7">
+                    <form method="post"
+                          action="{% url 'administration:refund_reservation' reservation.code %}"
+                          onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                          class="d-flex align-items-center">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                    </form>
+                  </dd>
+                  <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
+                  <dd class="col-sm-7">
+                    <form method="post"
+                          action="{% url 'administration:refund_partially_reservation' reservation.code %}"
+                          onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                          class="d-flex align-items-center">
+                      {% csrf_token %}
+                      <input type="number"
+                             name="refund_amount"
+                             class="form-control"
+                             min="0"
+                             max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                             step="0.01"
+                             placeholder="Montant (€)"
+                             required
+                             style="max-width: 200px" />
+                      <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                    </form>
+                  </dd>
+                {% else %}
+                  <dt class="col-sm-5">Montant remboursé</dt>
+                  <dd class="col-sm-7">
+                    {{ reservation.refund_amount|floatformat:2 }} €
+                  </dd>
+                  <dt class="col-sm-5">Remboursement Stripe</dt>
+                  <dd class="col-sm-7">
+                    {{ reservation.stripe_refund_id|default:"—" }}
+                  </dd>
+                {% endif %}
               {% endif %}
             </dl>
           </div>
