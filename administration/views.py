@@ -1149,3 +1149,17 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         )
 
         return context
+
+
+@require_POST
+@login_required
+@user_passes_test(is_admin)
+def send_payment_link(request, code):
+    try:
+        reservation = Reservation.objects.get(code=code)
+        send_stripe_payment_link(reservation)  # Your helper function
+        messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send payment link for {code}: {e}")
+        messages.error(request, "Erreur lors de l'envoi du lien.")
+    return redirect("administration:reservation_detail", code=code)

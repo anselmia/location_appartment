@@ -126,3 +126,25 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
 
     except Exception as e:
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
+def send_mail_payment_link(reservation, session, user_type):
+    try:
+        # Context for email templates
+
+        email_context = {"reservation": reservation, "logement": reservation.logement, "user": reservation.user, "url": session["checkout_session_url"]}
+
+        # ===== Customer EMAIL =====
+        admin_message = render_to_string("email/payment_link.txt", email_context)
+
+        send_mail(
+            subject=f"Réservation {reservation.code} - Logement {reservation.logement} - Lien de paiement",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[reservation.user.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")

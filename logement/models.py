@@ -384,6 +384,7 @@ class Reservation(models.Model):
             ("confirmee", "Confirmée"),
             ("annulee", "Annulée"),
             ("terminee", "Terminée"),
+            ("echec_paiement", "Echec du paiement")
         ],
         default="en_attente",
     )

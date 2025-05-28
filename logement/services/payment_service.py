@@ -2,8 +2,9 @@ import stripe
 import logging
 from django.urls import reverse
 from django.conf import settings
+from django.db import transaction
 
-from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund, send_mail_on_new_transfer
+from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund, send_mail_on_new_transfer, send_mail_payment_link
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
     StripeChargeEventData,
@@ -119,6 +120,30 @@ def create_stripe_checkout_session_with_deposit(reservation, request):
         raise
 
 
+def send_stripe_payment_link(reservation):
+    if not reservation.user.email:
+        raise ValueError(f"L'utilisateur n'a pas d'e-mail lié à la réservation {reservation.code}")
+
+    if reservation.price <= 0:
+        raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
+
+    try:
+        session = create_stripe_checkout_session_with_deposit(reservation)
+
+        logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session.url}")
+
+        # Optionally send an email with the payment link
+        send_mail_payment_link(reservation, session)
+
+        logger.info(f"📧 Email envoyé à {reservation.user.email} avec le lien de paiement Stripe")
+
+        return session.url
+
+    except Exception as e:
+        logger.exception(f"❌ Erreur lors de la création du lien de paiement Stripe pour la réservation {reservation.code}: {e}")
+        raise
+
+
 def create_stripe_customer_if_not_exists(user, request):
     try:
         from common.services.network import get_client_ip
@@ -158,284 +183,6 @@ def create_stripe_customer_if_not_exists(user, request):
         raise
 
 
-def refund_payment(reservation, refund="full", amount_cents=None):
-    try:
-        logger.info(f"💸 Initiating refund for reservation {reservation.code}")
-
-        params = {
-            "payment_intent": reservation.stripe_payment_intent_id,
-            "metadata": {"code": reservation.code, "refund": refund},
-        }
-        if amount_cents:
-            params["amount"] = int(amount_cents)
-
-        refund = stripe.Refund.create(**params)
-        logger.info(f"✅ Refund processed: {refund.id}, Amount: {params.get('amount', 'full')} cents")
-        return refund
-
-    except stripe.error.StripeError as e:
-        logger.exception(f"❌ Stripe refund error: {e}")
-        raise
-
-    except Exception as e:
-        logger.exception(f"❌ Unexpected refund error: {e}")
-        raise
-
-
-def handle_charge_refunded(data: StripeChargeEventData):
-    from logement.models import Reservation
-
-    reservation_code = None
-    try:
-        metadata = data.object.metadata or {}
-        reservation_code = metadata.get("code")
-        if not reservation_code:
-            logger.warning("⚠️ No reservation code found in the refund event metadata.")
-            return
-
-        refund = metadata.get("refund")
-        if not refund:
-            logger.warning("⚠️ No refound type found in the refund event metadata.")
-            return
-
-        logger.info(f"🔔 Handling charge.refunded for reservation {reservation_code}")
-
-        try:
-            reservation = Reservation.objects.get(code=reservation_code)
-        except Reservation.DoesNotExist:
-            logger.warning(f"⚠️ Reservation {reservation_code} not found.")
-            return
-
-        amount = data.object.amount
-        refund_id = data.object.id
-        currency = data.object.currency or "eur"
-
-        if not amount or amount <= 0:
-            logger.warning(f"⚠️ Invalid or missing refund amount for event {refund_id}")
-            return
-
-        refunded_amount = Decimal(amount) / 100  # Convert cents to euros
-
-        # Prevent duplicate processing based on refund ID
-        if reservation.stripe_refund_id == refund_id:
-            logger.info(f"ℹ️ Refund {refund_id} already recorded for reservation {reservation.code}.")
-            return
-
-        # Ensure existing refund_amount is a Decimal
-        try:
-            current_refund = Decimal(reservation.refund_amount or 0)
-        except Exception:
-            logger.warning(f"⚠️ Could not parse refund_amount on reservation {reservation.code}, defaulting to 0.")
-            current_refund = Decimal(0)
-
-        reservation.refunded = True
-        reservation.refund_amount = current_refund + refunded_amount
-        reservation.stripe_refund_id = refund_id
-        if refund == "full":
-            reservation.plaform_fee = 0
-        reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "platform_fee"])
-
-        logger.info(
-            f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency.upper()} recorded for reservation {reservation.code}"
-        )
-
-        try:
-            send_mail_on_refund(reservation.logement, reservation, reservation.user)
-            logger.info(f"📧 Refund notification sent for reservation {reservation.code}")
-        except Exception as e:
-            logger.exception(f"❌ Error sending refund email for reservation {reservation.code}: {e}")
-
-    except Exception as e:
-        logger.exception(
-            f"❌ Unexpected error handling charge.refunded for reservation {reservation_code or '[unknown]'}: {e}"
-        )
-
-
-def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
-    try:
-        metadata = data.object.metadata or {}
-        payment_type = metadata.get("type")
-
-        if not payment_type:
-            logger.warning("⚠️ No 'type' metadata found in payment intent.")
-            return
-
-        if payment_type != "deposit":
-            logger.info("ℹ️ Payment type is not 'deposit', skipping.")
-            return
-
-        payment_intent_id = data.object.id
-        reservation_code = metadata.get("code")
-        amount_cents = data.object.amount_received
-
-        if amount_cents is None or amount_cents <= 0:
-            logger.warning(f"⚠️ Invalid deposit amount on PaymentIntent {payment_intent_id}.")
-            return
-
-        amount = Decimal(amount_cents) / 100  # Convert to euros
-        logger.info(f"✅ Deposit received: {amount:.2f} € via PaymentIntent {payment_intent_id}")
-
-        if not reservation_code:
-            logger.warning("⚠️ No reservation code provided in metadata.")
-            return
-
-        try:
-            reservation = Reservation.objects.get(code=reservation_code)
-        except Reservation.DoesNotExist:
-            logger.warning(f"⚠️ Reservation {reservation_code} not found.")
-            return
-
-        # Prevent double processing
-        if reservation.caution_charged:
-            logger.info(f"ℹ️ Reservation {reservation.code} already marked as deposit charged.")
-
-        # Safely convert and update amount_charged
-        try:
-            existing_amount = Decimal(reservation.amount_charged or 0)
-        except Exception:
-            logger.warning(f"⚠️ Failed to parse reservation.amount_charged for {reservation.code}, defaulting to 0.")
-            existing_amount = Decimal(0)
-
-        reservation.amount_charged = existing_amount + amount
-        reservation.caution_charged = True
-        reservation.stripe_deposit_payment_intent_id = payment_intent_id
-        reservation.save(
-            update_fields=[
-                "amount_charged",
-                "caution_charged",
-                "stripe_deposit_payment_intent_id",
-            ]
-        )
-
-        logger.info(f"🏠 Deposit charge confirmed for reservation {reservation.code}, amount: {amount:.2f} €")
-
-    except Exception as e:
-        logger.exception(f"❌ Unexpected error in handle_payment_intent_succeeded: {str(e)}")
-
-
-def handle_payment_failed(data: StripePaymentIntentEventData):
-    from logement.models import Reservation
-
-    try:
-        metadata = data.object.metadata or {}
-        customer_id = data.customer
-        payment_intent_id = data.object.id
-        failure_message = data.object.last_payment_error.message if data.object.last_payment_error else None
-        failure_code = data.object.last_payment_error.code if data.object.last_payment_error else None
-
-        if failure_message:
-            logger.warning(f"💥 Payment failure message: {failure_message}")
-        if failure_code:
-            logger.warning(f"� Stripe failure code: {failure_code}")
-
-        reservation_code = metadata.get("code", "[unknown]")
-
-        if not reservation_code:
-            logger.warning(f"⚠️ No reservation code found in failed payment event {payment_intent_id}.")
-        if not customer_id:
-            logger.warning(f"⚠️ No customer ID found in failed payment event {payment_intent_id}.")
-
-        logger.warning(
-            f"⚠️ Payment failed for reservation {reservation_code}, customer {customer_id or '[unknown]'}, PaymentIntent {payment_intent_id}."
-        )
-
-        if failure_message:
-            logger.warning(f"💥 Payment failure message: {failure_message}")
-        if failure_code:
-            logger.warning(f"📛 Stripe failure code: {failure_code}")
-
-        # Optional: update reservation status or alert staff
-        try:
-            reservation = Reservation.objects.get(code=reservation_code)
-            if reservation.statut != "confirmee":
-                reservation.statut = "echec_paiement"
-                reservation.save(update_fields=["statut"])
-                logger.info(f"🚫 Reservation {reservation.code} marked as payment failed.")
-        except Reservation.DoesNotExist:
-            logger.warning(f"⚠️ Reservation {reservation_code} not found in DB.")
-        except Exception as e:
-            logger.exception(f"❌ Unexpected error updating reservation {reservation_code} on payment failure: {e}")
-
-    except Exception as e:
-        logger.exception(f"❌ Unexpected error handling payment_intent.payment_failed event: {str(e)}")
-
-
-def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
-    from logement.models import Reservation
-
-    reservation_code = None  # define early to use in exception messages
-    try:
-        # Extract metadata and payment intent ID from event
-        reservation_code = data.object.metadata.get("code")
-        payment_intent_id = data.object.payment_intent
-
-        if not reservation_code or not payment_intent_id:
-            logger.error("❌ Invalid Stripe session: missing reservation code or payment intent.")
-            return
-
-        logger.info(f"🔔 Handling checkout.session.completed for reservation {reservation_code}")
-
-        try:
-            reservation = Reservation.objects.get(code=reservation_code)
-        except Reservation.DoesNotExist:
-            logger.warning(f"⚠️ Reservation {reservation_code} not found.")
-            return
-
-        if reservation.statut == "confirmee":
-            logger.info(f"ℹ️ Reservation {reservation.code} already confirmed.")
-            return
-
-        # Retrieve the PaymentIntent with expanded payment method
-        try:
-            intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
-        except stripe.error.StripeError as e:
-            logger.exception(
-                f"❌ Stripe API error while retrieving intent {payment_intent_id}: {e.user_message or str(e)}"
-            )
-            return
-
-        if intent.status != "succeeded":
-            logger.warning(
-                f"⚠️ PaymentIntent {payment_intent_id} has unexpected status '{intent.status}' "
-                f"for reservation {reservation.code}. Aborting confirmation."
-            )
-            return
-
-        payment_method = intent.payment_method
-        if not payment_method or not getattr(payment_method, "id", None):
-            logger.error(f"❌ No valid payment method found for intent {payment_intent_id}")
-            return
-
-        # Save payment method if not already saved
-        if not reservation.stripe_saved_payment_method_id:
-            reservation.stripe_saved_payment_method_id = payment_method.id
-            logger.info(f"💾 Saved payment method {payment_method.id} for reservation {reservation.code}")
-
-        # Confirm reservation and save PaymentIntent ID
-        reservation.stripe_payment_intent_id = payment_intent_id
-        reservation.statut = "confirmee"
-        reservation.save(
-            update_fields=[
-                "stripe_payment_intent_id",
-                "stripe_saved_payment_method_id",
-                "statut",
-            ]
-        )
-        logger.info(f"✅ Reservation {reservation.code} confirmed")
-
-        # Try sending the confirmation email (non-blocking)
-        try:
-            send_mail_on_new_reservation(reservation.logement, reservation, reservation.user)
-            logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
-        except Exception as e:
-            logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
-
-    except Exception as e:
-        logger.exception(
-            f"❌ Unexpected error handling checkout.session.completed for reservation {reservation_code or '[unknown]'}: {e}"
-        )
-
-
 def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservation, currency="eur"):
     try:
         if not saved_payment_method_id:
@@ -443,6 +190,9 @@ def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservati
 
         if not customer_id:
             raise ValueError("Customer ID is required to charge a saved payment method.")
+
+        if reservation.caution_charged:
+            raise ValueError("La caution a déjà été prélevée.")
 
         logger.info(f"🔄 Retrieving PaymentMethod {saved_payment_method_id} for customer {customer_id}")
         payment_method = stripe.PaymentMethod.retrieve(saved_payment_method_id)
@@ -519,6 +269,11 @@ def charge_reservation(reservation):
             admin_amount = transferable_amount * reservation.admin_fee_rate
             owner_amount = transferable_amount - admin_amount
 
+            if reservation.admin_transferred:
+                raise ValueError(
+                    f"Le transfert des fonds à l'admin du logement {reservation.logement.name} pour la réservation {reservation.code} a déjà été effectué."
+                )
+
             admin_account = reservation.logement.owner.stripe_account_id
             if not admin_account:
                 logger.error(f"❌ Missing Stripe account ID for admin of reservation {reservation.code}")
@@ -534,6 +289,11 @@ def charge_reservation(reservation):
             )
 
             logger.info(f"✅ Admin payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
+
+        if reservation.transferred:
+            raise ValueError(
+                f"Le transfert des fonds au propriétaire du logement {reservation.logement.name} pour la réservation {reservation.code} a déjà été effectué."
+            )
 
         owner_account = reservation.logement.owner.stripe_account_id
         if not owner_account:
@@ -570,6 +330,289 @@ def charge_reservation(reservation):
     except Exception as e:
         logger.exception(f"❌ Unexpected error during transfer for reservation {reservation.code}: {str(e)}")
         raise
+
+
+def refund_payment(reservation, refund="full", amount_cents=None):
+    try:
+        logger.info(f"💸 Initiating refund for reservation {reservation.code}")
+
+        params = {
+            "payment_intent": reservation.stripe_payment_intent_id,
+            "metadata": {"code": reservation.code, "refund": refund},
+        }
+
+        if reservation.refunded:
+            raise ValueError(f"La réservation {reservation.code} a déjà été remboursée.")
+
+        if amount_cents:
+            params["amount"] = int(amount_cents)
+
+        refund = stripe.Refund.create(**params)
+        logger.info(f"✅ Refund processed: {refund.id}, Amount: {params.get('amount', 'full')} cents")
+        return refund
+
+    except stripe.error.StripeError as e:
+        logger.exception(f"❌ Stripe refund error: {e}")
+        raise
+
+    except Exception as e:
+        logger.exception(f"❌ Unexpected refund error: {e}")
+        raise
+
+
+def handle_charge_refunded(data: StripeChargeEventData):
+    from logement.models import Reservation
+
+    reservation_code = None
+    try:
+        metadata = data.object.metadata or {}
+        reservation_code = metadata.get("code")
+        if not reservation_code:
+            logger.warning("⚠️ No reservation code found in refund metadata.")
+            return
+
+        refund_type = metadata.get("refund")
+        if not refund_type:
+            logger.warning(f"⚠️ No refund type found for reservation {reservation_code}.")
+            return
+
+        logger.info(f"🔔 Handling charge.refunded for reservation {reservation_code}")
+
+        try:
+            with transaction.atomic():
+                reservation = Reservation.objects.select_for_update().get(code=reservation_code)
+
+                amount = data.object.amount
+                refund_id = data.object.id
+                currency = data.object.currency or "eur"
+
+                if not amount or amount <= 0:
+                    logger.warning(f"⚠️ Invalid or missing refund amount for event {refund_id}")
+                    return
+
+                # Prevent duplicate based on refund ID
+                if reservation.stripe_refund_id == refund_id:
+                    logger.info(f"ℹ️ Refund {refund_id} already recorded for reservation {reservation.code}.")
+                    return
+
+                refunded_amount = Decimal(amount) / 100
+                current_refund = Decimal(reservation.refund_amount or 0)
+
+                # Update reservation
+                reservation.refunded = True
+                reservation.refund_amount = current_refund + refunded_amount
+                reservation.stripe_refund_id = refund_id
+                if refund_type == "full":
+                    reservation.platform_fee = Decimal("0.00")
+
+                reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "platform_fee"])
+
+        except Reservation.DoesNotExist:
+            logger.warning(f"⚠️ Reservation {reservation_code} not found.")
+            return
+
+        logger.info(
+            f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency.upper()} "
+            f"recorded for reservation {reservation.code}"
+        )
+
+        try:
+            send_mail_on_refund(reservation.logement, reservation, reservation.user)
+            logger.info(f"📧 Refund notification sent for reservation {reservation.code}")
+        except Exception as e:
+            logger.exception(f"❌ Error sending refund email for reservation {reservation.code}: {e}")
+
+    except Exception as e:
+        logger.exception(
+            f"❌ Unexpected error handling charge.refunded for reservation {reservation_code or '[unknown]'}: {e}"
+        )
+
+
+def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
+    from logement.models import Reservation
+
+    reservation_code = None
+    try:
+        metadata = data.object.metadata or {}
+        payment_type = metadata.get("type")
+        reservation_code = metadata.get("code")
+        payment_intent_id = data.object.id
+        amount_cents = data.object.amount_received
+
+        if not payment_type:
+            logger.warning("⚠️ No 'type' metadata in payment intent.")
+            return
+
+        if payment_type != "deposit":
+            logger.info("ℹ️ Payment type is not 'deposit', skipping.")
+            return
+
+        if not reservation_code:
+            logger.warning("⚠️ No reservation code in metadata.")
+            return
+
+        if amount_cents is None or amount_cents <= 0:
+            logger.warning(f"⚠️ Invalid deposit amount in PaymentIntent {payment_intent_id}.")
+            return
+
+        amount = Decimal(amount_cents) / 100  # cents to euros
+        logger.info(f"✅ Deposit received: {amount:.2f} € via PaymentIntent {payment_intent_id}")
+
+        with transaction.atomic():
+            try:
+                reservation = Reservation.objects.select_for_update().get(code=reservation_code)
+            except Reservation.DoesNotExist:
+                logger.warning(f"⚠️ Reservation {reservation_code} not found.")
+                return
+
+            if reservation.caution_charged:
+                logger.info(f"ℹ️ Reservation {reservation.code} already marked as deposit charged.")
+                return
+
+            try:
+                existing_amount = Decimal(reservation.amount_charged or 0)
+            except Exception:
+                logger.warning(f"⚠️ Failed to parse existing amount_charged for {reservation.code}, defaulting to 0.")
+                existing_amount = Decimal("0.00")
+
+            reservation.amount_charged = existing_amount + amount
+            reservation.caution_charged = True
+            reservation.stripe_deposit_payment_intent_id = payment_intent_id
+            reservation.save(
+                update_fields=[
+                    "amount_charged",
+                    "caution_charged",
+                    "stripe_deposit_payment_intent_id",
+                ]
+            )
+
+        logger.info(f"🏠 Deposit successfully recorded for reservation {reservation.code}, amount: {amount:.2f} €")
+
+    except Exception as e:
+        logger.exception(
+            f"❌ Unexpected error in handle_payment_intent_succeeded "
+            f"for reservation {reservation_code or '[unknown]'}: {str(e)}"
+        )
+
+
+def handle_payment_failed(data: StripePaymentIntentEventData):
+    from logement.models import Reservation
+
+    try:
+        metadata = data.object.metadata or {}
+        customer_id = data.customer
+        payment_intent_id = data.object.id
+        failure_message = data.object.last_payment_error.message if data.object.last_payment_error else None
+        failure_code = data.object.last_payment_error.code if data.object.last_payment_error else None
+
+        if failure_message:
+            logger.warning(f"💥 Payment failure message: {failure_message}")
+        if failure_code:
+            logger.warning(f"� Stripe failure code: {failure_code}")
+
+        reservation_code = metadata.get("code", "[unknown]")
+
+        if not reservation_code:
+            logger.warning(f"⚠️ No reservation code found in failed payment event {payment_intent_id}.")
+        if not customer_id:
+            logger.warning(f"⚠️ No customer ID found in failed payment event {payment_intent_id}.")
+
+        logger.warning(
+            f"⚠️ Payment failed for reservation {reservation_code}, customer {customer_id or '[unknown]'}, PaymentIntent {payment_intent_id}."
+        )
+
+        if failure_message:
+            logger.warning(f"💥 Payment failure message: {failure_message}")
+        if failure_code:
+            logger.warning(f"📛 Stripe failure code: {failure_code}")
+
+        # Optional: update reservation status or alert staff
+        try:
+            reservation = Reservation.objects.get(code=reservation_code)
+            if reservation.statut != "confirmee":
+                reservation.statut = "echec_paiement"
+                reservation.save(update_fields=["statut"])
+                logger.info(f"🚫 Reservation {reservation.code} marked as payment failed.")
+        except Reservation.DoesNotExist:
+            logger.warning(f"⚠️ Reservation {reservation_code} not found in DB.")
+        except Exception as e:
+            logger.exception(f"❌ Unexpected error updating reservation {reservation_code} on payment failure: {e}")
+
+    except Exception as e:
+        logger.exception(f"❌ Unexpected error handling payment_intent.payment_failed event: {str(e)}")
+
+
+def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
+    from logement.models import Reservation
+
+    reservation_code = None
+    try:
+        # Extract metadata and payment intent ID
+        reservation_code = data.object.metadata.get("code")
+        payment_intent_id = data.object.payment_intent
+
+        if not reservation_code or not payment_intent_id:
+            logger.error("❌ Stripe session missing reservation code or payment intent.")
+            return
+
+        logger.info(f"🔔 Handling checkout.session.completed for reservation {reservation_code}")
+
+        with transaction.atomic():
+            try:
+                reservation = Reservation.objects.select_for_update().get(code=reservation_code)
+            except Reservation.DoesNotExist:
+                logger.warning(f"⚠️ Reservation {reservation_code} not found.")
+                return
+
+            if reservation.statut == "confirmee":
+                logger.info(f"ℹ️ Reservation {reservation.code} already confirmed.")
+                return
+
+            try:
+                intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
+            except stripe.error.StripeError as e:
+                logger.exception(
+                    f"❌ Stripe API error retrieving intent {payment_intent_id}: {e.user_message or str(e)}"
+                )
+                return
+
+            if intent.status != "succeeded":
+                logger.warning(
+                    f"⚠️ PaymentIntent {payment_intent_id} status '{intent.status}' is not 'succeeded'. Skipping confirmation."
+                )
+                return
+
+            payment_method = intent.payment_method
+            if not payment_method or not getattr(payment_method, "id", None):
+                logger.error(f"❌ No valid payment method in intent {payment_intent_id}")
+                return
+
+            if not reservation.stripe_saved_payment_method_id:
+                reservation.stripe_saved_payment_method_id = payment_method.id
+                logger.info(f"💾 Saved payment method {payment_method.id} for reservation {reservation.code}")
+
+            reservation.stripe_payment_intent_id = payment_intent_id
+            reservation.statut = "confirmee"
+            reservation.save(
+                update_fields=[
+                    "stripe_payment_intent_id",
+                    "stripe_saved_payment_method_id",
+                    "statut",
+                ]
+            )
+
+        logger.info(f"✅ Reservation {reservation.code} confirmed")
+
+        try:
+            send_mail_on_new_reservation(reservation.logement, reservation, reservation.user)
+            logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
+        except Exception as e:
+            logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
+
+    except Exception as e:
+        logger.exception(
+            f"❌ Unexpected error in handle_checkout_session_completed for reservation {reservation_code or '[unknown]'}: {e}"
+        )
 
 
 def handle_transfer_paid(data: StripeTransferEventData):
