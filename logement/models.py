@@ -124,8 +124,6 @@ class Logement(models.Model):
 
     map_link = models.URLField(blank=True, null=True, max_length=1000)
 
-    refund_charge = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)
-
     def __str__(self):
         return self.name
 
@@ -455,15 +453,14 @@ class Reservation(models.Model):
         Calculates the refundable amount to the guest.
 
         Formula:
-        refundable = price - payment_fee - refund_charge_percent - already_refunded
+        refundable = price - payment_fee - already_refunded
         """
         try:
             price = Decimal(self.price or "0.00")
             payment_fee = Decimal(self.payment_fee or "0.00")
-            refund_charge = Decimal(self.refund_charge or "0.00")
             refund_amount = Decimal(self.refund_amount or "0.00")
 
-            refundable = price - payment_fee - refund_charge - refund_amount
+            refundable = price - payment_fee - refund_amount
             refundable = max(Decimal("0.00"), refundable)
 
             return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -476,27 +473,20 @@ class Reservation(models.Model):
             return Decimal("0.00")
 
     @property
-    def refund_charge(self):
-        price = Decimal(self.price or "0.00")
-        refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
-        return price * refund_charge_rate
-
-    @property
     def partial_refundable_amount(self):
         """
         Calculates the partial refundable amount to the guest.
 
         Formula:
-        refundable = price - payment_fee - refund_charge_percent - already_refunded - platform_fee
+        refundable = price - payment_fee - already_refunded - platform_fee
         """
         try:
             price = Decimal(self.price or "0.00")
             payment_fee = Decimal(self.payment_fee or "0.00")
-            refund_charge = Decimal(self.refund_charge or "0.00")
             refund_amount = Decimal(self.refund_amount or "0.00")
             platform_fee = Decimal(self.platform_fee or "0.00")
 
-            refundable = price - payment_fee - refund_charge - refund_amount - platform_fee
+            refundable = price - payment_fee - refund_amount - platform_fee
             refundable = max(Decimal("0.00"), refundable)
 
             return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)

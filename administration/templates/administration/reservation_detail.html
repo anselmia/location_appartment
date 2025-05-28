@@ -127,10 +127,6 @@
               <dd class="col-sm-7">
                 {{ reservation.payment_fee|floatformat:2 }} €
               </dd>
-              <dt class="col-sm-5">Frais d'annulation (Non Remboursable)</dt>
-              <dd class="col-sm-7">
-                {{ reservation.refund_charge|floatformat:2|default:"—" }} €
-              </dd>
               <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
               <dd class="col-sm-7">
                 {{ reservation.platform_fee|floatformat:2|default:"—" }} €
