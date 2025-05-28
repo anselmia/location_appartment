@@ -32,7 +32,7 @@ def user_is_logement_admin(view_func):
         # Check if the user is an admin or the owner of the logement
         if (
             request.user == logement.owner
-            or request.user in logement.admins.all()
+            or request.user == logement.admin
             or request.user.is_admin
         ):
             return view_func(request, *args, **kwargs)
@@ -51,7 +51,7 @@ def user_has_logement(view_func):
 
         # Check if the user is either the owner or an admin of any Logement
         has_logement = Logement.objects.filter(
-            Q(owner=request.user) | Q(admins=request.user)
+            Q(owner=request.user) | Q(admin=request.user)
         ).exists()
 
         if has_logement:
@@ -74,7 +74,7 @@ def user_is_reservation_admin(view_func):
         # Check if the user is the admin or the owner of the logement
         if (
             request.user == logement.owner
-            or request.user in logement.admins.all()
+            or request.user == logement.admin()
             or request.user.is_admin
         ):
             return view_func(request, *args, **kwargs)

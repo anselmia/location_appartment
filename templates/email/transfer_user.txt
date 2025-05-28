@@ -1,0 +1,10 @@
+Bonjour {{ user.name }},
+
+Nous vous confirmons que votre transfert pour la réservation {reservation.code} pour "{{ logement.name }}" a été traité avec succès.
+
+Montant transféré : {{ amount|floatformat:2 }} €
+
+N'hésitez pas à nous contacter si vous avez des questions.
+
+Merci,
+L'équipe {{ entreprise.name }}

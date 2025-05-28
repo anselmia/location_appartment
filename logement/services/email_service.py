@@ -34,9 +34,7 @@ def send_mail_on_new_reservation(logement, reservation, user):
         # ========== CUSTOMER CONFIRMATION ==========
         if user.email:
             subject = f"Confirmation de votre Réservation {reservation.code} - {logement.name}"
-            user_message = render_to_string(
-                "email/new_reservation_customer.txt", email_context
-            )
+            user_message = render_to_string("email/new_reservation_customer.txt", email_context)
 
             send_mail(
                 subject=subject,
@@ -45,14 +43,10 @@ def send_mail_on_new_reservation(logement, reservation, user):
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-            logger.info(
-                f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}"
-            )
+            logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
 
     except Exception as e:
-        logger.exception(
-            f"❌ Failed to send admin mail for reservation {reservation.code}: {e}"
-        )
+        logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_refund(logement, reservation, user):
@@ -75,9 +69,7 @@ def send_mail_on_refund(logement, reservation, user):
             fail_silently=False,
         )
 
-        logger.info(
-            f"✅ Refund email sent to admins for reservation {reservation.code}."
-        )
+        logger.info(f"✅ Refund email sent to admins for reservation {reservation.code}.")
 
         # ===== USER EMAIL =====
         if user.email:
@@ -91,11 +83,46 @@ def send_mail_on_refund(logement, reservation, user):
                 fail_silently=False,
             )
 
-            logger.info(
-                f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}"
-            )
+            logger.info(f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}")
 
     except Exception as e:
-        logger.exception(
-            f"❌ Failed to send refund email for reservation {reservation.code}: {e}"
+        logger.exception(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
+
+
+def send_mail_on_new_transfer(logement, reservation, user_type):
+    try:
+        # Context for email templates
+        user = reservation.admin if user_type == "admin" else reservation.owner
+        amount = reservation.admin_transferred_amount if user_type == "admin" else reservation.transferred_amount
+
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "amount": amount}
+
+        # ===== ADMIN EMAIL =====
+        admin_message = render_to_string("email/transfer_admin.txt", email_context)
+
+        send_mail(
+            subject=f"💸 Transfert effectué à {user} - {logement.name} - Réservation {reservation.code}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=logement.mail_list,
+            fail_silently=False,
         )
+
+        logger.info(f"✅ Transfer email sent to admins for reservation {reservation.code}.")
+
+        # ===== USER EMAIL =====
+        if user.email:
+            user_message = render_to_string("email/transfer_user.txt", email_context)
+
+            send_mail(
+                subject=f"Transfert des fonds de la Réservation {reservation.code} - {logement.name}",
+                message=user_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            logger.info(f"✅ Transfer confirmation sent to user {user.email} for reservation {reservation.code}")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")

@@ -933,8 +933,10 @@ def manage_reservations(request):
     if query:
         reservations = reservations.filter(code__icontains=query)
 
+    reservations = reservations.order_by("-date_reservation")[:50]
+
     context = {
-        "reservations": reservations.order_by("-date_reservation"),
+        "reservations": reservations,
         "query": query,
     }
     return render(request, "administration/manage_reservations.html", context)

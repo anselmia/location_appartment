@@ -3,10 +3,7 @@ import logging
 from django.urls import reverse
 from django.conf import settings
 
-from logement.services.email_service import (
-    send_mail_on_new_reservation,
-    send_mail_on_refund,
-)
+from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund, send_mail_on_new_transfer
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
     StripeChargeEventData,
@@ -33,6 +30,7 @@ def get_payment_fee(price):
 
     fee = (variable_fee * price) + fixed_fee
     return fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
 
 def get_platform_fee(price):
     price = Decimal(price)
@@ -513,6 +511,30 @@ def charge_reservation(reservation):
             )
             return
 
+        transferable_amount = reservation.transferable_amount
+        owner_amount = transferable_amount
+        admin_amount = 0
+
+        if reservation.logement.admin:
+            admin_amount = transferable_amount * reservation.admin_fee_rate
+            owner_amount = transferable_amount - admin_amount
+
+            admin_account = reservation.logement.owner.stripe_account_id
+            if not admin_account:
+                logger.error(f"❌ Missing Stripe account ID for admin of reservation {reservation.code}")
+                return
+
+            # Perform the transfer
+            transfer = stripe.Transfer.create(
+                amount=int(admin_amount * 100),
+                currency="eur",
+                destination=admin_account,
+                transfer_group=f"group_{reservation.code}",
+                metadata={"code": reservation.code, "logement": reservation.logement.code, "transfer": "admin"},
+            )
+
+            logger.info(f"✅ Admin payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
+
         owner_account = reservation.logement.owner.stripe_account_id
         if not owner_account:
             logger.error(f"❌ Missing Stripe account ID for owner of reservation {reservation.code}")
@@ -520,10 +542,11 @@ def charge_reservation(reservation):
 
         # Perform the transfer
         transfer = stripe.Transfer.create(
-            amount=int(reservation.transferable_amount * 100),
+            amount=int(owner_amount * 100),
             currency="eur",
             destination=owner_account,
             transfer_group=f"group_{reservation.code}",
+            metadata={"code": reservation.code, "logement": reservation.logement.code, "transfer": "owner"},
         )
 
         logger.info(f"✅ Owner payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
@@ -557,22 +580,48 @@ def handle_transfer_paid(data: StripeTransferEventData):
         amount = Decimal(data.object.amount) / 100
         currency = data.object.currency.upper()
         destination = data.object.destination
-        transfer_group = data.object.transfer_group
+        metadata = data.object.metadata or {}
+        reservation_code = metadata.get("code")
+        if not reservation_code:
+            logger.warning("⚠️ No reservation code found in the refund event metadata.")
+            return
+        transfer_user = metadata.get("transfer")
+        if not transfer_user:
+            logger.warning("⚠️ No reservation user found in the refund event metadata.")
+            return
 
         logger.info(f"✅ Transfer succeeded: {transfer_id} | {amount:.2f} {currency} to {destination}")
 
-        if transfer_group and transfer_group.startswith("group_"):
-            reservation_code = transfer_group.replace("group_", "")
-            try:
+        try:
+            if transfer_user == "owner":
                 reservation = Reservation.objects.get(code=reservation_code)
                 reservation.transferred = True
                 reservation.stripe_transfer_id = transfer_id
-                reservation.save(update_fields=["transferred", "stripe_transfer_id"])
-                logger.info(f"📦 Transfer recorded for reservation {reservation_code}")
-            except Reservation.DoesNotExist:
-                logger.warning(f"⚠️ Reservation {reservation_code} not found for transfer {transfer_id}")
-        else:
-            logger.warning(f"⚠️ No valid transfer group in transfer {transfer_id}")
+                reservation.transferred_amount = amount / 100
+                reservation.save(update_fields=["transferred", "stripe_transfer_id", "transferred_amount"])
+                logger.info(f"📦 Transfer recorded to owner for reservation {reservation_code}")
+            elif transfer_user == "admin":
+                reservation = Reservation.objects.get(code=reservation_code)
+                reservation.admin_transferred = True
+                reservation.admin_transferred_amount = amount / 100
+                reservation.admin_stripe_transfer_id = transfer_id
+                reservation.save(
+                    update_fields=["admin_transferred", "admin_stripe_transfer_id", "admin_transferred_amount"]
+                )
+                logger.info(f"📦 Transfer recorded to admin for reservation {reservation_code}")
+            else:
+                logger.error(
+                    f"📦 Incorrect user {transfer_user} defined for Transfer for reservation {reservation_code}"
+                )
+                return
+            # Try sending the confirmation email (non-blocking)
+            try:
+                send_mail_on_new_transfer(reservation.logement, reservation, transfer_user)
+                logger.info(f"📧 transfer email sent for reservation {reservation.code}")
+            except Exception as e:
+                logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
+        except Reservation.DoesNotExist:
+            logger.warning(f"⚠️ Reservation {reservation_code} not found for transfer {transfer_id}")
 
     except Exception as e:
         logger.exception(f"❌ Error handling transfer.paid: {e}")

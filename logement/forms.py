@@ -35,7 +35,7 @@ class LogementForm(forms.ModelForm):
             "statut",
             "type",
             "owner",
-            "admins",
+            "admin",
             "airbnb_link",
             "airbnb_calendar_link",
             "booking_link",
@@ -43,6 +43,7 @@ class LogementForm(forms.ModelForm):
             "caution",
             "beds",
             "map_link",
+            "admin_fee"
         ]
         labels = {
             "name": "Nom du logement",
@@ -76,7 +77,8 @@ class LogementForm(forms.ModelForm):
             "booking_calendar_link": "Calendrier Booking",
             "caution": "Dépôt de garantie (€)",
             "map_link": "Lien Google Map",
-            "admins": "Utilisateurs associés",
+            "admin": "Administrateur du logement",
+            "admin_fee": "Frais de gestion Admin (%)",
         }
         help_texts = {
             "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",
@@ -89,10 +91,8 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
-            "admins": forms.CheckboxSelectMultiple(),  # Use checkboxes for admins
-            "owner": forms.Select(
-                attrs={"class": "form-control select2"}
-            ),  # Select for owner
+            "admin": forms.Select(attrs={"class": "form-control select2"}),  # Select for owner
+            "owner": forms.Select(attrs={"class": "form-control select2"}),  # Select for owner
         }
 
     def __init__(self, *args, **kwargs):
@@ -102,19 +102,13 @@ class LogementForm(forms.ModelForm):
             field.widget.attrs.setdefault("class", "form-control")
 
         if "ville" in self.fields:
-            self.fields["ville"].queryset = City.objects.all().order_by(
-                "code_postal", "name"
-            )
+            self.fields["ville"].queryset = City.objects.all().order_by("code_postal", "name")
 
-        if "admins" in self.fields:
-            self.fields["admins"].queryset = CustomUser.objects.filter(
-                is_owner_admin=True
-            ).order_by("username")
+        if "admin" in self.fields:
+            self.fields["admin"].queryset = CustomUser.objects.filter(is_owner_admin=True).order_by("username")
 
         if "owner" in self.fields:
-            self.fields["owner"].queryset = CustomUser.objects.filter(
-                is_owner=True
-            ).order_by("username")
+            self.fields["owner"].queryset = CustomUser.objects.filter(is_owner=True).order_by("username")
 
         # Fields that should have numeric step=1
         step_1_fields = [
@@ -139,11 +133,17 @@ class LogementForm(forms.ModelForm):
         # Tax field step should be more precise (0.1%)
         if "tax" in self.fields:
             self.fields["tax"].widget.attrs["step"] = "0.1"
+        if "admin_fee" in self.fields and self.instance.pk:
+            self.fields["admin_fee"].initial = float(self.instance.admin_fee) * 100
+            self.fields["admin_fee"].widget.attrs["step"] = "0.1"
 
     def clean(self):
         cleaned_data = super().clean()
         max_traveler = cleaned_data.get("max_traveler")
         nominal_traveler = cleaned_data.get("nominal_traveler")
+        admin_fee = cleaned_data.get("admin_fee")
+        if admin_fee is not None:
+            cleaned_data["admin_fee"] = admin_fee / Decimal("100")
 
         if max_traveler is not None and nominal_traveler is not None:
             if nominal_traveler > max_traveler:
@@ -154,32 +154,25 @@ class LogementForm(forms.ModelForm):
 
         caution = cleaned_data.get("caution")
         if caution is not None and caution < 0:
-            self.add_error(
-                "caution", "Le montant de la caution ne peut pas être négatif."
-            )
+            self.add_error("caution", "Le montant de la caution ne peut pas être négatif.")
 
         statut = cleaned_data.get("statut")
         owner = cleaned_data.get("owner")
-        admins = cleaned_data.get("admins")
+        admin = cleaned_data.get("admin")
 
         if statut == "open":
             if not owner:
-                self.add_error(
-                    "owner", "Le logement ne peut pas être ouvert sans propriétaire."
-                )
+                self.add_error("owner", "Le logement ne peut pas être ouvert sans propriétaire.")
             else:
                 if not getattr(owner, "stripe_account_id", None):
-                    self.add_error(
-                        "owner", "Le propriétaire doit avoir un compte Stripe connecté."
-                    )
+                    self.add_error("owner", "Le propriétaire doit avoir un compte Stripe connecté.")
 
-            if admins:
-                for admin in admins:
-                    if not getattr(admin, "stripe_account_id", None):
-                        self.add_error(
-                            "admins",
-                            f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
-                        )
+            if admin:
+                if not getattr(admin, "stripe_account_id", None):
+                    self.add_error(
+                        "admin",
+                        f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
+                    )
 
 
 class ReservationForm(forms.Form):
@@ -190,15 +183,11 @@ class ReservationForm(forms.Form):
         widget=forms.NumberInput(attrs={"id": "id_guest", "class": "form-control"}),
     )
     start = forms.DateField(
-        widget=forms.DateInput(
-            attrs={"id": "id_start", "class": "form-control", "type": "date"}
-        ),
+        widget=forms.DateInput(attrs={"id": "id_start", "class": "form-control", "type": "date"}),
         required=True,
     )
     end = forms.DateField(
-        widget=forms.DateInput(
-            attrs={"id": "id_end", "class": "form-control", "type": "date"}
-        ),
+        widget=forms.DateInput(attrs={"id": "id_end", "class": "form-control", "type": "date"}),
         required=True,
     )
 
@@ -228,9 +217,7 @@ class ReservationForm(forms.Form):
 
         # Set the dynamic max_value for the guest field
         self.fields["guest"].max_value = max_guests
-        self.fields["guest"].widget.attrs[
-            "max"
-        ] = max_guests  # Set the 'max' attribute in the widget
+        self.fields["guest"].widget.attrs["max"] = max_guests  # Set the 'max' attribute in the widget
 
         # Initialize start and end date fields if values are provided
         self.fields["start"].initial = start_date or ""
@@ -239,13 +226,9 @@ class ReservationForm(forms.Form):
 
     def clean_guest(self):
         guest = self.cleaned_data.get("guest")
-        max_guests = self.fields[
-            "guest"
-        ].max_value  # Ensure it's the same max_value you want
+        max_guests = self.fields["guest"].max_value  # Ensure it's the same max_value you want
         if guest > max_guests:
-            raise forms.ValidationError(
-                f"Le nombre de voyageurs ne peut pas dépasser {max_guests}."
-            )
+            raise forms.ValidationError(f"Le nombre de voyageurs ne peut pas dépasser {max_guests}.")
         return guest
 
 
@@ -272,27 +255,13 @@ class DiscountForm(forms.ModelForm):
                 }
             ),
             "name": forms.TextInput(attrs={"class": "form-control", "required": True}),
-            "value": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.1", "required": True}
-            ),
-            "min_nights": forms.NumberInput(
-                attrs={"class": "form-control", "step": "1"}
-            ),
-            "exact_nights": forms.NumberInput(
-                attrs={"class": "form-control", "step": "1"}
-            ),
-            "days_before_min": forms.NumberInput(
-                attrs={"class": "form-control", "step": "1"}
-            ),
-            "days_before_max": forms.NumberInput(
-                attrs={"class": "form-control", "step": "1"}
-            ),
-            "start_date": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}
-            ),
-            "end_date": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}
-            ),
+            "value": forms.NumberInput(attrs={"class": "form-control", "step": "0.1", "required": True}),
+            "min_nights": forms.NumberInput(attrs={"class": "form-control", "step": "1"}),
+            "exact_nights": forms.NumberInput(attrs={"class": "form-control", "step": "1"}),
+            "days_before_min": forms.NumberInput(attrs={"class": "form-control", "step": "1"}),
+            "days_before_max": forms.NumberInput(attrs={"class": "form-control", "step": "1"}),
+            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -304,9 +273,7 @@ class DiscountForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         dt = cleaned_data.get("discount_type")
-        logement = (
-            self.instance.logement if self.instance.pk else Logement.objects.first()
-        )
+        logement = self.instance.logement if self.instance.pk else Logement.objects.first()
 
         if logement and dt:
             existing_discount = (
@@ -323,16 +290,11 @@ class DiscountForm(forms.ModelForm):
 
         if dt:
             # You can set these boolean flags in your DiscountType model
-            if getattr(dt, "requires_min_nights", False) and not cleaned_data.get(
-                "min_nights"
-            ):
-                self.add_error(
-                    "min_nights", "Ce champ est requis pour ce type de réduction."
-                )
+            if getattr(dt, "requires_min_nights", False) and not cleaned_data.get("min_nights"):
+                self.add_error("min_nights", "Ce champ est requis pour ce type de réduction.")
 
             if getattr(dt, "requires_days_before", False) and not (
-                cleaned_data.get("days_before_min")
-                or cleaned_data.get("days_before_max")
+                cleaned_data.get("days_before_min") or cleaned_data.get("days_before_max")
             ):
                 self.add_error(
                     "days_before_min",

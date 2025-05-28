@@ -51,13 +51,8 @@
                         {{ form.owner|add_class:"form-input" }}
                     </div>
                     <div class="form-field">
-                        <div class="admin-checkboxes">
-                            {% for checkbox in form.admins %}
-                                <div class="checkbox-wrapper">
-                                    {{ checkbox }}  <!-- Renders the checkbox -->
-                                </div>
-                            {% endfor %}
-                        </div>
+                        <label for="{{ form.admin.id_for_label }}">{{ form.admin.label }}</label>
+                        {{ form.admin|add_class:"form-input" }}
                     </div>
                     <div class="form-field">
                         <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
@@ -169,7 +164,13 @@
                             <span>€</span>
                         </div>
                     </div>
-
+                    <div class="form-field with-symbol">
+                        <label for="{{ form.admin_fee.id_for_label }}">{{ form.admin_fee.label }}</label>
+                        <div class="input-symbol">
+                            {{ form.admin_fee|add_class:"form-input" }}
+                            <span>%</span>
+                        </div>
+                    </div>
                     <div class="form-field with-symbol">
                         <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
                         <div class="input-symbol">

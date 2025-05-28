@@ -30,7 +30,7 @@ def get_reservations(user, logement_id=None):
             return Reservation.objects.none()
         if user.is_admin:
             return Reservation.objects.all()
-        logements = Logement.objects.filter(Q(owner=user) | Q(admins=user))
+        logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
         return Reservation.objects.filter(logement__in=logements)
     except Exception as e:
         logger.error(

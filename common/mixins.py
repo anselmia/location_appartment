@@ -13,7 +13,7 @@ class AdminRequiredMixin:
 
 class UserHasLogementMixin:
     def dispatch(self, request, *args, **kwargs):     
-        has_logement = Logement.objects.filter(Q(owner=request.user) | Q(admins=request.user)).exists()
+        has_logement = Logement.objects.filter(Q(owner=request.user) | Q(admin=request.user)).exists()
 
         if not (has_logement or is_admin(request.user)):
             raise PermissionDenied("Vous n'avez pas les droits pour accéder à cette page.")

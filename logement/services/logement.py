@@ -22,7 +22,7 @@ def get_logements(user):
             qs = Logement.objects.all()
         else:
             # Non-admin users: filter logements where the user is either the owner or an admin
-            qs = Logement.objects.filter(Q(owner=user) | Q(admins=user))
+            qs = Logement.objects.filter(Q(owner=user) | Q(admin=user))
 
         return qs
 

@@ -10,12 +10,14 @@
   --info-color: #0dcaf0;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   --radius: 0.75rem;
+  --font-family: "Segoe UI", Roboto, sans-serif;
 }
 
-/* Layout */
 body {
   background-color: var(--light-bg);
-  font-family: var(--font-family), sans-serif;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
 .container {
@@ -24,85 +26,83 @@ body {
   padding: 2rem 1rem;
 }
 
-/* Headings */
 h2 {
   font-size: 2rem;
   font-weight: 600;
   color: var(--secondary-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-/* Search bar */
 form input[type="text"] {
   font-size: 1rem;
   padding: 0.75rem 1.25rem;
   border-radius: 50px;
   border: 1px solid #ccc;
   box-shadow: var(--shadow);
+  width: 100%;
 }
 
-/* Card */
 .card {
   border: none;
   border-radius: var(--radius);
   background: #fff;
   box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
 }
 
 .card-body {
   padding: 1.5rem;
 }
 
-/* Reservation Info */
 .card h5 {
   color: var(--primary-color);
   font-weight: 600;
   font-size: 1.15rem;
+  margin-bottom: 0.5rem;
 }
 
 .card small.text-muted {
   font-size: 0.875rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .card p {
   margin-bottom: 0.4rem;
   font-size: 0.95rem;
-  color: var(--text-color);
 }
 
-/* Badges */
 .badge {
   font-size: 0.75rem;
   padding: 0.4rem 0.7rem;
   font-weight: 600;
   border-radius: 1rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
 }
 
 .badge.bg-success {
   background-color: var(--success-color);
 }
-
 .badge.bg-warning {
   background-color: var(--warning-color);
   color: #212529;
 }
-
 .badge.bg-danger {
   background-color: var(--danger-color);
 }
-
 .badge.bg-secondary {
   background-color: #6c757d;
 }
-
 .badge.bg-light {
   background-color: #e9ecef;
   color: #212529;
 }
 
-/* Actions */
 .refund-deposit-actions {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1rem;
 }
@@ -112,6 +112,8 @@ form input[type="text"] {
   font-size: 0.85rem;
   border: 1px solid #ced4da;
   border-radius: 0.5rem;
+  width: 150px;
+  max-width: 100%;
 }
 
 .refund-deposit-actions .btn {
@@ -119,6 +121,7 @@ form input[type="text"] {
   font-size: 0.85rem;
   font-weight: 500;
   border-radius: 2rem;
+  white-space: nowrap;
 }
 
 .btn-outline-danger {
@@ -143,7 +146,6 @@ form input[type="text"] {
   color: white;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .refund-deposit-actions {
     flex-direction: column;
@@ -155,6 +157,10 @@ form input[type="text"] {
   }
 
   .btn {
+    width: 100%;
+  }
+
+  .refund-deposit-actions input[type="number"] {
     width: 100%;
   }
 }

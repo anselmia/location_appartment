@@ -89,6 +89,8 @@ class Logement(models.Model):
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
+    admin_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
     cancelation_period = models.IntegerField(default=15)  # en jours ?
     superficie = models.IntegerField(blank=True, null=True)
     bathrooms = models.IntegerField(default=1)
@@ -106,14 +108,14 @@ class Logement(models.Model):
 
     animals = models.BooleanField(default=False)
     smoking = models.BooleanField(default=False)
-    owner = models.ForeignKey(
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="owned_logements")
+    admin = models.ForeignKey(
         CustomUser,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,  # Make it required
         blank=True,
+        related_name="administered_logements",
     )
-    # Add a many-to-many field for admins
-    admins = models.ManyToManyField(CustomUser, related_name="admin_logements", blank=True)
 
     airbnb_link = models.URLField(blank=True, null=True)
     airbnb_calendar_link = models.URLField(blank=True, null=True)
@@ -140,7 +142,7 @@ class Logement(models.Model):
         super().save(*args, **kwargs)
 
     def is_logement_admin(self, user):
-        return user.is_admin or user == self.owner or user in self.admins.all()
+        return user.is_admin or user == self.owner or user == self.admin
 
     @property
     def booking_limit(self):
@@ -151,12 +153,10 @@ class Logement(models.Model):
         # Get the owner's email
         owner_email = self.owner.email
 
-        # Get emails of all admins associated with the logement
-        admin_emails = self.admins.values_list("email", flat=True)
+        # Get email of admin associated with the logement
+        admin_email = self.admin.email
 
-        # Combine the owner's email with admin emails and remove duplicates using a set
-        email_list = set(admin_emails)  # Use a set to automatically remove duplicates
-        email_list.add(owner_email)  # Add the owner's email to the set
+        email_list = [owner_email, admin_email]
 
         # Return the list of emails as a sorted list (optional)
         return sorted(email_list)
@@ -393,6 +393,7 @@ class Reservation(models.Model):
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     platform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    admin_fee_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_saved_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     refunded = models.BooleanField(default=False)
@@ -404,6 +405,11 @@ class Reservation(models.Model):
 
     stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
     transferred = models.BooleanField(default=False)
+    transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+
+    admin_stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
+    admin_transferred = models.BooleanField(default=False)
+    admin_transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
     def __str__(self):
         return f"Réservation {self.logement.name} par {self.user.name}"
@@ -424,6 +430,9 @@ class Reservation(models.Model):
 
         if not self.platform_fee:
             self.platform_fee = get_platform_fee(self.price)
+
+        if not self.admin_fee_rate:
+            self.admin_fee_rate = self.logement.admin_fee
         super().save(*args, **kwargs)
 
     @property

@@ -1,0 +1,6 @@
+💸 Un remboTransferursement a été effectué.
+
+Logement: {{ logement.name }}
+Réservation Code: {{ reservation.code }}
+Bénéficiaire: {{ user.name }} {{ user.last_name }}
+Montant Transféré: {{ amount|floatformat:2 }} €
