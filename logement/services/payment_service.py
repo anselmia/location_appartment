@@ -4,7 +4,13 @@ from django.urls import reverse
 from django.conf import settings
 from django.db import transaction
 
-from logement.services.email_service import send_mail_on_new_reservation, send_mail_on_refund, send_mail_on_new_transfer, send_mail_payment_link
+from logement.services.email_service import (
+    send_mail_on_new_reservation,
+    send_mail_on_refund,
+    send_mail_on_new_transfer,
+    send_mail_payment_link,
+    send_mail_on_payment_failure,
+)
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
     StripeChargeEventData,
@@ -140,7 +146,9 @@ def send_stripe_payment_link(reservation):
         return session.url
 
     except Exception as e:
-        logger.exception(f"❌ Erreur lors de la création du lien de paiement Stripe pour la réservation {reservation.code}: {e}")
+        logger.exception(
+            f"❌ Erreur lors de la création du lien de paiement Stripe pour la réservation {reservation.code}: {e}"
+        )
         raise
 
 
@@ -533,6 +541,12 @@ def handle_payment_failed(data: StripePaymentIntentEventData):
                 reservation.statut = "echec_paiement"
                 reservation.save(update_fields=["statut"])
                 logger.info(f"🚫 Reservation {reservation.code} marked as payment failed.")
+
+                try:
+                    send_mail_on_payment_failure(reservation.logement, reservation, reservation.user)
+                    logger.info(f"📧 Payment failure email sent for reservation {reservation.code}")
+                except Exception as e:
+                    logger.exception(f"❌ Error sending failure payment email for reservation {reservation.code}: {e}")
         except Reservation.DoesNotExist:
             logger.warning(f"⚠️ Reservation {reservation_code} not found in DB.")
         except Exception as e:

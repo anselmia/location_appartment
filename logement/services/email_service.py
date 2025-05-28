@@ -128,11 +128,16 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
-def send_mail_payment_link(reservation, session, user_type):
+def send_mail_payment_link(reservation, session):
     try:
         # Context for email templates
 
-        email_context = {"reservation": reservation, "logement": reservation.logement, "user": reservation.user, "url": session["checkout_session_url"]}
+        email_context = {
+            "reservation": reservation,
+            "logement": reservation.logement,
+            "user": reservation.user,
+            "url": session["checkout_session_url"],
+        }
 
         # ===== Customer EMAIL =====
         admin_message = render_to_string("email/payment_link.txt", email_context)
