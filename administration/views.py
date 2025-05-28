@@ -1,18 +1,22 @@
 import json
 import logging
 import os
+import calendar as cal
+
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 import stripe
+
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.db.models import Sum, Avg
-from django.db.models.functions import ExtractYear, ExtractMonth
+from django.db.models import Sum, Q
+from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
@@ -35,7 +39,7 @@ from common.decorators import (
     user_is_logement_admin,
     user_is_reservation_admin,
 )
-from common.mixins import AdminRequiredMixin
+from common.mixins import AdminRequiredMixin, UserHasLogementMixin
 from common.views import is_admin
 
 from logement.forms import DiscountForm, LogementForm
@@ -593,35 +597,6 @@ def manage_discounts(request):
         return HttpResponse("Erreur interne serveur", status=500)
 
 
-@login_required
-@user_has_logement
-@require_http_methods(["GET", "POST"])
-def economie_view(request):
-    try:
-        logements = get_logements(request.user)
-        selected_logement_id = request.POST.get("logement_id") or logements.first().id if logements else None
-        current_year = datetime.now().year
-        years = list(
-            Reservation.objects.filter(logement_id=selected_logement_id)
-            .dates("start", "year")
-            .values_list("start__year", flat=True)
-            .distinct()
-        ) or [current_year]
-
-        return render(
-            request,
-            "administration/revenu.html",
-            {
-                "logement_id": int(selected_logement_id),
-                "logements": logements,
-                "years": years,
-            },
-        )
-    except Exception as e:
-        logger.exception(f"Erreur dans economie_view: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
-
-
 def api_economie_data(request, logement_id):
     try:
         year = int(request.GET.get("year", datetime.now().year))
@@ -1006,7 +981,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         )
 
         brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
-        total_refunds = (reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"))
+        total_refunds = reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00")
         total_revenu = brut_revenue - total_refunds
 
         total_reservations = reservations.count()
@@ -1016,7 +991,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         monthly_revenue = [0] * 12
         for entry in monthly_data:
             month_index = entry["month"] - 1
-            monthly_revenue[month_index] = float(entry["total"])
+            monthly_revenue[month_index] = float(entry["month"])
 
         context.update(
             {
@@ -1043,5 +1018,132 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         except Exception:
             context["stripe_balance_available"] = None
             context["stripe_balance_pending"] = None
+
+        return context
+
+
+class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
+    template_name = "administration/revenu.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        logements = get_logements(self.request.user)
+
+        year = self.request.GET.get("year")
+        month = self.request.GET.get("month")
+        logement_id = self.request.GET.get("logement_id")
+
+        if logement_id == "" or logement_id is None:
+            logement_id = None
+
+        all_years = (
+            Reservation.objects.filter(Q(statut="confirmee") | Q(statut="terminee"))
+            .annotate(year=ExtractYear("start"))
+            .values_list("year", flat=True)
+            .distinct()
+        )
+        selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
+
+        all_months = (
+            Reservation.objects.filter(Q(statut="confirmee") | Q(statut="terminee"))
+            .annotate(month=ExtractMonth("start"))
+            .values_list("month", flat=True)
+            .distinct()
+        )
+        selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
+
+        reservations = get_valid_reservations_for_admin(self.request.user, logement_id, year, month)
+
+        brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
+        total_refunds = reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00")
+        platform_earnings = reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"] or Decimal("0.00")
+        total_payment_fee = reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00")
+        tax = reservations.aggregate(Sum("tax"))["tax__sum"] or Decimal("0.00")
+        total_revenu = brut_revenue - total_refunds - platform_earnings - total_payment_fee - tax
+
+        total_reservations = reservations.count()
+        average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
+
+        context.update(
+            {
+                "logement_id": logement_id,
+                "logements": logements,
+                "selected_year": selected_year,
+                "available_years": sorted(all_years),
+                "selected_month": selected_month,
+                "available_months": sorted(all_months),
+                "total_revenue": total_revenu,
+                "platform_earnings": platform_earnings or Decimal("0.00"),
+                "tax": tax,
+                "total_payment_fee": total_payment_fee,
+                "total_deposits": reservations.aggregate(Sum("amount_charged"))["amount_charged__sum"]
+                or Decimal("0.00"),
+                "total_refunds": total_refunds,
+                "total_reservations": total_reservations,
+                "average_price": average_price,
+                "reservations": reservations.order_by("-date_reservation")[:100],
+            }
+        )
+
+        # Group and aggregate by month
+        monthly_data = (
+            Reservation.objects.filter(
+                Q(statut="confirmee") | Q(statut="terminee"),
+                start__year=selected_year,
+            )
+            .annotate(month=TruncMonth("start"))
+            .values("month")
+            .annotate(
+                brut=Sum("price"),
+                refunds=Sum("refund_amount"),
+                fees=Sum("payment_fee"),
+                platform=Sum("platform_fee"),
+                tax=Sum("tax"),
+            )
+            .order_by("month")
+        )
+
+        monthly_chart = defaultdict(
+            lambda: {
+                "revenue": Decimal("0.00"),
+                "refunds": Decimal("0.00"),
+                "payment_fee": Decimal("0.00"),
+                "platform_fee": Decimal("0.00"),
+                "tax": Decimal("0.00"),
+            }
+        )
+
+        for item in monthly_data:
+            month_key = item["month"].month
+            monthly_chart[month_key]["revenue"] = (
+                (item["brut"] or Decimal("0.00"))
+                - (item["refunds"] or Decimal("0.00"))
+                - (item["fees"] or Decimal("0.00"))
+                - (item["platform"] or Decimal("0.00"))
+                - (item["tax"] or Decimal("0.00"))
+            )
+            monthly_chart[month_key]["refunds"] = item["refunds"] or Decimal("0.00")
+            monthly_chart[month_key]["payment_fee"] = item["fees"] or Decimal("0.00")
+            monthly_chart[month_key]["platform_fee"] = item["platform"] or Decimal("0.00")
+            monthly_chart[month_key]["tax"] = item["tax"] or Decimal("0.00")
+
+        chart_labels = [cal.month_abbr[m] for m in range(1, 13)]
+        revenue_data = [float(monthly_chart[m]["revenue"]) for m in range(1, 13)]
+        refunds_data = [float(monthly_chart[m]["refunds"]) for m in range(1, 13)]
+        payment_fee_data = [float(monthly_chart[m]["payment_fee"]) for m in range(1, 13)]
+        platform_fee_data = [float(monthly_chart[m]["platform_fee"]) for m in range(1, 13)]
+        tax_data = [float(monthly_chart[m]["tax"]) for m in range(1, 13)]
+
+        context.update(
+            {
+                "chart_labels": chart_labels,
+                "revenue_data": revenue_data,
+                "refunds_data": refunds_data,
+                "payment_fee_data": payment_fee_data,
+                "platform_fee_data": platform_fee_data,
+                "tax_data": tax_data,
+            }
+        )
 
         return context

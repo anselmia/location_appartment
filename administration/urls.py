@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from rest_framework.routers import DefaultRouter
 from .views import DailyPriceViewSet
-from .views import FinancialDashboardView
+from .views import FinancialDashboardView, RevenueView
 
 app_name = "administration"
 
@@ -54,7 +54,7 @@ urlpatterns = [
         views.manage_discounts,
         name="manage_discounts",
     ),
-    path("revenu/", views.economie_view, name="revenu"),
+    path("revenu/", RevenueView.as_view(), name="revenu"),
     path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
     path("logs/", views.log_viewer, name="log_viewer"),
     path("api/log-js/", views.js_logger, name="js_logger"),

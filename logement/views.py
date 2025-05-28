@@ -22,7 +22,6 @@ from logement.services.reservation_service import (
     create_or_update_reservation,
     validate_reservation_inputs,
     cancel_and_refund_reservation,
-    get_available_logement_in_period,
 )
 from logement.services.logement import filter_logements
 

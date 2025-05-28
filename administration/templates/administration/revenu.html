@@ -2,86 +2,111 @@
 {% load static %}
 {% load extra_tags %}
 {% block content %}
-<div class="container mt-5">
-  <h2 class="text-center mb-4">📈 Revenus</h2>
-
-  <!-- Filters -->
-  <form method="post" class="mb-4">
-    {% csrf_token %}
-    <div class="row align-items-end">
-      <div class="col-md-6">
-        <label for="logement-select">Logement :</label>
-        <select id="logement-select" name="logement_id" class="form-control" onchange="this.form.submit()">
-          {% for loge in logements %}
-            <option value="{{ loge.id }}" {% if loge.id == logement_id %}selected{% endif %}>
-              {{ loge.name }}
-            </option>
-          {% endfor %}
-        </select>
+  <div class="container mt-5" id="revenue-page">
+    <h2 class="text-center mb-5 fw-bold">📈 Tableau de Revenu</h2>
+    <!-- Filters Section -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body row g-3 align-items-center">
+        <!-- Logement Filter -->
+        <div class="col-md-6">
+          <form method="get" class="d-flex align-items-center gap-3">
+            <label for="logement-select" class="fw-semibold text-muted mb-0">Logement :</label>
+            <select id="logement-select"
+                    name="logement_id"
+                    class="form-select w-auto ml-3"
+                    onchange="this.form.submit()">
+              <option value="" {% if not logement_id %}selected{% endif %}>Tous les logements</option>
+              {% for loge in logements %}
+                <option value="{{ loge.id }}"
+                        {% if loge.id|stringformat:"s" == logement_id|stringformat:"s" %}selected{% endif %}>
+                  {{ loge.name }}
+                </option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="year" value="{{ selected_year }}">
+            <input type="hidden" name="month" value="{{ selected_month }}">
+          </form>
+        </div>
+        <!-- Year Filter -->
+        <div class="col-md-3">
+          <form method="get">
+            <label for="year" class="fw-semibold text-muted mb-1">Année :</label>
+            <select name="year"
+                    id="year"
+                    class="form-select"
+                    onchange="this.form.submit()">
+              {% for y in available_years %}
+                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+        <!-- Month Filter -->
+        <div class="col-md-3">
+          <form method="get">
+            <label for="month" class="fw-semibold text-muted mb-1">Mois :</label>
+            <select name="month"
+                    id="month"
+                    class="form-select"
+                    onchange="this.form.submit()">
+              {% for m in available_months %}
+                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
       </div>
     </div>
-  </form>
-
-  <div class="card shadow-sm mb-4">
-        <div class="card-body row align-items-end">            
-            <div class="col-md-6">
-                <label for="year-select">Année :</label>
-                <select id="year-select" class="form-control">
-                {% for y in years %}
-                    <option value="{{ y }}">{{ y }}</option>
-                {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-6">
-                    <label for="month-select">Mois :</label>
-                    <select id="month-select" class="form-control">
-                        <option value="all">Tous les mois</option>
-                        {% for month in 1|to_month_range %}
-                            <option value="{{ month }}">{{ month|get_month_name }}</option>
-                        {% endfor %}
-                    </select>
-            </div>
-        </div>
-  </div>
-
-  <!-- Economic Summary -->
-  <div class="card shadow-lg mb-4">
-    <div class="card-body">
-        <h4 class="mb-3">Résumé Économique</h4>
+    <!-- Economic Summary -->
+    <div class="card shadow-lg mb-5">
+      <div class="card-body">
+        <h4 class="fw-semibold mb-4">📊 Résumé Économique</h4>
         <div class="row text-center">
-            <div class="col-md-4">
-                <h5>Total Revenus</h5>
-                <p class="text-success display-6" id="total-revenue">€0.00</p>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="p-3 border rounded bg-light">
+              <h6 class="text-muted mb-2">Revenu Brut</h6>
+              <p class="text-success display-6 fw-bold" id="total-revenue">€0.00</p>
             </div>
-            <div class="col-md-4">
-                <h5>Taxes Collectées</h5>
-                <p class="text-danger display-6" id="total-taxes">€0.00</p>
+          </div>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="p-3 border rounded bg-light">
+              <h6 class="text-muted mb-2">Taxes Collectées</h6>
+              <p class="text-danger display-6 fw-bold" id="total-taxes">€0.00</p>
             </div>
-            <div class="col-md-4">
-                <h5>Bénéfice Net</h5>
-                <p class="text-primary display-6" id="net-profit">€0.00</p>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 border rounded bg-light">
+              <h6 class="text-muted mb-2">Bénéfice Net</h6>
+              <p class="text-primary display-6 fw-bold" id="net-profit">€0.00</p>
             </div>
+          </div>
         </div>
+      </div>
+    </div>
+    <!-- Error Message -->
+    <div id="economy-error" class="alert alert-danger d-none"></div>
+    <!-- Chart Section -->
+    <div class="card shadow-lg mb-5">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold">📅 Graphique des Revenus Mensuels</h5>
+          <small class="text-muted">Vue empilée : revenu net, frais, remboursements</small>
+        </div>
+        <canvas id="economy-chart" height="100"></canvas>
+      </div>
     </div>
   </div>
-
-  <div id="economy-error" class="alert alert-danger" style="display:none;"></div>
-
-  <!-- Monthly Chart -->
-  <div class="card shadow-lg">
-        <div class="card-body">
-            <h5>Graphique des Revenus Mensuels</h5>
-            <canvas id="economy-chart" height="100"></canvas>
-        </div>
-  </div>
-</div>
-
 {% endblock %}
-
 {% block extra_js %}
-<script>
-    const logementId = {{ logement_id }};
-    const csrfToken = "{{ csrf_token }}";
-</script>
-<script src="{% static 'administration/js/revenu.js' %}"></script>
+  <script>
+  const logementId = {{ logement_id|default:"null" }};
+  const labels = {{ chart_labels|safe }};
+  const totalRevenu = {{ revenue_data|safe }};
+  const totalRefunds = {{ refunds_data|safe }};
+  const platformEarnings = {{ platform_fee_data|safe }};
+  const paymentFees = {{ payment_fee_data|safe }};
+  const taxes = {{ tax_data|safe }};
+  const csrfToken = "{{ csrf_token }}";
+  </script>
+  <script src="{% static 'administration/js/revenu.js' %}"></script>
 {% endblock %}

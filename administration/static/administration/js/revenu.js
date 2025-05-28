@@ -1,103 +1,104 @@
-function showError(message) {
-    const errorBox = document.getElementById("economy-error");
-    if (errorBox) {
-        errorBox.textContent = message;
-        errorBox.style.display = "block";
-    } else {
-        alert(message); // fallback
-    }
-}
+document.addEventListener("DOMContentLoaded", function () {
+  const totalRevenueElem = document.getElementById("total-revenue");
+  const totalTaxesElem = document.getElementById("total-taxes");
+  const netProfitElem = document.getElementById("net-profit");
+  const economyError = document.getElementById("economy-error");
+  const economyChartElem = document.getElementById("economy-chart");
 
-async function fetchEconomyData(year, month) {
-    try {
-        const res = await fetchWithLoader(`/admin-area/api/revenu/${logementId}/?year=${year}&month=${month}`);
+  try {
+    // Compute totals
+    const sum = (arr) => arr.reduce((a, b) => a + (parseFloat(b) || 0), 0);
+    const totalRevenue = sum(totalRevenu);
+    const totalTax = sum(taxes);
+    const refunds = sum(totalRefunds);
+    const platform = sum(platformEarnings);
+    const payment = sum(paymentFees);
+    const netProfit = totalRevenue - refunds - platform - payment - totalTax;
 
-        if (!res.ok) {
-            throw new Error(`Erreur serveur: ${res.status}`);
-        }
+    totalRevenueElem.textContent = `€${totalRevenue.toFixed(2)}`;
+    totalTaxesElem.textContent = `€${totalTax.toFixed(2)}`;
+    netProfitElem.textContent = `€${netProfit.toFixed(2)}`;
 
-        const data = await res.json();
-
-        if (!data || typeof data !== 'object') {
-            throw new Error("Réponse invalide.");
-        }
-
-        return data;
-
-    } catch (error) {
-        logToServer("error", "Erreur lors du chargement des données économiques : " + error.message, {
-            logementId: logementId,
-            year: year,
-            month: month
-        });
-        showError("Impossible de charger les données économiques.");
-        throw error; // propagate if needed
-    }
-}
-
-function updateSummary(data) {
-    document.getElementById('total-revenue').textContent = `€${data.total_revenue.toFixed(2)}`;
-    document.getElementById('total-taxes').textContent = `€${data.total_taxes.toFixed(2)}`;
-    document.getElementById('net-profit').textContent = `€${data.net_profit.toFixed(2)}`;
-}
-
-let chart;
-
-function renderChart(labels, revenues) {
-    if (chart) chart.destroy();
-    const ctx = document.getElementById('economy-chart');
-    chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Revenus mensuels',
-                data: revenues,
-                backgroundColor: '#3b82f6'
-            }]
+    const ctx = economyChartElem.getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Revenu Net",
+            data: totalRevenu,
+            backgroundColor: "#198754",
+            stack: "stack1",
+          },
+          {
+            label: "Remboursements",
+            data: totalRefunds,
+            backgroundColor: "#dc3545",
+            stack: "stack1",
+          },
+          {
+            label: "Frais Plateforme",
+            data: platformEarnings,
+            backgroundColor: "#6c757d",
+            stack: "stack1",
+          },
+          {
+            label: "Frais de Paiement",
+            data: paymentFees,
+            backgroundColor: "#0d6efd",
+            stack: "stack1",
+          },
+          {
+            label: "Taxes",
+            data: taxes,
+            backgroundColor: "#f39c12",
+            stack: "stack1",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            mode: "index",
+            intersect: false,
+          },
+          legend: {
+            position: "top",
+          },
+          title: {
+            display: true,
+            text: "Vue mensuelle empilée des revenus (Net, Remboursements, Taxes & Frais)",
+          },
         },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => `€${value}`,
+            },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.dataset.label}: €${context.raw.toFixed(2)}`;
+            },
+          },
+          mode: "index",
+          intersect: false,
+        },
+      },
     });
-}
-
-async function refreshData() {
-    const year = document.getElementById('year-select').value;
-    const month = document.getElementById('month-select').value;
-
-    try {
-        const year = document.getElementById('year-select').value;
-        const month = document.getElementById('month-select').value;
-
-        const data = await fetchEconomyData(year, month);
-        logToServer("info", "Chargement des données économiques réussi", {
-            logementId: logementId,
-            year: year,
-            month: month,
-            total_revenue: data.total_revenue,
-            net_profit: data.net_profit
-        });
-
-        updateSummary(data);
-        renderChart(data.chart_labels, data.chart_values);
-
-        document.getElementById("economy-error").style.display = "none"; // hide if shown previously
-    } catch (err) {
-        logToServer("error", "Erreur lors du Chargement des données économiques:" + err.message, {
-            logementId: logementId,
-            year: year,
-            month: month,
-        });
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('year-select').addEventListener('change', refreshData);
-    document.getElementById('month-select').addEventListener('change', refreshData);
-    refreshData(); // initial load
+  } catch (error) {
+    economyError.textContent =
+      "Erreur lors du chargement des données. Veuillez réessayer.";
+    economyError.style.display = "block";
+    console.error("Revenue Chart Error:", error);
+  }
 });
