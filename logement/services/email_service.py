@@ -153,3 +153,31 @@ def send_mail_payment_link(reservation, session):
         logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
     except Exception as e:
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
+def send_mail_on_payment_failure(logement, reservation, user):
+    try:
+        email_context = {
+            "reservation": reservation,
+            "logement": logement,
+            "user": user,
+        }
+
+        # Plain text email body
+        message = render_to_string("email/payment_failure.txt", email_context)
+
+        # Subject line
+        subject = f"❌ Échec de paiement pour votre réservation {reservation.code} - {logement.name}"
+
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"📧 Payment failure email sent to {user.email} for reservation {reservation.code}.")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
