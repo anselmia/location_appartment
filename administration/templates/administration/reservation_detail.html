@@ -1,251 +1,238 @@
-{% extends 'base.html' %} {% load static %} {% block extrahead %} {{ block.super
-}}
-<link
-  rel="stylesheet"
-  href="{% static 'administration/css/reservation_detail.css' %}" />
-{% endblock %} {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-3 ms-2">
-      <a
-        href="{% url 'administration:reservation_dashboard' %}"
-        class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Retour
-      </a>
-      <h2 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation</h2>
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+  {{ block.super
+  }}
+  <link rel="stylesheet"
+        href="{% static 'administration/css/reservation_detail.css' %}" />
+{% endblock %}
+{% block content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex align-items-center gap-3 ms-2">
+        <a href="{% url 'administration:reservation_dashboard' %}"
+           class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Retour
+        </a>
+        <h2 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation</h2>
+      </div>
+      {% if reservation.statut != "annulee" %}
+        <form method="post"
+              action="{% url 'administration:cancel_reservation' reservation.code %}"
+              onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ?');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-x-circle"></i> Annuler
+          </button>
+        </form>
+      {% endif %}
     </div>
-    {% if reservation.statut != "annulee" %}
-    <form
-      method="post"
-      action="{% url 'administration:cancel_reservation' reservation.code %}"
-      onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ?');">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-outline-danger btn-sm">
-        <i class="bi bi-x-circle"></i> Annuler
-      </button>
-    </form>
-    {% endif %}
-  </div>
-
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <div class="row gy-4">
-        <!-- Infos Générales -->
-        <div class="col-md-6">
-          <h5 class="text-muted mb-3 border-bottom pb-1">
-            Informations générales
-          </h5>
-          <dl class="row">
-            <dt class="col-sm-5">Logement</dt>
-            <dd class="col-sm-7">{{ reservation.logement.name }}</dd>
-
-            <dt class="col-sm-5">Voyageur</dt>
-            <dd class="col-sm-7">
-              {{ reservation.user.name }} {{ reservation.user.last_name }}
-            </dd>
-
-            <dt class="col-sm-5">Stripe Customer ID</dt>
-            <dd class="col-sm-7">{{ reservation.user.stripe_customer_id }}</dd>
-
-            <dt class="col-sm-5">Arrivée</dt>
-            <dd class="col-sm-7">{{ reservation.start|date:"d M Y" }}</dd>
-
-            <dt class="col-sm-5">Départ</dt>
-            <dd class="col-sm-7">{{ reservation.end|date:"d M Y" }}</dd>
-
-            <dt class="col-sm-5">Date de réservation</dt>
-            <dd class="col-sm-7">
-              {{ reservation.date_reservation|date:"d M Y H:i" }}
-            </dd>
-
-            <dt class="col-sm-5">Nombre d’invités</dt>
-            <dd class="col-sm-7">{{ reservation.guest }}</dd>
-          </dl>
-        </div>
-
-        <!-- État -->
-        <div class="col-md-6">
-          <h5 class="text-muted mb-3 border-bottom pb-1">
-            État de la réservation
-          </h5>
-          <dl class="row">
-            <dt class="col-sm-5">Statut</dt>
-            <dd class="col-sm-7">
-              {% if reservation.statut == "confirmee" %}
-              <span class="badge bg-success">Confirmée</span>
-              {% elif reservation.statut == "en_attente" %}
-              <span class="badge bg-warning text-dark">En attente</span>
-              {% elif reservation.statut == "annulee" %}
-              <span class="badge bg-danger">Annulée</span>
-              {% elif reservation.statut == "terminee" %}
-              <span class="badge bg-secondary">Terminée</span>
-              {% else %} {{ reservation.get_statut_display }} {% endif %}
-            </dd>
-
-            <dt class="col-sm-5">État actuel</dt>
-            <dd class="col-sm-7">
-              {% if reservation.ongoing %}
-              <span class="badge bg-warning text-dark">En cours</span>
-              {% elif reservation.ended %}
-              <span class="badge bg-secondary">Terminée</span>
-              {% elif reservation.coming %}
-              <span class="badge bg-info text-dark">À venir</span>
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row gy-4">
+          <!-- Infos Générales -->
+          <div class="col-md-6">
+            <h5 class="text-muted mb-3 border-bottom pb-1">Informations générales</h5>
+            <dl class="row">
+              <dt class="col-sm-5">Logement</dt>
+              <dd class="col-sm-7">
+                {{ reservation.logement.name }}
+              </dd>
+              <dt class="col-sm-5">Voyageur</dt>
+              <dd class="col-sm-7">
+                {{ reservation.user.name }} {{ reservation.user.last_name }}
+              </dd>
+              <dt class="col-sm-5">Stripe Customer ID</dt>
+              <dd class="col-sm-7">
+                {{ reservation.user.stripe_customer_id }}
+              </dd>
+              <dt class="col-sm-5">Arrivée</dt>
+              <dd class="col-sm-7">
+                {{ reservation.start|date:"d M Y" }}
+              </dd>
+              <dt class="col-sm-5">Départ</dt>
+              <dd class="col-sm-7">
+                {{ reservation.end|date:"d M Y" }}
+              </dd>
+              <dt class="col-sm-5">Date de réservation</dt>
+              <dd class="col-sm-7">
+                {{ reservation.date_reservation|date:"d M Y H:i" }}
+              </dd>
+              <dt class="col-sm-5">Nombre d’invités</dt>
+              <dd class="col-sm-7">
+                {{ reservation.guest }}
+              </dd>
+            </dl>
+          </div>
+          <!-- État -->
+          <div class="col-md-6">
+            <h5 class="text-muted mb-3 border-bottom pb-1">État de la réservation</h5>
+            <dl class="row">
+              <dt class="col-sm-5">Statut</dt>
+              <dd class="col-sm-7">
+                {% if reservation.statut == "confirmee" %}
+                  <span class="badge bg-success">Confirmée</span>
+                {% elif reservation.statut == "en_attente" %}
+                  <span class="badge bg-warning text-dark">En attente</span>
+                {% elif reservation.statut == "annulee" %}
+                  <span class="badge bg-danger">Annulée</span>
+                {% elif reservation.statut == "terminee" %}
+                  <span class="badge bg-secondary">Terminée</span>
+                {% else %}
+                  {{ reservation.get_statut_display }}
+                {% endif %}
+              </dd>
+              <dt class="col-sm-5">État actuel</dt>
+              <dd class="col-sm-7">
+                {% if reservation.ongoing %}
+                  <span class="badge bg-warning text-dark">En cours</span>
+                {% elif reservation.ended %}
+                  <span class="badge bg-secondary">Terminée</span>
+                {% elif reservation.coming %}
+                  <span class="badge bg-info text-dark">À venir</span>
+                {% else %}
+                  <span class="badge bg-light text-dark">Inconnu</span>
+                {% endif %}
+              </dd>
+            </dl>
+          </div>
+          <!-- Paiement -->
+          <div class="col-md-6">
+            <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
+            <dl class="row">
+              <dt class="col-sm-5">Prix</dt>
+              <dd class="col-sm-7">
+                {{ reservation.price|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5">Taxes</dt>
+              <dd class="col-sm-7">
+                {{ reservation.tax|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5">PaymentIntent</dt>
+              <dd class="col-sm-7">
+                {{ reservation.stripe_payment_intent_id|default:"—" }}
+              </dd>
+              <dt class="col-sm-5">Méthode Stripe</dt>
+              <dd class="col-sm-7">
+                {{ reservation.stripe_saved_payment_method_id|default:"—" }}
+              </dd>
+              <dt class="col-sm-5">Remboursée ?</dt>
+              <dd class="col-sm-7">
+                {% if reservation.refunded %}
+                  <span class="badge bg-success">Oui</span>
+                {% else %}
+                  <span class="badge bg-secondary">Non</span>
+                {% endif %}
+              </dd>
+              <dt class="col-sm-5">Frais de Transaction (Non Remboursable)</dt>
+              <dd class="col-sm-7">
+                {{ reservation.payment_fee|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5">Frais d'annulation (Non Remboursable)</dt>
+              <dd class="col-sm-7">
+                {{ reservation.refund_charge|floatformat:2|default:"—" }} €
+              </dd>
+              {% if not reservation.refunded %}
+                <dt class="col-sm-5">Montant Remboursable</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
+                </dd>
+                <!-- Inline form for deposit charge -->
+                <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+                <dd class="col-sm-7">
+                  <form method="post"
+                        action="{% url 'administration:refund_reservation' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                        class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                  </form>
+                </dd>
+                <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
+                <dd class="col-sm-7">
+                  <form method="post"
+                        action="{% url 'administration:refund_partially_reservation' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                        class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <input type="number"
+                           name="refund_amount"
+                           class="form-control"
+                           min="0"
+                           max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                           step="0.01"
+                           placeholder="Montant (€)"
+                           required
+                           style="max-width: 200px" />
+                    <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                  </form>
+                </dd>
               {% else %}
-              <span class="badge bg-light text-dark">Inconnu</span>
+                <dt class="col-sm-5">Montant remboursé</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.refund_amount|floatformat:2 }} €
+                </dd>
+                <dt class="col-sm-5">Remboursement Stripe</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.stripe_refund_id|default:"—" }}
+                </dd>
               {% endif %}
-            </dd>
-          </dl>
-        </div>
-
-        <!-- Paiement -->
-        <div class="col-md-6">
-          <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
-          <dl class="row">
-            <dt class="col-sm-5">Prix</dt>
-            <dd class="col-sm-7">{{ reservation.price|floatformat:2 }} €</dd>
-
-            <dt class="col-sm-5">Taxes</dt>
-            <dd class="col-sm-7">{{ reservation.tax|floatformat:2 }} €</dd>
-
-            <dt class="col-sm-5">Frais de Transaction</dt>
-            <dd class="col-sm-7">
-              {{ reservation.payment_fee|floatformat:2 }} €
-            </dd>
-
-            <dt class="col-sm-5">PaymentIntent</dt>
-            <dd class="col-sm-7">
-              {{ reservation.stripe_payment_intent_id|default:"—" }}
-            </dd>
-
-            <dt class="col-sm-5">Méthode Stripe</dt>
-            <dd class="col-sm-7">
-              {{ reservation.stripe_saved_payment_method_id|default:"—" }}
-            </dd>
-
-            <dt class="col-sm-5">Remboursée ?</dt>
-            <dd class="col-sm-7">
-              {% if reservation.refunded %}
-              <span class="badge bg-success">Oui</span>
-              {% else %}
-              <span class="badge bg-secondary">Non</span>
-              {% endif %}
-            </dd>
-
-            {% if not reservation.refunded %}
-            <dt class="col-sm-5">Montant Remboursable</dt>
-            <dd class="col-sm-7">
-              {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
-            </dd>
-
-            <!-- Inline form for deposit charge -->
-            <dt class="col-sm-5 align-self-center">Remboursement total</dt>
-            <dd class="col-sm-7">
-              <form
-                method="post"
-                action="{% url 'administration:refund_reservation' reservation.code %}"
-                onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
-                class="d-flex align-items-center">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-warning">
-                  Remboursement complet
-                </button>
-              </form>
-            </dd>
-
-            <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
-            <dd class="col-sm-7">
-              <form
-                method="post"
-                action="{% url 'administration:refund_partially_reservation' reservation.code %}"
-                onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
-                class="d-flex align-items-center">
-                {% csrf_token %}
-                <input
-                  type="number"
-                  name="refund_amount"
-                  class="form-control"
-                  min="0"
-                  max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
-                  step="0.01"
-                  placeholder="Montant (€)"
-                  required
-                  style="max-width: 200px" />
-                <button type="submit" class="btn btn-outline-warning">
-                  Rembourser
-                </button>
-              </form>
-            </dd>
-            {% else %}
-            <dt class="col-sm-5">Montant remboursé</dt>
-            <dd class="col-sm-7">
-              {{ reservation.refund_amount|floatformat:2 }} €
-            </dd>
-
-            <dt class="col-sm-5">Remboursement Stripe</dt>
-            <dd class="col-sm-7">
-              {{ reservation.stripe_refund_id|default:"—" }}
-            </dd>
-            {% endif %}
-          </dl>
-        </div>
-
-        <!-- Caution -->
-        <div class="col-md-6">
+            </dl>
+          </div>
+          <!-- Caution -->
+          <div class="col-md-6">
             <h5 class="text-muted mb-3 border-bottom pb-1">Caution</h5>
             <dl class="row align-items-center">
-                <dt class="col-sm-5">Caution</dt>
-                <dd class="col-sm-7">{{ reservation.logement.caution|floatformat:2 }} €</dd>
-
-                <dt class="col-sm-5">Caution chargée ?</dt>
-                <dd class="col-sm-7">
+              <dt class="col-sm-5">Caution</dt>
+              <dd class="col-sm-7">
+                {{ reservation.logement.caution|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5">Caution chargée ?</dt>
+              <dd class="col-sm-7">
                 {% if reservation.caution_charged %}
-                    <span class="badge bg-success">Oui</span>
+                  <span class="badge bg-success">Oui</span>
                 {% else %}
-                    <span class="badge bg-secondary">Non</span>
+                  <span class="badge bg-secondary">Non</span>
                 {% endif %}
-                </dd>
-
-                {% if reservation.caution_charged %}
+              </dd>
+              {% if reservation.caution_charged %}
                 <dt class="col-sm-5">Montant chargé</dt>
                 <dd class="col-sm-7">
-                    {% if reservation.amount_charged %}
+                  {% if reservation.amount_charged %}
                     {{ reservation.amount_charged|floatformat:2 }} €
-                    {% else %}
+                  {% else %}
                     —
-                    {% endif %}
+                  {% endif %}
                 </dd>
-
                 <dt class="col-sm-5">PaymentIntent caution</dt>
                 <dd class="col-sm-7">
-                    {{ reservation.stripe_deposit_payment_intent_id|default:"—" }}
+                  {{ reservation.stripe_deposit_payment_intent_id|default:"—" }}
                 </dd>
-                {% else %}
+              {% else %}
                 <dt class="col-sm-5">Charger une caution</dt>
                 <dd class="col-sm-7">
-                    <form
-                    method="post"
-                    action="{% url 'administration:charge_deposit' reservation.code %}"
-                    onsubmit="return confirm('Confirmez-vous le prélèvement de cette caution ?');"
-                    class="d-flex align-items-center">
+                  <form method="post"
+                        action="{% url 'administration:charge_deposit' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le prélèvement de cette caution ?');"
+                        class="d-flex align-items-center">
                     {% csrf_token %}
-                    <input
-                        type="number"
-                        name="deposit_amount"
-                        class="form-control form-control-sm me-2"
-                        min="0"
-                        max="{{ reservation.chargeable_deposit|stringformat:'f' }}"
-                        step="0.01"
-                        placeholder="Montant (€)"
-                        required
-                        style="max-width: 120px" />
+                    <input type="number"
+                           name="deposit_amount"
+                           class="form-control form-control-sm me-2"
+                           min="0"
+                           max="{{ reservation.chargeable_deposit|stringformat:'f' }}"
+                           step="0.01"
+                           placeholder="Montant (€)"
+                           required
+                           style="max-width: 120px" />
                     <button type="submit" class="btn btn-sm btn-outline-primary">Charger</button>
-                    </form>
+                  </form>
                 </dd>
-                {% endif %}
+              {% endif %}
             </dl>
-            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

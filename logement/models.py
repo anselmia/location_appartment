@@ -460,10 +460,8 @@ class Reservation(models.Model):
         try:
             price = Decimal(self.price or "0.00")
             payment_fee = Decimal(self.payment_fee or "0.00")
-            refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
+            refund_charge = Decimal(self.refund_charge or "0.00")
             refund_amount = Decimal(self.refund_amount or "0.00")
-
-            refund_charge = price * refund_charge_rate
 
             refundable = price - payment_fee - refund_charge - refund_amount
             refundable = max(Decimal("0.00"), refundable)
@@ -478,6 +476,12 @@ class Reservation(models.Model):
             return Decimal("0.00")
 
     @property
+    def refund_charge(self):
+        price = Decimal(self.price or "0.00")
+        refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
+        return price * refund_charge_rate
+
+    @property
     def partial_refundable_amount(self):
         """
         Calculates the partial refundable amount to the guest.
@@ -488,11 +492,9 @@ class Reservation(models.Model):
         try:
             price = Decimal(self.price or "0.00")
             payment_fee = Decimal(self.payment_fee or "0.00")
-            refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
+            refund_charge = Decimal(self.refund_charge or "0.00")
             refund_amount = Decimal(self.refund_amount or "0.00")
             platform_fee = Decimal(self.platform_fee or "0.00")
-
-            refund_charge = price * refund_charge_rate
 
             refundable = price - payment_fee - refund_charge - refund_amount - platform_fee
             refundable = max(Decimal("0.00"), refundable)
