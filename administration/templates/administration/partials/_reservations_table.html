@@ -27,7 +27,7 @@
           <td>{{ res.amount_charged|floatformat:2 }} €</td>
           <td>{{ res.refund_amount|floatformat:2 }} €</td>
           <td>{{ res.statut }}</td>
-          <td>{{ res.created|date:"Y-m-d" }}</td>
+          <td>{{ res.date_reservation|date:"Y-m-d" }}</td>
         </tr>
       {% empty %}
         <tr>

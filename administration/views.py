@@ -1001,7 +1001,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
             reservations.filter(date_reservation__year=selected_year)
             .annotate(month=ExtractMonth("date_reservation"))
             .values("month")
-            .annotate(total=Sum("price"))
+            .annotate(total=Sum("platform_fee"))
             .order_by("month")
         )
 
