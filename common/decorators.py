@@ -52,7 +52,7 @@ def user_has_logement(view_func):
         # Check if the user is either the owner or an admin of any Logement
         has_logement = Logement.objects.filter(
             Q(owner=request.user) | Q(admin=request.user)
-        ).exists()
+        ).exists() or request.user.is_owner or request.user.is_owner_admin
 
         if has_logement:
             return view_func(request, *args, **kwargs)
