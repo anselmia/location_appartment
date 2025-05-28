@@ -995,7 +995,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         )
         selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
 
-        reservations = Reservation.objects.filter(start__year=selected_year)
+        reservations = Reservation.objects.filter(start__year=selected_year).exclude(statut="en_attente")
 
         monthly_data = (
             reservations.filter(date_reservation__year=selected_year)
@@ -1004,6 +1004,13 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
             .annotate(total=Sum("price"))
             .order_by("month")
         )
+
+        brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
+        total_refunds = (reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"),)
+        total_revenu = brut_revenue - total_refunds
+
+        total_reservations = reservations.count()
+        average_price = brut_revenue / total_reservations
 
         # Fill all 12 months, even if 0
         monthly_revenue = [0] * 12
@@ -1016,14 +1023,15 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
                 "selected_year": selected_year,
                 "monthly_revenue": monthly_revenue,
                 "available_years": sorted(all_years),
-                "total_revenue": reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00"),
-                "platform_earnings": reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"] or Decimal("0.00"),
+                "total_revenue": total_revenu,
+                "platform_earnings": reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"]
+                or Decimal("0.00"),
                 "total_payment_fee": reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00"),
                 "total_deposits": reservations.aggregate(Sum("amount_charged"))["amount_charged__sum"]
                 or Decimal("0.00"),
-                "total_refunds": reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"),
-                "total_reservations": reservations.count(),
-                "average_price": reservations.aggregate(Avg("price"))["price__avg"] or Decimal("0.00"),
+                "total_refunds": total_refunds,
+                "total_reservations": total_reservations,
+                "average_price": average_price,
                 "reservations": reservations.order_by("-date_reservation")[:100],
             }
         )
