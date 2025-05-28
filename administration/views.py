@@ -1030,8 +1030,10 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
 
         try:
             balance = stripe.Balance.retrieve()
-            context["stripe_balance"] = balance
+            context["stripe_balance_available"] = balance["available"][0]["amount"] / 100
+            context["stripe_balance_pending"] = balance["pending"][0]["amount"] / 100
         except Exception:
-            context["stripe_balance"] = None
+            context["stripe_balance_available"] = None
+            context["stripe_balance_pending"] = None
 
         return context
