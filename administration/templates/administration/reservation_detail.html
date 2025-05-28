@@ -165,7 +165,7 @@
                   name="refund_amount"
                   class="form-control"
                   min="0"
-                  max="{{ reservation.refundable_amount|stringformat:'f' }}"
+                  max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
                   step="0.01"
                   placeholder="Montant (€)"
                   required

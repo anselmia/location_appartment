@@ -152,13 +152,13 @@ def create_stripe_customer_if_not_exists(user, request):
         raise
 
 
-def refund_payment(reservation, amount_cents=None):
+def refund_payment(reservation, refund="full", amount_cents=None):
     try:
         logger.info(f"💸 Initiating refund for reservation {reservation.code}")
 
         params = {
             "payment_intent": reservation.stripe_payment_intent_id,
-            "metadata": {"code": reservation.code},
+            "metadata": {"code": reservation.code, "refund": refund},
         }
         if amount_cents:
             params["amount"] = int(amount_cents)
@@ -178,12 +178,18 @@ def refund_payment(reservation, amount_cents=None):
 
 def handle_charge_refunded(data: StripeChargeEventData):
     from logement.models import Reservation
+
     reservation_code = None
     try:
         metadata = data.object.metadata or {}
         reservation_code = metadata.get("code")
         if not reservation_code:
             logger.warning("⚠️ No reservation code found in the refund event metadata.")
+            return
+
+        refund = metadata.get("refund")
+        if not refund:
+            logger.warning("⚠️ No refound type found in the refund event metadata.")
             return
 
         logger.info(f"🔔 Handling charge.refunded for reservation {reservation_code}")
@@ -219,7 +225,9 @@ def handle_charge_refunded(data: StripeChargeEventData):
         reservation.refunded = True
         reservation.refund_amount = current_refund + refunded_amount
         reservation.stripe_refund_id = refund_id
-        reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id"])
+        if refund == "full":
+            reservation.plaform_fee = 0
+        reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "plaform_fee"])
 
         logger.info(
             f"💶 Refund ID: {refund_id}, Amount: {refunded_amount:.2f} {currency.upper()} recorded for reservation {reservation.code}"
@@ -301,6 +309,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
 
 def handle_payment_failed(data: StripePaymentIntentEventData):
     from logement.models import Reservation
+
     try:
         metadata = data.object.metadata or {}
         customer_id = data.customer
@@ -347,6 +356,7 @@ def handle_payment_failed(data: StripePaymentIntentEventData):
 
 def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
     from logement.models import Reservation
+
     reservation_code = None  # define early to use in exception messages
     try:
         # Extract metadata and payment intent ID from event
@@ -533,6 +543,7 @@ def charge_reservation(reservation):
 
 def handle_transfer_paid(data: StripeTransferEventData):
     from logement.models import Reservation
+
     try:
         transfer_id = data.object.id
         amount = Decimal(data.object.amount) / 100
@@ -561,6 +572,7 @@ def handle_transfer_paid(data: StripeTransferEventData):
 
 def handle_transfer_failed(data: StripeTransferEventData):
     from logement.models import Reservation
+
     try:
         transfer_id = data.object.id
         amount = Decimal(data.object.amount) / 100

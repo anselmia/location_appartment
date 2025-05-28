@@ -852,7 +852,7 @@ def refund_reservation(request, code):
         try:
             amount_in_cents = int(reservation.refundable_amount * 100)
 
-            refund = refund_payment(reservation, amount_in_cents)
+            refund = refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
 
             messages.success(
                 request,
@@ -889,7 +889,7 @@ def refund_partially_reservation(request, code):
             return redirect("administration:reservation_detail", code=code)
 
         amount_in_cents = int(refund_amount * 100)
-        refund = refund_payment(reservation, amount_in_cents)
+        refund = refund_payment(reservation, refund="partial", amount_cents=amount_in_cents)
 
         messages.success(
             request,
@@ -995,7 +995,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         )
         selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
 
-        reservations = Reservation.objects.filter(statut="confirmee", start__year=selected_year)
+        reservations = Reservation.objects.filter(start__year=selected_year)
 
         monthly_data = (
             reservations.filter(date_reservation__year=selected_year)

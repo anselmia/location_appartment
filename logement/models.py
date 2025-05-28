@@ -44,9 +44,7 @@ class EquipmentType(models.TextChoices):
 # models.py
 class Equipment(models.Model):
     name = models.CharField(max_length=150)
-    icon = models.CharField(
-        max_length=100, blank=True, help_text="FontAwesome icon class or image name"
-    )
+    icon = models.CharField(max_length=100, blank=True, help_text="FontAwesome icon class or image name")
     type = models.CharField(
         max_length=20,
         choices=EquipmentType.choices,
@@ -63,9 +61,7 @@ class Logement(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)
-    ville = models.ForeignKey(
-        City, related_name="city", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    ville = models.ForeignKey(City, related_name="city", on_delete=models.SET_NULL, null=True, blank=True)
     statut = models.CharField(
         max_length=20,
         choices=[
@@ -88,9 +84,7 @@ class Logement(models.Model):
     max_traveler = models.IntegerField(default=4)
     nominal_traveler = models.IntegerField(default=4)
     caution = models.IntegerField(default=0)
-    fee_per_extra_traveler = models.DecimalField(
-        max_digits=6, decimal_places=2, default=0
-    )
+    fee_per_extra_traveler = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=49)
     tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=0)
@@ -119,9 +113,7 @@ class Logement(models.Model):
         blank=True,
     )
     # Add a many-to-many field for admins
-    admins = models.ManyToManyField(
-        CustomUser, related_name="admin_logements", blank=True
-    )
+    admins = models.ManyToManyField(CustomUser, related_name="admin_logements", blank=True)
 
     airbnb_link = models.URLField(blank=True, null=True)
     airbnb_calendar_link = models.URLField(blank=True, null=True)
@@ -177,9 +169,7 @@ class Logement(models.Model):
 
 
 class Price(models.Model):
-    logement = models.ForeignKey(
-        Logement, related_name="night_price", on_delete=models.CASCADE
-    )
+    logement = models.ForeignKey(Logement, related_name="night_price", on_delete=models.CASCADE)
     date = models.DateField()
     value = models.TextField()
 
@@ -199,25 +189,15 @@ class DiscountType(models.Model):
 
 
 class Discount(models.Model):
-    logement = models.ForeignKey(
-        Logement, on_delete=models.CASCADE, related_name="discounts", null=False
-    )
-    discount_type = models.ForeignKey(
-        DiscountType, on_delete=models.CASCADE, related_name="discounts", null=False
-    )
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE, related_name="discounts", null=False)
+    discount_type = models.ForeignKey(DiscountType, on_delete=models.CASCADE, related_name="discounts", null=False)
 
     name = models.CharField(max_length=100, default="")
-    value = models.DecimalField(
-        max_digits=5, decimal_places=2, help_text="En pourcentage"
-    )
+    value = models.DecimalField(max_digits=5, decimal_places=2, help_text="En pourcentage")
 
     # Conditions
-    min_nights = models.IntegerField(
-        null=True, blank=True, help_text="Durée minimale du séjour"
-    )
-    exact_nights = models.IntegerField(
-        null=True, blank=True, help_text="Appliqué uniquement pour cette durée exacte"
-    )
+    min_nights = models.IntegerField(null=True, blank=True, help_text="Durée minimale du séjour")
+    exact_nights = models.IntegerField(null=True, blank=True, help_text="Appliqué uniquement pour cette durée exacte")
     days_before_min = models.IntegerField(
         null=True,
         blank=True,
@@ -228,12 +208,8 @@ class Discount(models.Model):
         blank=True,
         help_text="Réservation moins de X jours avant (last minute)",
     )
-    start_date = models.DateField(
-        null=True, blank=True, help_text="Date de début d'application"
-    )
-    end_date = models.DateField(
-        null=True, blank=True, help_text="Date de fin d'application"
-    )
+    start_date = models.DateField(null=True, blank=True, help_text="Date de début d'application")
+    end_date = models.DateField(null=True, blank=True, help_text="Date de fin d'application")
 
     is_active = models.BooleanField(default=True)
 
@@ -245,19 +221,11 @@ class Discount(models.Model):
 
 
 class ExtraCharge(models.Model):
-    logement = models.ForeignKey(
-        Logement, related_name="extra_charges", on_delete=models.CASCADE
-    )
+    logement = models.ForeignKey(Logement, related_name="extra_charges", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)  # E.g., Cleaning Fee, Extra Guest Fee
-    amount = models.DecimalField(
-        max_digits=6, decimal_places=2
-    )  # The cost of the extra charge
-    description = models.TextField(
-        blank=True, null=True
-    )  # Optional description of the charge
-    is_active = models.BooleanField(
-        default=True
-    )  # Option to deactivate charge if needed
+    amount = models.DecimalField(max_digits=6, decimal_places=2)  # The cost of the extra charge
+    description = models.TextField(blank=True, null=True)  # Optional description of the charge
+    is_active = models.BooleanField(default=True)  # Option to deactivate charge if needed
 
     def __str__(self):
         return f"{self.name} for {self.logement.name}"
@@ -268,9 +236,7 @@ class ExtraCharge(models.Model):
 
 
 class Room(models.Model):
-    logement = models.ForeignKey(
-        Logement, on_delete=models.CASCADE, related_name="rooms"
-    )
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE, related_name="rooms")
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -290,16 +256,10 @@ ROTATION_CHOICES = [
 
 
 class Photo(models.Model):
-    logement = models.ForeignKey(
-        Logement, on_delete=models.CASCADE, related_name="photos"
-    )
-    room = models.ForeignKey(
-        Room, on_delete=models.SET_NULL, null=True, blank=True, related_name="photos"
-    )
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE, related_name="photos")
+    room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True, related_name="photos")
     image = models.ImageField(upload_to=upload_to)
-    image_webp = models.ImageField(
-        upload_to="logement_images/webp/", blank=True, null=True, editable=False
-    )
+    image_webp = models.ImageField(upload_to="logement_images/webp/", blank=True, null=True, editable=False)
     order = models.IntegerField(default=0)  # Add the order field
     rotation = models.IntegerField(choices=ROTATION_CHOICES, default=0)
 
@@ -317,17 +277,13 @@ class Photo(models.Model):
         if not is_new:
             old = Photo.objects.get(pk=self.pk)
             old_rotation = old.rotation
-            old_image_path = (
-                old.image.path
-                if old.image and old.image.name != self.image.name
-                else None
-            )
+            old_image_path = old.image.path if old.image and old.image.name != self.image.name else None
 
         # If the photo is being created, set initial order
         if is_new:
-            max_order = Photo.objects.filter(logement=self.logement).aggregate(
-                max_order=models.Max("order")
-            )["max_order"]
+            max_order = Photo.objects.filter(logement=self.logement).aggregate(max_order=models.Max("order"))[
+                "max_order"
+            ]
             self.order = (max_order or 0) + 1
 
         super().save(*args, **kwargs)  # Save original image to get path
@@ -353,17 +309,13 @@ class Photo(models.Model):
                 img.save(buffer, format="WEBP", quality=85)
                 buffer.seek(0)
 
-                filename = (
-                    os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
-                )
+                filename = os.path.splitext(os.path.basename(self.image.name))[0] + ".webp"
                 self.image_webp.save(filename, ContentFile(buffer.read()), save=False)
                 super().save(update_fields=["image_webp"])  # Save only webp
             except Exception as e:
                 import logging
 
-                logging.getLogger(__name__).exception(
-                    f"Error generating WebP for photo {self.pk}: {e}"
-                )
+                logging.getLogger(__name__).exception(f"Error generating WebP for photo {self.pk}: {e}")
 
     def assign_room(self, room):
         self.room = room
@@ -444,17 +396,13 @@ class Reservation(models.Model):
     payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     plaform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
-    stripe_saved_payment_method_id = models.CharField(
-        max_length=255, null=True, blank=True
-    )
+    stripe_saved_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     refunded = models.BooleanField(default=False)
     refund_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     stripe_refund_id = models.CharField(max_length=100, blank=True, null=True)
     caution_charged = models.BooleanField(default=False)
     amount_charged = models.DecimalField(max_digits=7, decimal_places=2, default=0)
-    stripe_deposit_payment_intent_id = models.CharField(
-        max_length=100, blank=True, null=True
-    )
+    stripe_deposit_payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
 
     stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
     transferred = models.BooleanField(default=False)
@@ -524,15 +472,43 @@ class Reservation(models.Model):
 
         except Exception as e:
             import logging
+
+            logger = logging.getLogger(__name__)
+            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            return Decimal("0.00")
+
+    @property
+    def partial_refundable_amount(self):
+        """
+        Calculates the partial refundable amount to the guest.
+
+        Formula:
+        refundable = price - payment_fee - refund_charge_percent - already_refunded - platform_fee
+        """
+        try:
+            price = Decimal(self.price or "0.00")
+            payment_fee = Decimal(self.payment_fee or "0.00")
+            refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
+            refund_amount = Decimal(self.refund_amount or "0.00")
+            platform_fee = Decimal(self.platform_fee or "0.00")
+
+            refund_charge = price * refund_charge_rate
+
+            refundable = price - payment_fee - refund_charge - refund_amount - platform_fee
+            refundable = max(Decimal("0.00"), refundable)
+
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        except Exception as e:
+            import logging
+
             logger = logging.getLogger(__name__)
             logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
     def ended(self):
-        return self.statut == "terminee" or (
-            self.statut == "confirmee" and timezone.now().date() > self.end
-        )
+        return self.statut == "terminee" or (self.statut == "confirmee" and timezone.now().date() > self.end)
 
     @property
     def ongoing(self):
@@ -545,9 +521,7 @@ class Reservation(models.Model):
 
     @property
     def chargeable_deposit(self):
-        caution = Decimal(
-            self.logement.caution or 0
-        )  # Ensure it is treated as a Decimal
+        caution = Decimal(self.logement.caution or 0)  # Ensure it is treated as a Decimal
         charged = Decimal(self.amount_charged or 0)  # Ensure it is treated as a Decimal
         result = max(Decimal("0"), caution - charged)
 
@@ -574,6 +548,7 @@ class Reservation(models.Model):
 
         except Exception as e:
             import logging
+
             logger = logging.getLogger(__name__)
             logger.exception(f"Error calculating transferable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")

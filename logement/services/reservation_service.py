@@ -468,8 +468,8 @@ def cancel_and_refund_reservation(reservation):
         if reservation.refundable:
             if reservation.stripe_payment_intent_id:
                 try:
-                    refund_amount = reservation.refundable_amount * 100
-                    refund_payment(reservation, refund_amount)
+                    amount_in_cents = reservation.refundable_amount * 100
+                    refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
                     logger.info(
                         f"Refund successfully processed for reservation {reservation.code}."
                     )
