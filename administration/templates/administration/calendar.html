@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 {% block extrahead %}
-  {{ block.super
-  }}
+  {{ block.super }}
   <link rel="stylesheet"
         href="{% static 'administration/css/calendar.css' %}" />
-{% endblock %}
+{% endblock extrahead %}
 {% block content %}
   <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3 class="mb-0 fw-bold">📅 Calendrier des prix</h3>
-      <select id="logement-selector" class="form-select w-auto">
+    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-sm-between align-items-start align-items-sm-center mb-4">
+      <h3 class="mb-3 fw-bold">📅 Calendrier des prix</h3>
+      <select id="logement-selector" class="form-select w-100 w-sm-auto ml-3">
         {% for logement in logements %}
           <option
             value="{{ logement.id }}"
