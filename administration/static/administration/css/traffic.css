@@ -1,151 +1,151 @@
 /* traffic.css */
 .traffic-dashboard {
-    background-color: #f4f6f9;
-    padding: 2rem 1rem;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+  background-color: #f4f6f9;
+  padding: 2rem 1rem;
+  font-family: "Segoe UI", Roboto, sans-serif;
 }
 
 .traffic-dashboard .container {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    max-width: 1100px;
-    margin: auto;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  max-width: 1100px;
+  margin: auto;
 }
 
-.traffic-dashboard h2, 
+.traffic-dashboard h2,
 .traffic-dashboard h4 {
-    font-weight: 600;
-    color: #2c3e50;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .traffic-dashboard select.form-select {
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
 }
 
 .traffic-dashboard canvas#trafficChart {
-    background: #fff;
-    border-radius: 10px;
-    border: 1px solid #e3e3e3;
-    padding: 1rem;
-    margin-bottom: 2rem;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e3e3e3;
+  padding: 1rem;
+  margin-bottom: 2rem;
 }
 
 .traffic-dashboard .table-responsive {
-    border: 1px solid #dfe6ec;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #fff;
+  border: 1px solid #dfe6ec;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
 }
 
 .traffic-dashboard table {
-    margin: 0;
-    width: 100%;
+  margin: 0;
+  width: 100%;
 }
 
 .traffic-dashboard table th {
-    background-color: #f1f3f6;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #2d3436;
+  background-color: #f1f3f6;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2d3436;
 }
 
 .traffic-dashboard table td {
-    font-size: 0.85rem;
-    color: #555;
+  font-size: 0.85rem;
+  color: #555;
 }
 
 .traffic-dashboard .stat-box {
-    display: inline-block;
-    background-color: #ecf3fa;
-    border: 1px solid #cddbea;
-    border-radius: 10px;
-    padding: 1rem 1.5rem;
-    margin-right: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
+  display: inline-block;
+  background-color: #ecf3fa;
+  border: 1px solid #cddbea;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .traffic-dashboard .stat-box strong {
-    display: block;
-    font-size: 1.4rem;
-    color: #34495e;
+  display: block;
+  font-size: 1.4rem;
+  color: #34495e;
 }
 
 .traffic-dashboard .stat-box span {
-    font-size: 0.85rem;
-    color: #7f8c8d;
+  font-size: 0.85rem;
+  color: #7f8c8d;
 }
 
 .log-card {
-    background-color: #fff;
-    border: 1px solid #dee2e6;
-    border-left: 5px solid #3f51b5; /* bande couleur */
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    font-size: 0.9rem;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-left: 5px solid #3f51b5; /* bande couleur */
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.9rem;
 }
 
 .log-card strong {
-    color: #2c3e50;
+  color: #2c3e50;
 }
 
 .log-card .log-meta {
-    color: #7f8c8d;
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
 }
 
 .log-card .log-message {
-    font-size: 0.9rem;
-    color: #34495e;
+  font-size: 0.9rem;
+  color: #34495e;
 }
 
 /* Badge pour IP / niveau */
 .log-badge {
-    display: inline-block;
-    background-color: #ecf0f1;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    color: #555;
-    margin-right: 0.4rem;
+  display: inline-block;
+  background-color: #ecf0f1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #555;
+  margin-right: 0.4rem;
 }
 
 /* Couleurs par niveau */
 .log-badge.level-ERROR {
-    background-color: #ffdddd;
-    color: #c0392b;
+  background-color: #ffdddd;
+  color: #c0392b;
 }
 
 .log-badge.level-WARNING {
-    background-color: #fff3cd;
-    color: #856404;
+  background-color: #fff3cd;
+  color: #856404;
 }
 
 .log-badge.level-INFO {
-    background-color: #e3f2fd;
-    color: #0d6efd;
+  background-color: #e3f2fd;
+  color: #0d6efd;
 }
 
 @media (max-width: 768px) {
-    .table-log-view {
-        display: none;
-    }
-    .log-cards-wrapper {
-        display: block;
-    }
+  .table-log-view {
+    display: none;
+  }
+  .log-cards-wrapper {
+    display: block;
+  }
 }
 
 /* Desktop : masquer les cartes */
 @media (min-width: 769px) {
-    .log-cards-wrapper {
-        display: none;
-    }
+  .log-cards-wrapper {
+    display: none;
+  }
 }

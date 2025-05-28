@@ -1,35 +1,63 @@
-{% load extra_tags %}
+{% load humanize %}
 
-<div class="row my-4">
-  <div class="col-md-3">
-    <div class="card text-white bg-primary mb-3">
-      <div class="card-header">Total Revenue</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <h5 class="card-title">{{ total_revenue|floatformat:2  }} €</h5>
+        <h6 class="text-muted">💰 Chiffre d'affaires</h6>
+        <h4 class="fw-bold text-primary">{{ total_revenue|floatformat:2 }} €</h4>
+        <small class="text-muted">Réservations confirmées</small>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-white bg-success mb-3">
-      <div class="card-header">Platform Earnings</div>
+
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <h5 class="card-title">{{ platform_earnings|floatformat:2  }} €</h5>
+        <h6 class="text-muted">💼 Revenus plateforme</h6>
+        <h4 class="fw-bold text-success">{{ platform_earnings|floatformat:2 }} €</h4>
+        <small class="text-muted">Frais collectés</small>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-white bg-info mb-3">
-      <div class="card-header">Deposits Charged</div>
+
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <h5 class="card-title">{{ total_deposits|floatformat:2  }} €</h5>
+        <h6 class="text-muted">🔄 Remboursements</h6>
+        <h4 class="fw-bold text-danger">{{ total_refunds|floatformat:2 }} €</h4>
+        <small class="text-muted">Montant remboursé</small>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-white bg-danger mb-3">
-      <div class="card-header">Refunds Issued</div>
+
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <h5 class="card-title">{{ total_refunds|floatformat:2  }} €</h5>
+        <h6 class="text-muted">🔐 Cautions chargées</h6>
+        <h4 class="fw-bold text-warning">{{ total_deposits|floatformat:2 }} €</h4>
+        <small class="text-muted">Total des cautions</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="text-muted">📦 Réservations</h6>
+        <h4 class="fw-bold">{{ total_reservations }}</h4>
+        <small class="text-muted">Confirmées cette année</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="text-muted">💸 Prix moyen</h6>
+        <h4 class="fw-bold">{{ average_price|floatformat:2 }} €</h4>
+        <small class="text-muted">Par réservation</small>
       </div>
     </div>
   </div>

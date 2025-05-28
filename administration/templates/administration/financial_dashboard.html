@@ -1,51 +1,107 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block extrahead %}
-  {{ block.super }}  
-  <link rel="stylesheet" href="{% static 'administration/css/financial_dashboard.css' %}">
+  {{ block.super }}
+  <link rel="stylesheet"
+        href="{% static 'administration/css/financial_dashboard.css' %}">
 {% endblock %}
-
 {% block content %}
-<div id="financial-dashboard-page">
+  <div id="financial-dashboard-page">
     <div class="container-fluid">
-        <h1 class="mt-4">Financial Dashboard</h1>
-        {% include "administration/partials/_summary_cards.html" %}
-
-        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="reservations-tab" data-toggle="tab" href="#reservations" role="tab">Réservations</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="transfers-tab" data-toggle="tab" href="#transfers" role="tab">Transferts</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="refunds-tab" data-toggle="tab" href="#refunds" role="tab">Remboursements</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="deposits-tab" data-toggle="tab" href="#deposits" role="tab">Cautions</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="charts-tab" data-toggle="tab" href="#charts" role="tab">Graphiques</a>
-            </li>
-        </ul>
-        <div class="tab-content" id="dashboardTabsContent">
-            <div class="tab-pane fade show active" id="reservations" role="tabpanel">
-                {% include "administration/partials/_reservations_table.html" %}
-            </div>
-            <div class="tab-pane fade" id="transfers" role="tabpanel">
-                {% include "administration/partials/_transfers_table.html" %}
-            </div>
-            <div class="tab-pane fade" id="refunds" role="tabpanel">
-                {% include "administration/partials/_refunds_table.html" %}
-            </div>
-            <div class="tab-pane fade" id="deposits" role="tabpanel">
-                {% include "administration/partials/_deposits_table.html" %}
-            </div>
-            <div class="tab-pane fade" id="charts" role="tabpanel">
-                {% include "administration/partials/_charts.html" %}
-            </div>            
+      <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+          <h2 class="fw-bold mb-0">💼 Tableau de bord financier</h2>
         </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+          <form method="get"
+                class="d-flex align-items-center justify-content-md-end gap-3">
+            <label for="year" class="mb-0 fw-semibold text-muted">Année :</label>
+            <select name="year"
+                    id="year"
+                    class="form-select w-auto ml-3"
+                    onchange="this.form.submit()">
+              {% for y in available_years %}
+                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+      </div>
+      <div class="row g-3 mb-4">{% include "administration/partials/_summary_cards.html" %}</div>
+      <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active"
+             id="reservations-tab"
+             data-toggle="tab"
+             href="#reservations"
+             role="tab"
+             aria-controls="reservations"
+             aria-selected="true">Réservations</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="transfers-tab"
+             data-toggle="tab"
+             href="#transfers"
+             role="tab"
+             aria-controls="transfers"
+             aria-selected="false">Transferts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="refunds-tab"
+             data-toggle="tab"
+             href="#refunds"
+             role="tab"
+             aria-controls="refunds"
+             aria-selected="false">Remboursements</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="deposits-tab"
+             data-toggle="tab"
+             href="#deposits"
+             role="tab"
+             aria-controls="deposits"
+             aria-selected="false">Cautions</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="charts-tab"
+             data-toggle="tab"
+             href="#charts"
+             role="tab"
+             aria-controls="charts"
+             aria-selected="false">Graphiques</a>
+        </li>
+      </ul>
+      <div class="tab-content pt-3" id="dashboardTabsContent">
+        <div class="tab-pane fade show active"
+             id="reservations"
+             role="tabpanel"
+             aria-labelledby="reservations-tab">{% include "administration/partials/_reservations_table.html" %}</div>
+        <div class="tab-pane fade"
+             id="transfers"
+             role="tabpanel"
+             aria-labelledby="transfers-tab">{% include "administration/partials/_transfers_table.html" %}</div>
+        <div class="tab-pane fade"
+             id="refunds"
+             role="tabpanel"
+             aria-labelledby="refunds-tab">{% include "administration/partials/_refunds_table.html" %}</div>
+        <div class="tab-pane fade"
+             id="deposits"
+             role="tabpanel"
+             aria-labelledby="deposits-tab">{% include "administration/partials/_deposits_table.html" %}</div>
+        <div class="tab-pane fade"
+             id="charts"
+             role="tabpanel"
+             aria-labelledby="charts-tab">{% include "administration/partials/_charts.html" %}</div>
+      </div>
     </div>
-</div>
+  </div>
+{% endblock %}
+{% block extra_js %}
+  <script>const monthlyRevenue = {{ monthly_revenue|safe }};</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{% static 'administration/js/charts.js' %}"></script>
 {% endblock %}

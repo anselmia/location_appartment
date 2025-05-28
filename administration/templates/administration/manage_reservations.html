@@ -42,7 +42,9 @@
           <small class="text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</small>
         </div>
 
-        <p class="mb-2"><strong>Prix:</strong> {{ r.price }} € | <strong>Frais:</strong> {{ r.platform_fee|floatformat:2 }} € | <strong>Taxes:</strong> {{ r.tax|floatformat:2 }} €</p>
+        <p class="mb-2"><strong>Prix:</strong> {{ r.price }} € | <strong>Taxes:</strong> {{ r.tax|floatformat:2 }} €</p>
+        <p class="mb-2"><strong>Frais de Transaction:</strong> {{ r.payment_fee|floatformat:2 }} €  | <strong>Frais de Plateforme:</strong> {{ r.platform_fee|floatformat:2 }} € 
+        | 
         <p><strong>PaymentIntent:</strong> {{ r.stripe_payment_intent_id|default:"—" }}<br>
            <strong>Méthode de paiement:</strong> {{ r.stripe_saved_payment_method_id|default:"—" }}</p>
 

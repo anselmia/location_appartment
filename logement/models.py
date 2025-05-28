@@ -11,6 +11,7 @@ from PIL import Image
 from datetime import timedelta
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
+from logement.services.payment_service import get_payment_fee, get_platform_fee
 
 
 class City(models.Model):
@@ -440,6 +441,8 @@ class Reservation(models.Model):
     date_reservation = models.DateTimeField(default=timezone.now)
     price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    plaform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_saved_payment_method_id = models.CharField(
         max_length=255, null=True, blank=True
@@ -469,6 +472,12 @@ class Reservation(models.Model):
                     break
             else:
                 raise ValueError("Could not generate a unique reservation code.")
+
+        if not self.payment_fee:
+            self.payment_fee = get_payment_fee(self.price)
+
+        if not self.platform_fee:
+            self.platform_fee = get_platform_fee(self.price)
         super().save(*args, **kwargs)
 
     @property
@@ -476,12 +485,6 @@ class Reservation(models.Model):
         if self.statut != "confirmee":
             return False
         return True
-
-    @property
-    def platform_fee(self):
-        from logement.services.reservation_service import get_platform_fee
-
-        return get_platform_fee(self.price)
 
     @property
     def refundable_period_passed(self):
@@ -500,23 +503,30 @@ class Reservation(models.Model):
 
     @property
     def refundable_amount(self):
-        from logement.services.reservation_service import get_platform_fee
+        """
+        Calculates the refundable amount to the guest.
 
-        # Calculate the refundable amount
-        __refundable_amount = max(
-            self.price
-            - get_platform_fee(self.price)
-            - (self.price * (self.logement.refund_charge / Decimal("100")))
-            - self.refund_amount,
-            Decimal("0"),  # Ensure we return 0 if the result is negative
-        )
+        Formula:
+        refundable = price - payment_fee - refund_charge_percent - already_refunded
+        """
+        try:
+            price = Decimal(self.price or "0.00")
+            payment_fee = Decimal(self.payment_fee or "0.00")
+            refund_charge_rate = Decimal(self.logement.refund_charge or "0.00")
+            refund_amount = Decimal(self.refund_amount or "0.00")
 
-        # Round the result to 2 decimal places
-        __refundable_amount = __refundable_amount.quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
+            refund_charge = price * refund_charge_rate
 
-        return __refundable_amount
+            refundable = price - payment_fee - refund_charge - refund_amount
+            refundable = max(Decimal("0.00"), refundable)
+
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            return Decimal("0.00")
 
     @property
     def ended(self):
@@ -543,6 +553,30 @@ class Reservation(models.Model):
 
         # Round the result to 2 decimal places
         return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    @property
+    def transferable_amount(self):
+        """
+        Calculates the amount that can be transferred to the owner.
+
+        Formula:
+        transferable = price - platform_fee - refund_amount
+        """
+        try:
+            platform_fee = Decimal(self.platform_fee or 0)
+            payment_fee = Decimal(self.payment_fee or 0)
+            refund = Decimal(self.refund_amount or 0)
+            price = Decimal(self.price or 0)
+
+            amount = price - platform_fee - refund - payment_fee
+            amount = max(Decimal("0"), amount)
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error calculating transferable_amount for reservation {self.id}: {e}")
+            return Decimal("0.00")
 
 
 class airbnb_booking(models.Model):

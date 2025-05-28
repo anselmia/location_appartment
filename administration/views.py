@@ -1,72 +1,83 @@
-from datetime import datetime, timedelta
-import os
-import logging
 import json
+import logging
+import os
+from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
+
 import stripe
-from django.http import QueryDict
-from django.views.decorators.csrf import csrf_exempt
+
 from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.views.decorators.http import require_POST, require_http_methods
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
+from django.db.models import Sum, Avg
+from django.db.models.functions import ExtractYear, ExtractMonth
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    JsonResponse,
+    QueryDict,
+)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods, require_POST
+from django.views.generic import TemplateView
+
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+# App imports
+from common.decorators import (
+    user_has_logement,
+    user_is_logement_admin,
+    user_is_reservation_admin,
+)
+from common.mixins import AdminRequiredMixin
+from common.views import is_admin
+
+from logement.forms import DiscountForm, LogementForm
 from logement.models import (
-    Logement,
-    Room,
-    Photo,
-    Price,
-    Reservation,
-    booking_booking,
-    airbnb_booking,
     Discount,
     DiscountType,
     Equipment,
+    Logement,
+    Photo,
+    Price,
+    Reservation,
+    Room,
+    airbnb_booking,
+    booking_booking,
 )
-from logement.forms import DiscountForm, LogementForm
-from django.contrib import messages
+from logement.services.logement import get_logements
+from logement.services.payment_service import (
+    charge_payment,
+    charge_reservation,
+    refund_payment,
+)
+from logement.services.reservation_service import (
+    calculate_price,
+    get_reservation_years_and_months,
+    get_valid_reservations_for_admin,
+    mark_reservation_cancelled,
+)
+
+from administration.services.logs import parse_log_file
+from administration.services.revenu import get_economie_stats
+from administration.services.traffic import get_traffic_dashboard_data
+
 from .forms import (
+    CommitmentForm,
+    EntrepriseForm,
     HomePageConfigForm,
     ServiceForm,
     TestimonialForm,
-    CommitmentForm,
-    EntrepriseForm,
 )
-
-from .models import SiteVisit, HomePageConfig, Entreprise
+from .models import Entreprise, HomePageConfig
 from .serializers import DailyPriceSerializer
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from administration.services.revenu import get_economie_stats
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
-from logement.services.reservation_service import (
-    calculate_price,
-    get_valid_reservations_for_admin,
-    get_reservation_years_and_months,
-    mark_reservation_cancelled,
-)
-from logement.services.logement import get_logements
-from common.views import is_admin
-from logement.services.payment_service import (
-    refund_payment,
-    charge_payment,
-    charge_reservation,
-)
-from decimal import Decimal, InvalidOperation
-from administration.services.traffic import get_traffic_dashboard_data
-from administration.services.logs import parse_log_file
-from common.decorators import (
-    user_is_logement_admin,
-    user_has_logement,
-    user_is_reservation_admin,
-)
-from django.core.cache import cache
-from django.views.generic import TemplateView
-from django.db.models import Sum, Avg, Count
-from django.utils.timezone import now
-from django.contrib.auth.mixins import LoginRequiredMixin
-from common.mixins import AdminRequiredMixin
+
 
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
@@ -78,9 +89,7 @@ logger = logging.getLogger(__name__)
 def admin_dashboard(request):
     try:
         logements = get_logements(request.user)
-        return render(
-            request, "administration/dashboard.html", {"logements": logements}
-        )
+        return render(request, "administration/dashboard.html", {"logements": logements})
     except Exception as e:
         logger.exception(f"Error rendering admin dashboard: {e}")
         return HttpResponse("Erreur interne serveur", status=500)
@@ -109,9 +118,7 @@ def add_logement(request):
 @user_is_logement_admin
 def edit_logement(request, logement_id):
     try:
-        logement = get_object_or_404(
-            Logement.objects.prefetch_related("photos", "equipment"), id=logement_id
-        )
+        logement = get_object_or_404(Logement.objects.prefetch_related("photos", "equipment"), id=logement_id)
         rooms = logement.rooms.all().order_by("name")
         photos = logement.photos.all().order_by("order")
 
@@ -199,9 +206,7 @@ def change_photo_room(request, photo_id):
         room_id = data.get("room_id")
 
         if not room_id:
-            return JsonResponse(
-                {"success": False, "error": "Missing room_id"}, status=400
-            )
+            return JsonResponse({"success": False, "error": "Missing room_id"}, status=400)
 
         room = get_object_or_404(Room, id=room_id, logement=photo.logement)
         photo.assign_room(room)
@@ -210,15 +215,11 @@ def change_photo_room(request, photo_id):
         return JsonResponse({"success": True})
 
     except (json.JSONDecodeError, ValueError):
-        logger.warning(
-            f"Invalid JSON in request to change photo room for photo {photo_id}"
-        )
+        logger.warning(f"Invalid JSON in request to change photo room for photo {photo_id}")
         return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
     except Exception:
         logger.exception(f"Error changing photo room for photo {photo_id}")
-        return JsonResponse(
-            {"success": False, "error": "Erreur interne serveur"}, status=500
-        )
+        return JsonResponse({"success": False, "error": "Erreur interne serveur"}, status=500)
 
 
 @login_required
@@ -235,9 +236,7 @@ def move_photo(request, photo_id, direction):
         return JsonResponse({"success": False, "message": message}, status=400)
     except Exception as e:
         logger.exception(f"Error moving photo {photo_id}: {e}")
-        return JsonResponse(
-            {"success": False, "error": "Erreur interne serveur"}, status=500
-        )
+        return JsonResponse({"success": False, "error": "Erreur interne serveur"}, status=500)
 
 
 @login_required
@@ -251,9 +250,7 @@ def delete_photo(request, photo_id):
         return JsonResponse({"success": True})
     except Exception as e:
         logger.exception(f"Error deleting photo {photo_id}: {e}")
-        return JsonResponse(
-            {"success": False, "error": "Erreur interne serveur"}, status=500
-        )
+        return JsonResponse({"success": False, "error": "Erreur interne serveur"}, status=500)
 
 
 @login_required
@@ -268,9 +265,7 @@ def delete_all_photos(request, logement_id):
         return JsonResponse({"status": "ok"})
     except Exception as e:
         logger.exception(f"Error deleting all photos for logement {logement_id}: {e}")
-        return JsonResponse(
-            {"status": "error", "error": "Erreur interne serveur"}, status=500
-        )
+        return JsonResponse({"status": "error", "error": "Erreur interne serveur"}, status=500)
 
 
 @login_required
@@ -285,9 +280,7 @@ def rotate_photo(request, photo_id):
         return JsonResponse({"status": "ok", "rotation": photo.rotation})
     except Exception as e:
         logger.exception(f"Error rotating photo {photo_id}: {e}")
-        return JsonResponse(
-            {"status": "error", "error": "Erreur interne serveur"}, status=500
-        )
+        return JsonResponse({"status": "error", "error": "Erreur interne serveur"}, status=500)
 
 
 @login_required
@@ -309,11 +302,7 @@ def update_equipment(request, logement_id):
 @user_passes_test(is_admin)
 def traffic_dashboard(request):
     try:
-        period = (
-            request.POST.get("period")
-            if request.method == "POST"
-            else request.GET.get("period", "day")
-        )
+        period = request.POST.get("period") if request.method == "POST" else request.GET.get("period", "day")
 
         stats = get_traffic_dashboard_data(period=period)
 
@@ -350,7 +339,7 @@ def calendar(request):
             {
                 "logements": logements,
                 "logements_json": json.dumps(
-                    [{"id": l.id, "name": l.name} for l in logements]
+                    [{"id": l.id, "name": l.name, "calendar_link": l.calendar_link} for l in logements]
                 ),
             },
         )
@@ -359,9 +348,7 @@ def calendar(request):
         return render(
             request,
             "common/error.html",
-            {
-                "error_message": "Une erreur est survenue en essayant d'accéder au calendrier"
-            },
+            {"error_message": "Une erreur est survenue en essayant d'accéder au calendrier"},
         )
 
 
@@ -387,17 +374,13 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             start = datetime.fromisoformat(start_str).date()
             end = datetime.fromisoformat(end_str).date()
 
-            custom_prices = Price.objects.filter(
-                logement_id=logement_id, date__range=(start, end)
-            )
+            custom_prices = Price.objects.filter(logement_id=logement_id, date__range=(start, end))
             price_map = {p.date: p.value for p in custom_prices}
 
             daily_prices = [
                 {
                     "date": (start + timedelta(days=i)).isoformat(),
-                    "value": price_map.get(
-                        start + timedelta(days=i), str(default_price)
-                    ),
+                    "value": price_map.get(start + timedelta(days=i), str(default_price)),
                 }
                 for i in range((end - start).days + 1)
             ]
@@ -424,9 +407,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
                     "end": b.end.isoformat(),
                     "name": "Airbnb",
                 }
-                for b in airbnb_booking.objects.filter(
-                    logement_id=logement_id, start__lte=end, end__gte=start
-                )
+                for b in airbnb_booking.objects.filter(logement_id=logement_id, start__lte=end, end__gte=start)
             ]
 
             booking_bookings = [
@@ -435,9 +416,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
                     "end": b.end.isoformat(),
                     "name": "Booking",
                 }
-                for b in booking_booking.objects.filter(
-                    logement_id=logement_id, start__lte=end, end__gte=start
-                )
+                for b in booking_booking.objects.filter(logement_id=logement_id, start__lte=end, end__gte=start)
             ]
 
             return Response(
@@ -472,9 +451,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
 
             for i in range((end - start).days + 1):
                 day = start + timedelta(days=i)
-                Price.objects.update_or_create(
-                    logement_id=logement_id, date=day, defaults={"value": value}
-                )
+                Price.objects.update_or_create(logement_id=logement_id, date=day, defaults={"value": value})
 
             logger.info(f"Bulk prices updated for logement {logement_id}")
             return Response({"status": "updated"})
@@ -505,9 +482,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             }
 
             if price_data["TotalextraGuestFee"] != 0:
-                details["Voyageur(s) supplémentaire(s)"] = (
-                    f"+ {round(price_data['TotalextraGuestFee'], 2)} €"
-                )
+                details["Voyageur(s) supplémentaire(s)"] = f"+ {round(price_data['TotalextraGuestFee'], 2)} €"
 
             for key, value in price_data["discount_totals"].items():
                 details[f"Réduction {key}"] = f"- {round(value, 2)} €"
@@ -515,9 +490,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
             details["Taxe de séjour"] = f"+ {round(price_data['taxAmount'], 2)} €"
 
-            details["Frais de transaction"] = (
-                f"+ {round(price_data['platform_fee'], 2)} €"
-            )
+            details["Frais de transaction"] = f"+ {round(price_data['payment_fee'], 2)} €"
 
             return Response(
                 {
@@ -545,11 +518,7 @@ def manage_discounts(request):
     try:
         logements = get_logements(request.user)
         logement_id = request.GET.get("logement_id") or request.POST.get("logement_id")
-        logement = (
-            get_object_or_404(Logement, id=logement_id)
-            if logement_id
-            else logements.first()
-        )
+        logement = get_object_or_404(Logement, id=logement_id) if logement_id else logements.first()
 
         if not logement:
             messages.error(request, "Aucun logement trouvé.")
@@ -563,15 +532,11 @@ def manage_discounts(request):
             action = post_data.get("action")
 
             if action == "delete":
-                Discount.objects.filter(
-                    id=post_data["discount_id"], logement=logement
-                ).delete()
+                Discount.objects.filter(id=post_data["discount_id"], logement=logement).delete()
                 messages.success(request, "Réduction supprimée avec succès.")
 
             elif action == "update":
-                instance = get_object_or_404(
-                    Discount, id=post_data["discount_id"], logement=logement
-                )
+                instance = get_object_or_404(Discount, id=post_data["discount_id"], logement=logement)
                 form = DiscountForm(post_data, instance=instance)
                 if form.is_valid():
                     form.save()
@@ -610,9 +575,7 @@ def manage_discounts(request):
                         },
                     )
 
-            return redirect(
-                f"{reverse('administration:manage_discounts')}?logement_id={logement.id}"
-            )
+            return redirect(f"{reverse('administration:manage_discounts')}?logement_id={logement.id}")
 
         return render(
             request,
@@ -636,11 +599,7 @@ def manage_discounts(request):
 def economie_view(request):
     try:
         logements = get_logements(request.user)
-        selected_logement_id = (
-            request.POST.get("logement_id") or logements.first().id
-            if logements
-            else None
-        )
+        selected_logement_id = request.POST.get("logement_id") or logements.first().id if logements else None
         current_year = datetime.now().year
         years = list(
             Reservation.objects.filter(logement_id=selected_logement_id)
@@ -660,9 +619,7 @@ def economie_view(request):
         )
     except Exception as e:
         logger.exception(f"Erreur dans economie_view: {e}")
-        return render(
-            request, "common/error.html", {"error_message": "Erreur interne serveur"}
-        )
+        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
 
 
 def api_economie_data(request, logement_id):
@@ -775,9 +732,7 @@ def reservation_dashboard(request, logement_id=None):
         return render(
             request,
             "common/error.html",
-            {
-                "error_message": "Une erreur est survenue en récupérant les réservations."
-            },
+            {"error_message": "Une erreur est survenue en récupérant les réservations."},
         )
 
 
@@ -795,13 +750,9 @@ def homepage_admin_view(request):
             if "delete_service_id" in request.POST:
                 config.services.filter(id=request.POST["delete_service_id"]).delete()
             elif "delete_testimonial_id" in request.POST:
-                config.testimonials.filter(
-                    id=request.POST["delete_testimonial_id"]
-                ).delete()
+                config.testimonials.filter(id=request.POST["delete_testimonial_id"]).delete()
             elif "delete_commitment_id" in request.POST:
-                config.commitments.filter(
-                    id=request.POST["delete_commitment_id"]
-                ).delete()
+                config.commitments.filter(id=request.POST["delete_commitment_id"]).delete()
             elif "add_service" in request.POST:
                 service_form = ServiceForm(request.POST, request.FILES)
                 if service_form.is_valid():
@@ -821,9 +772,7 @@ def homepage_admin_view(request):
                     instance.config = config
                     instance.save()
             else:
-                main_form = HomePageConfigForm(
-                    request.POST, request.FILES, instance=config
-                )
+                main_form = HomePageConfigForm(request.POST, request.FILES, instance=config)
                 if main_form.is_valid():
                     main_form.save()
 
@@ -840,9 +789,7 @@ def homepage_admin_view(request):
         return render(request, "administration/base_site.html", context)
     except Exception as e:
         logger.exception(f"Erreur dans homepage_admin_view: {e}")
-        return render(
-            request, "common/error.html", {"error_message": "Erreur interne serveur"}
-        )
+        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
 
 
 @login_required
@@ -861,18 +808,14 @@ def edit_entreprise(request):
         return render(request, "administration/edit_entreprise.html", {"form": form})
     except Exception as e:
         logger.exception(f"Erreur dans edit_entreprise: {e}")
-        return render(
-            request, "common/error.html", {"error_message": "Erreur interne serveur"}
-        )
+        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
 
 
 @login_required
 @user_is_reservation_admin
 def reservation_detail(request, code):
     reservation = get_object_or_404(Reservation, code=code)
-    return render(
-        request, "administration/reservation_detail.html", {"reservation": reservation}
-    )
+    return render(request, "administration/reservation_detail.html", {"reservation": reservation})
 
 
 @login_required
@@ -899,12 +842,8 @@ def refund_reservation(request, code):
     attempts = cache.get(key, 0)
 
     if attempts >= 5:
-        logger.warning(
-            f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}"
-        )
-        messages.error(
-            request, "Trop de tentatives de remboursement. Réessayez plus tard."
-        )
+        logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
+        messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
         return redirect("administration:reservation_dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
@@ -1014,9 +953,7 @@ def charge_deposit(request, code):
 @user_passes_test(is_admin)
 def manage_reservations(request):
     query = request.GET.get("q")
-    reservations = Reservation.objects.select_related("logement", "user").exclude(
-        statut="en_attente"
-    )
+    reservations = Reservation.objects.select_related("logement", "user").exclude(statut="en_attente")
 
     if query:
         reservations = reservations.filter(code__icontains=query)
@@ -1049,33 +986,52 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Aggregate financial data
-        reservations = Reservation.objects.filter(statut="confirmee")
-        context["total_revenue"] = reservations.aggregate(Sum("price"))[
-            "price__sum"
-        ] or Decimal("0.00")
-        context["platform_earnings"] = sum(
-            (r.platform_fee or Decimal("0.00")) for r in reservations
-        ) or Decimal("0.00")
-        context["total_deposits"] = reservations.aggregate(Sum("amount_charged"))[
-            "amount_charged__sum"
-        ] or Decimal("0.00")
-        context["total_refunds"] = reservations.aggregate(Sum("refund_amount"))[
-            "refund_amount__sum"
-        ] or Decimal("0.00")
-        context["total_reservations"] = reservations.count()
-        context["average_price"] = reservations.aggregate(Avg("price"))[
-            "price__avg"
-        ] or Decimal("0.00")
+        year = self.request.GET.get("year")
+        all_years = (
+            Reservation.objects.filter(statut="confirmee")
+            .annotate(year=ExtractYear("start"))
+            .values_list("year", flat=True)
+            .distinct()
+        )
+        selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
+
+        reservations = Reservation.objects.filter(statut="confirmee", start__year=selected_year)
+
+        monthly_data = (
+            reservations.filter(date_reservation__year=selected_year)
+            .annotate(month=ExtractMonth("date_reservation"))
+            .values("month")
+            .annotate(total=Sum("price"))
+            .order_by("month")
+        )
+
+        # Fill all 12 months, even if 0
+        monthly_revenue = [0] * 12
+        for entry in monthly_data:
+            month_index = entry["month"] - 1
+            monthly_revenue[month_index] = float(entry["total"])
+
+        context.update(
+            {
+                "selected_year": selected_year,
+                "monthly_revenue": monthly_revenue,
+                "available_years": sorted(all_years),
+                "total_revenue": reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00"),
+                "platform_earnings": reservations.aggregate(Sum("plaform_fee"))["plaform_fee__sum"] or Decimal("0.00"),
+                "total_payment_fee": reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00"),
+                "total_deposits": reservations.aggregate(Sum("amount_charged"))["amount_charged__sum"]
+                or Decimal("0.00"),
+                "total_refunds": reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00"),
+                "total_reservations": reservations.count(),
+                "average_price": reservations.aggregate(Avg("price"))["price__avg"] or Decimal("0.00"),
+                "reservations": reservations.order_by("-date_reservation")[:100],
+            }
+        )
 
         try:
             balance = stripe.Balance.retrieve()
             context["stripe_balance"] = balance
         except Exception:
             context["stripe_balance"] = None
-
-        context["reservations"] = reservations.order_by("-date_reservation")[
-            :100
-        ]  # Latest 100
 
         return context

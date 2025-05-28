@@ -13,11 +13,9 @@ from logement.models import (
     Discount,
     Logement,
 )
-from logement.services.payment_service import refund_payment
+from logement.services.payment_service import refund_payment,get_payment_fee
 from django.db.models.functions import ExtractYear, ExtractMonth
 
-PLATFORM_FEE_VARIABLE = 0.025
-PLATFORM_FEE_FIX = 0.25
 
 
 logger = logging.getLogger(__name__)
@@ -314,10 +312,6 @@ def apply_discounts(base_price, current_day, discounts_by_type):
         raise
 
 
-def get_platform_fee(price):
-    fee = (Decimal(str(PLATFORM_FEE_VARIABLE)) * price) + Decimal(str(PLATFORM_FEE_FIX))
-    return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
-
 
 def calculate_price(logement, start, end, guestCount, base_price=None):
     try:
@@ -382,8 +376,8 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
 
         total_price += Decimal(str(logement.cleaning_fee)) + taxAmount
 
-        platform_fee = get_platform_fee(total_price)
-        total_price += Decimal(str(platform_fee))
+        payment_fee = get_payment_fee(total_price)
+        total_price += Decimal(str(payment_fee))
 
         return {
             "number_of_nights": nights,
@@ -391,7 +385,7 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
             "TotalextraGuestFee": extra_fee,
             "discount_totals": discount_breakdown,
             "taxAmount": taxAmount,
-            "platform_fee": platform_fee,
+            "payment_fee": payment_fee,
             "total_price": total_price,
         }
     except Exception as e:

@@ -1,6 +1,7 @@
 from django import forms
 from logement.models import Discount, Logement, City
 from accounts.models import CustomUser
+from decimal import Decimal
 
 
 class LogementForm(forms.ModelForm):
@@ -147,6 +148,9 @@ class LogementForm(forms.ModelForm):
         cleaned_data = super().clean()
         max_traveler = cleaned_data.get("max_traveler")
         nominal_traveler = cleaned_data.get("nominal_traveler")
+        refund_charge = cleaned_data.get("refund_charge")
+        if refund_charge is not None:
+            cleaned_data["refund_charge"] = refund_charge / Decimal("100")
 
         if max_traveler is not None and nominal_traveler is not None:
             if nominal_traveler > max_traveler:

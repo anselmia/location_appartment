@@ -194,7 +194,6 @@ button.default:hover,
   margin-left: 1rem;
 }
 
-
 @media (max-width: 600px) {
   .inline-header {
     flex-direction: column;

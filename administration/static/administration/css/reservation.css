@@ -2,211 +2,211 @@
    Layout & Containers
 ================================ */
 .container-reservation {
-    background-color: #fdfdfd;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
+  background-color: #fdfdfd;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.03);
 }
 
 .reservation-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
 }
 
 /* ===============================
    Buttons & Filters
 ================================ */
 .btn-filter {
-    font-weight: 500;
-    min-width: 100px;
+  font-weight: 500;
+  min-width: 100px;
 }
 
 .search-wrapper .search-input {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  font-size: 1rem;
 }
 
 /* ===============================
    Table General
 ================================ */
 .table td {
-    vertical-align: middle !important;
-    text-align: center;
-    padding: 0.5rem;
+  vertical-align: middle !important;
+  text-align: center;
+  padding: 0.5rem;
 }
 
 /* ===============================
    Logement Cell
 ================================ */
 .logement-cell {
-    text-align: left;
+  text-align: left;
 }
 
 .logement-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .logement-thumbnail {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .placeholder-img {
-    background-color: #eee;
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
+  background-color: #eee;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
 }
 
 /* ===============================
    Badges
 ================================ */
 .status-badge {
-    padding: 0.5em 0.8em;
-    font-size: 0.9rem;
-    border-radius: 999px;
-    font-weight: 600;
-    text-transform: capitalize;
+  padding: 0.5em 0.8em;
+  font-size: 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .status-badge.confirmee {
-    background-color: #d1e7dd;
-    color: #0f5132;
+  background-color: #d1e7dd;
+  color: #0f5132;
 }
 
 .status-badge.terminee {
-    background-color: #cff4fc;
-    color: #055160;
+  background-color: #cff4fc;
+  color: #055160;
 }
 
 .status-badge.annulee {
-    background-color: #f8d7da;
-    color: #842029;
+  background-color: #f8d7da;
+  color: #842029;
 }
 
 .status-badge.en_attente {
-    background-color: #fff3cd;
-    color: #664d03;
+  background-color: #fff3cd;
+  color: #664d03;
 }
 
 .reservation-filters {
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .filter-form .form-select,
 .filter-form .btn {
-    min-width: 120px;
+  min-width: 120px;
 }
 
 /* ===============================
    Responsive (Mobile First)
 ================================ */
 @media (max-width: 768px) {
-    /* Typography & Controls */
-    .reservation-title {
-        font-size: 1.4rem;
-    }
+  /* Typography & Controls */
+  .reservation-title {
+    font-size: 1.4rem;
+  }
 
-    .btn-filter {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.7rem;
-    }
+  .btn-filter {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.7rem;
+  }
 
-    .search-input {
-        font-size: 0.9rem;
-    }
+  .search-input {
+    font-size: 0.9rem;
+  }
 
-    table {
-        font-size: 0.85rem;
-    }
+  table {
+    font-size: 0.85rem;
+  }
 
-    /* Table as Cards */
-    .table-responsive thead {
-        display: none;
-    }
+  /* Table as Cards */
+  .table-responsive thead {
+    display: none;
+  }
 
-    .table-responsive tbody tr {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        background-color: #fff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
+  .table-responsive tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
 
-    .table-responsive tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.4rem 0;
-        border: none;
-        border-bottom: 1px solid #f0f0f0;
-    }
+  .table-responsive tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
 
-    .table-responsive tbody td:last-child {
-        border-bottom: none;
-    }
+  .table-responsive tbody td:last-child {
+    border-bottom: none;
+  }
 
-    .table-responsive tbody td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #555;
-        flex: 0 0 45%;
-        text-align: left;
-        padding-right: 10px;
-    }
+  .table-responsive tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #555;
+    flex: 0 0 45%;
+    text-align: left;
+    padding-right: 10px;
+  }
 
-    /* Logement image responsive */
-    .logement-thumbnail {
-        width: 32px;
-        height: 32px;
-    }
+  /* Logement image responsive */
+  .logement-thumbnail {
+    width: 32px;
+    height: 32px;
+  }
 
-    .placeholder-img {
-        width: 32px;
-        height: 32px;
-    }
+  .placeholder-img {
+    width: 32px;
+    height: 32px;
+  }
 
-    .logement-info {
-        gap: 0.75rem;
-    }
+  .logement-info {
+    gap: 0.75rem;
+  }
 
-    /* Prevent overflow */
-    .table-responsive {
-        overflow-x: auto;
-    }
+  /* Prevent overflow */
+  .table-responsive {
+    overflow-x: auto;
+  }
 
-    .reservation-filters {
-        padding-bottom: 1.5rem;
-    }
+  .reservation-filters {
+    padding-bottom: 1.5rem;
+  }
 
-    .filter-form {
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 0.75rem;
-        width: 100%;
-    }
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+    width: 100%;
+  }
 
-    .filter-form .col-auto {
-        width: 100%;
-    }
+  .filter-form .col-auto {
+    width: 100%;
+  }
 
-    .filter-form select,
-    .filter-form button {
-        width: 100%;
-    }
+  .filter-form select,
+  .filter-form button {
+    width: 100%;
+  }
 
-    .status-filters {
-        flex-direction: column;
-    }
+  .status-filters {
+    flex-direction: column;
+  }
 }

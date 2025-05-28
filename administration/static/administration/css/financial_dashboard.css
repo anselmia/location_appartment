@@ -1,95 +1,186 @@
-
-/* Scoped Financial Dashboard CSS */
-
+/* Container */
 #financial-dashboard-page {
-    padding: 1rem 2rem;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0; /* prevents children from forcing overflow */
+  box-sizing: border-box;
+  padding: 1rem 2rem;
+  overflow-x: hidden;
+}
+
+#financial-dashboard-page .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#financial-dashboard-page table {
+  min-width: 1000px; /* or auto based on content */
 }
 
 /* Summary Cards */
 #financial-dashboard-page .card {
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  transition: transform 0.2s ease;
 }
 
-#financial-dashboard-page .card .card-title {
-    font-size: 1.4rem;
-    font-weight: 600;
+#financial-dashboard-page .card:hover {
+  transform: translateY(-2px);
 }
 
-#financial-dashboard-page .card-header {
-    font-weight: 500;
-    font-size: 1rem;
+#financial-dashboard-page .card-body h6 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+#financial-dashboard-page .card-body h4 {
+  font-size: 1.5rem;
+  margin: 0.5rem 0 0;
+  font-weight: 700;
+}
+
+#financial-dashboard-page .card-body small {
+  font-size: 0.85rem;
+  color: #999;
 }
 
 /* Tabs Navigation */
 #financial-dashboard-page .nav-tabs {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #dee2e6;
+  margin: 1.5rem 0 1rem;
+  border-bottom: 2px solid #dee2e6;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+#financial-dashboard-page .nav-tabs .nav-item {
+  white-space: nowrap;
 }
 
 #financial-dashboard-page .nav-tabs .nav-link {
-    font-weight: 500;
-    color: #495057;
-    border: none;
-    border-bottom: 3px solid transparent;
+  font-weight: 500;
+  color: #495057;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+#financial-dashboard-page .nav-tabs .nav-link:hover {
+  color: #0056b3;
 }
 
 #financial-dashboard-page .nav-tabs .nav-link.active {
-    color: #007bff;
-    border-color: #007bff;
+  color: #007bff;
+  border-color: #007bff;
+}
+
+/* Tab Content */
+#financial-dashboard-page .tab-content {
+  margin-top: 1rem;
 }
 
 /* Tables */
 #financial-dashboard-page .table {
-    margin-top: 1rem;
-    font-size: 0.95rem;
+  font-size: 0.95rem;
+  margin-bottom: 0;
 }
 
 #financial-dashboard-page .table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
 #financial-dashboard-page .table td,
 #financial-dashboard-page .table th {
-    vertical-align: middle;
+  vertical-align: middle;
+  padding: 0.75rem;
 }
 
 #financial-dashboard-page .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
+}
+
+#financial-dashboard-page .table-responsive {
+  overflow-x: auto;
 }
 
 /* Charts */
 #financial-dashboard-page canvas {
-    margin-top: 2rem;
-    max-width: 100%;
+  margin-top: 2rem;
+  max-width: 100%;
 }
 
-/* Responsive Tweaks */
-@media (max-width: 768px) {
-    #financial-dashboard-page .card .card-title {
-        font-size: 1.1rem;
-    }
-
-    #financial-dashboard-page .table {
-        font-size: 0.9rem;
-    }
-
-    #financial-dashboard-page .nav-tabs .nav-link {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-    }
+/* Forms */
+#financial-dashboard-page .form-select {
+  min-width: 100px;
 }
 
-/* Theme Integration */
-#financial-dashboard-page body {
-    background-color: #ffffff;
-    color: #333;
-}
-
+/* Typography */
 #financial-dashboard-page h1,
+#financial-dashboard-page h2,
+#financial-dashboard-page h3,
 #financial-dashboard-page h4 {
-    font-weight: 600;
-    color: #212529;
+  font-weight: 600;
+  color: #212529;
+}
+
+#financial-dashboard-page .row > div {
+  min-width: 0; /* important for flex children */
+  flex: 1 1 0;
+}
+
+/* Responsive Layouts */
+@media (max-width: 992px) {
+  #financial-dashboard-page {
+    padding: 1rem;
+  }
+
+  #financial-dashboard-page .nav-tabs .nav-link {
+    padding: 0.5rem 1rem;
+  }
+
+  #financial-dashboard-page .card-body h4 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  #financial-dashboard-page .table {
+    font-size: 0.875rem;
+  }
+
+  #financial-dashboard-page .row.g-3 > div {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  #financial-dashboard-page .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #financial-dashboard-page .form-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  #financial-dashboard-page .nav-tabs {
+    font-size: 0.8rem;
+    padding-bottom: 0.5rem;
+  }
+
+  #financial-dashboard-page .card-body h4 {
+    font-size: 1.1rem;
+  }
+
+  #financial-dashboard-page .table-responsive {
+    overflow-x: auto;
+  }
 }

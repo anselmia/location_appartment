@@ -1,331 +1,327 @@
-
 #calendar {
-    min-width: 0;
-    flex-grow: 1;
-    width: 100%;
-    transition: all 0.3s ease;
+  min-width: 0;
+  flex-grow: 1;
+  width: 100%;
+  transition: all 0.3s ease;
 }
 
-#calendar tbody{
-    width: 100% !important;
-    max-width: 100% !important;
+#calendar tbody {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-#calendar thead{
-    width: 100% !important;
-    max-width: 100% !important;
+#calendar thead {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-#calendar table{
-    width: 100% !important;
-    max-width: 100% !important;
+#calendar table {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .fc .fc-scroller,
 .fc .fc-daygrid-body,
 .fc .fc-daygrid-body-natural {
-    width: 100% !important;
-    max-width: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-
 .fc-toolbar-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #1a202c;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a202c;
 }
 
 .fc-button {
-    background: #2d3748;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-weight: 500;
+  background: #2d3748;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 500;
 }
 
 .fc-button:hover {
-    background: #1a202c;
+  background: #1a202c;
 }
 
 .fc-col-header-cell-cushion {
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: #2d3748;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #2d3748;
 }
 
 .fc-daygrid-day {
-    background-color: #f8f9fa;
-    border: 1px solid #e2e8f0;
-    vertical-align: top;
-    padding: 4px;
+  background-color: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  vertical-align: top;
+  padding: 4px;
 }
 
 .fc-day-today {
-    background-color: #fff9db !important;
+  background-color: #fff9db !important;
 }
 
 .fc-daygrid-day-number {
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: #4a5568;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #4a5568;
 }
 
 .fc-event {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-    border-radius: 4px;
-  }
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
 
 /* Price text styling */
 .fc-event-price {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color:black;  /* Dark charcoal text */
-    text-shadow: 0 0 1px white; /* subtle outline for light backgrounds */
-    margin-top: 4px;
-    margin-left: 4px;
-    display: flex;
-    justify-content: center;  /* centre horizontalement */
-    align-items: center;      /* centre verticalement */
-    opacity: 1 !important;
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: black; /* Dark charcoal text */
+  text-shadow: 0 0 1px white; /* subtle outline for light backgrounds */
+  margin-top: 4px;
+  margin-left: 4px;
+  display: flex;
+  justify-content: center; /* centre horizontalement */
+  align-items: center; /* centre verticalement */
+  opacity: 1 !important;
 }
 
 /* Booking event block */
 .fc-event.booking-event {
-    background: #1a202c !important;
-    color: #fff !important;
-    border-radius: 18px;
-    padding: 2px 10px;
-    font-size: 0.8rem;
-    border: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  background: #1a202c !important;
+  color: #fff !important;
+  border-radius: 18px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .fc-event.booking-event img {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
 }
 
 .booking-event.airbnb {
-    background: #ff5a5f !important;
-    color: white !important;
+  background: #ff5a5f !important;
+  color: white !important;
 }
 
 .booking-event.bookingcom {
-    background: #003580 !important;
-    color: white !important;
+  background: #003580 !important;
+  color: white !important;
 }
 
 .booking-event.internal {
-    background: #2d3748 !important;
-    color: white !important;
+  background: #2d3748 !important;
+  color: white !important;
 }
 
-.tippy-box[data-theme~='light-border'] {
-    border: 1px solid #ddd;
-    font-size: 0.85rem;
-    background: #fff;
-    color: #333;
-    padding: 8px 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    border-radius: 6px;
+.tippy-box[data-theme~="light-border"] {
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #333;
+  padding: 8px 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
 }
 
 .calendar-wrapper {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
-    align-items: flex-start;
-    transition: all 0.3s ease;
-    justify-content: space-between;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+  justify-content: space-between;
 }
-
 
 .calendar-wrapper.with-panel #calendar {
-    max-width: calc(100% - 300px);
-    flex: 1;
-    transition: all 0.2s ease-in-out;
+  max-width: calc(100% - 300px);
+  flex: 1;
+  transition: all 0.2s ease-in-out;
 }
-
 
 .calendar-wrapper:not(.with-panel) #calendar {
-    max-width: 100%;
-  }
-
-.price-panel {
-    width: 300px;
-    flex-shrink: 0;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    border: 1px solid #ddd;
-    z-index: 900;
+  max-width: 100%;
 }
 
-.price-panel input{
-    max-width: 100px;
-}  
+.price-panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  z-index: 900;
+}
+
+.price-panel input {
+  max-width: 100px;
+}
 
 .price-panel.hidden {
-    display: none !important;
+  display: none !important;
 }
 
 /* Container to hold the details */
 .price-details-container {
-    margin-top: 20px;
-    font-family: Arial, sans-serif;
+  margin-top: 20px;
+  font-family: Arial, sans-serif;
 }
 
 /* Header for the details section */
 .price-details-container h3 {
-    font-size: 1.4em;
-    margin-bottom: 10px;
-    color: #333;
+  font-size: 1.4em;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 /* Unordered list for the price details */
 .price-details-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 #guest-count {
-    padding: 5px;  /* Add some padding for better appearance */
-    font-size: 0.6em;  /* Ensure the font size matches the rest of the content */
-    border: 1px solid #ccc;  /* Border similar to the other elements */
-    border-radius: 4px;  /* Rounded corners for a clean look */
-    text-align: center;  /* Center the value within the input box */
-    max-width: 40px;
+  padding: 5px; /* Add some padding for better appearance */
+  font-size: 0.6em; /* Ensure the font size matches the rest of the content */
+  border: 1px solid #ccc; /* Border similar to the other elements */
+  border-radius: 4px; /* Rounded corners for a clean look */
+  text-align: center; /* Center the value within the input box */
+  max-width: 40px;
 }
 
 /* To align the label and input correctly in the container */
 .price-details-container label {
-    display: inline-block;  /* Make sure the label and input are aligned */
-    margin-right: 10px;  /* Space between label and input */
-    font-size: 0.6em;  /* Ensure the font size matches the rest of the content */
+  display: inline-block; /* Make sure the label and input are aligned */
+  margin-right: 10px; /* Space between label and input */
+  font-size: 0.6em; /* Ensure the font size matches the rest of the content */
 }
 
 .price-details-container .price-breakdown-item input {
-    width: 100px;  /* Set width for consistency */
-    padding: 5px;  /* Add some padding for better look */
-    font-size: 1em;  /* Match the font size with other elements */
-    text-align: center;  /* Center the text inside the input */
-    border: 1px solid #ccc;  /* Border similar to other input elements */
-    border-radius: 4px;  /* Rounded corners */
+  width: 100px; /* Set width for consistency */
+  padding: 5px; /* Add some padding for better look */
+  font-size: 1em; /* Match the font size with other elements */
+  text-align: center; /* Center the text inside the input */
+  border: 1px solid #ccc; /* Border similar to other input elements */
+  border-radius: 4px; /* Rounded corners */
 }
 
 /* Style for headers in each price breakdown */
 .price-breakdown-item strong {
-    font-weight: bold;
-    color: #333;
+  font-weight: bold;
+  color: #333;
 }
 
 /* Style for price values */
 .price-breakdown-item {
-    font-size: 0.65em;
-    color: #555;
+  font-size: 0.65em;
+  color: #555;
 }
 
 /* Add a light hover effect on the breakdown items */
 .price-breakdown-item:hover {
-    background-color: #f1f1f1;
-    cursor: pointer;
+  background-color: #f1f1f1;
+  cursor: pointer;
 }
 
 .fc-day-past {
-    background-color: #f0f0f0 !important;
-    opacity: 0.6;
-    pointer-events: none; /* (optionnel) empêche l'interaction */
+  background-color: #f0f0f0 !important;
+  opacity: 0.6;
+  pointer-events: none; /* (optionnel) empêche l'interaction */
 }
 
 .booking-span {
-    font-size: 0.75rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  .fc-highlight {
-    background-color: rgba(0, 120, 255, 0.15);
-    border: 1px solid #007bff;
-  }
+.fc-highlight {
+  background-color: rgba(0, 120, 255, 0.15);
+  border: 1px solid #007bff;
+}
 
 /* Collapse layout vertically below 992px */
 @media screen and (max-width: 991px) {
-    .calendar-wrapper {
-      flex-direction: column;
-      gap: 1.5rem;
-      padding: 1rem;
-    }
-  
-    #calendar {
-      min-width: 100% !important;
-      max-width: 100% !important;
-    }
-  
-    .price-panel {
-      width: 100%;
-      max-width: 100%;
-      margin-top: 1rem;
-    }
-
-    .fc-event-price {
-        font-size: 0.6rem;
-        font-weight: bold;
-    }
-
-    .booking-span {
-        font-size: 0.6rem;
-    }
+  .calendar-wrapper {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
   }
-  
-  /* Mobile-specific font and padding tweaks */
-  @media screen and (max-width: 576px) {
-    .fc-toolbar-title {
-      font-size: 1.3rem !important;
-    }
-  
-    .fc-daygrid-day-number {
-      font-size: 0.8rem !important;
-    }
-  
-    .fc-event {
-      font-size: 0.65rem !important;
-      padding: 1px 3px;
-    }
-  
-    .price-panel input,
-    .price-panel select {
-      font-size: 0.6rem !important;
-      padding: 6px;
-    }
-  
-    h3 {
-        font-size: 1rem !important;
-    }
 
-    h5 {
-        font-size: 0.8rem !important;
-    }
-
-    .fc-col-header-cell-cushion{
-        font-size: 0.6rem !important;
-    }
-
-    .fc-toolbar-title{
-        font-size: 1rem !important;
-    }
-
-    .btn,
-    label,
-    .fc-button {
-        font-size: 0.6rem !important;
-    }
+  #calendar {
+    min-width: 100% !important;
+    max-width: 100% !important;
   }
+
+  .price-panel {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+
+  .fc-event-price {
+    font-size: 0.6rem;
+    font-weight: bold;
+  }
+
+  .booking-span {
+    font-size: 0.6rem;
+  }
+}
+
+/* Mobile-specific font and padding tweaks */
+@media screen and (max-width: 576px) {
+  .fc-toolbar-title {
+    font-size: 1.3rem !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.8rem !important;
+  }
+
+  .fc-event {
+    font-size: 0.65rem !important;
+    padding: 1px 3px;
+  }
+
+  .price-panel input,
+  .price-panel select {
+    font-size: 0.6rem !important;
+    padding: 6px;
+  }
+
+  h3 {
+    font-size: 1rem !important;
+  }
+
+  h5 {
+    font-size: 0.8rem !important;
+  }
+
+  .fc-col-header-cell-cushion {
+    font-size: 0.6rem !important;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+
+  .btn,
+  label,
+  .fc-button {
+    font-size: 0.6rem !important;
+  }
+}
