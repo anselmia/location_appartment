@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("logements-data").textContent
   );
   console.log(logements);
+  console.log("typeof logements =", typeof logements);
+  console.log("isArray =", Array.isArray(logements));
   const selector = document.getElementById("logement-selector");
   const calendarEl = document.getElementById("calendar");
 

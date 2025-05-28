@@ -60,7 +60,7 @@ from logement.services.payment_service import (
     charge_payment,
     charge_reservation,
     refund_payment,
-    send_stripe_payment_link
+    send_stripe_payment_link,
 )
 from logement.services.reservation_service import (
     calculate_price,
@@ -343,9 +343,7 @@ def calendar(request):
             "administration/calendar.html",
             {
                 "logements": logements,
-                "logements_json": json.dumps(
-                    [{"id": l.id, "name": l.name, "calendar_link": l.calendar_link} for l in logements]
-                ),
+                "logements_json": [{"id": l.id, "name": l.name, "calendar_link": l.calendar_link} for l in logements],
             },
         )
     except Exception as e:
