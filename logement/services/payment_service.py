@@ -13,7 +13,7 @@ from common.services.stripe.stripe_event import (
     StripePaymentIntentEventData,
     StripeTransferEventData,
 )
-from decimal import Decimal, ROUND_UP
+from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 
 
 logger = logging.getLogger(__name__)
@@ -24,12 +24,20 @@ PAYMENT_FEE_FIX = 0.25
 
 
 def get_payment_fee(price):
-    fee = (Decimal(str(PAYMENT_FEE_VARIABLE)) * price) + Decimal(str(PAYMENT_FEE_FIX))
-    return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
+    # Convert all constants to Decimal FIRST
+    variable_fee = Decimal(str(PAYMENT_FEE_VARIABLE))
+    fixed_fee = Decimal(str(PAYMENT_FEE_FIX))
 
+    # Ensure price is Decimal
+    price = Decimal(price)
+
+    fee = (variable_fee * price) + fixed_fee
+    return fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 def get_platform_fee(price):
-    fee = Decimal(str(PLATFORM_FEE)) * price
+    price = Decimal(price)
+    platform_rate = Decimal(str(PLATFORM_FEE))
+    fee = platform_rate * price
     return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
 
 
