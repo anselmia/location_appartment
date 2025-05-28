@@ -4,18 +4,18 @@ from django.template.loader import render_to_string
 from django.core.mail import mail_admins
 from django.conf import settings
 
+from administration.models import Entreprise
+
 
 logger = logging.getLogger(__name__)
+
+entreprise = Entreprise.objects.first()
 
 
 def send_mail_on_new_reservation(logement, reservation, user):
     try:
         # Build context for the email
-        email_context = {
-            "reservation": reservation,
-            "logement": logement,
-            "user": user,
-        }
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
         # Render email content
         admin_message = render_to_string("email/new_reservation.txt", email_context)
@@ -52,11 +52,7 @@ def send_mail_on_new_reservation(logement, reservation, user):
 def send_mail_on_refund(logement, reservation, user):
     try:
         # Context for email templates
-        email_context = {
-            "reservation": reservation,
-            "logement": logement,
-            "user": user,
-        }
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
         # ===== ADMIN EMAIL =====
         admin_message = render_to_string("email/refund_admin.txt", email_context)
@@ -95,7 +91,13 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
         user = reservation.admin if user_type == "admin" else reservation.owner
         amount = reservation.admin_transferred_amount if user_type == "admin" else reservation.transferred_amount
 
-        email_context = {"reservation": reservation, "logement": logement, "user": user, "amount": amount}
+        email_context = {
+            "reservation": reservation,
+            "logement": logement,
+            "user": user,
+            "amount": amount,
+            "entreprise": entreprise,
+        }
 
         # ===== ADMIN EMAIL =====
         admin_message = render_to_string("email/transfer_admin.txt", email_context)
@@ -137,6 +139,7 @@ def send_mail_payment_link(reservation, session):
             "logement": reservation.logement,
             "user": reservation.user,
             "url": session["checkout_session_url"],
+            "entreprise": entreprise,
         }
 
         # ===== Customer EMAIL =====
@@ -157,13 +160,22 @@ def send_mail_payment_link(reservation, session):
 
 def send_mail_on_payment_failure(logement, reservation, user):
     try:
-        email_context = {
-            "reservation": reservation,
-            "logement": logement,
-            "user": user,
-        }
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
-        # Plain text email body
+        # ===== ADMIN EMAIL =====
+        admin_message = render_to_string("email/payment_failure_admin.txt", email_context)
+
+        send_mail(
+            subject=f"💸 Échec de paiement - {logement.name} - Réservation {reservation.code}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=logement.mail_list,
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Refund email sent to admins for reservation {reservation.code}.")
+
+        # ===== Customer EMAIL =====
         message = render_to_string("email/payment_failure.txt", email_context)
 
         # Subject line
