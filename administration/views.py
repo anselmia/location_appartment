@@ -1108,7 +1108,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         ):
             month = reservation.start.replace(day=1)
             monthly_manual_data[month]["admin_transfer"] += reservation.admin_transferable_amount or 0
-            monthly_manual_data[month]["owner_transfer"] += reservation.transferable_amount or 0
+            monthly_manual_data[month]["owner_transfer"] += reservation.transferable_amount - reservation.tax or 0
 
         # Merge into final monthly data list
         final_monthly_data = []
