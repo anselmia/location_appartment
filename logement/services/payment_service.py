@@ -649,7 +649,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
         )
 
 
-def handle_transfer_create(data: StripeTransferEventData):
+def handle_transfer_created(data: StripeTransferEventData):
     from logement.models import Reservation
 
     try:
