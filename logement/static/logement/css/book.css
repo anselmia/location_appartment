@@ -150,6 +150,16 @@ button#submit-booking:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
+button#submit-booking:disabled,
+button#submit-booking:disabled:hover {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.7;
+}
+
 /* ============ PRICING SUMMARY ============ */
 .pricing-summary {
   background: #fafafa;
