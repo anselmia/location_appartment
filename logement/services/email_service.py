@@ -88,7 +88,7 @@ def send_mail_on_refund(logement, reservation, user):
 def send_mail_on_new_transfer(logement, reservation, user_type):
     try:
         # Context for email templates
-        user = reservation.admin if user_type == "admin" else reservation.owner
+        user = logement.admin if user_type == "admin" else logement.owner
         amount = reservation.admin_transferred_amount if user_type == "admin" else reservation.transferred_amount
 
         email_context = {
