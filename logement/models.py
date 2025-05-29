@@ -429,7 +429,7 @@ class Reservation(models.Model):
         if not self.payment_fee:
             self.payment_fee = get_payment_fee(self.price)
 
-        if not self.platform_fee:
+        if not self.platform_fee and self.platform_fee != 0:
             self.platform_fee = get_platform_fee(self.price)
 
         if not self.admin_fee_rate:
