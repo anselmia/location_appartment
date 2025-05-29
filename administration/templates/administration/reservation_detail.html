@@ -139,11 +139,13 @@
                 <dd class="col-sm-7">
                   {{ reservation.payment_fee|floatformat:2 }} €
                 </dd>
-                <dt class="col-sm-5"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel">
-                  Frais Plateforme <i class="bi bi-info-circle text-muted"></i>
+                <dt class="col-sm-5 d-flex align-items-center">
+                  Frais Plateforme
+                  <i class="ml-2 text-muted fas fa-info-circle"
+                     data-toggle="tooltip"
+                     data-placement="top"
+                     title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel.">
+                  </i>
                 </dt>
                 <dd class="col-sm-7">
                   {{ reservation.platform_fee|floatformat:2|default:"—" }} €
@@ -252,3 +254,10 @@
     </div>
   </div>
 {% endblock content %}
+{% block extra_js %}
+  <script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+  </script>
+{% endblock extra_js %}
