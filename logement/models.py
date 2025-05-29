@@ -548,7 +548,7 @@ class Reservation(models.Model):
             amount = max(Decimal("0"), amount)
 
             if self.logement.admin:
-                admin_rate = Decimal(self.logement.admin_fee_rate or 0)
+                admin_rate = Decimal(self.admin_fee_rate or 0)
                 admin_fee = admin_rate * amount
                 amount -= admin_fee
 
