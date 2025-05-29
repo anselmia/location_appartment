@@ -1080,12 +1080,11 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
             }
         )
 
+        reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year)
+
         # Group and aggregate by month
         monthly_data = (
-            Reservation.objects.filter(
-                Q(statut="confirmee") | Q(statut="terminee"),
-                start__year=selected_year,
-            )
+            reservations
             .annotate(month=TruncMonth("start"))
             .values("month")
             .annotate(
@@ -1105,10 +1104,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         })
 
         # Compute manually
-        for reservation in Reservation.objects.filter(
-            Q(statut="confirmee") | Q(statut="terminee"),
-            start__year=selected_year,
-        ):
+        for reservation in reservations:
             month = reservation.start.replace(day=1)
             monthly_manual_data[month]["admin_transfer"] += reservation.admin_transferable_amount or 0
             monthly_manual_data[month]["owner_transfer"] += reservation.transferable_amount - reservation.tax or 0
