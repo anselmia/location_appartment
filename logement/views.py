@@ -73,7 +73,6 @@ def autocomplete_cities(request):
         return HttpResponse("".join(f"<option value='{c.name}'></option>" for c in cities))
     except Exception as e:
         logger.exception(f"Autocomplete city search failed: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 def view_logement(request, logement_id):
@@ -106,7 +105,6 @@ def view_logement(request, logement_id):
         )
     except Exception as e:
         logger.exception(f"Error loading logement detail: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -174,7 +172,6 @@ def book(request, logement_id):
         )
     except Exception as e:
         logger.exception(f"Booking failed: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -259,7 +256,6 @@ def payment_success(request, code):
         return redirect("logement:book", logement_id=1)
     except Exception as e:
         logger.exception(f"Error handling payment success: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -314,7 +310,6 @@ def export_ical(request, code):
             return HttpResponse("Aucune donnée à exporter", status=204)
     except Exception as e:
         logger.exception(f"Error exporting iCal:  {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @csrf_exempt
@@ -370,4 +365,3 @@ def logement_search(request):
         )
     except Exception as e:
         logger.exception(f"Error in logement search: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)

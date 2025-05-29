@@ -97,7 +97,6 @@ def admin_dashboard(request):
         return render(request, "administration/dashboard.html", {"logements": logements})
     except Exception as e:
         logger.exception(f"Error rendering admin dashboard: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -116,7 +115,6 @@ def add_logement(request):
         return render(request, "administration/add_logement.html", {"form": form})
     except Exception as e:
         logger.exception(f"Error adding logement: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -151,7 +149,6 @@ def edit_logement(request, logement_id):
         )
     except Exception as e:
         logger.exception(f"Error editing logement {logement_id}: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -164,7 +161,6 @@ def add_room(request, logement_id):
         return redirect("administration:edit_logement", logement_id)
     except Exception as e:
         logger.exception(f"Error adding room to logement {logement_id}: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -179,7 +175,6 @@ def delete_room(request, room_id):
         return redirect("administration:edit_logement", logement_id)
     except Exception as e:
         logger.exception(f"Error deleting room {room_id}: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -198,7 +193,6 @@ def upload_photos(request, logement_id):
         return redirect("administration:edit_logement", logement_id)
     except Exception as e:
         logger.exception(f"Error uploading photos for logement {logement_id}: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -300,7 +294,6 @@ def update_equipment(request, logement_id):
         return redirect("administration:edit_logement", logement.id)
     except Exception as e:
         logger.exception(f"Error updating equipment for logement {logement_id}: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -330,7 +323,6 @@ def traffic_dashboard(request):
         )
     except Exception as e:
         logger.exception(f"Error loading traffic dashboard: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 @login_required
@@ -593,7 +585,6 @@ def manage_discounts(request):
         )
     except Exception as e:
         logger.exception(f"Error managing discounts: {e}")
-        return HttpResponse("Erreur interne serveur", status=500)
 
 
 def api_economie_data(request, logement_id):
@@ -1208,6 +1199,7 @@ def user_update_view(request, user_id=None):
 @user_passes_test(is_admin)
 def user_delete_view(request, user_id):
     from accounts.models import CustomUser
+
     user = get_object_or_404(CustomUser, id=user_id)
     if request.method == "POST":
         user.delete()
