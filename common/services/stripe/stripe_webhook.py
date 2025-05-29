@@ -108,7 +108,7 @@ def handle_webhook_event(event):
         elif event_type == EventType.REFUND_UPDATED:
             handle_charge_refunded(e.event.data)
 
-        elif event_type == EventType.TRANSFER_REVERSED:
+        elif event_type == EventType.TRANSFER_CREATED:
             handle_transfer_created(e.event.data)
 
         else:
