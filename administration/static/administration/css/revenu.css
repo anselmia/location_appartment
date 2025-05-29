@@ -26,7 +26,7 @@
   opacity: 0.9;
 }
 
-#revenue-page form {  
+#revenue-page form {
   display: contents;
 }
 
@@ -65,10 +65,13 @@
 
 /* === Economic Summary Section === */
 #revenue-page .card-body h4 {
+  display: flex;
   font-size: 1.5rem;
   color: var(--secondary-color);
   font-family: var(--font-title);
   margin-bottom: 1.5rem;
+  justify-content: center;
+  margin: auto;
 }
 
 #revenue-page .card-body .border {

@@ -1,12 +1,29 @@
 from django import template
-import calendar
-
 register = template.Library()
+
+
+FRENCH_MONTHS = {
+    1: "Janvier",
+    2: "Février",
+    3: "Mars",
+    4: "Avril",
+    5: "Mai",
+    6: "Juin",
+    7: "Juillet",
+    8: "Août",
+    9: "Septembre",
+    10: "Octobre",
+    11: "Novembre",
+    12: "Décembre",
+}
 
 
 @register.filter
 def get_month_name(month_number):
-    return calendar.month_name[int(month_number)]
+    try:
+        return FRENCH_MONTHS[int(month_number)]
+    except (ValueError, KeyError):
+        return f"Mois {month_number}"
 
 
 @register.filter
@@ -17,6 +34,7 @@ def to_month_range(value):
 @register.filter
 def get(dict_data, key):
     return dict_data.get(key)
+
 
 @register.filter
 def cents_to_euros(value):

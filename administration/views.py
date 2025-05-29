@@ -53,6 +53,7 @@ from logement.models import (
     Room,
     airbnb_booking,
     booking_booking,
+    CloseDate,
 )
 from logement.services.logement import get_logements
 from logement.services.payment_service import (
@@ -371,10 +372,14 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             custom_prices = Price.objects.filter(logement_id=logement_id, date__range=(start, end))
             price_map = {p.date: p.value for p in custom_prices}
 
-            daily_prices = [
+            closed_date = CloseDate.objects.filter(logement_id=logement_id, date__range=(start, end))
+            statut_map = {p.date: 0 for p in closed_date}
+
+            daily_data = [
                 {
                     "date": (start + timedelta(days=i)).isoformat(),
-                    "value": price_map.get(start + timedelta(days=i), str(default_price)),
+                    "price": price_map.get(start + timedelta(days=i), str(default_price)),
+                    "statut": 0 if (start + timedelta(days=i)) in statut_map else 1,
                 }
                 for i in range((end - start).days + 1)
             ]
@@ -413,12 +418,15 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
                 for b in booking_booking.objects.filter(logement_id=logement_id, start__lte=end, end__gte=start)
             ]
 
+            closed_days = [{"date": c.date.isoformat()} for c in closed_date]
+
             return Response(
                 {
-                    "data": daily_prices,
+                    "data": daily_data,
                     "data_bookings": data_bookings,
                     "airbnb_bookings": airbnb_bookings,
                     "booking_bookings": booking_bookings,
+                    "closed_days": closed_days,
                 }
             )
         except Exception as e:
@@ -438,14 +446,22 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             logement_id = request.data.get("logement_id")
             start = datetime.strptime(request.data["start"], "%Y-%m-%d").date()
             end = datetime.strptime(request.data["end"], "%Y-%m-%d").date()
-            value = float(request.data.get("value"))
+            price = float(request.data.get("price"))
+            statut = int(request.data.get("statut"))
 
-            if not all([logement_id, start, end, value]):
+            if not all([logement_id, start, end, price]):
                 return Response({"error": "Missing required parameters."}, status=400)
 
             for i in range((end - start).days + 1):
                 day = start + timedelta(days=i)
-                Price.objects.update_or_create(logement_id=logement_id, date=day, defaults={"value": value})
+                Price.objects.update_or_create(logement_id=logement_id, date=day, defaults={"value": price})
+
+                if statut == 0:
+                    # Mark as closed
+                    CloseDate.objects.get_or_create(logement_id=logement_id, date=day)
+                else:
+                    # Ensure it's marked open (remove CloseDate if exists)
+                    CloseDate.objects.filter(logement_id=logement_id, date=day).delete()
 
             logger.info(f"Bulk prices updated for logement {logement_id}")
             return Response({"status": "updated"})
@@ -1032,20 +1048,10 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         reservations = get_valid_reservations_for_admin(self.request.user)
 
-        all_years = (
-            reservations
-            .annotate(year=ExtractYear("start"))
-            .values_list("year", flat=True)
-            .distinct()
-        )
+        all_years = reservations.annotate(year=ExtractYear("start")).values_list("year", flat=True).distinct()
         selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
 
-        all_months = (
-            reservations
-            .annotate(month=ExtractMonth("start"))
-            .values_list("month", flat=True)
-            .distinct()
-        )
+        all_months = reservations.annotate(month=ExtractMonth("start")).values_list("month", flat=True).distinct()
         selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
 
         reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year, selected_month)
@@ -1084,8 +1090,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         # Group and aggregate by month
         monthly_data = (
-            reservations
-            .annotate(month=TruncMonth("start"))
+            reservations.annotate(month=TruncMonth("start"))
             .values("month")
             .annotate(
                 brut=Sum("price"),
@@ -1098,10 +1103,12 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         )
 
         # Compute admin_fees manually
-        monthly_manual_data = defaultdict(lambda: {
-            "admin_transfer": 0,
-            "owner_transfer": 0,
-        })
+        monthly_manual_data = defaultdict(
+            lambda: {
+                "admin_transfer": 0,
+                "owner_transfer": 0,
+            }
+        )
 
         # Compute manually
         for reservation in reservations:

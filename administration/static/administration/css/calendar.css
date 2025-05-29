@@ -119,6 +119,15 @@
   color: white !important;
 }
 
+.fc-day-closed {
+  background-color: #e45e5e !important; /* gris pâle sans transparence */
+  opacity: 0.6 !important;
+}
+
+.fc .fc-daygrid-day.fc-day-closed .fc-daygrid-day-frame {
+  background-color: rgba(255, 100, 100, 0.15);
+}
+
 .booking-event.internal {
   background: #2d3748 !important;
   color: white !important;

@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedEnd = null;
   let reservedDates = new Set();
   let dailyPriceMap = {};
+  let dailyStatutMap = {};
   axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
   axios.defaults.headers.post["Content-Type"] = "application/json";
 
@@ -57,13 +58,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 end: fetchInfo.endStr,
               }
             );
+            console.log("✅ API Response (res.data.data):", res.data.data);
 
             // 1. Daily Prices (background display)
             const priceEvents = res.data.data.map((e) => ({
               start: e.date,
               display: "background",
               className: "fc-event-price",
-              title: `${parseFloat(e.value).toFixed(2)} €`,
+              title: `${parseFloat(e.price).toFixed(2)} €`,
             }));
 
             // 2. Internal reservations
@@ -90,9 +92,26 @@ document.addEventListener("DOMContentLoaded", function () {
               className: "booking-event bookingcom",
             }));
 
+            // 5. Closed Days
+            const closedEvents = res.data.closed_days.map((c) => ({
+              start: c.date,
+              display: "background",
+              className: "fc-day-closed", // 👈 style spécial
+            }));
+
             dailyPriceMap = {};
             res.data.data.forEach((e) => {
-              dailyPriceMap[e.date] = parseFloat(e.value);
+              dailyPriceMap[e.date] = parseFloat(e.price);
+              console.log(
+                "💡 dailyPriceMap[e.date] =",
+                e.date,
+                parseFloat(e.price)
+              );
+            });
+
+            dailyStatutMap = {};
+            res.data.data.forEach((e) => {
+              dailyStatutMap[e.date] = parseInt(e.statut);
             });
 
             function addReservedRange(start, end) {
@@ -117,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             successCallback([
               ...priceEvents,
+              ...closedEvents, 
               ...bookings,
               ...airbnbBookings,
               ...bookingBookings,
@@ -242,16 +262,19 @@ document.addEventListener("DOMContentLoaded", function () {
       : `Date : ${startStr}`;
 
     let price = 0;
+    let statut = 1;
     let priceDetails = []; // Store the breakdown of price calculation steps
 
     if (!endStr) {
       // Single date
       price = dailyPriceMap[startStr] || 0;
+      statut = dailyStatutMap[startStr] || 1;
     } else {
       // Multiple days: min price
       const start = new Date(startStr);
       const end = new Date(endStr);
       let minPrice = Infinity;
+      let hasClosedDay = false;
 
       for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
         const key = d.toISOString().split("T")[0];
@@ -259,9 +282,20 @@ document.addEventListener("DOMContentLoaded", function () {
           const current = parseFloat(dailyPriceMap[key]);
           if (current < minPrice) minPrice = current;
         }
+        if (dailyStatutMap[key] === 0) {
+          hasClosedDay = true;
+        }
       }
 
       price = minPrice !== Infinity ? minPrice : 0;
+      statut = hasClosedDay ? 0 : 1;
+
+      console.log("🟡 showPanel startStr:", startStr);
+      console.log("🟡 dailyPriceMap[startStr]:", dailyPriceMap[startStr]);
+      console.log(
+        "🟡 typeof dailyPriceMap[startStr]:",
+        typeof dailyPriceMap[startStr]
+      );
     }
 
     // Show base price
@@ -271,6 +305,7 @@ document.addEventListener("DOMContentLoaded", function () {
       value: basePrice,
     });
     document.getElementById("base-price").value = basePrice.toFixed(2);
+    document.getElementById("statut").value = statut;
 
     updateFinalPrice();
 
@@ -397,10 +432,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Appliquer
   document.getElementById("apply-price").addEventListener("click", () => {
     const price = document.getElementById("base-price").value;
+    const statut = parseInt(document.getElementById("statut").value);
 
     const payload = {
       logement_id: selector.value,
-      value: price,
+      price: price,
+      statut: statut,
       start: selectedStart,
       end: selectedEnd ? dayBefore(selectedEnd) : selectedStart,
     };

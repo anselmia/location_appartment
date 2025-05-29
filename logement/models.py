@@ -175,6 +175,14 @@ class Price(models.Model):
         return f"Prix du {self.date}: {self.value}"
 
 
+class CloseDate(models.Model):
+    logement = models.ForeignKey(Logement, related_name="night_state", on_delete=models.CASCADE)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"Nut du {self.date} fermée"
+
+
 class DiscountType(models.Model):
     code = models.CharField(max_length=50, unique=True, default="")
     name = models.CharField(max_length=100, default="")
@@ -368,11 +376,11 @@ def generate_unique_code(length=8):
 
 class Reservation(models.Model):
     code = models.CharField(max_length=20, unique=True)
-    logement = models.ForeignKey(Logement, on_delete=models.CASCADE)
+    logement = models.ForeignKey(Logement, null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(
         CustomUser,
-        on_delete=models.CASCADE,
-        null=False,  # Make it required
+        on_delete=models.SET_NULL,
+        null=True,  # Make it required
         blank=False,
     )
     start = models.DateField()

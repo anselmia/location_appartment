@@ -5,17 +5,9 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 import logging
 from django.db.models import Q
-from logement.models import (
-    Reservation,
-    airbnb_booking,
-    booking_booking,
-    Price,
-    Discount,
-    Logement,
-)
-from logement.services.payment_service import refund_payment,get_payment_fee
+from logement.models import Reservation, airbnb_booking, booking_booking, Price, Discount, Logement, CloseDate
+from logement.services.payment_service import refund_payment, get_payment_fee
 from django.db.models.functions import ExtractYear, ExtractMonth
-
 
 
 logger = logging.getLogger(__name__)
@@ -33,9 +25,7 @@ def get_reservations(user, logement_id=None):
         logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
         return Reservation.objects.filter(logement__in=logements)
     except Exception as e:
-        logger.error(
-            f"Error occurred while retrieving reservations: {e}", exc_info=True
-        )
+        logger.error(f"Error occurred while retrieving reservations: {e}", exc_info=True)
         raise
 
 
@@ -61,16 +51,10 @@ def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=No
 def get_reservation_years_and_months():
     try:
         years = (
-            Reservation.objects.annotate(y=ExtractYear("start"))
-            .values_list("y", flat=True)
-            .distinct()
-            .order_by("y")
+            Reservation.objects.annotate(y=ExtractYear("start")).values_list("y", flat=True).distinct().order_by("y")
         )
         months = (
-            Reservation.objects.annotate(m=ExtractMonth("start"))
-            .values_list("m", flat=True)
-            .distinct()
-            .order_by("m")
+            Reservation.objects.annotate(m=ExtractMonth("start")).values_list("m", flat=True).distinct().order_by("m")
         )
         return years, months
     except Exception as e:
@@ -81,18 +65,21 @@ def get_reservation_years_and_months():
 def get_available_logement_in_period(start, end, logements):
     try:
         logger.info(f"Fetching available logements between {start} and {end}.")
-        reservation_conflits = Reservation.objects.filter(
-            statut="confirmee", start__lt=end, end__gt=start
-        ).values_list("logement_id", flat=True)
-        airbnb_conflits = airbnb_booking.objects.filter(
-            start__lt=end, end__gt=start
-        ).values_list("logement_id", flat=True)
-        booking_conflits = booking_booking.objects.filter(
-            start__lt=end, end__gt=start
-        ).values_list("logement_id", flat=True)
-        conflits_ids = set(reservation_conflits).union(
-            airbnb_conflits, booking_conflits
+        reservation_conflits = Reservation.objects.filter(statut="confirmee", start__lt=end, end__gt=start).values_list(
+            "logement_id", flat=True
         )
+        airbnb_conflits = airbnb_booking.objects.filter(start__lt=end, end__gt=start).values_list(
+            "logement_id", flat=True
+        )
+        booking_conflits = booking_booking.objects.filter(start__lt=end, end__gt=start).values_list(
+            "logement_id", flat=True
+        )
+
+        closed_conflicts = CloseDate.objects.filter(date__gte=start, date__lte=end).values_list(
+            "logement_id", flat=True
+        )
+
+        conflits_ids = set(reservation_conflits).union(airbnb_conflits, booking_conflits, closed_conflicts)
         logements = logements.exclude(id__in=conflits_ids)
         logements = [l for l in logements if l.booking_limit <= start]
         logger.debug(f"Found {len(logements)} available logements.")
@@ -115,9 +102,7 @@ def get_booked_dates(logement, user=None):
             current_date += timedelta(days=1)
         reservations = Reservation.objects.filter(logement=logement, end__gte=today)
         if user and user.is_authenticated:
-            reservations = reservations.filter(
-                Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user))
-            )
+            reservations = reservations.filter(Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user)))
         else:
             reservations = reservations.filter(statut="confirmee")
         for r in reservations.order_by("start"):
@@ -125,27 +110,28 @@ def get_booked_dates(logement, user=None):
             while current < r.end:
                 reserved_start.add(current.isoformat())
                 if current != r.start or (
-                    current == r.start
-                    and (current - timedelta(days=1)).isoformat() in reserved_end
+                    current == r.start and (current - timedelta(days=1)).isoformat() in reserved_end
                 ):
                     reserved_end.add(current.isoformat())
                 current += timedelta(days=1)
         for model in [airbnb_booking, booking_booking]:
-            for r in model.objects.filter(logement=logement, end__gte=today).order_by(
-                "start"
-            ):
+            for r in model.objects.filter(logement=logement, end__gte=today).order_by("start"):
                 current = r.start
                 while current < r.end:
                     reserved_start.add(current.isoformat())
                     if current != r.start or (
-                        current == r.start
-                        and (current - timedelta(days=1)).isoformat() in reserved_end
+                        current == r.start and (current - timedelta(days=1)).isoformat() in reserved_end
                     ):
                         reserved_end.add(current.isoformat())
                     current += timedelta(days=1)
-        logger.debug(
-            f"{len(reserved_start)} dates réservées calculées pour logement {logement.id}"
-        )
+
+        # Ajout des dates fermées
+        closed_dates = CloseDate.objects.filter(logement=logement, date__gte=today).values_list("date", flat=True)
+        for d in closed_dates:
+            reserved_start.add(d.isoformat())
+            reserved_end.add(d.isoformat())
+
+        logger.debug(f"{len(reserved_start)} dates réservées calculées pour logement {logement.id}")
         return sorted(reserved_start), sorted(reserved_end)
     except Exception as e:
         logger.error(
@@ -157,25 +143,29 @@ def get_booked_dates(logement, user=None):
 
 def is_period_booked(start, end, logement_id, user):
     try:
-        logger.info(
-            f"Checking if period {start} to {end} is booked for logement {logement_id}."
+        logger.info(f"Checking if period {start} to {end} is booked for logement {logement_id}.")
+
+        # Réservations internes
+        reservations = Reservation.objects.filter(logement_id=logement_id, start__lt=end, end__gt=start).filter(
+            Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user))
         )
-        reservations = Reservation.objects.filter(
-            logement_id=logement_id, start__lt=end, end__gt=start
-        ).filter(Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user)))
-        airbnb_reservations = airbnb_booking.objects.filter(
-            logement_id=logement_id, start__lt=end, end__gt=start
-        )
-        booking_reservations = booking_booking.objects.filter(
-            logement_id=logement_id, start__lt=end, end__gt=start
-        )
+
+        # Réservations externes
+        airbnb_reservations = airbnb_booking.objects.filter(logement_id=logement_id, start__lt=end, end__gt=start)
+        booking_reservations = booking_booking.objects.filter(logement_id=logement_id, start__lt=end, end__gt=start)
+
+        # Dates fermées
+        closed_dates = CloseDate.objects.filter(logement_id=logement_id, date__gte=start, date__lt=end)
+
         if (
             reservations.exists()
             or airbnb_reservations.exists()
             or booking_reservations.exists()
+            or closed_dates.exists()
         ):
-            logger.debug(f"Period {start} to {end} is already booked.")
+            logger.debug(f"Period {start} to {end} is already booked or closed.")
             return True
+
         logger.debug(f"Period {start} to {end} is available.")
         return False
     except Exception as e:
@@ -244,10 +234,7 @@ def get_best_discounts(discounts, start_date, end_date):
                 if d.days_before_max and days_before > d.days_before_max:
                     is_valid = False
                 if is_valid:
-                    if not best_days_before or (
-                        (d.days_before_min or 0)
-                        > (best_days_before.days_before_min or 0)
-                    ):
+                    if not best_days_before or ((d.days_before_min or 0) > (best_days_before.days_before_min or 0)):
                         best_days_before = d
 
             if d.start_date and d.end_date:
@@ -266,15 +253,9 @@ def get_best_discounts(discounts, start_date, end_date):
 
 def apply_discounts(base_price, current_day, discounts_by_type):
     try:
-        logger.debug(
-            f"Applying discounts to price {base_price} for date {current_day}."
-        )
+        logger.debug(f"Applying discounts to price {base_price} for date {current_day}.")
 
-        base_price = (
-            Decimal(str(base_price))
-            if not isinstance(base_price, Decimal)
-            else base_price
-        )
+        base_price = Decimal(str(base_price)) if not isinstance(base_price, Decimal) else base_price
         discount_applied = []
 
         for key in ["min_nights", "days_before"]:
@@ -287,9 +268,7 @@ def apply_discounts(base_price, current_day, discounts_by_type):
                     discount_applied.append((d.name, discount))
                     logger.debug(f"Applied {d.name}: -{discount:.2f}")
                 except (InvalidOperation, TypeError) as e:
-                    logger.warning(
-                        f"Invalid discount value for {d.name}: {d.value} – {e}"
-                    )
+                    logger.warning(f"Invalid discount value for {d.name}: {d.value} – {e}")
 
         for d in discounts_by_type.get("date_range", []):
             if d.start_date <= current_day <= d.end_date:
@@ -300,32 +279,23 @@ def apply_discounts(base_price, current_day, discounts_by_type):
                     discount_applied.append((d.name, discount))
                     logger.debug(f"Applied {d.name}: -{discount:.2f}")
                 except (InvalidOperation, TypeError) as e:
-                    logger.warning(
-                        f"Invalid discount value for {d.name}: {d.value} – {e}"
-                    )
+                    logger.warning(f"Invalid discount value for {d.name}: {d.value} – {e}")
 
         return base_price, discount_applied
     except Exception as e:
-        logger.exception(
-            f"Error applying discounts on {current_day} with base {base_price}: {e}"
-        )
+        logger.exception(f"Error applying discounts on {current_day} with base {base_price}: {e}")
         raise
-
 
 
 def calculate_price(logement, start, end, guestCount, base_price=None):
     try:
-        logger.info(
-            f"Calculating price for logement {logement.id}, dates {start} to {end}, {guestCount} guests."
-        )
+        logger.info(f"Calculating price for logement {logement.id}, dates {start} to {end}, {guestCount} guests.")
 
         nights = (end - start).days or 1
         default_price = Decimal(str(logement.price))
         base_price = Decimal(str(base_price)) if base_price else None
 
-        custom_prices = Price.objects.filter(
-            logement_id=logement.id, date__range=(start, end)
-        )
+        custom_prices = Price.objects.filter(logement_id=logement.id, date__range=(start, end))
         price_map = {p.date: Decimal(str(p.value)) for p in custom_prices}
 
         discounts = Discount.objects.filter(logement=logement, is_active=True)
@@ -337,30 +307,20 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
 
         for day in range(nights):
             current_day = start + timedelta(days=day)
-            daily_price = (
-                base_price if base_price else price_map.get(current_day, default_price)
-            )
+            daily_price = base_price if base_price else price_map.get(current_day, default_price)
             total_base += daily_price
 
-            final_price, discounts_today = apply_discounts(
-                Decimal(daily_price), current_day, best_discounts
-            )
+            final_price, discounts_today = apply_discounts(Decimal(daily_price), current_day, best_discounts)
             for name, amount in discounts_today:
                 amount = Decimal(str(amount))
-                discount_breakdown[name] = (
-                    discount_breakdown.get(name, Decimal("0.00")) + amount
-                )
+                discount_breakdown[name] = discount_breakdown.get(name, Decimal("0.00")) + amount
                 total_discount_amount += amount
 
         total_price = total_base - total_discount_amount
 
         # Extra guest fee
         extra_guests = max(guestCount - logement.nominal_traveler, 0)
-        extra_fee = (
-            Decimal(str(logement.fee_per_extra_traveler))
-            * Decimal(str(extra_guests))
-            * Decimal(str(nights))
-        )
+        extra_fee = Decimal(str(logement.fee_per_extra_traveler)) * Decimal(str(extra_guests)) * Decimal(str(nights))
         total_price += extra_fee
 
         # Tax calculation
@@ -393,9 +353,7 @@ def calculate_price(logement, start, end, guestCount, base_price=None):
         raise
 
 
-def validate_reservation_inputs(
-    logement, user, start, end, guest, expected_price=None, expected_tax=None
-):
+def validate_reservation_inputs(logement, user, start, end, guest, expected_price=None, expected_tax=None):
     try:
         logger.info(
             f"Validating reservation inputs for logement {logement.id}, user {user.id}, dates {start} to {end}."
@@ -412,9 +370,7 @@ def validate_reservation_inputs(
 
         duration = (end - start).days
         if duration > logement.max_days:
-            raise ValueError(
-                f"La durée de la réservation doit être inférieure à {logement.max_days} jour(s)."
-            )
+            raise ValueError(f"La durée de la réservation doit être inférieure à {logement.max_days} jour(s).")
 
         today = datetime.today().date()
         limit_months = logement.availablity_period
@@ -470,21 +426,15 @@ def cancel_and_refund_reservation(reservation):
                 try:
                     amount_in_cents = reservation.refundable_amount * 100
                     refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
-                    logger.info(
-                        f"Refund successfully processed for reservation {reservation.code}."
-                    )
+                    logger.info(f"Refund successfully processed for reservation {reservation.code}.")
                     return ("✅ Réservation annulée et remboursée avec succès.", None)
                 except Exception as e:
-                    logger.error(
-                        f"Refund failed for reservation {reservation.code}: {e}"
-                    )
+                    logger.error(f"Refund failed for reservation {reservation.code}: {e}")
                     return (
                         "⚠️ Réservation annulée, mais remboursement échoué.",
                         "❗ Le remboursement a échoué. Contactez l’assistance.",
                     )
-            logger.warning(
-                f"No Stripe payment intent for reservation {reservation.code}."
-            )
+            logger.warning(f"No Stripe payment intent for reservation {reservation.code}.")
             return (
                 "⚠️ Réservation annulée, mais remboursement échoué.",
                 "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
@@ -492,7 +442,5 @@ def cancel_and_refund_reservation(reservation):
         logger.info(f"Reservation {reservation.code} cancelled without refund.")
         return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
     except Exception as e:
-        logger.exception(
-            f"Error cancelling and refunding reservation {reservation.code}: {e}"
-        )
+        logger.exception(f"Error cancelling and refunding reservation {reservation.code}: {e}")
         raise

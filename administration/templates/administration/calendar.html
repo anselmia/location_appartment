@@ -3,7 +3,7 @@
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet"
         href="{% static 'administration/css/calendar.css' %}" />
 {% endblock extrahead %}
@@ -36,6 +36,13 @@
              class="price-panel hidden border rounded shadow-sm p-3 bg-light">
           <h5 class="fw-bold mb-3">🛠 Modifier le prix</h5>
           <p id="panel-dates" class="small text-muted"></p>
+          <div class="mb-3">
+            <label for="statut" class="form-label">Statut</label>
+            <select id="statut" class="form-select">
+              <option value="1">🟢 Ouvert</option>
+              <option value="0">🔴 Fermé</option>
+            </select>
+          </div>
           <div class="mb-3">
             <label for="base-price" class="form-label">Prix de base (€)</label>
             <input type="number" id="base-price" class="form-control" />
