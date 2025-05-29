@@ -18,7 +18,6 @@ from django.core.cache import cache
 from django.db.models import Sum, Q
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from django.http import (
-    HttpResponse,
     HttpResponseBadRequest,
     JsonResponse,
     QueryDict,

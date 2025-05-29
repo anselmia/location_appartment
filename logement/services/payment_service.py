@@ -433,6 +433,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
                 if refund_type == "full":
                     reservation.platform_fee = Decimal("0.00")
                     reservation.tax = Decimal("0.00")
+                    reservation.statut = "annulee"
 
                 reservation.save()
                 logger.info(f"✅ Reservation {reservation.code} updated successfully.")

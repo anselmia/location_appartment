@@ -448,7 +448,6 @@ def mark_reservation_cancelled(reservation):
     try:
         logger.info(f"Marking reservation {reservation.code} as cancelled.")
         reservation.statut = "annulee"
-        reservation.tax = 0
         reservation.save()
         logger.info(f"Reservation {reservation.code} has been marked as cancelled.")
     except Exception as e:
