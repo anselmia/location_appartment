@@ -128,6 +128,8 @@ STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
 STRIPE_PRIVATE_KEY = os.environ.get("STRIPE_PRIVATE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
+OPENAI_KEY = os.environ.get("OPENAI_KEY", "")
+
 # Development Email Backend (prints emails to console)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Optional: Set a default "from" address

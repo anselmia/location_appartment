@@ -2,6 +2,7 @@ import time
 import stripe
 import json
 import logging
+
 from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
@@ -11,9 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
-from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
-from django.db.models import Count, Q
 from .forms import ReservationForm
 from .models import Logement, Reservation, Price, City, Equipment, EquipmentType
 from logement.services.reservation_service import (
