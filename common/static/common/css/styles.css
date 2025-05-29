@@ -249,18 +249,6 @@ button,
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
-button:hover,
-.btn:hover {
-  background: #1a5fd1;
-  transform: scale(1.03);
-}
-
-/* Button Hover Effect */
-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(43, 124, 255, 0.6);
-}
-
 .btn-add {
   display: inline-block;
   background: #2b3d55;
