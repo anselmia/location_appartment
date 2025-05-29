@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
           {
             label: "Revenu Administrateur",
             data: admintotalRevenu,
-            backgroundColor: "#198754",
+            backgroundColor: "#0dcaf0",
             stack: "stack1",
           },
           {
