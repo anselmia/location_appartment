@@ -9,9 +9,7 @@ class Entreprise(models.Model):
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
-    logo = models.ImageField(
-        upload_to="administration/", blank=True, null=True
-    )
+    logo = models.ImageField(upload_to="administration/", blank=True, null=True)
 
 
 class SiteVisit(models.Model):
@@ -24,9 +22,7 @@ class SiteVisit(models.Model):
 class HomePageConfig(models.Model):
     nom = models.CharField(max_length=100, default="Votre Nom de Conciergerie")
     devise = models.CharField(max_length=255, default="Votre slogan ici")
-    banner_image = models.ImageField(
-        upload_to="administration/", blank=True, null=True
-    )
+    banner_image = models.ImageField(upload_to="administration/", blank=True, null=True)
     description = models.TextField(default="")
     primary_color = models.CharField(max_length=7, default="#ff385c")
     font_family = models.CharField(max_length=100, default="'Poppins', sans-serif")
@@ -38,24 +34,18 @@ class HomePageConfig(models.Model):
 
 
 class Service(models.Model):
-    config = models.ForeignKey(
-        HomePageConfig, on_delete=models.CASCADE, related_name="services"
-    )
+    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="services")
     icon_class = models.CharField(max_length=50, default="fas fa-star")
     description = models.TextField(blank=True, null=True)
     title = models.CharField(max_length=100)
-    background_image = models.ImageField(
-        upload_to="administration/", blank=True, null=True
-    )
+    background_image = models.ImageField(upload_to="administration/", blank=True, null=True)
 
     def __str__(self):
         return self.title
 
 
 class Testimonial(models.Model):
-    config = models.ForeignKey(
-        HomePageConfig, on_delete=models.CASCADE, related_name="testimonials"
-    )
+    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="testimonials")
     content = models.TextField()
 
     def __str__(self):
@@ -63,14 +53,10 @@ class Testimonial(models.Model):
 
 
 class Commitment(models.Model):
-    config = models.ForeignKey(
-        HomePageConfig, on_delete=models.CASCADE, related_name="commitments"
-    )
+    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="commitments")
     title = models.CharField(max_length=100, default="")
     text = models.CharField(max_length=255)
-    background_image = models.ImageField(
-        upload_to="administration/", blank=True, null=True
-    )
+    background_image = models.ImageField(upload_to="administration/", blank=True, null=True)
 
     def __str__(self):
         return f"Engagement: {self.text[:40]}..."

@@ -52,6 +52,7 @@ class EntrepriseForm(forms.ModelForm):
     class Meta:
         model = Entreprise
         fields = [
+            "name",
             "contact_address",
             "contact_phone",
             "contact_email",
