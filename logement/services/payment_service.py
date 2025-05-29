@@ -316,7 +316,7 @@ def charge_reservation(reservation):
         owner = reservation.logement.owner
         owner_amount = reservation.transferable_amount
 
-        if owner_amount:
+        if owner_amount < 0:
             logger.info(
                 f"⚠️ The transfer to owner {owner} is not a positive value for reservation {reservation.code}: {owner_amount} ."
             )
