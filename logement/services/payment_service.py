@@ -263,20 +263,9 @@ def charge_reservation(reservation):
     try:
         logger.info(f"💼 Preparing transfer for reservation {reservation.code}")
 
-        if reservation.transferable_amount <= 0:
-            logger.warning(
-                f"⚠️ Owner amount is non-positive ({reservation.transferable_amount}) for reservation {reservation.code}. Skipping transfer."
-            )
-            return
-
-        transferable_amount = reservation.transferable_amount
-        owner_amount = transferable_amount
-        admin_amount = 0
-
         admin = reservation.logement.admin
-        if admin:
-            admin_amount = transferable_amount * reservation.admin_fee_rate
-            owner_amount = transferable_amount - admin_amount
+        if admin and reservation.admin_transferable_amount > 0:
+            admin_amount = reservation.admin_transferable_amount
 
             if reservation.admin_transferred:
                 raise ValueError(
@@ -309,6 +298,13 @@ def charge_reservation(reservation):
             )
 
         owner = reservation.logement.owner
+        owner_amount = reservation.transferable_amount
+
+        if owner_amount:
+            logger.info(
+                f"⚠️ The transfer to owner {owner} is not a positive value for reservation {reservation.code}: {owner_amount} ."
+            )
+
         owner_account = owner.stripe_account_id
         if not owner_account:
             logger.error(f"❌ Missing Stripe account ID for owner of reservation {reservation.code}")
