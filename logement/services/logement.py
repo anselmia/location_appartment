@@ -24,7 +24,7 @@ def get_logements(user):
             # Non-admin users: filter logements where the user is either the owner or an admin
             qs = Logement.objects.filter(Q(owner=user) | Q(admin=user))
 
-        return qs
+        return qs.order_by("name")
 
     except Exception as e:
         # Log the error and raise an exception

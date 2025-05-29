@@ -23,7 +23,7 @@ def get_reservations(user, logement_id=None):
         if user.is_admin:
             return Reservation.objects.all()
         logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
-        return Reservation.objects.filter(logement__in=logements)
+        return Reservation.objects.filter(logement__in=logements).order_by("-date_reservation")
     except Exception as e:
         logger.error(f"Error occurred while retrieving reservations: {e}", exc_info=True)
         raise
@@ -42,7 +42,7 @@ def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=No
             qs = qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
         if month:
             qs = qs.annotate(res_month=ExtractMonth("start")).filter(res_month=month)
-        return qs
+        return qs.order_by("-date_reservation")
     except Exception as e:
         logger.error(f"Error fetching admin reservations: {e}", exc_info=True)
         raise
@@ -83,7 +83,7 @@ def get_available_logement_in_period(start, end, logements):
         logements = logements.exclude(id__in=conflits_ids)
         logements = [l for l in logements if l.booking_limit <= start]
         logger.debug(f"Found {len(logements)} available logements.")
-        return Logement.objects.filter(id__in=[l.id for l in logements])
+        return Logement.objects.filter(id__in=[l.id for l in logements]).order_by("name")
     except Exception as e:
         logger.error(f"Error checking logement availability: {e}", exc_info=True)
         return Logement.objects.none()
