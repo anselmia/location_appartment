@@ -132,7 +132,7 @@
               <p class="mb-1">
                 <strong>Propriétaire :</strong>
                 {% if r.transferred %}
-                  <span class="text-success">✔️ le {{ r.transfer_date|date:"d/m/Y" }}</span>
+                  <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }}</span>
                   <br>
                   <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
                 {% else %}
@@ -154,7 +154,7 @@
                 <p class="mb-0">
                   <strong>Admin :</strong>
                   {% if r.admin_transferred %}
-                    <span class="text-success">✔️ ({{ r.admin_transferred_amount }} €)</span>
+                    <span class="text-success">✔️ ({{ r.admin_transferred_amount|floatformat:2 }} €)</span>
                     <br>
                     <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
                   {% else %}
