@@ -122,6 +122,7 @@ section a:hover {
 
 .overlay p {
   font-size: 1.5rem;
+  color: var(--primary-color);
 }
 
 .cta-button {
