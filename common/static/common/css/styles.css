@@ -6,15 +6,28 @@
   --bg-color: #f9f9f9;
   --text-color: #333;
   --light-bg: #f8f5f2;
-  --text-color: #d4af7f;
   --success-color: #198754;
   --danger-color: #dc3545;
   --warning-color: #ffc107;
   --info-color: #0dcaf0;
   --font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  --color-text: #222;
+  --color-title: #111;
+  --color-border: #ddd;
 
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
+  --font-body: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-title: "Playfair Display", Georgia, serif;
+  --font-family: "Playfair Display", serif;
+
+  --spacing-xs: 0.4rem;
+  --spacing-sm: 0.8rem;
+  --spacing-md: 1.6rem;
+  --spacing-lg: 2.4rem;
+  --spacing-xl: 4rem;
+
+  --max-content-width: 960px;
 
   --light-bg: #f8f5f2;
   --bg-white: #ffffff;

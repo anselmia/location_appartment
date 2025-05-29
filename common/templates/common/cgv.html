@@ -1,57 +1,87 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block extrahead %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}"> 
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
-
 {% block content %}
-<div class="cgu-wrapper">
-    <article class="cgu-content">
-        <section>
-            <h1>Conditions Générales de vente</h1>
-    
-            <h2>1. Présentation</h2>
-            <p>La société {{ entreprise.name }} propose des contrats de location saisonnière via leur site internet et différentes plateformes spécialisées. Les réservations et paiements sont sécurisés via Stripe ou, sous conditions, par virement bancaire.</p>
-    
-            <h2>2. Contrat de location</h2>
-            <p>La réservation implique l’acceptation du contrat de location proposé par {{ entreprise.name }}. En cas de refus de signature, d’absence de pièce d’identité ou de dépôt de garantie, la réservation pourra être annulée. {{ entreprise.name }} se réserve également le droit d’annuler en cas de fraude ou comportement inapproprié.</p>
-    
-            <h2>3. Réservation et annulation</h2>
-            <ul>
-                <li><strong>Conditions d'annulation :</strong> Selon les règles du logement.</li>
-                <li><strong>Frais d'annulation :</strong>Il sera toujours prélevé 1% du montant de la réservation pour couvrr les frais de paiement via Stripe</li>
-                <li>En cas d’imprévu de la part de l’agence ou du propriétaire, un remboursement total ou partiel pourra être proposé, ou un relogement.</li>
-            </ul>
-    
-            <h2>4. Dépôt de garantie</h2>
-            <p>Un dépôt de garantie est exigé, via carte bancaire ou virement. Il est obligatoire pour l’accès au logement.</p>
-    
-            <h2>5. Capacité d’accueil</h2>
-            <p>Le nombre de voyageurs ne peut excéder celui indiqué dans la réservation. Dans le cas contraire, l’entrée pourra être refusée.</p>
-    
-            <h2>6. Obligations du locataire</h2>
-            <ul>
-                <li>Réspecter les règles du logement.</li>
-                <li>Utiliser les lieux paisiblement, sans nuisance au voisinage.</li>
-                <li>Pas de sous-location ni d’activité commerciale.</li>
-                <li>Respecter l’agencement et le mobilier.</li>
-                <li>Maintenir le logement propre et en bon état.</li>
-                <li>Pas d’animaux sans accord préalable.</li>
-                <li>Autoriser {{ entreprise.name }} ou ses partenaires à accéder au logement en cas de besoin.</li>
-            </ul>
-    
-            <h2>7. Arrivée et départ</h2>
-            <ul>
-                <li><strong>Arrivée :</strong> à partir de 15h00 (sauf règle spécifique du logement ou accord préalable).</li>
-                <li><strong>Départ :</strong> avant 11h00 (sauf règle spécifique du logement ou accord préalable).</li>
-            </ul>
-    
-            <h2>8. Services inclus</h2>
-            <p>Le logement inclut : linge de maison, internet, TV, chauffage, eau, électricité. Climatisation et parking si disponibles. Aucun frais de ménage n’est ajouté, mais le logement doit être rendu propre. Une retenue sur caution est possible si ce n’est pas respecté.</p>
-        </section>
-
-    </article>
-</div>
+    <div class="cgu-wrapper">
+        <article class="cgu-content">
+            <section>
+                <h1>Conditions Générales de Vente</h1>
+                <h2>1. Présentation</h2>
+                <p>
+                    La société {{ entreprise.name }} propose des contrats de location saisonnière en qualité de mandataire de propriétaires, via son site internet et différentes plateformes spécialisées. Les réservations et paiements sont sécurisés via Stripe ou, sous conditions spécifiques, par virement bancaire.
+                </p>
+                <h2>2. Contrat de location</h2>
+                <p>
+                    La réservation implique l’acceptation pleine et entière du contrat de location, des présentes CGV ainsi que des CGU du site {{ entreprise.name }}. Le contrat est formé dès validation du paiement. En cas de refus de signature, d’absence de pièce d’identité valide ou de dépôt de garantie, la réservation pourra être annulée. {{ entreprise.name }} se réserve également le droit d’annuler en cas de suspicion de fraude ou comportement inapproprié du voyageur.
+                </p>
+                <h2>3. Réservation et annulation</h2>
+                <ul>
+                    <li>
+                        <strong>Conditions d’annulation :</strong> Chaque logement dispose de ses propres règles d’annulation, indiquées avant la validation de la réservation. Ces règles précisent les délais et pourcentages de remboursement éventuels.
+                    </li>
+                    <li>
+                        <strong>Frais de paiement :</strong> Les frais de traitement de paiement (2.5% du montant de la réservation), facturés par notre prestataire Stripe, ne sont en aucun cas remboursables, même en cas d’annulation gratuite selon les règles du logement.
+                    </li>
+                    <li>
+                        <strong>Frais d’annulation :</strong> Si des frais d’annulation sont prévus par les conditions du logement, ils seront déduits du montant remboursé. Ils s’appliquent indépendamment des frais Stripe.
+                    </li>
+                    <li>
+                        En cas d’annulation ou de modification de notre part (indisponibilité, problème technique, etc.), un relogement ou un remboursement total ou partiel pourra être proposé selon les circonstances.
+                    </li>
+                </ul>
+                <h2>4. Dépôt de garantie</h2>
+                <p>
+                    Un dépôt de garantie est requis avant toute entrée dans le logement, via empreinte de carte bancaire (sans débit immédiat) ou virement validé par nos équipes. À défaut, l’accès au logement pourra être refusé sans remboursement. Le dépôt pourra être retenu en cas de dégradations, non-respect du ménage ou infraction aux règles contractuelles.
+                </p>
+                <h2>5. Capacité d’accueil</h2>
+                <p>
+                    Le nombre de voyageurs ne doit en aucun cas dépasser celui précisé dans la réservation. Tout dépassement non autorisé pourra entraîner un refus d’accès, des pénalités ou une retenue sur caution.
+                </p>
+                <h2>6. Obligations du locataire</h2>
+                <ul>
+                    <li>Respecter les règles du logement et du voisinage.</li>
+                    <li>Ne pas organiser d’événements ni de fêtes sans autorisation écrite.</li>
+                    <li>Utiliser les lieux paisiblement, sans nuisance sonore (notamment entre 22h00 et 08h00).</li>
+                    <li>Ne pas sous-louer ni exercer d’activité commerciale depuis le logement.</li>
+                    <li>Maintenir le logement propre et respecter les meubles, équipements et agencement.</li>
+                    <li>Ne pas introduire d’animaux sans accord préalable écrit.</li>
+                    <li>
+                        Autoriser {{ entreprise.name }} ou ses partenaires à accéder au logement en cas d’urgence, maintenance ou besoin légitime.
+                    </li>
+                </ul>
+                <h2>7. Arrivée et départ</h2>
+                <ul>
+                    <li>
+                        <strong>Arrivée :</strong> à partir de 15h00 (sauf indication contraire).
+                    </li>
+                    <li>
+                        <strong>Départ :</strong> avant 11h00. Tout départ tardif non autorisé pourra entraîner une facturation de 50€ par heure entamée.
+                    </li>
+                </ul>
+                <h2>8. Services inclus</h2>
+                <p>
+                    Les logements incluent, sauf mention contraire : linge de maison, internet, TV, chauffage, eau, électricité. Climatisation, machine à laver et parking sont inclus s’ils sont explicitement mentionnés. Aucun frais de ménage n’est appliqué, mais le logement doit être restitué propre. Une retenue sur la caution est possible en cas de non-respect (vaisselle non faite, poubelles non sorties, etc.).
+                </p>
+                <h2>9. Responsabilité et assurance</h2>
+                <p>
+                    Le locataire est responsable de tout dommage causé durant son séjour. Une assurance responsabilité civile villégiature est fortement recommandée. {{ entreprise.name }} décline toute responsabilité en cas de vol, perte ou dégradation d’effets personnels, ainsi que pour les nuisances extérieures (voisinage, travaux, etc.) ou pannes de service indépendantes de sa volonté.
+                </p>
+                <h2>10. Litiges</h2>
+                <p>
+                    Tout litige relatif aux présentes CGV est soumis au droit français. Les parties chercheront une solution amiable. À défaut, le litige relèvera des tribunaux compétents du siège de {{ entreprise.name }}.
+                </p>
+                <h2>11. Données personnelles</h2>
+                <p>
+                    Les données collectées sont traitées conformément à notre politique de confidentialité, dans le respect du RGPD. Elles sont utilisées pour la gestion du séjour, la facturation, la sécurité et les obligations légales.
+                </p>
+                <h2>12. Modifications des CGV</h2>
+                <p>
+                    {{ entreprise.name }} se réserve le droit de modifier à tout moment les présentes conditions. La version applicable est celle en vigueur à la date de la réservation.
+                </p>
+            </section>
+        </article>
+    </div>
 {% endblock %}

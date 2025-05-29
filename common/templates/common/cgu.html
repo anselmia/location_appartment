@@ -3,54 +3,81 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}"> 
+  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="cgu-wrapper">
-    <article class="cgu-content">
-        <section>
-            <h1>Conditions Générales d'Utilisation</h1>
-    
-            <h2>1. Présentation</h2>
-            <p>La société {{ entreprise.name }} propose des contrats de location saisonnière via leur site internet et différentes plateformes spécialisées. Les réservations et paiements sont sécurisés via Stripe ou, sous conditions, par virement bancaire.</p>
-    
-            <h2>2. Contrat de location</h2>
-            <p>La réservation implique l’acceptation du contrat de location proposé par {{ entreprise.name }}. En cas de refus de signature, d’absence de pièce d’identité ou de dépôt de garantie, la réservation pourra être annulée. {{ entreprise.name }} se réserve également le droit d’annuler en cas de fraude ou comportement inapproprié.</p>
-    
-            <h2>3. Réservation et annulation</h2>
-            <ul>
-                <li><strong>Conditions d'annulation :</strong> Selon les règles du logement.</li>
-                <li><strong>Frais d'annulation :</strong>Il sera toujours prélevé 1% du montant de la réservation pour couvrr les frais de paiement via Stripe</li>
-                <li>En cas d’imprévu de la part de l’agence ou du propriétaire, un remboursement total ou partiel pourra être proposé, ou un relogement.</li>
-            </ul>
-    
-            <h2>4. Dépôt de garantie</h2>
-            <p>Un dépôt de garantie est exigé, via carte bancaire ou virement. Il est obligatoire pour l’accès au logement.</p>
-    
-            <h2>5. Capacité d’accueil</h2>
-            <p>Le nombre de voyageurs ne peut excéder celui indiqué dans la réservation. Dans le cas contraire, l’entrée pourra être refusée.</p>
-    
-            <h2>6. Obligations du locataire</h2>
-            <ul>
-                <li>Réspecter les règles du logement.</li>
-                <li>Utiliser les lieux paisiblement, sans nuisance au voisinage.</li>
-                <li>Pas de sous-location ni d’activité commerciale.</li>
-                <li>Respecter l’agencement et le mobilier.</li>
-                <li>Maintenir le logement propre et en bon état.</li>
-                <li>Pas d’animaux sans accord préalable.</li>
-                <li>Autoriser {{ entreprise.name }} ou ses partenaires à accéder au logement en cas de besoin.</li>
-            </ul>
-    
-            <h2>7. Arrivée et départ</h2>
-            <ul>
-                <li><strong>Arrivée :</strong> à partir de 15h00 (sauf règle spécifique du logement ou accord préalable).</li>
-                <li><strong>Départ :</strong> avant 11h00 (sauf règle spécifique du logement ou accord préalable).</li>
-            </ul>
-    
-            <h2>8. Services inclus</h2>
-            <p>Le logement inclut : linge de maison, internet, TV, chauffage, eau, électricité. Climatisation et parking si disponibles. Aucun frais de ménage n’est ajouté, mais le logement doit être rendu propre. Une retenue sur caution est possible si ce n’est pas respecté.</p>
-        </section>
-    </article>
+  <article class="cgu-content">
+    <section>
+      <h1>Conditions Générales d’Utilisation</h1>
+      <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
+
+      <h2>1. Objet du site</h2>
+      <p>Le site permet :</p>
+      <ul>
+        <li>la consultation d’annonces de logements à louer pour des séjours de courte durée,</li>
+        <li>la réservation en ligne,</li>
+        <li>le paiement sécurisé via Stripe ou virement bancaire (sous conditions),</li>
+        <li>la gestion des réservations via un espace personnel,</li>
+        <li>l’accès à des informations pratiques, calendriers, services et formulaires de contact.</li>
+      </ul>
+
+      <h2>2. Acceptation des CGU</h2>
+      <p>L’utilisation du site implique l’acceptation pleine et entière des présentes CGU. Si l’utilisateur n’accepte pas tout ou partie des CGU, il lui est demandé de ne pas utiliser le site.</p>
+
+      <h2>3. Accès au site</h2>
+      <p>Le site est accessible gratuitement à tout utilisateur disposant d’un accès Internet. Certains services nécessitent la création d’un compte utilisateur sécurisé. L’accès peut être suspendu temporairement pour maintenance ou interruption involontaire.</p>
+
+      <h2>4. Création de compte et sécurité</h2>
+      <p>L’utilisateur est responsable de la confidentialité de ses identifiants et de toute action effectuée via son compte. En cas d’utilisation frauduleuse, il doit immédiatement prévenir {{ entreprise.name }}.</p>
+
+      <h2>5. Réservation et espace personnel</h2>
+      <p>Chaque utilisateur peut :</p>
+      <ul>
+        <li>réserver un logement,</li>
+        <li>accéder à un calendrier interactif de disponibilités,</li>
+        <li>consulter ses réservations passées et à venir,</li>
+        <li>signer son contrat de location,</li>
+        <li>gérer ses informations personnelles et échanges avec l’agence.</li>
+      </ul>
+
+      <h2>6. Paiement sécurisé</h2>
+      <p>Les paiements sont traités par Stripe, prestataire certifié PCI-DSS. Aucune donnée bancaire n’est stockée par {{ entreprise.name }}. Le Client accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions d’utilisation de Stripe</a> lors de chaque paiement.</p>
+
+      <h2>7. Responsabilités</h2>
+      <p>L’utilisateur est seul responsable :</p>
+      <ul>
+        <li>des informations qu’il saisit,</li>
+        <li>de toute activité sur son compte,</li>
+        <li>du respect des lois applicables à son usage.</li>
+      </ul>
+      <p>{{ entreprise.name }} décline toute responsabilité en cas de :</p>
+      <ul>
+        <li>mauvais usage du site,</li>
+        <li>indisponibilité temporaire,</li>
+        <li>perte de données ou dommages indirects,</li>
+        <li>contenus tiers (liens externes, prestataires...)</li>
+      </ul>
+
+      <h2>8. Propriété intellectuelle</h2>
+      <p>Tous les éléments présents sur le site (textes, visuels, logos, code, fonctionnalités) sont protégés par le droit d’auteur et sont la propriété exclusive de {{ entreprise.name }} ou de ses partenaires. Toute reproduction ou utilisation non autorisée est interdite.</p>
+
+      <h2>9. Données personnelles</h2>
+      <p>Les données sont traitées conformément au RGPD. Pour en savoir plus, consultez notre <a href="{% url 'common:confidentiality' %}">politique de confidentialité</a>. Vous pouvez exercer vos droits à : <a href="mailto:contact@{{ entreprise.name|lower }}.com">contact@{{ entreprise.name|lower }}.com</a></p>
+
+      <h2>10. Cookies</h2>
+      <p>Ce site utilise des cookies pour améliorer la navigation, sécuriser les sessions, et mesurer l’audience. L’utilisateur peut les refuser en configurant son navigateur.</p>
+
+      <h2>11. Suspension ou suppression de compte</h2>
+      <p>{{ entreprise.name }} se réserve le droit de suspendre ou supprimer un compte en cas de manquement aux CGU, suspicion de fraude ou d’usage abusif.</p>
+
+      <h2>12. Modification des CGU</h2>
+      <p>{{ entreprise.name }} peut modifier les CGU à tout moment. L’utilisateur sera informé lors de sa connexion. L’usage du site après modification vaut acceptation des nouvelles CGU.</p>
+
+      <h2>13. Loi applicable et juridiction</h2>
+      <p>Les présentes CGU sont régies par le droit français. En cas de litige, compétence exclusive est donnée aux tribunaux du ressort du siège social de {{ entreprise.name }}.</p>
+    </section>
+  </article>
 </div>
 {% endblock %}

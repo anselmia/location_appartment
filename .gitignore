@@ -1,30 +1,71 @@
+# Python cache
 __pycache__/
 *.py[cod]
+*.so
 
-# Logs
-*.log
-django.log*
-
-# Environment files
-.env
-
-# Virtual environment
+# Virtual environments
 venv/
 env/
+.venv/
+.pdm-python/
+__pypackages__/
 
+# Environment variables & secrets
+.env
+.env.*
 
-# IDEs/editors
-.vscode/
-*.toml
-*.flake8
+# Logs & debug
+*.log
+*.log.*
+*.sqlite3
+debug.log
+django.log*
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
-
-# Django
-migrations/
+# Django static/media/db
+staticfiles/
 media/
 db.sqlite3
-staticfiles/
+
+# Django migrations
+**/migrations/
+!*/migrations/__init__.py
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# Test & coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Linting & config
+*.toml
+*.flake8
+*.mypy_cache/
+.dmypy.json
+.pyre/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# OS specific
+Icon?
+ehthumbs.db

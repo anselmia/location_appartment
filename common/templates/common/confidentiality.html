@@ -1,44 +1,101 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block extrahead %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}"> 
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
-
 {% block content %}
-<div class="cgu-wrapper">
-    <article class="cgu-content">
-        <section>
-            <h1>Politique de confidentialité</h1>
-            <h3>Responsable du traitement</h3>
-            <p>{{ entreprise.name }}, {{ entreprise.contact_adress }}, est responsable du traitement des données personnelles.</p>
-    
-            <h3>Données collectées</h3>
-            <p>Nom, prénom, adresse, e-mail, téléphone – uniquement pour les besoins de la réservation et de l’assistance client.</p>
-    
-            <h3>Finalité</h3>
-            <p>Traitement des réservations, confirmation, communication d’informations pratiques.</p>
-    
-            <h3>Protection</h3>
-            <p>Les données sont stockées de manière sécurisée et accessibles uniquement aux personnes habilitées.</p>
-    
-            <h3>Partage</h3>
-            <p>Aucune donnée n’est vendue ou transmise à des tiers.</p>
-    
-            <h3>Durée de conservation</h3>
-            <p>Les données sont conservées pour une durée maximale de 3 ans à compter de la dernière interaction.</p>
-    
-            <h3>Vos droits</h3>
-            <p>Vous pouvez demander à tout moment :</p>
-            <ul>
-                <li>l’accès, la modification ou la suppression de vos données,</li>
-                <li>la limitation du traitement,</li>
-                <li>l’opposition au traitement,</li>
-                <li>le retrait de votre consentement à la newsletter.</li>
-            </ul>
-            <p>Demande à adresser à <strong>{{ entreprise.contact_email }}</strong> ou par courrier à l’adresse <strong>{{ entreprise.contact_address }}</strong>. Une pièce d’identité pourra être demandée.</p>
-        </section>
-    </article>
-</div>
+    <div class="cgu-wrapper">
+        <article class="cgu-content">
+            <section>
+                <h1>Politique de confidentialité</h1>
+                <p>Dernière mise à jour : {{ privacy_update_date|default:"[DATE]" }}</p>
+                <h2>1. Responsable du traitement</h2>
+                <p>
+                    {{ entreprise.name }}, dont le siège social est situé à {{ entreprise.contact_address }}, est responsable du traitement des données personnelles collectées sur ce site, conformément au Règlement (UE) 2016/679 (RGPD).
+                </p>
+                <h2>2. Données collectées</h2>
+                <p>Nous collectons uniquement les données nécessaires et pertinentes pour assurer nos services :</p>
+                <ul>
+                    <li>Identité : nom, prénom, adresse postale, adresse e-mail, numéro de téléphone ;</li>
+                    <li>Réservations : dates de séjour, logement sélectionné, nombre de voyageurs ;</li>
+                    <li>
+                        Paiement : informations de facturation (traitées par Stripe — aucune donnée bancaire n’est stockée par {{ entreprise.name }}),
+                    </li>
+                    <li>Utilisation du site : cookies, adresses IP, données de navigation (voir section « Cookies »),</li>
+                    <li>Messagerie interne, avis et formulaires de contact.</li>
+                </ul>
+                <h2>3. Finalités du traitement</h2>
+                <p>Les données sont traitées pour les finalités suivantes :</p>
+                <ul>
+                    <li>Traitement et gestion des réservations, contrats et paiements,</li>
+                    <li>Envoi de messages de confirmation et d’informations pratiques,</li>
+                    <li>Service client, assistance avant et après séjour,</li>
+                    <li>Amélioration de l’expérience utilisateur et statistiques internes,</li>
+                    <li>Gestion du compte client et de l’historique de séjour,</li>
+                    <li>Envoi d’offres promotionnelles ou d’actualités (avec consentement).</li>
+                </ul>
+                <h2>4. Base légale</h2>
+                <p>Le traitement repose selon les cas sur :</p>
+                <ul>
+                    <li>l’exécution du contrat de réservation,</li>
+                    <li>le respect d’une obligation légale (comptabilité, fiscalité...),</li>
+                    <li>le consentement explicite de l’utilisateur (formulaires, newsletter...),</li>
+                    <li>l’intérêt légitime de {{ entreprise.name }} (sécurisation, amélioration du service...).</li>
+                </ul>
+                <h2>5. Partage des données</h2>
+                <p>
+                    Vos données sont exclusivement destinées à {{ entreprise.name }} et ne sont jamais vendues. Elles peuvent être transmises à :
+                </p>
+                <ul>
+                    <li>
+                        nos partenaires techniques (Stripe, hébergeur, prestataires IT) strictement dans le cadre de la fourniture du service,
+                    </li>
+                    <li>les autorités compétentes en cas d’obligation légale.</li>
+                </ul>
+                <h2>6. Sécurité des données</h2>
+                <p>
+                    Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données contre la perte, l'accès non autorisé, la divulgation ou l'altération.
+                </p>
+                <h2>7. Durée de conservation</h2>
+                <ul>
+                    <li>Données liées à une réservation : 5 ans après la dernière interaction,</li>
+                    <li>Données de facturation : 10 ans (conformément à la législation fiscale),</li>
+                    <li>Données marketing : 3 ans à compter du dernier contact ou désinscription.</li>
+                </ul>
+                <h2>8. Vos droits</h2>
+                <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+                <ul>
+                    <li>Droit d’accès à vos données,</li>
+                    <li>Droit de rectification ou suppression,</li>
+                    <li>Droit à la limitation ou à l’opposition du traitement,</li>
+                    <li>Droit au retrait du consentement (ex. newsletter),</li>
+                    <li>Droit à la portabilité des données (sur demande).</li>
+                </ul>
+                <p>Vous pouvez exercer vos droits à tout moment en nous contactant :</p>
+                <p>
+                    ✉️ par e-mail : <strong>{{ entreprise.contact_email }}</strong>
+                    <br>
+                    📬 par courrier : <strong>{{ entreprise.contact_address }}</strong>
+                </p>
+                <p>
+                    Une copie de votre pièce d’identité pourra être demandée pour vérifier votre identité. Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).
+                </p>
+                <h2>9. Cookies</h2>
+                <p>Ce site utilise des cookies à des fins :</p>
+                <ul>
+                    <li>techniques (gestion des sessions, sécurité...),</li>
+                    <li>statistiques (mesure d’audience, navigation),</li>
+                    <li>fonctionnelles (préférences utilisateur).</li>
+                </ul>
+                <p>
+                    Vous pouvez configurer les cookies depuis votre navigateur ou en utilisant le bandeau de consentement affiché à votre première visite.
+                </p>
+                <h2>10. Modifications</h2>
+                <p>
+                    {{ entreprise.name }} se réserve le droit de modifier à tout moment la présente politique. La version en vigueur est consultable à cette adresse. Vous serez notifié en cas de modification substantielle.
+                </p>
+            </section>
+        </article>
+    </div>
 {% endblock %}
