@@ -273,7 +273,8 @@ def charge_reservation(reservation):
         owner_amount = transferable_amount
         admin_amount = 0
 
-        if reservation.logement.admin:
+        admin = reservation.logement.admin
+        if admin:
             admin_amount = transferable_amount * reservation.admin_fee_rate
             owner_amount = transferable_amount - admin_amount
 
@@ -282,10 +283,12 @@ def charge_reservation(reservation):
                     f"Le transfert des fonds à l'admin du logement {reservation.logement.name} pour la réservation {reservation.code} a déjà été effectué."
                 )
 
-            admin_account = reservation.logement.owner.stripe_account_id
+            admin_account = admin.stripe_account_id
             if not admin_account:
                 logger.error(f"❌ Missing Stripe account ID for admin of reservation {reservation.code}")
                 return
+
+            logger.info(f"⚠️ Transfering {admin_amount} for reservation {reservation.code} to {admin}.")
 
             # Perform the transfer
             transfer = stripe.Transfer.create(
@@ -296,17 +299,22 @@ def charge_reservation(reservation):
                 metadata={"code": reservation.code, "logement": reservation.logement.code, "transfer": "admin"},
             )
 
-            logger.info(f"✅ Admin payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
+            logger.info(
+                f"✅ Payout transferred to {admin} for reservation {reservation.code} (transfer ID: {transfer.id})"
+            )
 
         if reservation.transferred:
             raise ValueError(
                 f"Le transfert des fonds au propriétaire du logement {reservation.logement.name} pour la réservation {reservation.code} a déjà été effectué."
             )
 
-        owner_account = reservation.logement.owner.stripe_account_id
+        owner = reservation.logement.owner
+        owner_account = owner.stripe_account_id
         if not owner_account:
             logger.error(f"❌ Missing Stripe account ID for owner of reservation {reservation.code}")
             return
+
+        logger.info(f"⚠️ Transfering {owner_amount} for reservation {reservation.code} to {owner}.")
 
         # Perform the transfer
         transfer = stripe.Transfer.create(
