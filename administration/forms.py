@@ -1,6 +1,9 @@
 from django import forms
-from logement.models import Logement, City
 from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise
+from django import forms
+from django.core.validators import EmailValidator
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 
 
 class HomePageConfigForm(forms.ModelForm):
@@ -66,3 +69,35 @@ class EntrepriseForm(forms.ModelForm):
             "linkedin": forms.URLInput(attrs={"class": "form-control"}),
             "logo": forms.ClearableFileInput(attrs={"class": "form-control-file"}),
         }
+
+
+CustomUser = get_user_model()
+
+
+class UserAdminUpdateForm(forms.ModelForm):
+    email = forms.EmailField(
+        required=True, label="Email", validators=[EmailValidator(message="Veuillez entrer un email valide.")]
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            "username",
+            "name",
+            "last_name",
+            "email",
+            "phone",
+            "is_admin",
+            "is_owner",
+            "is_owner_admin",
+            "stripe_customer_id",
+            "stripe_account_id",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Make most fields readonly
+        readonly_fields = ["username", "name", "last_name", "email", "phone"]
+        for field in readonly_fields:
+            self.fields[field].disabled = True

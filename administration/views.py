@@ -40,7 +40,7 @@ from common.decorators import (
     user_is_reservation_admin,
 )
 from common.mixins import AdminRequiredMixin, UserHasLogementMixin
-from common.views import is_admin
+from common.views import is_admin, is_stripe_admin
 
 from logement.forms import DiscountForm, LogementForm
 from logement.models import (
@@ -1152,7 +1152,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
 @require_POST
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_stripe_admin)
 def send_payment_link(request, code):
     try:
         reservation = Reservation.objects.get(code=code)
@@ -1162,3 +1162,55 @@ def send_payment_link(request, code):
         logger.exception(f"❌ Failed to send payment link for {code}: {e}")
         messages.error(request, "Erreur lors de l'envoi du lien.")
     return redirect("administration:reservation_detail", code=code)
+
+
+@login_required
+@user_passes_test(is_admin)
+def user_update_view(request, user_id=None):
+    from accounts.models import CustomUser
+    from administration.forms import UserAdminUpdateForm
+
+    all_users = CustomUser.objects.all().order_by("username")
+
+    # Fallback to query parameter if not provided in path
+    if not user_id:
+        user_id = request.GET.get("user_id")
+        if user_id:
+            return redirect("administration:user_update_view_with_id", user_id=user_id)
+
+    # If still no ID, redirect to first user
+    if not user_id and all_users.exists():
+        return redirect("administration:user_update_view_with_id", user_id=all_users.first().id)
+
+    selected_user = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == "POST":
+        form = UserAdminUpdateForm(request.POST, instance=selected_user)
+        if form.is_valid():
+            form.save()
+            return redirect("administration:user_update_view_with_id", user_id=selected_user.id)
+    else:
+        form = UserAdminUpdateForm(instance=selected_user)
+
+    return render(
+        request,
+        "administration/manage_users.html",
+        {
+            "form": form,
+            "title": f"Modifier l'utilisateur : {selected_user.username}",
+            "all_users": all_users,
+            "selected_user": selected_user,
+        },
+    )
+
+
+@login_required
+@user_passes_test(is_admin)
+def user_delete_view(request, user_id):
+    from accounts.models import CustomUser
+    user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == "POST":
+        user.delete()
+        messages.success(request, "Utilisateur supprimé avec succès.")
+        return redirect("administration:user_update_view")
+    return redirect("administration:user_update_view_with_id", user_id=user_id)

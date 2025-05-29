@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'css/user_admin.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="user-admin-panel">
+        <div class="container py-4">
+            <form method="get"
+                  action="{% url 'administration:user_update_view' %}"
+                  class="mb-4 d-flex gap-3 flex-wrap align-items-end">
+                <div>
+                    <label for="selected_user" class="form-label">Sélectionner un utilisateur :</label>
+                    <select id="selected_user"
+                            name="user_id"
+                            class="form-select"
+                            onchange="this.form.submit()">
+                        {% for u in all_users %}
+                            <option value="{{ u.id }}"
+                                    {% if u.id == selected_user.id %}selected{% endif %}>
+                                {{ u.username }} ({{ u.email }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <h2 class="mb-4">{{ title }}</h2>
+            <div class="d-flex gap-2 mt-4 flex-wrap">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <!-- Username (readonly) -->
+                        <div class="col-md-6">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Nom d'utilisateur</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ form.username.value }}"
+                                   readonly>
+                        </div>
+                        <!-- Email (readonly) -->
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                            <input type="email"
+                                   class="form-control"
+                                   value="{{ form.email.value }}"
+                                   readonly>
+                        </div>
+                        <!-- Nom (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Nom</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ form.name.value }}"
+                                   readonly>
+                        </div>
+                        <!-- Prénom (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Prénom</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ form.last_name.value }}"
+                                   readonly>
+                        </div>
+                        <!-- Téléphone (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Téléphone</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ form.phone.value }}"
+                                   readonly>
+                        </div>
+                        <!-- Last Activity (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Dernière activité</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ user.last_activity|date:'d/m/Y H:i' }}"
+                                   readonly>
+                        </div>
+                        <!-- Stripe Customer ID (editable) -->
+                        <div class="col-md-6">
+                            <label for="id_stripe_customer_id" class="form-label">Stripe Customer ID</label>
+                            <input type="text"
+                                   name="stripe_customer_id"
+                                   id="id_stripe_customer_id"
+                                   class="form-control {% if form.stripe_customer_id.errors %}is-invalid{% endif %}"
+                                   value="{{ form.stripe_customer_id.value|default_if_none:'' }}">
+                            {% for error in form.stripe_customer_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Stripe Account ID (editable) -->
+                        <div class="col-md-6">
+                            <label for="id_stripe_account_id" class="form-label">Stripe Account ID</label>
+                            <input type="text"
+                                   name="stripe_account_id"
+                                   id="id_stripe_account_id"
+                                   class="form-control {% if form.stripe_account_id.errors %}is-invalid{% endif %}"
+                                   value="{{ form.stripe_account_id.value|default_if_none:'' }}">
+                            {% for error in form.stripe_account_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- is_admin -->
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="is_admin"
+                                       id="id_is_admin"
+                                       {% if form.is_admin.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_admin">Administrateur</label>
+                            </div>
+                        </div>
+                        <!-- is_owner -->
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="is_owner"
+                                       id="id_is_owner"
+                                       {% if form.is_owner.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_owner">Propriétaire</label>
+                            </div>
+                        </div>
+                        <!-- is_owner_admin -->
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="is_owner_admin"
+                                       id="id_is_owner_admin"
+                                       {% if form.is_owner_admin.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_owner_admin">Admin propriétaire</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Mettre à jour</button>
+                    </div>
+                </form>
+                <form method="post"
+                      action="{% url 'administration:user_delete_view' selected_user.id %}"
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">Supprimer l'utilisateur</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

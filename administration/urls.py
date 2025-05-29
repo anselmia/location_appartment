@@ -96,6 +96,9 @@ urlpatterns = [
         name="transfer_reservation",
     ),
     path("financial-dashboard/", FinancialDashboardView.as_view(), name="financial_dashboard"),
+    path("admin/users/", views.user_update_view, name="user_update_view"),
+    path("admin/users/<int:user_id>/edit/", views.user_update_view, name="user_update_view_with_id"),
+    path("admin/users/<int:user_id>/delete/", views.user_delete_view, name="user_delete_view"),
 ]
 
 urlpatterns += router.urls
