@@ -1,3 +1,65 @@
+/* === TITRES PRINCIPAUX === */
+h1, h2, h3, .section-title, .filter-group h3 {
+  font-family: var(--font-title);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* === TEXTES COURANTS & LISTES === */
+body,
+p,
+a,
+li,
+label,
+.search-filters label,
+.filter-options,
+.pagination,
+input,
+select {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+/* === FILTRES ET UI FORM INPUTS === */
+.search-filters select,
+.search-filters input,
+input[type="text"],
+input[type="email"],
+textarea,
+button,
+.filter-button,
+.search-btn {
+  font-family: var(--font-sans);
+}
+
+/* === SEARCH BANNER TEXT === */
+.hero-banner h1,
+.hero-banner p {
+  font-family: var(--font-title);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.filter-group h3 {
+  font-size: 1.1rem;
+  font-family: var(--font-title);
+  color: var(--secondary-color);
+}
+
+.filter-button,
+.search-btn {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.result-title, .logement-card h3 {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  color: var(--secondary-color);
+}
+
 body {
     font-family: var(--font-family);
 }
@@ -61,6 +123,7 @@ p, a, li {
   
 .overlay p {
     font-size: 1.5rem;
+    color: var(--primary-color);
 }
   
   /* Filters */
@@ -203,7 +266,6 @@ flex: 1;
     margin-top: 1rem;
     background-color: var(--primary-color, #bfa66b);
     color: white;
-    padding: 0.7rem 1.5rem;
     border: none;
     border-radius: 999px;
     font-size: 1rem;

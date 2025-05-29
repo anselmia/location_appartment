@@ -7,17 +7,17 @@
 {% endblock extrahead %}
 {% block content %}
   <div class="container mt-5" id="revenue-page">
-    <h2 class="text-center mb-5 fw-bold">📈 Tableau de Revenu</h2>
+    <h2 class="text-center mb-5 fw-bold">Tableau de Revenu</h2>
     <!-- Filters Section -->
     <div class="card shadow-sm mb-4">
       <div class="card-body row g-3 align-items-center">
         <!-- Logement Filter -->
-        <div class="col-md-6">
-          <form method="get" class="d-flex align-items-center gap-3">
-            <label for="logement-select" class="fw-semibold text-muted mb-0">Logement :</label>
+        <form method="get" class="row g-3 align-items-end justify-content-center">
+          <div class="col-md-4">
+            <label for="logement-select" class="form-label fw-semibold text-muted">Logement :</label>
             <select id="logement-select"
                     name="logement_id"
-                    class="form-select w-auto ml-3"
+                    class="form-select"
                     onchange="this.form.submit()">
               <option value="" {% if not logement_id %}selected{% endif %}>Tous les logements</option>
               {% for loge in logements %}
@@ -27,14 +27,9 @@
                 </option>
               {% endfor %}
             </select>
-            <input type="hidden" name="year" value="{{ selected_year }}">
-            <input type="hidden" name="month" value="{{ selected_month }}">
-          </form>
-        </div>
-        <!-- Year Filter -->
-        <div class="col-md-3">
-          <form method="get">
-            <label for="year" class="fw-semibold text-muted mb-1">Année :</label>
+          </div>
+          <div class="col-md-4">
+            <label for="year" class="form-label fw-semibold text-muted">Année :</label>
             <select name="year"
                     id="year"
                     class="form-select"
@@ -43,12 +38,9 @@
                 <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
               {% endfor %}
             </select>
-          </form>
-        </div>
-        <!-- Month Filter -->
-        <div class="col-md-3">
-          <form method="get">
-            <label for="month" class="fw-semibold text-muted mb-1">Mois :</label>
+          </div>
+          <div class="col-md-4">
+            <label for="month" class="form-label fw-semibold text-muted">Mois :</label>
             <select name="month"
                     id="month"
                     class="form-select"
@@ -57,14 +49,14 @@
                 <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m }}</option>
               {% endfor %}
             </select>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
     <!-- Economic Summary -->
     <div class="card shadow-lg mb-5">
       <div class="card-body">
-        <h4 class="fw-semibold mb-4">📊 Résumé Économique</h4>
+        <h4 class="fw-semibold mb-4">Résumé Économique</h4>
         <div class="row text-center">
           <div class="col-md-4 mb-3 md-0">
             <div class="p-3 border rounded bg-light">

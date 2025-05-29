@@ -1027,9 +1027,13 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         if logement_id == "" or logement_id is None:
             logement_id = None
+        else:
+            logement_id = int(logement_id)
+
+        reservations = get_valid_reservations_for_admin(self.request.user)
 
         all_years = (
-            Reservation.objects.filter(Q(statut="confirmee") | Q(statut="terminee"))
+            reservations
             .annotate(year=ExtractYear("start"))
             .values_list("year", flat=True)
             .distinct()
@@ -1037,14 +1041,14 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
 
         all_months = (
-            Reservation.objects.filter(Q(statut="confirmee") | Q(statut="terminee"))
+            reservations
             .annotate(month=ExtractMonth("start"))
             .values_list("month", flat=True)
             .distinct()
         )
         selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
 
-        reservations = get_valid_reservations_for_admin(self.request.user, logement_id, year, month)
+        reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year, selected_month)
 
         brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
         total_refunds = reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00")
