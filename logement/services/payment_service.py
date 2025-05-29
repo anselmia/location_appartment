@@ -432,8 +432,10 @@ def handle_charge_refunded(data: StripeChargeEventData):
                 reservation.stripe_refund_id = refund_id
                 if refund_type == "full":
                     reservation.platform_fee = Decimal("0.00")
+                    reservation.tax = Decimal("0.00")
 
-                reservation.save(update_fields=["refunded", "refund_amount", "stripe_refund_id", "platform_fee"])
+                reservation.save()
+                logger.info(f"✅ Reservation {reservation.code} updated successfully.")
 
         except Reservation.DoesNotExist:
             logger.warning(f"⚠️ Reservation {reservation_code} not found.")
