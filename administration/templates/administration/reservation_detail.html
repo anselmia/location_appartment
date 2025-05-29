@@ -13,7 +13,7 @@
            class="btn btn-outline-secondary btn-sm">
           <i class="bi bi-arrow-left"></i> Retour
         </a>
-        <h2 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation</h2>
+        <h2 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h2>
       </div>
       {% if reservation.statut != "annulee" %}
         <form method="post"
