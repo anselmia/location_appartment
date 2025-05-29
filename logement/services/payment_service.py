@@ -152,13 +152,29 @@ def send_stripe_payment_link(reservation):
         raise
 
 
+def is_valid_stripe_customer(customer_id):
+    try:
+        customer = stripe.Customer.retrieve(customer_id)
+        # Optional: check if customer is not deleted
+        if getattr(customer, "deleted", False):
+            return False
+        return True
+    except stripe.error.InvalidRequestError:
+        # Happens if the customer ID doesn't exist
+        return False
+    except Exception as e:
+        # Log unexpected errors
+        logger.exception(f"❌ Unexpected error when checking Stripe customer ID: {e}")
+        return False
+
+
 def create_stripe_customer_if_not_exists(user, request):
     try:
         from common.services.network import get_client_ip
 
         ip = get_client_ip(request)
 
-        if user.stripe_customer_id:
+        if user.stripe_customer_id and is_valid_stripe_customer(user.stripe_customer_id):
             logger.info(f"ℹ️ Stripe customer already exists for user {user.id} ({user.email}) IP: {ip}")
             return user.stripe_customer_id
 
