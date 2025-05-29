@@ -2,220 +2,241 @@
 {% load static %}
 {% load i18n %}
 {% load extra_tags %}
-
 {% block extrahead %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'logement/css/view_logement.css' %}">
-  <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">   
-  <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">   
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{% static 'logement/css/view_logement.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+          rel="stylesheet" />
 {% endblock %}
-
 {% block content %}
-<div class="view-logement">
-    <div class="image-gallery enhanced-gallery">
-        {% if logement.photos.count > 0 %}
-            <!-- Main photo -->
-            <div class="gallery-left position-relative">
-                <picture>
-                    <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
-                    <img src="{{ logement.photos.all.0.image_webp.url }}" alt="Photo principale" loading="lazy">
-                </picture>
-
-                <!-- Top-right logement stats -->
-                <div class="gallery-top-right-details">
-                    <span title="Personnes"><i class="fas fa-user-friends"></i> {{ logement.max_traveler }} personnes</span>
-                    <span title="Chambres"><i class="fas fa-door-open"></i> {{ logement.bedrooms }} chambres</span>
-                    <span title="Lits"><i class="fas fa-bed"></i> {{ logement.beds }} lits</span>
-                    <span title="Salles de bain"><i class="fas fa-bath"></i> {{ logement.bathrooms }} salles de bain</span>
-                </div>
-    
-                <!-- Top-left info badge -->
-                <div class="gallery-badge-top">
-                    <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
-                    {% if logement.superficie %}
-                        <span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>
-                    {% endif %}
-                </div>
-    
-                <!-- Bottom-right icons -->
-                <div class="gallery-icons-overlay">
-                    {% for equip in logement.equipment.all %}
-                        {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
-                            <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
-                        {% endif %}
-                    {% endfor %}
-    
-                    {% if logement.animals %}
-                        <i class="fas fa-paw" title="Animaux acceptés"></i>
-                    {% else %}
-                        <i class="fas fa-paw" style="opacity: 0.4;" title="Animaux non autorisés"></i>
-                    {% endif %}
-    
-                    {% if logement.smoking %}
-                        <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
-                    {% else %}
-                        <i class="fas fa-smoking-ban" title="Non fumeur"></i>
-                    {% endif %}
-                </div>
-            </div>
-    
-            <!-- Small thumbnails -->
-            <div class="gallery-right">
-                {% for photo in logement.photos.all|slice:"1:5" %}
-                    <div class="small-photo">
-                        <picture>
-                            <source srcset="{{ photo.image_webp.url }}" type="image/webp">
-                            <img src="{{ photo.image_webp.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
-                        </picture>
+    <div class="view-logement">
+        <div class="image-gallery enhanced-gallery">
+            {% if logement.photos.count > 0 %}
+                <!-- Main photo -->
+                <div class="gallery-left position-relative">
+                    <picture>
+                        <source srcset="{{ logement.photos.all.0.image_webp.url }}" type="image/webp">
+                        <img src="{{ logement.photos.all.0.image_webp.url }}"
+                             alt="Photo principale"
+                             loading="lazy">
+                    </picture>
+                    <!-- Top-right logement stats -->
+                    <div class="gallery-top-right-details">
+                        <span title="Personnes"><i class="fas fa-user-friends"></i> {{ logement.max_traveler }} personnes</span>
+                        <span title="Chambres"><i class="fas fa-door-open"></i> {{ logement.bedrooms }} chambres</span>
+                        <span title="Lits"><i class="fas fa-bed"></i> {{ logement.beds }} lits</span>
+                        <span title="Salles de bain"><i class="fas fa-bath"></i> {{ logement.bathrooms }} salles de bain</span>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>Aucune photo disponible.</p>
-        {% endif %}
-    </div>        
-
-    <section class="section-block logement-header">
-        <h1 class="logement-title">{{ logement.name }}</h1>
-        <p class="logement-subtitle">{{ logement.ville }} – {{ logement.get_type_display }}</p>
-    </section>
-
-    <section class="section-block logement-description-block">
-        <h2 class="section-title">Description du logement</h2>
-        <div class="logement-description-wrapper">
-            <div class="logement-description collapsed" id="logementDescription">
-                {{ logement.description|safe }}
-            </div>
-            <button class="toggle-description-btn" id="toggleDescription">Voir plus</button>
-        </div>
-    </section>
-
-    <section class="section-block logement-features-block">
-        <h2 class="section-title">Caractéristiques principales</h2>
-        <div class="logement-features-grid">
-            {% if logement.superficie %}
-                <div class="feature-item"><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</div>
+                    <!-- Top-left info badge -->
+                    <div class="gallery-badge-top">
+                        <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                        {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
+                    </div>
+                    <!-- Bottom-right icons -->
+                    <div class="gallery-icons-overlay">
+                        {% for equip in logement.equipment.all %}
+                            {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                                <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                            {% endif %}
+                        {% endfor %}
+                        {% if logement.animals %}
+                            <i class="fas fa-paw" title="Animaux acceptés"></i>
+                        {% else %}
+                            <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
+                        {% endif %}
+                        {% if logement.smoking %}
+                            <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                        {% else %}
+                            <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Small thumbnails -->
+                <div class="gallery-right">
+                    {% for photo in logement.photos.all|slice:"1:5" %}
+                        <div class="small-photo">
+                            <picture>
+                                <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                                <img src="{{ photo.image_webp.url }}"
+                                     alt="Photo {{ forloop.counter }}"
+                                     loading="lazy">
+                            </picture>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Aucune photo disponible.</p>
             {% endif %}
-            <div class="feature-item"><i class="fas fa-door-open"></i> {{ logement.bedrooms }} chambres</div>
-            <div class="feature-item"><i class="fas fa-bed"></i> {{ logement.beds }} lits</div>
-            <div class="feature-item"><i class="fas fa-bath"></i> {{ logement.bathrooms }} salle(s) de bain</div>
-            {% for equip in logement.equipment.all %}
-                {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
-                    <div class="feature-item"><i class="{{ equip.icon }}"></i> {{ equip.name }}</div>
-                {% endif %}
-            {% endfor %}
-            <div class="feature-item">
-                {% if logement.animals %}
-                    <i class="fas fa-paw"></i> Animaux acceptés
-                {% else %}
-                    <i class="fas fa-ban"></i> Animaux non autorisés
-                {% endif %}
-            </div>
-            <div class="feature-item">
-                {% if logement.smoking %}
-                    <i class="fas fa-smoking"></i> Fumeurs autorisés
-                {% else %}
-                    <i class="fas fa-smoking-ban"></i> Non fumeur
-                {% endif %}
-            </div>
         </div>
-    </section>
-
-    <section class="section-block logement-checkin-block">
-        <h2 class="section-title">Horaires d'arrivée et de départ</h2>
-        <ul class="plain-list">
-            <li><strong>Check-in :</strong> entre {{ logement.entrance_hour_min|time:"H:i" }} et {{ logement.entrance_hour_max|time:"H:i" }}</li>
-            <li><strong>Check-out :</strong> avant {{ logement.leaving_hour|time:"H:i" }}</li>
-        </ul>
-    </section>
-
-    <section class="section-block caution-section">
-        <h2 class="section-title">Caution (remboursable)</h2>
-        <ul class="logement-list">
-            <li><strong>Montant :</strong> {{ logement.caution }} € / réservation</li>
-            <li><strong>Forme de paiement :</strong> Pré-autorisation sur carte bancaire</li>
-            <li><strong>Moment de paiement :</strong> Avec la réservation</li>
-        </ul>
-    </section>
-    
-    <section class="section-block cancellation-section">
-        <h2 class="section-title">Conditions d'annulation</h2>
-        <ul class="logement-list">
-            <li>
-                <strong>Avant {{ logement.cancelation_period }} jours :</strong>
-                Annulation avec retenu des frais de paiement ({{ payment_fee }} %).
-            </li>
-            <li>
-                <strong>À partir de {{ logement.cancelation_period }} jours avant l’entrée :</strong>
-                L'annulation est non remboursable.
-            </li>
-        </ul>
-    </section>
-
-    <section class="equipment-section section-block">
-        <h2 class="section-title">Équipements disponibles</h2>
-        <div class="equipment-grid">
-            {% for type_key, type_label in EquipmentType.choices %}
-                {% with grouped_equipment|get:type_key as current_equips %}
-                    {% if current_equips %}
-                        <div class="equipment-group">
-                            <h3>{{ type_label }}</h3>
-                            <ul>
-                                {% for equip in current_equips %}
-                                    <li><i class="{{ equip.icon }}"></i> {{ equip.name }}</li>
-                                {% endfor %}
-                            </ul>
+        <section class="section-block logement-header">
+            <h1 class="logement-title">{{ logement.name }}</h1>
+            <p class="logement-subtitle">{{ logement.ville }} – {{ logement.get_type_display }}</p>
+        </section>
+        <section class="section-block logement-description-block">
+            <h2 class="section-title">Description du logement</h2>
+            <div class="logement-description-wrapper">
+                <div class="logement-description collapsed" id="logementDescription">{{ logement.description|safe }}</div>
+                <button class="toggle-description-btn" id="toggleDescription">Voir plus</button>
+            </div>
+        </section>
+        <section class="section-block logement-features-block">
+            <h2 class="section-title">Caractéristiques principales</h2>
+            <div class="logement-features-grid">
+                {% if logement.superficie %}
+                    <div class="feature-item">
+                        <i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²
+                    </div>
+                {% endif %}
+                <div class="feature-item">
+                    <i class="fas fa-door-open"></i> {{ logement.bedrooms }} chambres
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bed"></i> {{ logement.beds }} lits
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bath"></i> {{ logement.bathrooms }} salle(s) de bain
+                </div>
+                {% for equip in logement.equipment.all %}
+                    {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                        <div class="feature-item">
+                            <i class="{{ equip.icon }}"></i> {{ equip.name }}
                         </div>
                     {% endif %}
-                {% endwith %}
-            {% endfor %}
+                {% endfor %}
+                <div class="feature-item">
+                    {% if logement.animals %}
+                        <i class="fas fa-paw"></i> Animaux acceptés
+                    {% else %}
+                        <i class="fas fa-ban"></i> Animaux non autorisés
+                    {% endif %}
+                </div>
+                <div class="feature-item">
+                    {% if logement.smoking %}
+                        <i class="fas fa-smoking"></i> Fumeurs autorisés
+                    {% else %}
+                        <i class="fas fa-smoking-ban"></i> Non fumeur
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        <section class="section-block logement-checkin-block">
+            <h2 class="section-title">Horaires d'arrivée et de départ</h2>
+            <ul class="plain-list">
+                <li>
+                    <strong>Check-in :</strong> entre {{ logement.entrance_hour_min|time:"H:i" }} et {{ logement.entrance_hour_max|time:"H:i" }}
+                </li>
+                <li>
+                    <strong>Check-out :</strong> avant {{ logement.leaving_hour|time:"H:i" }}
+                </li>
+            </ul>
+        </section>
+        <section class="section-block caution-section">
+            <h2 class="section-title">Caution (remboursable)</h2>
+            <ul class="logement-list">
+                <li>
+                    <strong>Montant :</strong> {{ logement.caution }} € / réservation
+                </li>
+                <li>
+                    <strong>Forme de paiement :</strong> Pré-autorisation sur carte bancaire
+                </li>
+                <li>
+                    <strong>Moment de paiement :</strong> Avec la réservation
+                </li>
+            </ul>
+        </section>
+        <section class="section-block cancellation-section">
+            <h2 class="section-title">Conditions d'annulation</h2>
+            <ul class="logement-list">
+                <li>
+                    <strong>Avant {{ logement.cancelation_period }} jours :</strong>
+                    Annulation avec retenu des frais de paiement ({{ payment_fee }} %).
+                </li>
+                <li>
+                    <strong>À partir de {{ logement.cancelation_period }} jours avant l’entrée :</strong>
+                    L'annulation est non remboursable.
+                </li>
+            </ul>
+        </section>
+        <section class="equipment-section section-block">
+            <h2 class="section-title">Équipements disponibles</h2>
+            <div class="equipment-grid">
+                {% for type_key, type_label in EquipmentType.choices %}
+                    {% with grouped_equipment|get:type_key as current_equips %}
+                        {% if current_equips %}
+                            <div class="equipment-group">
+                                <h3>{{ type_label }}</h3>
+                                <ul>
+                                    {% for equip in current_equips %}
+                                        <li>
+                                            <i class="{{ equip.icon }}"></i> {{ equip.name }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </section>
+        <!-- 🗺️ Google Map container -->
+        <section class="section-block">
+            <h2 class="section-title">Localisation</h2>
+            <iframe class="logement-map"
+                    src="{{ logement.map_link }}"
+                    style="border:0"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </section>
+        <div id="imageModal" class="image-modal">
+            <span id="closeModal" class="close-btn">&times;</span>
+            <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
+            <img id="modalImage" class="modal-content" src="">
+            <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
         </div>
-    </section>
-
-    <!-- 🗺️ Google Map container -->
-    <section class="section-block">
-        <h2 class="section-title">Localisation</h2>
-        <iframe class="logement-map" src="{{ logement.map_link }}"  style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    </section>
-
-    <div id="imageModal" class="image-modal">
-        <span id="closeModal" class="close-btn">&times;</span>
-        <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
-        <img id="modalImage" class="modal-content" src="">
-        <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
-    </div>
-
-    <div class="booking-toggle toggleText" id="bookingToggle">Réserver</div>
-    <div id="bookingPanel" class="booking-panel collapsed">
-        <div class="booking-content">
-            <h3>{% trans "Choix des dates" %}</h3>
-            <form class="booking-form" action="{% url 'logement:book' logement.id %}" method="get">
-                <input type="hidden" id="id_start" name="start">
-                <input type="hidden" id="id_end" name="end">
-                <div id="calendar_inline"></div>
-                <button type="submit">{% trans "Réserver" %}</button>
-            </form>
-            <div class="legend">
-                <div class="legend-item"><span class="dot booked"></span> Réservé</div>
-                <div class="legend-item"><span class="dot today"></span> Aujourd’hui</div>
-                <div class="legend-item"><span class="dot free"></span> Disponible</div>
+        <div class="booking-toggle toggleText" id="bookingToggle">Réserver</div>
+        <div id="bookingPanel" class="booking-panel collapsed">
+            <div class="booking-content">
+                <h3>{% trans "Choix des dates" %}</h3>
+                <form class="booking-form"
+                      action="{% url 'logement:book' logement.id %}"
+                      method="get">
+                    <input type="hidden" id="id_start" name="start">
+                    <input type="hidden" id="id_end" name="end">
+                    <div id="calendar_inline"></div>
+                    <button type="submit">{% trans "Réserver" %}</button>
+                </form>
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="dot booked"></span> Réservé
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot today"></span> Aujourd’hui
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot free"></span> Disponible
+                    </div>
+                </div>
             </div>
         </div>
-    </div> 
-</div>
+    </div>
 {% endblock %}
-
 {% block extra_js %}
-<script>
+    <script>
     const reservedDatesStart = {{ reserved_dates_start_json|safe }};
     const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
     const today = new Date().toISOString().slice(0, 10);
     const logementId = {{ logement.id }};
     const periodLimit = {{ logement.availablity_period }};      
     const allPhotoUrls = {{ photo_urls|safe }};
-</script>
-<script src="{% static 'logement/js/image-galery.js' %}"></script>
-<script src="{% static 'logement/js/calendar.js' %}"></script>
-<script src="{% static 'logement/js/view_logement.js' %}"></script>
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="{% static 'logement/js/image-galery.js' %}"></script>
+    <script src="{% static 'logement/js/calendar.js' %}"></script>
+    <script src="{% static 'logement/js/view_logement.js' %}"></script>
 {% endblock %}

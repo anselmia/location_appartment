@@ -1,6 +1,5 @@
 from django import forms
 from logement.models import Discount, Logement, City
-from accounts.models import CustomUser
 from decimal import Decimal
 
 
@@ -92,11 +91,26 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
-            "admin": forms.Select(attrs={"class": "form-control select2"}),
-            "owner": forms.Select(attrs={"class": "form-control select2"}),
+            "admin": forms.TextInput(attrs={"readonly": "readonly", "class": "form-control disabled"}),
+            "owner": forms.TextInput(attrs={"readonly": "readonly", "class": "form-control disabled"}),
         }
 
+    def _format_user_display(self, user):
+        from accounts.models import CustomUser
+
+        if not user:
+            return ""
+
+        if isinstance(user, CustomUser):
+            return f"{user.name} {user.last_name} ({user.username})"
+        try:
+            user_obj = CustomUser.objects.get(pk=user)
+            return f"{user_obj.name} {user_obj.last_name} ({user_obj.username})"
+        except CustomUser.DoesNotExist:
+            return str(user)
+
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         for field in self.fields.values():
@@ -105,11 +119,19 @@ class LogementForm(forms.ModelForm):
         if "ville" in self.fields:
             self.fields["ville"].queryset = City.objects.all().order_by("code_postal", "name")
 
-        if "admin" in self.fields:
-            self.fields["admin"].queryset = CustomUser.objects.filter(is_owner_admin=True).order_by("username")
-
         if "owner" in self.fields:
-            self.fields["owner"].queryset = CustomUser.objects.filter(is_owner=True).order_by("username")
+            if self.instance.pk is None and not self.initial.get("owner") and user:
+                self.fields["owner"].initial = user
+
+        if "owner" in self.fields and isinstance(self.fields["owner"].widget, forms.TextInput):
+            owner = self.initial.get("owner") or getattr(self.instance, "owner", None)
+            if owner:
+                self.fields["owner"].initial = self._format_user_display(owner)
+
+        if "admin" in self.fields and isinstance(self.fields["admin"].widget, forms.TextInput):
+            admin = self.initial.get("admin") or getattr(self.instance, "admin", None)
+            if admin:
+                self.fields["admin"].initial = self._format_user_display(admin)
 
         # Fields that should have numeric step=1
         step_1_fields = [
@@ -174,6 +196,24 @@ class LogementForm(forms.ModelForm):
                         "admin",
                         f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
                     )
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Restaurer owner si le champ est désactivé et donc non soumis
+        if "owner" in self.fields:
+            if not self.initial.get("owner"):
+                instance.owner = self.fields["owner"].initial
+            elif self.instance.pk:
+                instance.owner = self.instance.owner
+
+        if "admin" in self.fields:
+            instance.admin = self.instance.admin
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance
 
 
 class ReservationForm(forms.Form):

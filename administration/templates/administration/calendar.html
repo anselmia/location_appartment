@@ -3,6 +3,8 @@
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet"
         href="{% static 'administration/css/calendar.css' %}" />
 {% endblock extrahead %}
 {% block content %}
@@ -68,5 +70,7 @@
 {% block extra_js %}
   <script>const csrfToken = "{{ csrf_token }}";</script>
   {{ logements_json|json_script:"logements-data" }}
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="{% static 'administration/js/calendar.js' %}"></script>
 {% endblock extra_js %}

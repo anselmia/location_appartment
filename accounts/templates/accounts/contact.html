@@ -1,30 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
-
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
+{% endblock extrahead %}
 {% block content %}
-
-<div class="contact-card">
-    <h1>📨 Contactez-nous</h1>
-    <p class="subtitle">Nous sommes ravis d’avoir de vos nouvelles.</p>
-
-
-    <form method="post" novalidate>
-        {% csrf_token %}
-        <div class="form-group">
-            {{ form.name.label_tag }} {{ form.name }}
-        </div>
-        <div class="form-group">
-            {{ form.email.label_tag }} {{ form.email }}
-        </div>
-        <div class="form-group">
-            {{ form.subject.label_tag }} {{ form.subject }}
-        </div>
-        <div class="form-group">
-            {{ form.message.label_tag }} {{ form.message }}
-        </div>
-        <button type="submit" class="btn-submit">Envoyer</button>
-    </form>
-</div>
-
+    <div class="contact-card">
+        <h1>📨 Contactez-nous</h1>
+        <p class="subtitle">Nous sommes ravis d’avoir de vos nouvelles.</p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-group">{{ form.name.label_tag }} {{ form.name }}</div>
+            <div class="form-group">{{ form.email.label_tag }} {{ form.email }}</div>
+            <div class="form-group">{{ form.subject.label_tag }} {{ form.subject }}</div>
+            <div class="form-group">{{ form.message.label_tag }} {{ form.message }}</div>
+            <button type="submit" class="btn-submit">Envoyer</button>
+        </form>
+    </div>
 {% endblock %}

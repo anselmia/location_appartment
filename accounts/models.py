@@ -36,7 +36,7 @@ class CustomUser(AbstractUser):
     )  # Track the last activity time
 
     def __str__(self):
-        return self.username
+        return f"{self.name} {self.last_name}"
 
     @property
     def full_name(self):

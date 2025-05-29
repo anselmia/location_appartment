@@ -49,7 +49,7 @@ setTimeout(() => {
     alert.classList.add("hide");
     setTimeout(() => alert.remove(), 300);
   });
-}, 5000);
+}, 10000);
 
 let isSending = false;
 

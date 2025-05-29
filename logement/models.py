@@ -131,14 +131,14 @@ class Logement(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            # Ensure uniqueness
-            for _ in range(10):  # up to 10 retries
+            for _ in range(10):
                 code = generate_unique_code()
                 if not Reservation.objects.filter(code=code).exists():
                     self.code = code
                     break
             else:
                 raise ValueError("Could not generate a unique reservation code.")
+
         super().save(*args, **kwargs)
 
     def is_logement_admin(self, user):

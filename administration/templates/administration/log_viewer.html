@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'administration/css/log_viewer.css' %}">
+{% endblock %}
 {% block content %}
     <div class="container mt-4">
         <h2 class="mb-3">📝 Logs système</h2>

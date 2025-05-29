@@ -49,13 +49,27 @@
                             {{ form.statut|add_class:"form-input" }}
                         </div>
                         <div class="form-field">
-                            <label for="{{ form.owner.id_for_label }}">{{ form.owner.label }}</label>
-                            {{ form.owner|add_class:"form-input" }}
+                            <label for="id_owner_display">{{ form.owner.label }}</label>
+                            <input type="text"
+                                   id="id_owner_display"
+                                   class="form-control disabled"
+                                   value="{{ form.instance.owner.get_full_name }} ({{ form.instance.owner.username }})"
+                                   readonly
+                                   disabled>
+                            {{ form.owner.as_hidden }}
                         </div>
+                        {% if form.admin%}
                         <div class="form-field">
-                            <label for="{{ form.admin.id_for_label }}">{{ form.admin.label }}</label>
-                            {{ form.admin|add_class:"form-input" }}
+                            <label for="id_admin_display">{{ form.admin.label }}</label>
+                            <input type="text"
+                                   id="id_admin_display"
+                                   class="form-control disabled"
+                                   value="{{ form.instance.admin.get_full_name }} ({{ form.instance.admin.username }})"
+                                   readonly
+                                   disabled>
+                            {{ form.admin.as_hidden }}
                         </div>
+                        {% endif %}
                         <div class="form-field">
                             <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
                             {{ form.type|add_class:"form-input" }}

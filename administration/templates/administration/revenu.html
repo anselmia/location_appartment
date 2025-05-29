@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% load extra_tags %}
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'administration/css/revenu.css' %}">
+{% endblock extrahead %}
 {% block content %}
   <div class="container mt-5" id="revenue-page">
     <h2 class="text-center mb-5 fw-bold">📈 Tableau de Revenu</h2>

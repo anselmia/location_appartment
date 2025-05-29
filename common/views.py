@@ -2,12 +2,14 @@ import logging
 import json
 import openai
 from openai import OpenAI, RateLimitError
+from datetime import date
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 client = OpenAI(api_key=settings.OPENAI_KEY)
@@ -69,44 +71,78 @@ def custom_server_error(request):
     return render(request, "500.html", status=500)
 
 
+MAX_MESSAGES_PER_DAY = 5
+
+
 @csrf_exempt
 @require_POST
 def chatbot_api(request):
     data = json.loads(request.body)
     user_input = data.get("message")
 
+    # Récupération de la session
+    session = request.session
+    today = str(date.today())
+
+    message_data = session.get("chatbot_usage", {"date": today, "count": 0})
+
+    # Réinitialiser le compteur si la date a changé
+    if message_data["date"] != today:
+        message_data = {"date": today, "count": 0}
+
+    if message_data["count"] >= MAX_MESSAGES_PER_DAY:
+        return JsonResponse(
+            {
+                "response": (
+                    "🤖 Vous avez atteint la limite de 5 messages aujourd’hui.<br>"
+                    "Pour toute autre question, contactez-nous directement ici : "
+                    f"<a href='{reverse('accounts:contact')}' class='btn btn-primary btn-sm mt-2'>📬 Nous contacter</a>"
+                ),
+                "limit_reached": True,
+            }
+        )
+
     try:
+        # Appel OpenAI
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        "Tu es un assistant intelligent, professionnel et chaleureux dédié à un site de location de logements courte durée avec services de conciergerie haut de gamme. "
-                        "Le site permet aux visiteurs de réserver des appartements, maisons ou chambres avec des services inclus, comme l’accueil personnalisé, le ménage, les transferts ou des expériences locales sur mesure, lorsque le bien est géré par une conciergerie.\n\n"
-                        "La plateforme s'adresse aussi bien aux voyageurs qu'aux propriétaires et conciergeries souhaitant mettre leurs biens en location.\n\n"
-                        "Les utilisateurs peuvent :\n"
-                        "- Rechercher un logement selon des critères précis (lieu, dates, nombre de voyageurs, services, prix, équipements, etc.)\n"
-                        "- Les Réservations sont instantanées\n"
-                        "- Consulter les disponibilités en temps réel et réserver en ligne de manière sécurisée via Stripe (paiement, acompte, caution, facture)\n"
-                        "- Créer et gérer leur compte (profil, historique de réservations, messages, paiements...)\n"
-                        "- Accéder à des services personnalisés : transferts, ménage, paniers d’accueil, expériences exclusives\n\n"
-                        "Les propriétaires ou conciergeries peuvent :\n"
-                        "- Ajouter et gérer leurs biens via un espace dédié\n"
-                        "- Configurer précisément les prix, le calendrier, les conditions d’annulation, les frais, les promotions et les règles du logement\n"
-                        "- Suivre les paiements, cautions, remboursements et revenus par logement\n"
-                        "- transfert des fonds automatiques sur leur compte\n"
-                        "- Le service client doit être assuré par la concergerie ou le propriétaire mais nous gérons les problèmes côtés plateforme sur demande\n"
-                        "- Déléguer ou gérer eux-mêmes certains aspects (photos, services, relation client...)\n\n"
-                        "Tu es chargé de répondre clairement et efficacement à toute question liée au fonctionnement du site, aux réservations, à la gestion des comptes, aux paiements ou aux services proposés. "
-                        "Si une question est floue ou manque d'informations, demande poliment des précisions. Utilise un ton professionnel, rassurant et accessible."
+                        "Tu es un assistant intelligent, professionnel et chaleureux dédié à une plateforme de location de logements courte durée avec services de conciergerie haut de gamme.\n\n"
+                        "🎯 Ton rôle est d’accompagner aussi bien :\n- Les voyageurs dans leur recherche, réservation ou gestion de séjour\n"
+                        "- Les propriétaires et conciergeries dans l’ajout, la configuration et le suivi de leurs logements\n\n"
+                        "💡 La plateforme permet :\n"
+                        "- La réservation d’appartements, maisons ou chambres avec services personnalisés (accueil, ménage, transferts, expériences…)\n"
+                        "- Un moteur de recherche avec filtres (localisation, dates, capacité, équipements, services, etc.)\n"
+                        "- Un calendrier interactif avec disponibilités en temps réel\n"
+                        "- Le paiement sécurisé via Stripe (acompte, solde, caution, facture)\n"
+                        "- Un espace personnel pour les voyageurs et pour les propriétaires/conciergeries\n\n"
+                        "🔧 Les propriétaires et administrateurs peuvent :\n"
+                        "- Créer et modifier un logement depuis un formulaire avancé\n"
+                        "- Définir les informations principales : nom, type, adresse, ville, description, statut, carte, propriétaire, administrateur\n"
+                        "- Configurer précisément les tarifs, frais de ménage, caution, taxe de séjour, commission, nombre de voyageurs, durée maximale, heures d’arrivée/départ, périodes de disponibilité\n"
+                        "- Associer le logement à des plateformes externes (Airbnb, Booking) et à leurs calendriers iCal\n- Ajouter les pièces et photos, les organiser et les associer\n- Gérer les équipements proposés\n"
+                        "- Activer ou désactiver la publication du logement\n- Suivre les réservations, les revenus et les paiements via Stripe\n\n"
+                        "📌 Tu peux aussi expliquer les règles du site, CGU, CGV, politique de confidentialité, et conseiller sur le fonctionnement de la plateforme.\n\n"
+                        "🧭 Lorsque l’utilisateur remplit un formulaire ou configure un logement, tu peux :\n"
+                        "- Expliquer les champs attendus\n"
+                        "- Alerter en cas d’oubli ou d’incohérence (ex. : une caution vide ou un nombre de voyageurs non précisé)\n"
+                        "- Donner des bonnes pratiques (ex. : bien nommer les pièces, ajouter au moins 5 photos, renseigner tous les liens iCal)\n\n"
+                        "Ton ton est professionnel, clair, rassurant et accessible. Si une question est floue ou incomplète, demande poliment des précisions."
                     ),
                 },
                 {"role": "user", "content": user_input},
             ],
         )
-        answer = response.choices[0].message.content
-        return JsonResponse({"response": answer})
+
+        # Incrément et sauvegarde
+        message_data["count"] += 1
+        session["chatbot_usage"] = message_data
+        session.modified = True
+
+        return JsonResponse({"response": response.choices[0].message.content, "limit_reached": False})
 
     except RateLimitError:
         return JsonResponse(

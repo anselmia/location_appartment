@@ -4,6 +4,8 @@
 {% load i18n %}
 {% block extrahead %}
     {{ block.super }}
+    <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
@@ -47,9 +49,7 @@
                                 {% if logement.animals %}
                                     <i class="fas fa-paw" title="Animaux acceptés"></i>
                                 {% else %}
-                                    <i class="fas fa-paw"
-                                       style="opacity: 0.4"
-                                       title="Animaux non autorisés"></i>
+                                    <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
                                 {% endif %}
                                 {% if logement.smoking %}
                                     <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
@@ -200,6 +200,8 @@
     const allPhotoUrls = {{ photo_urls|safe }};
     const periodLimit = {{ logement.availablity_period }};  
     </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="{% static 'logement/js/image-galery.js' %}"></script>
     <script src="{% static 'logement/js/booking.js' %}"></script>

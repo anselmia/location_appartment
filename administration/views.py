@@ -103,13 +103,13 @@ def admin_dashboard(request):
 def add_logement(request):
     try:
         if request.method == "POST":
-            form = LogementForm(request.POST)
+            form = LogementForm(request.POST, user=request.user)
             if form.is_valid():
                 logement = form.save()
                 logger.info(f"Logement added with ID {logement.id}")
                 return redirect("administration:edit_logement", logement.id)
         else:
-            form = LogementForm()
+            form = LogementForm(user=request.user)
 
         return render(request, "administration/add_logement.html", {"form": form})
     except Exception as e:
@@ -125,12 +125,12 @@ def edit_logement(request, logement_id):
         photos = logement.photos.all().order_by("order")
 
         if request.method == "POST":
-            form = LogementForm(request.POST, instance=logement)
+            form = LogementForm(request.POST, instance=logement, user=request.user)
             if form.is_valid():
                 form.save()
                 logger.info(f"Logement {logement_id} updated")
         else:
-            form = LogementForm(instance=logement)
+            form = LogementForm(instance=logement, user=request.user)
 
         selected_equipment_ids = logement.equipment.values_list("id", flat=True)
 

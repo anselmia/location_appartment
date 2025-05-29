@@ -11,13 +11,78 @@
         <header class="hero-banner"
                 style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}')">
             <div class="overlay">
-                <h1 class="animate-fade-in">{{ config.nom }}</h1>
+                <h1 class="animate-fade-in">{{ entreprise.name }}</h1>
                 <p class="animate-fade-in delay">{{ config.devise }}</p>
                 <a href="#logements" class="cta-button animate-slide-up delay-2">{{ config.cta_text }}</a>
             </div>
         </header>
-        <section class="description-section fade-in-up">
-            {% if config.description %}{{ config.description|safe }}{% endif %}
+        <section class="description-section fade-in-up container py-5">
+            <div class="text-center mb-5">
+                <h2 class="text-3xl font-bold mb-3">Louer en toute sérénité avec {{ entreprise.name }}</h2>
+                <p class="text-muted text-lg max-w-2xl mx-auto">
+                    Nous connectons voyageurs et propriétaires (ou conciergeries) pour offrir des <strong>séjours de qualité</strong>, gérés avec sérieux et transparence.
+                </p>
+            </div>
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <h3 class="h4 mb-3">
+                        <i class="bi bi-cash-coin me-2"></i> Tarifs maîtrisés, sans surprises
+                    </h3>
+                    <p>
+                        Grâce à notre modèle direct entre particuliers ou conciergeries, vous bénéficiez de <strong>tarifs compétitifs</strong> tout en profitant d’un logement de qualité.
+                        Pas de frais cachés, seulement le nécessaire.
+                    </p>
+                    <p>
+                        <strong>Nos charges sont réduites</strong> pour garantir des séjours accessibles à tous.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h4 mb-3">
+                        <i class="bi bi-stars me-2"></i> Un accompagnement humain
+                    </h3>
+                    <p>
+                        Que ce soit un propriétaire engagé ou une conciergerie expérimentée, nous veillons à ce que chaque voyageur reçoive un <strong>service attentionné</strong> et une assistance à chaque étape de son séjour.
+                    </p>
+                    <p>
+                        Avec {{ entreprise.name }}, vous n'êtes jamais seul : nous sommes là pour garantir une expérience fluide et agréable.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5">
+                <h3 class="h4 mb-4 text-center">
+                    <i class="bi bi-check-circle-fill me-2 text-primary"></i> Nos engagements
+                </h3>
+                <ul class="list-unstyled row text-center g-4">
+                    <li class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded shadow-sm h-100">
+                            <i class="bi bi-tag-fill fs-3 text-primary mb-2"></i>
+                            <p class="fw-bold">Tarifs justes</p>
+                            <p class="text-muted small">Des prix flexibles et compétitifs via nos partenaires de confiance.</p>
+                        </div>
+                    </li>
+                    <li class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded shadow-sm h-100">
+                            <i class="bi bi-headset fs-3 text-primary mb-2"></i>
+                            <p class="fw-bold">Service réactif</p>
+                            <p class="text-muted small">Une assistance personnalisée avant, pendant et après votre séjour.</p>
+                        </div>
+                    </li>
+                    <li class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded shadow-sm h-100">
+                            <i class="bi bi-house-door fs-3 text-primary mb-2"></i>
+                            <p class="fw-bold">Logements de qualité</p>
+                            <p class="text-muted small">Bien situés, propres et équipés, ils répondent aux standards d’hospitalité moderne.</p>
+                        </div>
+                    </li>
+                    <li class="col-md-6 col-lg-3">
+                        <div class="p-3 border rounded shadow-sm h-100">
+                            <i class="bi bi-lightning-charge-fill fs-3 text-primary mb-2"></i>
+                            <p class="fw-bold">Réservation simple</p>
+                            <p class="text-muted small">Réservez en quelques clics et partez l’esprit tranquille.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </section>
         <div class="wave-separator">
             <svg viewBox="0 0 1440 320" preserveAspectRatio="none">

@@ -70,6 +70,10 @@
   transition: all 0.2s;
 }
 
+.admin-logement-edit .form-input.disabled, .admin-logement-edit .form-select.disabled, .admin-logement-edit .form-textarea.disabled {
+    color: lightgray;
+}
+
 .admin-logement-edit .form-textarea {
   min-height: 100px;
   resize: vertical;
