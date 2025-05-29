@@ -3,18 +3,29 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
-{% endblock extrahead %}
+{% endblock %}
 {% block content %}
-    <div class="contact-card">
-        <h1>📨 Contactez-nous</h1>
-        <p class="subtitle">Nous sommes ravis d’avoir de vos nouvelles.</p>
-        <form method="post" novalidate>
-            {% csrf_token %}
-            <div class="form-group">{{ form.name.label_tag }} {{ form.name }}</div>
-            <div class="form-group">{{ form.email.label_tag }} {{ form.email }}</div>
-            <div class="form-group">{{ form.subject.label_tag }} {{ form.subject }}</div>
-            <div class="form-group">{{ form.message.label_tag }} {{ form.message }}</div>
-            <button type="submit" class="btn-submit">Envoyer</button>
-        </form>
-    </div>
+    <section class="contact-section">
+        <div class="contact-wrapper">
+            <div class="contact-header">
+                <h1>Contactez notre équipe</h1>
+                <p>Vous êtes propriétaire, voyageur ou partenaire ? Notre équipe dédiée vous répond avec attention et efficacité.</p>
+            </div>
+            <form method="post" class="contact-form" novalidate>
+                {% csrf_token %}
+                {% if messages %}
+                    {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+                {% endif %}
+                <div class="form-row">
+                    <div class="form-field">{{ form.name.label_tag }} {{ form.name }}</div>
+                    <div class="form-field">{{ form.email.label_tag }} {{ form.email }}</div>
+                </div>
+                <div class="form-field">{{ form.subject.label_tag }} {{ form.subject }}</div>
+                <div class="form-field">{{ form.message.label_tag }} {{ form.message }}</div>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-contact">Envoyer ma demande</button>
+                </div>
+            </form>
+        </div>
+    </section>
 {% endblock %}

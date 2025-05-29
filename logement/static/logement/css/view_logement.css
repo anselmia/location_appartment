@@ -4,6 +4,44 @@ body {
   color: #333;
 }
 
+h1,
+h2,
+h3,
+.section-title,
+.equipment-title,
+.map-title {
+  font-family: var(--font-title);
+}
+
+body,
+p,
+li,
+.logement-description,
+.feature-item,
+.equipment-group ul li {
+  font-family: var(--font-body);
+}
+
+button,
+input,
+textarea,
+select,
+.btn-contact {
+  font-family: var(--font-sans);
+}
+
+.subtitle,
+.logement-subtitle,
+.toggle-description-btn {
+  font-family: var(--font-sans);
+  font-style: italic;
+}
+
+.section-block h2,
+.section-block h3 {
+  font-family: var(--font-title);
+}
+
 .section-block {
   padding: 10px 10px;
   background: #fff;
