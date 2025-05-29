@@ -136,6 +136,11 @@
                   <br>
                   <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
                 {% else %}
+                  <ul class="list-unstyled small mb-2">
+                    <li>
+                      <strong>Montant à transférer :</strong> {{ r.transferable_amount|floatformat:2 }} €
+                    </li>
+                  </ul>
                   <form method="post"
                         action="{% url 'administration:transfer_reservation' r.code %}"
                         onsubmit="return confirm('Effectuer le transfert ?');"
@@ -145,16 +150,22 @@
                   </form>
                 {% endif %}
               </p>
-              <p class="mb-0">
-                <strong>Admin :</strong>
-                {% if r.admin_transferred %}
-                  <span class="text-success">✔️ ({{ r.admin_transferred_amount }} €)</span>
-                  <br>
-                  <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
-                {% else %}
-                  <span class="text-muted">Pas encore transféré</span>
-                {% endif %}
-              </p>
+              {% if r.logement.admin %}
+                <p class="mb-0">
+                  <strong>Admin :</strong>
+                  {% if r.admin_transferred %}
+                    <span class="text-success">✔️ ({{ r.admin_transferred_amount }} €)</span>
+                    <br>
+                    <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
+                  {% else %}
+                    <ul class="list-unstyled small mb-2">
+                      <li>
+                        <strong>Montant à transférer :</strong> {{ r.admin_transferable_amount|floatformat:2 }} €
+                      </li>
+                    </ul>
+                  {% endif %}
+                </p>
+              {% endif %}
             </div>
           </div>
         </div>

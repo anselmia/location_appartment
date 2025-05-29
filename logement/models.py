@@ -384,7 +384,7 @@ class Reservation(models.Model):
             ("confirmee", "Confirmée"),
             ("annulee", "Annulée"),
             ("terminee", "Terminée"),
-            ("echec_paiement", "Echec du paiement")
+            ("echec_paiement", "Echec du paiement"),
         ],
         default="en_attente",
     )
@@ -546,13 +546,48 @@ class Reservation(models.Model):
 
             amount = price - platform_fee - refund - payment_fee
             amount = max(Decimal("0"), amount)
+
+            if self.logement.admin:
+                admin_rate = Decimal(self.logement.admin_fee or 0)
+                admin_fee = admin_rate * amount
+                amount -= admin_fee
+
             return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         except Exception as e:
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"Error calculating transferable_amount for reservation {self.id}: {e}")
+            logger.exception(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
+            return Decimal("0.00")
+
+    @property
+    def admin_transferable_amount(self):
+        """
+        Calculates the amount that can be transferred to the admin.
+        """
+        try:
+            if self.logement.admin:
+                platform_fee = Decimal(self.platform_fee or 0)
+                payment_fee = Decimal(self.payment_fee or 0)
+                refund = Decimal(self.refund_amount or 0)
+                price = Decimal(self.price or 0)
+
+                amount = price - platform_fee - refund - payment_fee
+                amount = max(Decimal("0"), amount)
+
+                admin_rate = Decimal(self.logement.admin_fee or 0)
+                admin_fee = admin_rate * amount
+
+                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            else:
+                return Decimal(0)
+
+        except Exception as e:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error calculating transferable_amount for admin for reservation {self.id}: {e}")
             return Decimal("0.00")
 
 
