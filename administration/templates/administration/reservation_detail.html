@@ -139,7 +139,12 @@
                 <dd class="col-sm-7">
                   {{ reservation.payment_fee|floatformat:2 }} €
                 </dd>
-                <dt class="col-sm-5">Frais Plateforme (Remboursable sous condition)</dt>
+                <dt class="col-sm-5"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel">
+                  Frais Plateforme <i class="bi bi-info-circle text-muted"></i>
+                </dt>
                 <dd class="col-sm-7">
                   {{ reservation.platform_fee|floatformat:2|default:"—" }} €
                 </dd>
