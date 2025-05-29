@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const totalRevenueElem = document.getElementById("total-revenue");
   const totalTaxesElem = document.getElementById("total-taxes");
+  const totalRefundsElem = document.getElementById("total-refunds");
   const netProfitElem = document.getElementById("net-profit");
   const economyError = document.getElementById("economy-error");
   const economyChartElem = document.getElementById("economy-chart");
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     totalRevenueElem.textContent = `€${totalRevenue.toFixed(2)}`;
     totalTaxesElem.textContent = `€${totalTax.toFixed(2)}`;
     netProfitElem.textContent = `€${netProfit.toFixed(2)}`;
+    totalRefundsElem.textContent = `€${refunds.toFixed(2)}`;
 
     const ctx = economyChartElem.getContext("2d");
     new Chart(ctx, {

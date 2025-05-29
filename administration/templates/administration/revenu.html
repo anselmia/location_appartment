@@ -74,6 +74,12 @@
               <p class="text-danger display-6 fw-bold" id="total-taxes">€0.00</p>
             </div>
           </div>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="p-3 border rounded bg-light">
+              <h6 class="text-muted mb-2">Remboursements</h6>
+              <p class="text-danger display-6 fw-bold" id="total-refunds">€0.00</p>
+            </div>
+          </div>
           <div class="col-md-4">
             <div class="p-3 border rounded bg-light">
               <h6 class="text-muted mb-2">Bénéfice Net</h6>
@@ -89,7 +95,7 @@
     <div class="card shadow-lg mb-5">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-semibold">📅 Graphique des Revenus Mensuels</h5>
+          <h5 class="fw-semibold">📅 Graphique des Revenus Annuels {{ selected_year }}</h5>
           <small class="text-muted">Vue empilée : revenu net, frais, remboursements</small>
         </div>
         <canvas id="economy-chart" height="100"></canvas>

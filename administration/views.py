@@ -1056,7 +1056,6 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         total_reservations = reservations.count()
         average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
-
         context.update(
             {
                 "logement_id": logement_id,
