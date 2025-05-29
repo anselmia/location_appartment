@@ -9,16 +9,17 @@ document.addEventListener("DOMContentLoaded", function () {
   try {
     // Compute totals
     const sum = (arr) => arr.reduce((a, b) => a + (parseFloat(b) || 0), 0);
-    const totalRevenue = sum(totalRevenu);
+    const totalRevenusBrut = sum(totalRevenuBrut);
+    const totalRevenusNet = sum(totalRevenuNet);
+    const admintotalRevenus = sum(admintotalRevenu);
     const totalTax = sum(taxes);
     const refunds = sum(totalRefunds);
     const platform = sum(platformEarnings);
     const payment = sum(paymentFees);
-    const netProfit = totalRevenue - refunds - platform - payment - totalTax;
 
-    totalRevenueElem.textContent = `€${totalRevenue.toFixed(2)}`;
+    totalRevenueElem.textContent = `€${totalRevenusBrut.toFixed(2)}`;
     totalTaxesElem.textContent = `€${totalTax.toFixed(2)}`;
-    netProfitElem.textContent = `€${netProfit.toFixed(2)}`;
+    netProfitElem.textContent = `€${totalRevenusNet.toFixed(2)}`;
     totalRefundsElem.textContent = `€${refunds.toFixed(2)}`;
 
     const ctx = economyChartElem.getContext("2d");
@@ -29,7 +30,13 @@ document.addEventListener("DOMContentLoaded", function () {
         datasets: [
           {
             label: "Revenu Net",
-            data: totalRevenu,
+            data: totalRevenuNet,
+            backgroundColor: "#198754",
+            stack: "stack1",
+          },
+          {
+            label: "Revenu Administrateur",
+            data: admintotalRevenu,
             backgroundColor: "#198754",
             stack: "stack1",
           },

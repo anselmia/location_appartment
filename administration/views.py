@@ -1095,9 +1095,35 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
             .order_by("month")
         )
 
+        # Compute admin_fees manually
+        monthly_manual_data = defaultdict(lambda: {
+            "admin_transfer": 0,
+            "owner_transfer": 0,
+        })
+
+        # Compute manually
+        for reservation in Reservation.objects.filter(
+            Q(statut="confirmee") | Q(statut="terminee"),
+            start__year=selected_year,
+        ):
+            month = reservation.start.replace(day=1)
+            monthly_manual_data[month]["admin_transfer"] += reservation.admin_transferable_amount or 0
+            monthly_manual_data[month]["owner_transfer"] += reservation.transferable_amount or 0
+
+        # Merge into final monthly data list
+        final_monthly_data = []
+        for row in monthly_data:
+            month = row["month"]
+            manual_data = monthly_manual_data.get(month, {"admin_transfer": 0, "owner_transfer": 0})
+            row["admin_transfer"] = manual_data["admin_transfer"]
+            row["owner_transfer"] = manual_data["owner_transfer"]
+            final_monthly_data.append(row)
+
         monthly_chart = defaultdict(
             lambda: {
-                "revenue": Decimal("0.00"),
+                "revenue_brut": Decimal("0.00"),
+                "revenue_net": Decimal("0.00"),
+                "admin_revenue": Decimal("0.00"),
                 "refunds": Decimal("0.00"),
                 "payment_fee": Decimal("0.00"),
                 "platform_fee": Decimal("0.00"),
@@ -1107,20 +1133,18 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         for item in monthly_data:
             month_key = item["month"].month
-            monthly_chart[month_key]["revenue"] = (
-                (item["brut"] or Decimal("0.00"))
-                - (item["refunds"] or Decimal("0.00"))
-                - (item["fees"] or Decimal("0.00"))
-                - (item["platform"] or Decimal("0.00"))
-                - (item["tax"] or Decimal("0.00"))
-            )
+            monthly_chart[month_key]["revenue_brut"] = item["brut"] or Decimal("0.00")
+            monthly_chart[month_key]["revenue_net"] = item["owner_transfer"] or Decimal("0.00")
+            monthly_chart[month_key]["admin_revenue"] = item["admin_transfer"] or Decimal("0.00")
             monthly_chart[month_key]["refunds"] = item["refunds"] or Decimal("0.00")
             monthly_chart[month_key]["payment_fee"] = item["fees"] or Decimal("0.00")
             monthly_chart[month_key]["platform_fee"] = item["platform"] or Decimal("0.00")
             monthly_chart[month_key]["tax"] = item["tax"] or Decimal("0.00")
 
         chart_labels = [cal.month_abbr[m] for m in range(1, 13)]
-        revenue_data = [float(monthly_chart[m]["revenue"]) for m in range(1, 13)]
+        revenue_brut_data = [float(monthly_chart[m]["revenue_brut"]) for m in range(1, 13)]
+        revenue_net_data = [float(monthly_chart[m]["revenue_net"]) for m in range(1, 13)]
+        admin_revenue_data = [float(monthly_chart[m]["admin_revenue"]) for m in range(1, 13)]
         refunds_data = [float(monthly_chart[m]["refunds"]) for m in range(1, 13)]
         payment_fee_data = [float(monthly_chart[m]["payment_fee"]) for m in range(1, 13)]
         platform_fee_data = [float(monthly_chart[m]["platform_fee"]) for m in range(1, 13)]
@@ -1129,7 +1153,9 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         context.update(
             {
                 "chart_labels": chart_labels,
-                "revenue_data": revenue_data,
+                "revenue_brut_data": revenue_brut_data,
+                "revenue_net_data": revenue_net_data,
+                "admin_revenue_data": admin_revenue_data,
                 "refunds_data": refunds_data,
                 "payment_fee_data": payment_fee_data,
                 "platform_fee_data": platform_fee_data,
