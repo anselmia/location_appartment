@@ -273,6 +273,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+
+  formGuest.addEventListener("keydown", function (e) {
+    // allow only up/down arrows, tab, and backspace
+    const allowedKeys = ["ArrowUp", "ArrowDown", "Tab", "Backspace"];
+    if (!allowedKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
   const stripe = Stripe(stripe_public_key);
 
   function validateDateInput(inputElement, label = "Date") {

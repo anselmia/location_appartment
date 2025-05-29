@@ -92,8 +92,8 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
-            "admin": forms.Select(attrs={"class": "form-control select2"}),  
-            "owner": forms.Select(attrs={"class": "form-control select2"}),  
+            "admin": forms.Select(attrs={"class": "form-control select2"}),
+            "owner": forms.Select(attrs={"class": "form-control select2"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -181,7 +181,16 @@ class ReservationForm(forms.Form):
         initial=1,
         min_value=1,
         required=True,
-        widget=forms.NumberInput(attrs={"id": "id_guest", "class": "form-control"}),
+        widget=forms.NumberInput(
+            attrs={
+                "id": "id_guest",
+                "class": "form-control",
+                "type": "number",  # enables numeric input with up/down arrows
+                "inputmode": "numeric",  # mobile: show numeric keypad
+                "pattern": "[0-9]*",  # hint for numeric input
+                "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",  # restrict manual input
+            }
+        ),
     )
     start = forms.DateField(
         widget=forms.DateInput(attrs={"id": "id_start", "class": "form-control", "type": "date"}),
