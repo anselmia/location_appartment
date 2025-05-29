@@ -10,7 +10,7 @@ from logement.services.payment_service import (
     handle_checkout_session_completed,
     handle_payment_failed,
     handle_charge_refunded,
-    handle_transfer_paid,
+    handle_transfer_created,
 )
 
 logger = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ def handle_webhook_event(event):
             handle_charge_refunded(e.event.data)
 
         elif event_type == EventType.TRANSFER_REVERSED:
-            handle_transfer_paid(e.event.data)
+            handle_transfer_created(e.event.data)
 
         else:
             logger.warning(f"⚠️ Unsupported event type: {event_type}")

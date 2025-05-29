@@ -16,7 +16,7 @@ class EventType(str, Enum):
     REFUND_UPDATED = "refund.updated"
     PAYMENT_INTENT_FAILED = "payment_intent.payment_failed"
     PAYMENT_INTENT_SUCCEEDED = "payment_intent.succeeded"
-    TRANSFER_REVERSED = "transfer.reversed"
+    TRANSFER_CREATED = "transfer.created"
 
 
 class StripeEventRequest(BaseModel):
@@ -58,7 +58,7 @@ class StripePaymentIntentEvent(StripeBaseEvent):
 
 class StripeTransferEvent(StripeBaseEvent):
     data: StripeTransferEventData
-    type: Literal[EventType.TRANSFER_REVERSED,]
+    type: Literal[EventType.TRANSFER_CREATED,]
 
 
 class StripeEvent(BaseModel):
