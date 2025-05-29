@@ -674,13 +674,13 @@ def handle_transfer_created(data: StripeTransferEventData):
                 reservation = Reservation.objects.get(code=reservation_code)
                 reservation.transferred = True
                 reservation.stripe_transfer_id = transfer_id
-                reservation.transferred_amount = amount / 100
+                reservation.transferred_amount = amount
                 reservation.save(update_fields=["transferred", "stripe_transfer_id", "transferred_amount"])
                 logger.info(f"📦 Transfer recorded to owner for reservation {reservation_code}")
             elif transfer_user == "admin":
                 reservation = Reservation.objects.get(code=reservation_code)
                 reservation.admin_transferred = True
-                reservation.admin_transferred_amount = amount / 100
+                reservation.admin_transferred_amount = amount
                 reservation.admin_stripe_transfer_id = transfer_id
                 reservation.save(
                     update_fields=["admin_transferred", "admin_stripe_transfer_id", "admin_transferred_amount"]
