@@ -53,37 +53,56 @@ setTimeout(() => {
 
 let isSending = false;
 
+function scrollChatToBottom() {
+  const chatLog = document.getElementById("chat-log");
+  if (chatLog) {
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+}
+
 async function sendMessage() {
   if (isSending) return;
 
-  const message = document.getElementById("user-message").value.trim();
+  const input = document.getElementById("user-message");
+  const chatLog = document.getElementById("chat-log");
+  const message = input.value.trim();
   if (!message) return;
 
   isSending = true;
 
-  const response = await fetch(chat_url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: message }),
-  });
+  // Ajouter le message utilisateur
+  const userMsg = document.createElement("p");
+  userMsg.className = "user-message";
+  userMsg.innerHTML = `<strong>Vous:</strong> ${message}`;
+  chatLog.appendChild(userMsg);
 
-  const data = await response.json();
+  input.value = "";
 
-  document.getElementById(
-    "chat-log"
-  ).innerHTML += `<p class="user-message"><strong>Vous:</strong> ${message}</p>`;
+  scrollChatToBottom();
 
-  if (data.response) {
-    document.getElementById(
-      "chat-log"
-    ).innerHTML += `<p class="bot-message"><strong>Bot:</strong> ${data.response}</p>`;
-  } else {
-    document.getElementById(
-      "chat-log"
-    ).innerHTML += `<p class='text-danger'><strong>Erreur:</strong> ${data.error}</p>`;
+  try {
+    const response = await fetch(chat_url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message }),
+    });
+
+    const data = await response.json();
+
+    const botMsg = document.createElement("p");
+    botMsg.className = "bot-message";
+    botMsg.innerHTML = `<strong>Bot:</strong> ${
+      data.response || data.error || "Erreur inconnue"
+    }`;
+    chatLog.appendChild(botMsg);
+  } catch (e) {
+    const errorMsg = document.createElement("p");
+    errorMsg.className = "text-danger";
+    errorMsg.innerHTML = `<strong>Erreur:</strong> Une erreur est survenue.`;
+    chatLog.appendChild(errorMsg);
   }
 
-  document.getElementById("user-message").value = ""; // clear input
+  scrollChatToBottom();
   isSending = false;
 }
 

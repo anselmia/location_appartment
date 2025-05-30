@@ -67,6 +67,7 @@ from logement.services.reservation_service import (
     get_reservation_years_and_months,
     get_valid_reservations_for_admin,
     mark_reservation_cancelled,
+    get_valid_reservations_in_period,
 )
 
 from administration.services.logs import parse_log_file
@@ -406,12 +407,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
                     "guests": b.guest,
                     "total_price": str(b.price),
                 }
-                for b in Reservation.objects.filter(
-                    logement_id=logement_id,
-                    start__lte=end,
-                    end__gte=start,
-                    statut="confirmee",
-                )
+                for b in get_valid_reservations_in_period(logement_id, start, end)
             ]
 
             airbnb_bookings = [
@@ -1062,10 +1058,19 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
         reservations = get_valid_reservations_for_admin(self.request.user)
 
-        all_years = reservations.annotate(year=ExtractYear("start")).values_list("year", flat=True).distinct()
+        all_years = reservations.annotate(year=ExtractYear("start")).values("year").distinct().order_by("year")
+        all_years = [y["year"] for y in all_years]
+
         selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
 
-        all_months = reservations.annotate(month=ExtractMonth("start")).values_list("month", flat=True).distinct()
+        all_months = (
+            reservations.filter(start__year=selected_year)
+            .annotate(month=ExtractMonth("start"))
+            .values("month")
+            .distinct()
+            .order_by("month")
+        )
+        all_months = [m["month"] for m in all_months]
         selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
 
         reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year, selected_month)
@@ -1084,9 +1089,9 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
                 "logement_id": logement_id,
                 "logements": logements,
                 "selected_year": selected_year,
-                "available_years": sorted(all_years),
+                "available_years": all_years,
                 "selected_month": selected_month,
-                "available_months": sorted(all_months),
+                "available_months": all_months,
                 "total_revenue": total_revenu,
                 "platform_earnings": platform_earnings or Decimal("0.00"),
                 "tax": tax,

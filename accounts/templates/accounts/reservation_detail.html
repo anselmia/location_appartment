@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'administration/css/reservation_detail.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'accounts:dashboard' %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour à mes réservations
+            </a>
+            <h2 class="fw-bold mb-0">Réservation {{ reservation.code }}</h2>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row gy-4">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Informations générales</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Logement</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.logement.name }}
+                            </dd>
+                            <dt class="col-sm-5">Adresse</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.logement.full_address }}
+                            </dd>
+                            <dt class="col-sm-5">Date d'arrivée</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.start|date:"d M Y" }}
+                            </dd>
+                            <dt class="col-sm-5">Date de départ</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.end|date:"d M Y" }}
+                            </dd>
+                            <dt class="col-sm-5">Nombre d’invités</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.guest }}
+                            </dd>
+                            <dt class="col-sm-5">Réservé le</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.date_reservation|date:"d M Y H:i" }}
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- État de la réservation -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Statut</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Statut</dt>
+                            <dd class="col-sm-7">
+                                {% if reservation.statut == "confirmee" %}
+                                    <span class="badge bg-success">Confirmée</span>
+                                {% elif reservation.statut == "en_attente" %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elif reservation.statut == "annulee" %}
+                                    <span class="badge bg-danger">Annulée</span>
+                                {% elif reservation.statut == "terminee" %}
+                                    <span class="badge bg-secondary">Terminée</span>
+                                {% else %}
+                                    {{ reservation.get_statut_display }}
+                                {% endif %}
+                            </dd>
+                            <dt class="col-sm-5">État actuel</dt>
+                            <dd class="col-sm-7">
+                                {% if reservation.ongoing %}
+                                    <span class="badge bg-warning text-dark">En cours</span>
+                                {% elif reservation.ended %}
+                                    <span class="badge bg-secondary">Terminée</span>
+                                {% elif reservation.coming %}
+                                    <span class="badge bg-info text-dark">À venir</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">Inconnu</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- Paiement simplifié -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Détails du paiement</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Montant total</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.price|floatformat:2 }} €
+                            </dd>
+                            <dt class="col-sm-5">Taxes de séjour</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.tax|floatformat:2 }} €
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- Caution -->
+                    {% if reservation.logement.caution %}
+                        <div class="col-md-6">
+                            <h5 class="text-muted border-bottom pb-2">Caution</h5>
+                            <dl class="row">
+                                <dt class="col-sm-5">Montant de la caution</dt>
+                                <dd class="col-sm-7">
+                                    {{ reservation.logement.caution|floatformat:2 }} €
+                                </dd>
+                                <dt class="col-sm-5">Caution chargée ?</dt>
+                                <dd class="col-sm-7">
+                                    {% if reservation.caution_charged %}
+                                        <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,46 +1,65 @@
 {% load extra_tags %}
 {% load static %}
 
-<div class="card shadow-sm mb-4">
+<div class="card shadow rounded-4 border-0 mb-4">
+  <div class="card-header text-white rounded-top-4">
+    <h5 class="mb-0">💼 Compte Stripe</h5>
+  </div>
   <div class="card-body">
-    <h5 class="mb-4 text-primary fw-bold">💼 Compte Stripe</h5>
-
     {% if not stripe_account %}
       <p class="text-muted mb-3">Aucun compte Stripe connecté pour le moment.</p>
       <a href="{% url 'accounts:create_stripe_account' %}" class="btn btn-primary">
         ➕ Créer un compte Stripe
       </a>
     {% else %}
-      <!-- Compte existant -->
-        <div class="mb-4">
-            <p><strong>ID Stripe :</strong> {{ stripe_account.id }}</p>
-            <p><strong>Statut :</strong> {{ stripe_account.details_submitted|yesno:"✅ Validé,❌ Incomplet" }}</p>
-            <p><strong>Pays :</strong> {{ stripe_account.country }}</p>
-            <p><strong>État :</strong> {{ stripe_account.requirements.currently_due|length }} informations manquantes</p>
-
-            {% if stripe_account.requirements.currently_due %}
-            <div class="alert alert-warning">
-                ⚠️ Vous devez fournir les informations suivantes :
-                <ul class="mb-0">
-                {% for field in stripe_account.requirements.currently_due %}
-                    <li><code>{{ field }}</code></li>
-                {% endfor %}
-                </ul>
+      <div class="mb-3">
+        <div class="row gy-2">
+          <div class="col-sm-6">
+            <strong>ID Stripe :</strong>
+            <div class="text-muted small">{{ stripe_account.id }}</div>
+          </div>
+          <div class="col-sm-6">
+            <strong>Statut :</strong>
+            <div class="small">
+              {% if stripe_account.details_submitted %}
+                <span class="badge bg-success">✅ Validé</span>
+              {% else %}
+                <span class="badge bg-danger">❌ Incomplet</span>
+              {% endif %}
             </div>
-            {% endif %}
-
-            <a href="{% url 'accounts:update_stripe_account' %}" class="btn btn-outline-primary">
-            📝 Mettre à jour mes informations
-            </a>
-
-            {% if dashboard_link %}
-            <a href="{{ dashboard_link }}" target="_blank" class="btn btn-outline-secondary ms-2">
-                🔗 Ouvrir Dashboard Stripe
-            </a>
-            {% endif %}
+          </div>
+          <div class="col-sm-6">
+            <strong>Pays :</strong>
+            <div class="text-muted small">{{ stripe_account.country }}</div>
+          </div>
+          <div class="col-sm-6">
+            <strong>État :</strong>
+            <div class="small text-muted">{{ stripe_account.requirements.currently_due|length }} informations manquantes</div>
+          </div>
         </div>
+      </div>
 
-        <hr>
+      {% if stripe_account.requirements.currently_due %}
+        <div class="alert alert-warning">
+          ⚠️ Informations manquantes :
+          <ul class="mb-0">
+            {% for field in stripe_account.requirements.currently_due %}
+              <li><code>{{ field }}</code></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a href="{% url 'accounts:update_stripe_account' %}" class="btn btn-outline-primary">
+          📝 Mettre à jour
+        </a>
+        {% if dashboard_link %}
+          <a href="{{ dashboard_link }}" target="_blank" class="btn btn-outline-secondary">
+            🔗 Ouvrir le Dashboard Stripe
+          </a>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
 </div>

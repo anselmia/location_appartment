@@ -25,13 +25,13 @@ def get_conversations(user):
     if user.is_admin or user.is_superuser:
         conversations = (
             Conversation.objects.all()
-            .annotate(unread_count=Count("messages", filter=Q(messages__read=False, messages__recipients=user)))
+            .annotate(unread_count=Count("messages", filter=Q(messages__recipients=user) & ~Q(messages__read_by=user)))
             .order_by("-updated_at")
         )
     else:
         conversations = (
             Conversation.objects.filter(Q(participants=user))
-            .annotate(unread_count=Count("messages", filter=Q(messages__read=False, messages__recipients=user)))
+            .annotate(unread_count=Count("messages", filter=Q(messages__recipients=user) & ~Q(messages__read_by=user)))
             .order_by("-updated_at")
         )
 

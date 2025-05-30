@@ -57,9 +57,12 @@ class Message(models.Model):
     recipients = models.ManyToManyField(CustomUser, related_name="received_messages")
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
-    read = models.BooleanField(default=False)
+    read_by = models.ManyToManyField(CustomUser, related_name="messages_read", blank=True)
 
     class Meta:
         ordering = ["timestamp"]
         verbose_name = "Message"
         verbose_name_plural = "Messages"
+
+    def is_read_by(self, user):
+        return self.read_by.filter(id=user.id).exists()

@@ -14,7 +14,7 @@ document.getElementById('searchInput').addEventListener('keyup', function () {
     const query = this.value.toLowerCase();
     const rows = document.querySelectorAll('#reservationTable tbody tr');
     rows.forEach(row => {
-        const guestName = row.cells[2].textContent.toLowerCase();
+        const guestName = row.cells[3].textContent.toLowerCase();
         row.style.display = guestName.includes(query) ? '' : 'none';
     });
 });

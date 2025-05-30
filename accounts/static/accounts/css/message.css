@@ -8,6 +8,31 @@
   --message-other-bg: #f5f5f5;
   max-width: 80vw;
 }
+.messaging-layout {
+  display: flex;
+  height: 75vh;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.messaging-sidebar {
+  width: 300px;
+  transition: all 0.3s ease;
+}
+
+.messaging-main {
+  flex-grow: 1;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-collapsed .messaging-sidebar {
+  width: 0;
+  overflow: hidden;
+}
+
+.sidebar-collapsed .messaging-main {
+  margin-left: 0;
+}
 
 .messaging-layout {
   display: flex;
@@ -171,11 +196,6 @@ form textarea {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .messaging-interface .col-md-4,
-  .messaging-interface .col-md-8 {
-    width: 100%;
-  }
-
   .messaging-interface .text-start .d-inline-block,
   .messaging-interface .text-end .d-inline-block {
     max-width: 100%;
@@ -183,16 +203,6 @@ form textarea {
 
   .messaging-interface .card-body {
     max-height: 50vh !important;
-  }
-
-  .messaging-layout {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-
-  .messaging-sidebar {
-    min-width: 30vw;
-    max-width: 38vw;
   }
 
   .messaging-interface button[type="submit"] {
@@ -205,5 +215,17 @@ form textarea {
 
   .list-group-item {
     padding: 0.4rem 0.5rem;
+  }
+
+  .messaging-sidebar {
+    width: 50vw;
+  }
+
+  .list-group strong {
+    font-size: 0.8rem;
+  }
+
+  .ml-3 {
+    margin-left: 0.5rem !important;
   }
 }

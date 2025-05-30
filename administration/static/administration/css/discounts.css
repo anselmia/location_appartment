@@ -1,78 +1,89 @@
+:root {
+  --table-header-bg: rgba(191, 166, 107, 0.9);
+}
+
+.table-header th {
+  background-color: var(--table-header-bg);
+  color: white;
+}
+
 .discounts-container {
   margin: 2rem auto;
-  padding: 0 1rem;
-  font-family: "Inter", sans-serif;
-  color: #2d3748;
+  padding: 0 var(--spacing-sm);
+  font-family: var(--font-body);
+  color: var(--text-dark);
 }
 
 .discounts-title {
   font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #1a202c;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-title);
 }
 
 .discount-form {
-  background-color: #f9fafb;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background-color: var(--light-bg);
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow);
 }
 
 .discount-form .form-label {
   font-size: 0.925rem;
   font-weight: 500;
-  color: #4a5568;
+  color: var(--text-muted);
 }
 
 .discount-form .form-control,
 .discount-form .form-select {
   font-size: 0.95rem;
-  border-radius: 8px;
-  border: 1px solid #cbd5e0;
+  border-radius: var(--radius);
+  border: 1px solid var(--light-border);
   padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
 }
 
 .discount-form .form-control:focus,
 .discount-form .form-select:focus {
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.15rem rgba(191, 166, 107, 0.3); /* primary */
   outline: none;
 }
 
 .discount-form .btn-primary {
-  background-color: #2563eb;
+  background-color: var(--primary-color);
   border: none;
   font-weight: 500;
   font-size: 0.95rem;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius);
+  color: #fff;
 }
 
 .discount-form .btn-primary:hover {
-  background-color: #1e40af;
+  background-color: #a78d58; /* slightly darker variant */
 }
 
 .discount-list .empty {
-  color: #a0aec0;
+  color: var(--text-muted);
   font-style: italic;
   text-align: center;
   padding: 1rem;
 }
 
 .discount-list .list-group-item {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  background-color: #fff;
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--bg-white);
   padding: 1rem;
 }
 
 .discount-list form {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--spacing-xs);
   align-items: center;
 }
 
@@ -90,6 +101,8 @@
 .discount-list .input-group-text {
   min-height: 36px;
   font-size: 0.9rem;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
 }
 
 .discount-list .btn-sm {
@@ -97,6 +110,7 @@
   font-size: 0.875rem;
 }
 
+/* Hidden fields toggled by JS */
 .optional-field,
 .min-nights-field,
 .exact-nights-field,
@@ -107,16 +121,19 @@
   display: none;
 }
 
+/* Ensure unified input look */
 .discounts-container input,
 .discounts-container select,
 .discounts-container textarea {
   width: 100%;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  border: 1px solid var(--light-border);
   font-size: 0.875rem;
+  font-family: var(--font-body);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .discount-list form {
     flex-direction: column;

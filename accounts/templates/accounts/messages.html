@@ -6,7 +6,8 @@
 {% endblock extrahead %}
 {% block content %}
     <div class="container-fluid mt-4 messaging-interface">
-        <div class="d-flex flex-nowrap messaging-layout">
+        <button class="btn btn-outline-secondary mb-2" id="toggle-sidebar">📋 Conversations</button>
+        <div class="d-flex messaging-layout sidebar-open" id="messaging-layout">
             <!-- Sidebar: Conversations List -->
             <div class="messaging-sidebar flex-shrink-0">
                 {% if reservations_to_start %}
@@ -80,10 +81,15 @@
                             {% for message in active_conversation.messages.all %}
                                 {% if message.sender == user %}
                                     <div class="text-end mb-2">
-                                        <div class="d-inline-block rounded p-2">
+                                        <div class="d-inline-block rounded p-2 bg-primary-subtle text-dark border">
                                             <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
                                             <br>
                                             {{ message.content|linebreaksbr }}
+                                            {% if message.read_by.count > 1 %}
+                                                <div class="mt-1">
+                                                    <small class="text-muted">✅ Lu</small>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 {% else %}
@@ -116,8 +122,5 @@
     </div>
 {% endblock content %}
 {% block extra_js %}
-    <script>
-    const list = document.getElementById("message-list");
-    if (list) list.scrollTop = list.scrollHeight;
-    </script>
+    <script src="{% static 'accounts/js/messages.js' %}"></script>
 {% endblock extra_js %}

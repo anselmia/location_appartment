@@ -23,6 +23,8 @@ from django.urls import reverse
 from django.core.cache import cache
 from django_ratelimit.decorators import ratelimit
 from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
+from logement.services.reservation_service import get_user_reservation
+from common.decorators import user_is_reservation_customer
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +85,7 @@ def client_dashboard(request):
         code_filter = request.GET.get("code", None)
 
         try:
-            reservations = Reservation.objects.filter(
-                user=user, statut__in=["confirmee", "annulee", "terminee"]
-            ).order_by("-start")
+            reservations = get_user_reservation(user)
         except Exception as e:
             logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations.")
@@ -183,7 +183,7 @@ def messages_view(request, conversation_id=None):
             messages.error(request, "Vous n'avez pas accès à cette conversation.")
             return redirect("accounts:messages")
 
-        messages_qs = active_conversation.messages.select_related("sender").order_by("timestamp")
+        messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by").order_by("timestamp")
 
         # Marquer comme lus les messages reçus par cet utilisateur
         for msg in messages_qs:
@@ -275,9 +275,7 @@ def contact_view(request):
 def delete_account(request):
     user = request.user
 
-    # Check for ongoing or upcoming reservations
-    today = timezone.now().date()
-    has_active_reservations = Reservation.objects.filter(user=user, statut="confirmee", end__gte=today).exists()
+    has_active_reservations = get_user_reservation(user).exists()
 
     if has_active_reservations:
         messages.error(
@@ -386,3 +384,10 @@ def update_stripe_account_view(request):
             return redirect("accounts:dashboard")
 
     return redirect("accounts:dashboard")
+
+
+@login_required
+@user_is_reservation_customer
+def reservation_detail(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
+    return render(request, "accounts/reservation_detail.html", {"reservation": reservation})

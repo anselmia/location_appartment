@@ -440,15 +440,15 @@ ul.list-unstyled li .ml-3 {
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   z-index: 9998;
-  overflow: hidden;
   font-family: "Segoe UI", sans-serif;
   border: 1px solid #ddd;
+  overflow: hidden;
 }
 
 #chatbot-header {
+  flex: 0 0 auto;
   background-color: var(--primary-color);
   color: white;
   padding: 12px 16px;
@@ -456,35 +456,24 @@ ul.list-unstyled li .ml-3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
+  height: 13%;
 
-#chatbot-close {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
 }
 
 #chat-log {
-  padding: 12px;
-  flex-grow: 1;
+  flex: 1 1 auto;
   overflow-y: auto;
-  font-size: 14px;
+  padding: 12px;
   background-color: #f8f8f8;
-  max-height: 100%; /* Ensures it doesn't exceed parent height */
-  min-height: 0; /* Important for flex containers */
-}
-
-#chat-log .user-message {
-  color: var(--accent-color);
-}
-
-#chat-log .bot-message {
-  color: var(--secondary-color);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 70%;
 }
 
 #chatbot-input {
+  flex-shrink: 0;
   display: flex;
   padding: 12px;
   gap: 8px;

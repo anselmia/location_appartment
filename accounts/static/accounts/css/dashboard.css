@@ -47,7 +47,7 @@
 
 .card-header {
   border-radius: var(--radius) var(--radius) 0 0;
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color);
   color: #fff;
   font-weight: 600;
   font-size: 1.125rem;
@@ -118,6 +118,31 @@
 }
 
 /* Reservation List */
+.reservation-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--light-border);
+  background: var(--bg-white);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+.reservation-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.reservation-main .logement-title {
+  font-size: 1.1rem;
+}
+.reservation-meta {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.reservation-actions .btn {
+  border-radius: 999px;
+}
+.badges .badge {
+  margin: 0.1rem;
+}
+
 .list-group-item {
   background: var(--bg-white);
   border: 1px solid var(--light-border);

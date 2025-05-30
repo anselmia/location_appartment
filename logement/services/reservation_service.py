@@ -48,6 +48,20 @@ def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=No
         raise
 
 
+def get_valid_reservations_in_period(logement_id, start, end):
+    return Reservation.objects.filter(
+        logement_id=logement_id,
+        start__lte=end,
+        end__gte=start,
+    ).filter(Q(statut="confirmee") | Q(statut="terminee"))
+
+
+def get_user_reservation(user):
+    return Reservation.objects.filter(
+        user=user, statut__in=["confirmee", "annulee", "terminee", "echec_paiement"]
+    ).order_by("-start")
+
+
 def get_reservation_years_and_months():
     try:
         years = (
