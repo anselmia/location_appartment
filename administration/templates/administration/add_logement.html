@@ -1,20 +1,91 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 {% load widget_tweaks %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
-          href="{% static 'administration/css/add_logement.css' %}">
-{% endblock %}
+          href="{% static 'administration/css/edit_logement.css' %}">
+{% endblock extrahead %}
 {% block content %}
-    <div class="container logement-form-container">
-        <div class="logement-card">
-            <div class="mb-3">
-                <a href="{% url 'administration:dashboard' %}"
-                   class="btn btn-outline-secondary">⬅️ Retour au tableau de bord</a>
+    <div class="admin-logement-edit container-fluid">
+        <div class="mb-3">
+            <a href="{% url 'administration:dashboard' %}"
+               class="btn btn-outline-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
+        </div>
+        <div class="form-box">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                <h2 class="mb-2">{{ logement.name }}</h2>
+                <a href="{% url 'logement:view_logement' logement.id %}"
+                   target="_blank"
+                   class="btn btn-outline-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>
             </div>
+            <!-- Tabs Navigation -->
+            <div class="overflow-auto mb-3">
+                <ul class="nav nav-pills flex-nowrap"
+                    id="logementTabs"
+                    role="tablist"
+                    style="min-width: 600px">
+                    <li class="nav-item">
+                        <button class="nav-link active"
+                                data-bs-toggle="tab"
+                                data-bs-target="#general"
+                                type="button"
+                                role="tab">📌 Informations générales</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#platforms"
+                                type="button"
+                                role="tab">🌐 Plateformes en ligne</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#capacity"
+                                type="button"
+                                role="tab">🛏️ Capacité et pièces</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#pricing"
+                                type="button"
+                                role="tab">💰 Tarification</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#timing"
+                                type="button"
+                                role="tab">⏱️ Périodes et horaires</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#rooms"
+                                type="button"
+                                role="tab">📁 Pièces</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#photos"
+                                type="button"
+                                role="tab">🖼️ Photos</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#equipment"
+                                type="button"
+                                role="tab">🧰 Équipements</button>
+                    </li>
+                </ul>
+            </div>
+            <!-- Start of shared form -->
             <form method="post" class="logement-form">
-                <h3 class="form-title">🏡 Ajouter un logement</h3>
                 {% csrf_token %}
                 {% if form.errors %}
                     <div class="alert alert-danger mt-3">
@@ -30,221 +101,53 @@
                         </ul>
                     </div>
                 {% endif %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5 class="section-title">📌 Informations générales</h5>
-                        <div class="form-field">
-                            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
-                            {{ form.name|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.statut.id_for_label }}">{{ form.statut.label }}</label>
-                            {{ form.statut|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="id_owner_display">{{ form.owner.label }}</label>
-                            <input type="text"
-                                   id="id_owner_display"
-                                   class="form-control disabled"
-                                   value="{% if form.initial.owner %}{{ form.initial.owner.get_full_name }} ({{ form.initial.owner.username }}){% endif %}"
-                                   readonly
-                                   disabled>
-                            {{ form.owner.as_hidden }}
-                        </div>
-                        {% if form.admin %}
-                            <div class="form-field">
-                                <label for="id_admin_display">{{ form.admin.label }}</label>
-                                <input type="text"
-                                       id="id_admin_display"
-                                       class="form-control disabled"
-                                       value="{{ form.instance.admin.get_full_name }} ({{ form.instance.admin.username }})"
-                                       readonly
-                                       disabled>
-                                {{ form.admin.as_hidden }}
-                            </div>
-                        {% endif %}
-                        <div class="form-field">
-                            <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
-                            {{ form.type|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.adresse.id_for_label }}">{{ form.adresse.label }}</label>
-                            {{ form.adresse|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
-                            {{ form.ville|add_class:"form-select" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
-                            {{ form.map_link|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
-                            {{ form.description|add_class:"form-textarea" }}
-                        </div>
-                        <hr class="my-4">
-                        <h5 class="section-title">🌐 Plateformes en ligne</h5>
-                        <div class="form-field">
-                            <label for="{{ form.airbnb_link.id_for_label }}">{{ form.airbnb_link.label }}</label>
-                            {{ form.airbnb_link|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.airbnb_calendar_link.id_for_label }}">{{ form.airbnb_calendar_link.label }}</label>
-                            {{ form.airbnb_calendar_link|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.booking_link.id_for_label }}">{{ form.booking_link.label }}</label>
-                            {{ form.booking_link|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.booking_calendar_link.id_for_label }}">{{ form.booking_calendar_link.label }}</label>
-                            {{ form.booking_calendar_link|add_class:"form-input" }}
-                        </div>
-                        <hr class="my-4">
-                        <h5 class="section-title">🛏️ Capacité et pièces</h5>
-                        <div class="form-field">
-                            <label for="{{ form.max_traveler.id_for_label }}">{{ form.max_traveler.label }}</label>
-                            {{ form.max_traveler|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.nominal_traveler.id_for_label }}">{{ form.nominal_traveler.label }}</label>
-                            {{ form.nominal_traveler|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.superficie.id_for_label }}">{{ form.superficie.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.superficie|add_class:"form-input" }}
-                                <span class="unit-label">m²</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.bathrooms.id_for_label }}">{{ form.bathrooms.label }}</label>
-                            {{ form.bathrooms|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
-                            {{ form.bedrooms|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.beds.id_for_label }}">{{ form.beds.label }}</label>
-                            {{ form.beds|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field checkbox-field">
-                            <input type="checkbox"
-                                   id="{{ form.smoking.id_for_label }}"
-                                   name="{{ form.smoking.name }}"
-                                   {{ form.smoking.value|yesno:"checked," }}>
-                            <label for="{{ form.smoking.id_for_label }}">{{ form.smoking.label }}</label>
-                        </div>
-                        <div class="form-field checkbox-field">
-                            <input type="checkbox"
-                                   id="{{ form.animals.id_for_label }}"
-                                   name="{{ form.animals.name }}"
-                                   {{ form.animals.value|yesno:"checked," }}>
-                            <label for="{{ form.animals.id_for_label }}">{{ form.animals.label }}</label>
+                <!-- Tab Content -->
+                <div class="tab-content" id="logementTabsContent">
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        {% include "administration/partials/_edit_form_general.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <h5 class="section-title">💰 Tarification</h5>
-                        <div class="form-field">
-                            <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.price|add_class:"form-input" }}
-                                <span class="unit-label">€</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.fee_per_extra_traveler.id_for_label }}">{{ form.fee_per_extra_traveler.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.fee_per_extra_traveler|add_class:"form-input" }}
-                                <span class="unit-label">€</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.cleaning_fee.id_for_label }}">{{ form.cleaning_fee.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.cleaning_fee|add_class:"form-input" }}
-                                <span class="unit-label">€</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.caution.id_for_label }}">{{ form.caution.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.caution|add_class:"form-input" }}
-                                <span class="unit-label">€</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.admin_fee.id_for_label }}">{{ form.admin_fee.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.admin_fee|add_class:"form-input" }}
-                                <span class="unit-label">%</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.tax.id_for_label }}">{{ form.tax.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.tax|add_class:"form-input" }}
-                                <span class="unit-label">%</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.tax_max.id_for_label }}">{{ form.tax_max.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.tax_max|add_class:"form-input" }}
-                                <span class="unit-label">€</span>
-                            </div>
-                        </div>
-                        <hr class="my-4">
-                        <h5 class="section-title">⏱️ Périodes et horaires</h5>
-                        <div class="form-field">
-                            <label for="{{ form.cancelation_period.id_for_label }}">{{ form.cancelation_period.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.cancelation_period|add_class:"form-input" }}
-                                <span class="unit-label">jour(s)</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.ready_period.id_for_label }}">{{ form.ready_period.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.ready_period|add_class:"form-input" }}
-                                <span class="unit-label">jour(s)</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.entrance_hour_min.id_for_label }}">{{ form.entrance_hour_min.label }}</label>
-                            {{ form.entrance_hour_min|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.entrance_hour_max.id_for_label }}">{{ form.entrance_hour_max.label }}</label>
-                            {{ form.entrance_hour_max|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.leaving_hour.id_for_label }}">{{ form.leaving_hour.label }}</label>
-                            {{ form.leaving_hour|add_class:"form-input" }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.max_days.id_for_label }}">{{ form.max_days.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.max_days|add_class:"form-input" }}
-                                <span class="unit-label">jour(s)</span>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.availablity_period.id_for_label }}">{{ form.availablity_period.label }}</label>
-                            <div class="input-symbol with-symbol">
-                                {{ form.availablity_period|add_class:"form-input" }}
-                                <span class="unit-label">mois</span>
-                            </div>
+                    <div class="tab-pane fade" id="platforms" role="tabpanel">
+                        {% include "administration/partials/_edit_form_platforms.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
                         </div>
                     </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">💾 Enregistrer</button>
+                    <div class="tab-pane fade" id="capacity" role="tabpanel">
+                        {% include "administration/partials/_edit_form_capacity.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="pricing" role="tabpanel">
+                        {% include "administration/partials/_edit_form_pricing.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="timing" role="tabpanel">
+                        {% include "administration/partials/_edit_form_timing.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
+                    </div>
                 </div>
             </form>
+            <!-- End of shared form -->
+            <!-- Non-form sections -->
+            <div class="tab-content pt-4">
+                <div class="tab-pane fade" id="rooms" role="tabpanel">{% include "administration/partials/_edit_rooms.html" %}</div>
+                <div class="tab-pane fade" id="photos" role="tabpanel">{% include "administration/partials/_edit_photos.html" %}</div>
+                <div class="tab-pane fade" id="equipment" role="tabpanel">
+                    {% include "administration/partials/_edit_equipment.html" %}
+                </div>
+            </div>
         </div>
     </div>
-{% endblock %}
-{% block extra_js %}{% endblock %}
+{% endblock content %}
+{% block extra_js %}
+    <script>const csrfToken = "{{ csrf_token }}";</script>
+    <script src="{% static 'administration/js/admin.js' %}"></script>
+{% endblock extra_js %}

@@ -14,12 +14,14 @@
                class="btn btn-outline-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
         </div>
         <div class="form-box">
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-                <h2 class="mb-2">{{ logement.name }}</h2>
-                <a href="{% url 'logement:view_logement' logement.id %}"
-                   target="_blank"
-                   class="btn btn-outline-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>
-            </div>
+            {% if is_editing %}
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                    <h2 class="mb-2">{{ logement.name }}</h2>
+                    <a href="{% url 'logement:view_logement' logement.id %}"
+                       target="_blank"
+                       class="btn btn-outline-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>
+                </div>
+            {% endif %}
             <!-- Tabs Navigation -->
             <div class="overflow-auto mb-3">
                 <ul class="nav nav-pills flex-nowrap"
@@ -61,27 +63,29 @@
                                 type="button"
                                 role="tab">⏱️ Périodes et horaires</button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#rooms"
-                                type="button"
-                                role="tab">📁 Pièces</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#photos"
-                                type="button"
-                                role="tab">🖼️ Photos</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#equipment"
-                                type="button"
-                                role="tab">🧰 Équipements</button>
-                    </li>
+                    {% if is_editing %}
+                        <li class="nav-item">
+                            <button class="nav-link"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#rooms"
+                                    type="button"
+                                    role="tab">📁 Pièces</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#photos"
+                                    type="button"
+                                    role="tab">🖼️ Photos</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#equipment"
+                                    type="button"
+                                    role="tab">🧰 Équipements</button>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
             <!-- Start of shared form -->
@@ -105,33 +109,47 @@
                 <div class="tab-content" id="logementTabsContent">
                     <div class="tab-pane fade show active" id="general" role="tabpanel">
                         {% include "administration/partials/_edit_form_general.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="platforms" role="tabpanel">
                         {% include "administration/partials/_edit_form_platforms.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="capacity" role="tabpanel">
                         {% include "administration/partials/_edit_form_capacity.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="pricing" role="tabpanel">
                         {% include "administration/partials/_edit_form_pricing.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="timing" role="tabpanel">
                         {% include "administration/partials/_edit_form_timing.html" %}
+                        <div class="form-actions text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
+                        </div>
                     </div>
-                </div>
-                <div class="form-actions text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-4">💾 {% trans "Enregistrer les modifications" %}</button>
                 </div>
             </form>
             <!-- End of shared form -->
             <!-- Non-form sections -->
-            <div class="tab-content pt-4">
-                <div class="tab-pane fade" id="rooms" role="tabpanel">{% include "administration/partials/_edit_rooms.html" %}</div>
-                <div class="tab-pane fade" id="photos" role="tabpanel">{% include "administration/partials/_edit_photos.html" %}</div>
-                <div class="tab-pane fade" id="equipment" role="tabpanel">
-                    {% include "administration/partials/_edit_equipment.html" %}
+            {% if is_editing %}
+                <div class="tab-content pt-4">
+                    <div class="tab-pane fade" id="rooms" role="tabpanel">{% include "administration/partials/_edit_rooms.html" %}</div>
+                    <div class="tab-pane fade" id="photos" role="tabpanel">{% include "administration/partials/_edit_photos.html" %}</div>
+                    <div class="tab-pane fade" id="equipment" role="tabpanel">
+                        {% include "administration/partials/_edit_equipment.html" %}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

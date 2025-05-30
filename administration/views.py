@@ -101,39 +101,29 @@ def admin_dashboard(request):
 
 @login_required
 @user_has_logement
-def add_logement(request):
-    try:
-        if request.method == "POST":
-            form = LogementForm(request.POST, user=request.user)
-            if form.is_valid():
-                logement = form.save()
-                logger.info(f"Logement added with ID {logement.id}")
-                return redirect("administration:edit_logement", logement.id)
-        else:
-            form = LogementForm(user=request.user)
-
-        return render(request, "administration/add_logement.html", {"form": form})
-    except Exception as e:
-        logger.exception(f"Error adding logement: {e}")
-
-
-@login_required
 @user_is_logement_admin
-def edit_logement(request, logement_id):
+@require_http_methods(["GET", "POST"])
+def manage_logement(request, logement_id=None):
     try:
-        logement = get_object_or_404(Logement.objects.prefetch_related("photos", "equipment"), id=logement_id)
-        rooms = logement.rooms.all().order_by("name")
-        photos = logement.photos.all().order_by("order")
+        logement = None
+        is_editing = logement_id is not None
 
-        if request.method == "POST":
-            form = LogementForm(request.POST, instance=logement, user=request.user)
-            if form.is_valid():
-                form.save()
-                logger.info(f"Logement {logement_id} updated")
-        else:
-            form = LogementForm(instance=logement, user=request.user)
+        if is_editing:
+            logement = get_object_or_404(Logement.objects.prefetch_related("photos", "equipment"), id=logement_id)
 
-        selected_equipment_ids = logement.equipment.values_list("id", flat=True)
+        form = LogementForm(request.POST or None, instance=logement, user=request.user)
+
+        if request.method == "POST" and form.is_valid():
+            logement = form.save()
+            if is_editing:
+                logger.info(f"Logement {logement.id} updated")
+            else:
+                logger.info(f"Logement created with ID {logement.id}")
+            return redirect("administration:edit_logement", logement.id)
+
+        rooms = logement.rooms.all().order_by("name") if logement else []
+        photos = logement.photos.all().order_by("order") if logement else []
+        selected_equipment_ids = logement.equipment.values_list("id", flat=True) if logement else []
 
         pricing_fields = [
             ("price", "€"),
@@ -157,7 +147,7 @@ def edit_logement(request, logement_id):
 
         return render(
             request,
-            "administration/edit_logement.html",
+            "administration/edit_logement.html",  # Same template for both
             {
                 "form": form,
                 "logement": logement,
@@ -167,20 +157,12 @@ def edit_logement(request, logement_id):
                 "pricing_fields": pricing_bound_fields,
                 "timing_fields": timing_bound_fields,
                 "selected_equipment_ids": selected_equipment_ids,
+                "is_editing": is_editing,
             },
         )
     except Exception as e:
-        logger.exception(f"Error editing logement {logement_id}: {e}")
-        return render(
-            request,
-            "administration/error.html",
-            {
-                "message": _("Une erreur est survenue lors de l'édition du logement."),
-                "logement_id": logement_id,
-                "exception": str(e),
-            },
-            status=500,
-        )
+        logger.exception(f"Error {'editing' if logement_id else 'adding'} logement: {e}")
+        raise
 
 
 @login_required

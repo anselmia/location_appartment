@@ -12,8 +12,8 @@ router.register(r"prices", DailyPriceViewSet, basename="price")
 urlpatterns = [
     path("", views.admin_dashboard, name="dashboard"),
     path("traffic/", views.traffic_dashboard, name="traffic"),
-    path("logement/add/", views.add_logement, name="add_logement"),
-    path("logement/<int:logement_id>/edit/", views.edit_logement, name="edit_logement"),
+    path("logement/add/", views.manage_logement, name="add_logement"),
+    path("logement/<int:logement_id>/", views.manage_logement, name="edit_logement"),
     path("logement/<int:logement_id>/add_room/", views.add_room, name="add_room"),
     path("room/<int:room_id>/delete/", views.delete_room, name="delete_room"),
     path(
@@ -59,9 +59,7 @@ urlpatterns = [
     path("logs/", views.log_viewer, name="log_viewer"),
     path("api/log-js/", views.js_logger, name="js_logger"),
     path("reservations/", views.reservation_dashboard, name="reservation_dashboard"),
-    path(
-        "reservations/<str:code>/", views.reservation_detail, name="reservation_detail"
-    ),
+    path("reservations/<str:code>/", views.reservation_detail, name="reservation_detail"),
     path(
         "reservations/<str:code>/cancel/",
         views.cancel_reservation,

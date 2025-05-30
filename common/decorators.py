@@ -24,8 +24,7 @@ def user_is_logement_admin(view_func):
                     photo = get_object_or_404(Photo, id=photo_id)
                     logement_id = photo.logement.id
                 else:
-                    # If neither logement_id nor room_id is provided, raise an error
-                    raise PermissionDenied("Arguments insuffisants pour vérifier l'accès")
+                    return view_func(request, *args, **kwargs)
 
         logement = get_object_or_404(Logement, id=logement_id)
 

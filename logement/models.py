@@ -86,8 +86,8 @@ class Logement(models.Model):
     caution = models.IntegerField(default=0)
     fee_per_extra_traveler = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     cleaning_fee = models.DecimalField(max_digits=6, decimal_places=2, default=49)
-    tax = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=6, decimal_places=2, default=6.7)
+    tax_max = models.DecimalField(max_digits=6, decimal_places=2, default=6.43)
 
     admin_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

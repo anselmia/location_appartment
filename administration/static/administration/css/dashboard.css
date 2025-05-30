@@ -84,6 +84,7 @@ a:hover {
   justify-content: center;
   font-size: 2.4rem;
   color: #aaa;
+  cursor: pointer;
 }
 
 .logement-card-body {
