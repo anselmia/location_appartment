@@ -130,6 +130,9 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 OPENAI_KEY = os.environ.get("OPENAI_KEY", "")
 
+SMSAPIAUTH_TOKEN = os.environ.get("SMSAPIAUTH_TOKEN", "")
+
+
 # Development Email Backend (prints emails to console)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Optional: Set a default "from" address

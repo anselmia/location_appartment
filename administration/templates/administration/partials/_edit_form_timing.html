@@ -1,0 +1,24 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% for field, unit in timing_fields %}
+    <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <div class="input-symbol with-symbol">
+            {{ field|add_class:"form-input" }}
+            <span class="unit-label">{{ unit }}</span>
+        </div>
+    </div>
+{% endfor %}
+<div class="form-field">
+    <label for="{{ form.entrance_hour_min.id_for_label }}">{{ form.entrance_hour_min.label }}</label>
+    {{ form.entrance_hour_min|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.entrance_hour_max.id_for_label }}">{{ form.entrance_hour_max.label }}</label>
+    {{ form.entrance_hour_max|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.leaving_hour.id_for_label }}">{{ form.leaving_hour.label }}</label>
+    {{ form.leaving_hour|add_class:"form-input" }}
+</div>

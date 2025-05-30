@@ -108,5 +108,10 @@
     const selectedPeriod = "{{ selected_period }}";
     </script>
     <script>const csrfToken = "{{ csrf_token }}";</script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js"></script>
+    <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <!-- Luxon + Adapter pour Chart.js v4 -->
+        <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script src="{% static 'administration/js/traffic.js' %}"></script>
 {% endblock %}

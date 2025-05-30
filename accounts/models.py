@@ -31,9 +31,7 @@ class CustomUser(AbstractUser):
         help_text="Identifiant client Stripe associé pour paiements et impressions de carte.",
     )
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
-    last_activity = models.DateTimeField(
-        null=True, blank=True
-    )  # Track the last activity time
+    last_activity = models.DateTimeField(null=True, blank=True)  # Track the last activity time
 
     def __str__(self):
         return f"{self.name} {self.last_name}"
@@ -43,18 +41,23 @@ class CustomUser(AbstractUser):
         return f"{self.name} {self.last_name}"
 
 
-class Message(models.Model):
-    sender = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="sent_messages"
-    )
-    recipient = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="received_messages"
-    )
-    content = models.TextField()
-    timestamp = models.DateTimeField(default=timezone.now)
+class Conversation(models.Model):
+    reservation = models.OneToOneField("logement.Reservation", on_delete=models.CASCADE, related_name="conversation")
+    participants = models.ManyToManyField(CustomUser, related_name="conversations")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"De {self.sender} à {self.recipient} le {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+        return f"Conversation #{self.id} - Réservation {self.reservation_id}"
+
+
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sent_messages")
+    recipients = models.ManyToManyField(CustomUser, related_name="received_messages")
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+    read = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["timestamp"]

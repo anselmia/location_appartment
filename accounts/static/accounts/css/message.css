@@ -1,0 +1,209 @@
+.messaging-interface {
+  --bubble-radius: 10px;
+  --bubble-padding: 0.75rem 1rem;
+  --message-font-size: 0.9rem;
+  --timestamp-color: #666;
+  --hover-bg: #eef6ff;
+  --message-mine-bg: #d9ecff;
+  --message-other-bg: #f5f5f5;
+  max-width: 80vw;
+}
+
+.messaging-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  height: auto;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 1rem;
+}
+
+/* Sidebar adjusts to content height */
+.messaging-sidebar {
+  width: 340px;
+  max-height: none;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.messaging-main {
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+/* Prevent textarea from overflowing */
+form textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Chat body fits available space */
+.messaging-main .card-body {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* Layout */
+.messaging-interface .container-fluid {
+  padding: 1rem;
+}
+
+.messaging-interface .card {
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Sidebar */
+.messaging-interface .list-group-item {
+  transition: background-color 0.2s ease;
+}
+
+.messaging-interface .list-group-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.messaging-interface .list-group-item.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.messaging-interface .list-group-item.active small {
+  color: #e0e0e0;
+}
+
+.messaging-interface .badge.bg-danger {
+  font-size: 0.75rem;
+  border-radius: 12px;
+  padding: 0.25em 0.5em;
+}
+
+/* Messages */
+.messaging-interface #message-list {
+  scroll-behavior: smooth;
+  padding-right: 0.5rem;
+}
+
+.messaging-interface .text-start,
+.messaging-interface .text-end {
+  display: flex;
+}
+
+.messaging-interface .text-start {
+  justify-content: flex-start;
+}
+
+.messaging-interface .text-end {
+  justify-content: flex-end;
+}
+
+.messaging-interface .text-start .d-inline-block,
+.messaging-interface .text-end .d-inline-block {
+  max-width: 75%;
+  padding: var(--bubble-padding);
+  font-size: var(--message-font-size);
+  line-height: 1.4;
+  word-break: break-word;
+  border-radius: var(--bubble-radius);
+}
+
+.messaging-interface .text-end .d-inline-block {
+  background-color: var(--message-mine-bg);
+  color: #000;
+  border: 1px solid #b6dafc;
+}
+
+.messaging-interface .text-start .d-inline-block {
+  background-color: var(--message-other-bg);
+  border: 1px solid #ddd;
+}
+
+/* Timestamp */
+.messaging-interface small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--timestamp-color);
+  margin-bottom: 0.25rem;
+}
+
+/* Message Form */
+.messaging-interface .card-footer form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.messaging-interface textarea,
+.messaging-interface input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: var(--message-font-size);
+  border: 1px solid var(--light-border);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.messaging-interface button[type="submit"] {
+  align-self: flex-end;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--primary-color);
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.messaging-interface button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.messaging-interface select.form-select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--light-border);
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .messaging-interface .col-md-4,
+  .messaging-interface .col-md-8 {
+    width: 100%;
+  }
+
+  .messaging-interface .text-start .d-inline-block,
+  .messaging-interface .text-end .d-inline-block {
+    max-width: 100%;
+  }
+
+  .messaging-interface .card-body {
+    max-height: 50vh !important;
+  }
+
+  .messaging-layout {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .messaging-sidebar {
+    min-width: 30vw;
+    max-width: 38vw;
+  }
+
+  .messaging-interface button[type="submit"] {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .card-header {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .list-group-item {
+    padding: 0.4rem 0.5rem;
+  }
+}

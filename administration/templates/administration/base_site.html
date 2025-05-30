@@ -17,7 +17,6 @@
     {% csrf_token %}
     <fieldset class="section-block">
       <legend>Identité du site</legend>
-      {{ form.nom.label_tag }} {{ form.nom }}
       {{ form.devise.label_tag }} {{ form.devise }}
       {{ form.cta_text.label_tag }} {{ form.cta_text }}
       {{ form.banner_image.label_tag }} {{ form.banner_image }}

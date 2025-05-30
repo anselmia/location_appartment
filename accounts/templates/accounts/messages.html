@@ -1,38 +1,123 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'accounts/css/message.css' %}">
+{% endblock extrahead %}
 {% block content %}
-<div class="container client-dashboard mt-5">
-    <h2 class="mb-4">📬 Messagerie avec l’administrateur</h2>
-
-    <div class="card mb-4">
-        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-            {% for message in messages %}
-                {% if message.sender == user %}
-                    <div class="text-end">
-                        <div class="alert alert-primary d-inline-block text-start">
-                            <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small><br>
-                            {{ message.content }}
+    <div class="container-fluid mt-4 messaging-interface">
+        <div class="d-flex flex-nowrap messaging-layout">
+            <!-- Sidebar: Conversations List -->
+            <div class="messaging-sidebar flex-shrink-0">
+                {% if reservations_to_start %}
+                    <div class="p-3 border-top bg-light">
+                        <form method="post" action="{% url 'accounts:start_conversation' %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <select name="reservation_id" class="form-select" required>
+                                    <option value="" disabled selected>Choisir une réservation</option>
+                                    {% for res in reservations_to_start %}
+                                        <option value="{{ res.id }}">{{ res.code }} - {{ res.logement.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100">➕ Démarrer une conversation</button>
+                        </form>
+                    </div>
+                {% endif %}
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <strong>💬 Conversations</strong>
+                    </div>
+                    <ul class="list-group list-group-flush overflow-auto"
+                        style="max-height: 70vh">
+                        {% for conv in conversations %}
+                            <a href="{% url 'accounts:messages_conversation' conv.id %}"
+                               class="list-group-item list-group-item-action d-flex align-items-center {% if active_conversation and conv.id == active_conversation.id %}active{% endif %}">
+                                <!-- Logement thumbnail -->
+                                {% with conv.reservation.logement.photos.first as photo %}
+                                    {% if photo %}
+                                        <img src="{{ photo.image.url }}"
+                                             alt="photo"
+                                             class="rounded me-2"
+                                             style="width: 40px;
+                                                    height: 40px;
+                                                    object-fit: cover">
+                                    {% else %}
+                                        <div class="rounded bg-secondary text-white d-flex justify-content-center align-items-center me-2"
+                                             style="width: 40px;
+                                                    height: 40px">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                                <!-- Conversation details -->
+                                <div class="flex-grow-1 ml-3">
+                                    <strong>{{ conv.reservation }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% if conv.last_message %}{{ conv.last_message.timestamp|date:"d/m H:i" }}{% endif %}
+                                    </small>
+                                </div>
+                                {% if conv.unread_count %}<span class="badge bg-danger ms-2">{{ conv.unread_count }}</span>{% endif %}
+                            </a>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Aucune conversation</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <!-- Main: Messages -->
+            <div class="messaging-main flex-grow-1">
+                {% if active_conversation %}
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <strong>Conversation pour : {{ active_conversation.reservation }}</strong>
+                        </div>
+                        <div class="card-body overflow-auto"
+                             style="max-height: 60vh"
+                             id="message-list">
+                            {% for message in active_conversation.messages.all %}
+                                {% if message.sender == user %}
+                                    <div class="text-end mb-2">
+                                        <div class="d-inline-block rounded p-2">
+                                            <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
+                                            <br>
+                                            {{ message.content|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="text-start mb-2">
+                                        <div class="d-inline-block bg-light border rounded p-2">
+                                            <small><strong>{{ message.sender }}</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
+                                            <br>
+                                            {{ message.content|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p class="text-muted">Aucun message pour cette conversation.</p>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer">
+                            <form method="post"
+                                  action="{% url 'accounts:messages_conversation' active_conversation.id %}">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </form>
                         </div>
                     </div>
                 {% else %}
-                    <div class="text-start">
-                        <div class="alert alert-secondary d-inline-block">
-                            <small><strong>Admin</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small><br>
-                            {{ message.content }}
-                        </div>
-                    </div>
+                    <div class="alert alert-info">Sélectionnez une conversation à gauche pour commencer.</div>
                 {% endif %}
-            {% empty %}
-                <p class="text-muted">Aucun message pour l’instant.</p>
-            {% endfor %}
+            </div>
         </div>
     </div>
-
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Envoyer</button>
-    </form>
-
-    <a href="{% url 'accounts:dashboard' %}" class="btn btn-link mt-3">← Retour au tableau de bord</a>
-</div>
-{% endblock %}
+{% endblock content %}
+{% block extra_js %}
+    <script>
+    const list = document.getElementById("message-list");
+    if (list) list.scrollTop = list.scrollHeight;
+    </script>
+{% endblock extra_js %}

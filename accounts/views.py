@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import logging
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import (
     CustomUserCreationForm,
@@ -12,18 +14,15 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from logement.models import Reservation
-from django.db.models import Q
-from .models import Message, CustomUser
+
+from .models import Message, CustomUser, Conversation
 from django.core.mail import send_mail
 from django.contrib.auth import update_session_auth_hash
-from common.decorators import user_has_logement
 from common.views import is_stripe_admin
 from django.urls import reverse
 from django.core.cache import cache
 from django_ratelimit.decorators import ratelimit
-
-
-import logging
+from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +32,7 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            logger.info(
-                f"Nouvel utilisateur enregistré : {user.username} ({user.email})"
-            )
+            logger.info(f"Nouvel utilisateur enregistré : {user.username} ({user.email})")
             messages.success(
                 request,
                 "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
@@ -164,50 +161,82 @@ def update_profile(request):
             messages.success(request, "✅ Profil mis à jour avec succès.")
             return redirect("accounts:dashboard")
         else:
-            logger.warning(
-                f"Échec de mise à jour du profil pour {request.user.username} : {form.errors}"
-            )
-            messages.error(
-                request, "❌ Une erreur est survenue lors de la mise à jour du profil."
-            )
+            logger.warning(f"Échec de mise à jour du profil pour {request.user.username} : {form.errors}")
+            messages.error(request, "❌ Une erreur est survenue lors de la mise à jour du profil.")
             return redirect("accounts:dashboard")
 
 
 @login_required
-def messages_view(request):
-    admin_user = CustomUser.objects.filter(is_admin=True).first()
-    if not admin_user:
-        messages.error(
-            request, "Aucun administrateur n'est défini pour recevoir les messages."
-        )
-        logger.error("Aucun administrateur trouvé pour gérer les messages.")
-        return redirect("logement:home")
+def messages_view(request, conversation_id=None):
     user = request.user
 
-    # Get all messages exchanged with admin
-    messages_qs = Message.objects.filter(
-        (Q(sender=user) & Q(recipient=admin_user))
-        | (Q(sender=admin_user) & Q(recipient=user))
-    ).order_by("timestamp")
+    conversations = get_conversations(user)
+    reservations_without_conversation = get_reservations_for_conversations_to_start(user)
 
+    active_conversation = None
+    messages_qs = Message.objects.none()
     form = MessageForm()
-    if request.method == "POST":
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.sender = user
-            message.recipient = admin_user
-            message.save()
+
+    if conversation_id:
+        active_conversation = get_object_or_404(Conversation, id=conversation_id)
+        if user not in active_conversation.participants.all() and not (user.is_admin or user.is_superuser):
+            messages.error(request, "Vous n'avez pas accès à cette conversation.")
             return redirect("accounts:messages")
+
+        messages_qs = active_conversation.messages.select_related("sender").order_by("timestamp")
+
+        # Marquer comme lus les messages reçus par cet utilisateur
+        for msg in messages_qs:
+            if user in msg.recipients.all() and user not in msg.read_by.all():
+                msg.read_by.add(user)
+
+        if request.method == "POST":
+            form = MessageForm(request.POST)
+            if form.is_valid():
+                msg = form.save(commit=False)
+                msg.conversation = active_conversation
+                msg.sender = user
+                msg.save()
+                msg.recipients.set(active_conversation.participants.exclude(id=user.id))
+                msg.save()
+                return redirect("accounts:messages_conversation", conversation_id=active_conversation.id)
 
     return render(
         request,
         "accounts/messages.html",
         {
-            "messages": messages_qs,
+            "conversations": conversations,
+            "active_conversation": active_conversation,
             "form": form,
+            "reservations_to_start": reservations_without_conversation,
         },
     )
+
+
+@login_required
+def start_conversation(request):
+    if request.method == "POST":
+        reservation_id = request.POST.get("reservation_id")
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+
+        user = request.user
+        participants = [reservation.user, reservation.logement.owner]
+        if reservation.logement.admin:
+            participants.append(reservation.logement.admin)
+
+        if user not in participants and not (user.is_superuser or user.is_admin):
+            messages.error(request, "Vous ne pouvez pas démarrer cette conversation.")
+            return redirect("accounts:messages")
+
+        # Créer ou récupérer une conversation liée à cette réservation
+        conversation, created = Conversation.objects.get_or_create(reservation=reservation)
+
+        if created:
+            conversation.participants.set(participants)
+            conversation.save()
+
+        return redirect("accounts:messages_conversation", conversation.id)
+    return redirect("accounts:messages")
 
 
 def contact_view(request):
@@ -230,9 +259,7 @@ def contact_view(request):
                 messages.success(request, "✅ Message envoyé avec succès.")
             except Exception as e:
                 logger.error(f"Erreur d'envoi de mail: {e}")
-                messages.error(
-                    request, "Erreur lors de l'envoi du message. Réessayez plus tard."
-                )
+                messages.error(request, "Erreur lors de l'envoi du message. Réessayez plus tard.")
 
             return redirect("logement:home")
     else:
@@ -250,9 +277,7 @@ def delete_account(request):
 
     # Check for ongoing or upcoming reservations
     today = timezone.now().date()
-    has_active_reservations = Reservation.objects.filter(
-        user=user, statut="confirmee", end__gte=today
-    ).exists()
+    has_active_reservations = Reservation.objects.filter(user=user, statut="confirmee", end__gte=today).exists()
 
     if has_active_reservations:
         messages.error(
@@ -280,44 +305,32 @@ def create_stripe_account(request):
     attempts = cache.get(key, 0)
 
     if attempts >= 3:
-        logger.warning(
-            f"[Stripe] Limite atteinte pour création Stripe | user={user.username} | ip={ip}"
-        )
+        logger.warning(f"[Stripe] Limite atteinte pour création Stripe | user={user.username} | ip={ip}")
         messages.error(request, "Trop de tentatives. Réessayez plus tard.")
         return redirect("accounts:dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
 
     if user.stripe_account_id:
-        logger.info(
-            f"[Stripe] Création refusée — compte déjà existant pour {user.username} ({user.email}), IP: {ip}"
-        )
+        logger.info(f"[Stripe] Création refusée — compte déjà existant pour {user.username} ({user.email}), IP: {ip}")
         messages.info(request, "Un compte Stripe est déjà associé à votre profil.")
         return redirect("accounts:dashboard")
 
     try:
         from common.services.stripe.account import create_stripe_connect_account
 
-        refresh_url = request.build_absolute_uri(
-            reverse("accounts:create_stripe_account")
-        )
+        refresh_url = request.build_absolute_uri(reverse("accounts:create_stripe_account"))
         return_url = request.build_absolute_uri(reverse("accounts:dashboard"))
 
-        account, account_link = create_stripe_connect_account(
-            user, refresh_url, return_url
-        )
+        account, account_link = create_stripe_connect_account(user, refresh_url, return_url)
         user.stripe_account_id = account.id
         user.save()
 
-        logger.info(
-            f"[Stripe] Compte Stripe créé pour {user.username} — ID: {account.id}, IP: {ip}"
-        )
+        logger.info(f"[Stripe] Compte Stripe créé pour {user.username} — ID: {account.id}, IP: {ip}")
         return redirect(account_link.url)
 
     except Exception as e:
-        logger.exception(
-            f"[Stripe] Erreur création compte pour {user.username}, IP: {ip} — {e}"
-        )
+        logger.exception(f"[Stripe] Erreur création compte pour {user.username}, IP: {ip} — {e}")
         messages.error(request, "Erreur lors de la création du compte Stripe.")
         return redirect("accounts:dashboard")
 
@@ -333,18 +346,14 @@ def update_stripe_account_view(request):
     attempts = cache.get(key, 0)
 
     if attempts >= 3:
-        logger.warning(
-            f"[Stripe] Limite atteinte pour mse à jour du compte Stripe | user={user.username} | ip={ip}"
-        )
+        logger.warning(f"[Stripe] Limite atteinte pour mse à jour du compte Stripe | user={user.username} | ip={ip}")
         messages.error(request, "Trop de tentatives. Réessayez plus tard.")
         return redirect("accounts:dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
 
     if not user.stripe_account_id:
-        logger.warning(
-            f"[Stripe] Mise à jour refusée — aucun compte Stripe pour {user.username}, IP: {ip}"
-        )
+        logger.warning(f"[Stripe] Mise à jour refusée — aucun compte Stripe pour {user.username}, IP: {ip}")
         messages.error(request, "Aucun compte Stripe n'est associé à votre profil.")
         return redirect("accounts:dashboard")
 

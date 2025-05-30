@@ -91,8 +91,6 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
-            "admin": forms.TextInput(attrs={"readonly": "readonly", "class": "form-control disabled"}),
-            "owner": forms.TextInput(attrs={"readonly": "readonly", "class": "form-control disabled"}),
         }
 
     def _format_user_display(self, user):
@@ -110,8 +108,45 @@ class LogementForm(forms.ModelForm):
             return str(user)
 
     def __init__(self, *args, **kwargs):
+        from accounts.models import CustomUser
+
         user = kwargs.pop("user", None)
+        self.user = user
         super().__init__(*args, **kwargs)
+        all_users = CustomUser.objects.all().order_by("name")
+
+        # Si l'utilisateur est admin ou superuser, on autorise la sélection
+        if user and (user.is_admin or user.is_superuser):
+            if "owner" in self.fields:
+                self.fields["owner"] = forms.ModelChoiceField(
+                    queryset=all_users,
+                    label=self.fields["owner"].label,
+                    required=False,
+                    widget=forms.Select(attrs={"class": "form-control"}),
+                )
+                self.fields["owner"].initial = getattr(self.instance, "owner", None)
+
+            if "admin" in self.fields:
+                self.fields["admin"] = forms.ModelChoiceField(
+                    queryset=all_users,
+                    label=self.fields["admin"].label,
+                    required=False,
+                    widget=forms.Select(attrs={"class": "form-control"}),
+                )
+                self.fields["admin"].initial = getattr(self.instance, "admin", None)
+        else:
+            # Sinon, afficher une version readonly
+            if "owner" in self.fields:
+                self.fields["owner"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["owner"].initial = self._format_user_display(getattr(self.instance, "owner", None))
+
+            if "admin" in self.fields:
+                self.fields["admin"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["admin"].initial = self._format_user_display(getattr(self.instance, "admin", None))
 
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
@@ -200,14 +235,11 @@ class LogementForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         # Restaurer owner si le champ est désactivé et donc non soumis
-        if "owner" in self.fields:
-            if not self.initial.get("owner"):
-                instance.owner = self.fields["owner"].initial
-            elif self.instance.pk:
+        if not (self.user.is_admin or self.user.is_superuser):
+            if "owner" in self.fields:
                 instance.owner = self.instance.owner
-
-        if "admin" in self.fields:
-            instance.admin = self.instance.admin
+            if "admin" in self.fields:
+                instance.admin = self.instance.admin
 
         if commit:
             instance.save()

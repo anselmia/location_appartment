@@ -10,7 +10,6 @@ class HomePageConfigForm(forms.ModelForm):
     class Meta:
         model = HomePageConfig
         fields = [
-            "nom",
             "description",
             "devise",
             "banner_image",

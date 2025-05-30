@@ -6,6 +6,7 @@ class LogementConfig(AppConfig):
     name = "logement"
 
     def ready(self):
+        import logement.signals
         from django_q.models import Schedule
         from django.db.utils import OperationalError, ProgrammingError
 

@@ -22,4 +22,4 @@ admin.site.register(Entreprise)
 
 @admin.register(HomePageConfig)
 class HomePageConfigAdmin(admin.ModelAdmin):
-    list_display = ("nom", "devise", "primary_color")
+    list_display = ("devise", "primary_color")

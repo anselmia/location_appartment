@@ -20,7 +20,6 @@ class SiteVisit(models.Model):
 
 
 class HomePageConfig(models.Model):
-    nom = models.CharField(max_length=100, default="Votre Nom de Conciergerie")
     devise = models.CharField(max_length=255, default="Votre slogan ici")
     banner_image = models.ImageField(upload_to="administration/", blank=True, null=True)
     description = models.TextField(default="")
@@ -31,6 +30,10 @@ class HomePageConfig(models.Model):
 
     def __str__(self):
         return "Configuration de la page d’accueil"
+
+
+class SiteConfig(models.Model):
+    sms = models.BooleanField(default=False)
 
 
 class Service(models.Model):

@@ -1,0 +1,64 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+<div class="form-field">
+    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+    {{ form.name|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.statut.id_for_label }}">{{ form.statut.label }}</label>
+    {{ form.statut|add_class:"form-input" }}
+</div>
+{% if user.is_admin or user.is_superuser %}
+    <div class="form-field">
+        <label for="{{ form.owner.id_for_label }}">{{ form.owner.label }}</label>
+        {{ form.owner|add_class:"form-input" }}
+    </div>
+    <div class="form-field">
+        <label for="{{ form.admin.id_for_label }}">{{ form.admin.label }}</label>
+        {{ form.owner|add_class:"form-input" }}
+    </div>
+{% else %}
+    <div class="form-field">
+        <label for="id_owner_display">{{ form.owner.label }}</label>
+        <input type="text"
+               id="id_owner_display"
+               class="form-control disabled"
+               value="{{ form.instance.owner.get_full_name }} ({{ form.instance.owner.username }})"
+               readonly
+               disabled>
+        {{ form.owner.as_hidden }}
+    </div>
+    {% if form.admin %}
+        <div class="form-field">
+            <label for="id_admin_display">{{ form.admin.label }}</label>
+            <input type="text"
+                   id="id_admin_display"
+                   class="form-control disabled"
+                   value="{{ form.instance.admin.get_full_name }} ({{ form.instance.admin.username }})"
+                   readonly
+                   disabled>
+            {{ form.admin.as_hidden }}
+        </div>
+    {% endif %}
+{% endif %}
+<div class="form-field">
+    <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
+    {{ form.type|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.adresse.id_for_label }}">{{ form.adresse.label }}</label>
+    {{ form.adresse|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
+    {{ form.ville|add_class:"form-select" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
+    {{ form.map_link|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+    {{ form.description|add_class:"form-textarea" }}
+</div>

@@ -1,0 +1,20 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+<div class="form-field">
+    <label for="{{ form.airbnb_link.id_for_label }}">{{ form.airbnb_link.label }}</label>
+    {{ form.airbnb_link|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.airbnb_calendar_link.id_for_label }}">{{ form.airbnb_calendar_link.label }}</label>
+    {{ form.airbnb_calendar_link|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.booking_link.id_for_label }}">{{ form.booking_link.label }}</label>
+    {{ form.booking_link|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.booking_calendar_link.id_for_label }}">{{ form.booking_calendar_link.label }}</label>
+    {{ form.booking_calendar_link|add_class:"form-input" }}
+</div>

@@ -1,0 +1,27 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+<ul class="list-unstyled mb-3">
+    {% for room in rooms %}
+        <li class="d-flex justify-content-between align-items-center py-1">
+            <span>🏷️ {{ room.name }}</span>
+            <form method="post" action="{% url 'administration:delete_room' room.id %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('{% trans "Supprimer cette pièce ?" %}')">🗑️</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+<form method="post"
+      action="{% url 'administration:add_room' logement.id %}"
+      class="form-inline">
+    {% csrf_token %}
+    <input type="text"
+           name="name"
+           placeholder="{% trans 'Nom de la pièce' %}"
+           class="form-control me-2"
+           required>
+    <button type="submit" class="btn btn-success">➕ {% trans 'Ajouter' %}</button>
+</form>

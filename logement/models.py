@@ -421,7 +421,7 @@ class Reservation(models.Model):
     admin_transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"Réservation {self.logement.name} par {self.user.name}"
+        return f"Réservation {self.code}"
 
     def save(self, *args, **kwargs):
         if not self.code:

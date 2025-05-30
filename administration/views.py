@@ -27,7 +27,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic import TemplateView
-
+from django.utils.translation import gettext as _
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -135,6 +135,26 @@ def edit_logement(request, logement_id):
 
         selected_equipment_ids = logement.equipment.values_list("id", flat=True)
 
+        pricing_fields = [
+            ("price", "€"),
+            ("fee_per_extra_traveler", "€"),
+            ("cleaning_fee", "€"),
+            ("caution", "€"),
+            ("admin_fee", "%"),
+            ("tax", "%"),
+            ("tax_max", "€"),
+        ]
+
+        timing_fields = [
+            ("cancelation_period", "jour(s)"),
+            ("ready_period", "jour(s)"),
+            ("max_days", "jour(s)"),
+            ("availablity_period", "mois"),
+        ]
+
+        pricing_bound_fields = [(form[name], unit) for name, unit in pricing_fields]
+        timing_bound_fields = [(form[name], unit) for name, unit in timing_fields]
+
         return render(
             request,
             "administration/edit_logement.html",
@@ -144,11 +164,23 @@ def edit_logement(request, logement_id):
                 "rooms": rooms,
                 "photos": photos,
                 "all_equipment": Equipment.objects.all(),
+                "pricing_fields": pricing_bound_fields,
+                "timing_fields": timing_bound_fields,
                 "selected_equipment_ids": selected_equipment_ids,
             },
         )
     except Exception as e:
         logger.exception(f"Error editing logement {logement_id}: {e}")
+        return render(
+            request,
+            "administration/error.html",
+            {
+                "message": _("Une erreur est survenue lors de l'édition du logement."),
+                "logement_id": logement_id,
+                "exception": str(e),
+            },
+            status=500,
+        )
 
 
 @login_required

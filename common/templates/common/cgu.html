@@ -1,83 +1,128 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
-
 {% block content %}
-<div class="cgu-wrapper">
-  <article class="cgu-content">
-    <section>
-      <h1>Conditions Générales d’Utilisation</h1>
-      <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
-
-      <h2>1. Objet du site</h2>
-      <p>Le site permet :</p>
-      <ul>
-        <li>la consultation d’annonces de logements à louer pour des séjours de courte durée,</li>
-        <li>la réservation en ligne,</li>
-        <li>le paiement sécurisé via Stripe ou virement bancaire (sous conditions),</li>
-        <li>la gestion des réservations via un espace personnel,</li>
-        <li>l’accès à des informations pratiques, calendriers, services et formulaires de contact.</li>
-      </ul>
-
-      <h2>2. Acceptation des CGU</h2>
-      <p>L’utilisation du site implique l’acceptation pleine et entière des présentes CGU. Si l’utilisateur n’accepte pas tout ou partie des CGU, il lui est demandé de ne pas utiliser le site.</p>
-
-      <h2>3. Accès au site</h2>
-      <p>Le site est accessible gratuitement à tout utilisateur disposant d’un accès Internet. Certains services nécessitent la création d’un compte utilisateur sécurisé. L’accès peut être suspendu temporairement pour maintenance ou interruption involontaire.</p>
-
-      <h2>4. Création de compte et sécurité</h2>
-      <p>L’utilisateur est responsable de la confidentialité de ses identifiants et de toute action effectuée via son compte. En cas d’utilisation frauduleuse, il doit immédiatement prévenir {{ entreprise.name }}.</p>
-
-      <h2>5. Réservation et espace personnel</h2>
-      <p>Chaque utilisateur peut :</p>
-      <ul>
-        <li>réserver un logement,</li>
-        <li>accéder à un calendrier interactif de disponibilités,</li>
-        <li>consulter ses réservations passées et à venir,</li>
-        <li>signer son contrat de location,</li>
-        <li>gérer ses informations personnelles et échanges avec l’agence.</li>
-      </ul>
-
-      <h2>6. Paiement sécurisé</h2>
-      <p>Les paiements sont traités par Stripe, prestataire certifié PCI-DSS. Aucune donnée bancaire n’est stockée par {{ entreprise.name }}. Le Client accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions d’utilisation de Stripe</a> lors de chaque paiement.</p>
-
-      <h2>7. Responsabilités</h2>
-      <p>L’utilisateur est seul responsable :</p>
-      <ul>
-        <li>des informations qu’il saisit,</li>
-        <li>de toute activité sur son compte,</li>
-        <li>du respect des lois applicables à son usage.</li>
-      </ul>
-      <p>{{ entreprise.name }} décline toute responsabilité en cas de :</p>
-      <ul>
-        <li>mauvais usage du site,</li>
-        <li>indisponibilité temporaire,</li>
-        <li>perte de données ou dommages indirects,</li>
-        <li>contenus tiers (liens externes, prestataires...)</li>
-      </ul>
-
-      <h2>8. Propriété intellectuelle</h2>
-      <p>Tous les éléments présents sur le site (textes, visuels, logos, code, fonctionnalités) sont protégés par le droit d’auteur et sont la propriété exclusive de {{ entreprise.name }} ou de ses partenaires. Toute reproduction ou utilisation non autorisée est interdite.</p>
-
-      <h2>9. Données personnelles</h2>
-      <p>Les données sont traitées conformément au RGPD. Pour en savoir plus, consultez notre <a href="{% url 'common:confidentiality' %}">politique de confidentialité</a>. Vous pouvez exercer vos droits à : <a href="mailto:contact@{{ entreprise.name|lower }}.com">contact@{{ entreprise.name|lower }}.com</a></p>
-
-      <h2>10. Cookies</h2>
-      <p>Ce site utilise des cookies pour améliorer la navigation, sécuriser les sessions, et mesurer l’audience. L’utilisateur peut les refuser en configurant son navigateur.</p>
-
-      <h2>11. Suspension ou suppression de compte</h2>
-      <p>{{ entreprise.name }} se réserve le droit de suspendre ou supprimer un compte en cas de manquement aux CGU, suspicion de fraude ou d’usage abusif.</p>
-
-      <h2>12. Modification des CGU</h2>
-      <p>{{ entreprise.name }} peut modifier les CGU à tout moment. L’utilisateur sera informé lors de sa connexion. L’usage du site après modification vaut acceptation des nouvelles CGU.</p>
-
-      <h2>13. Loi applicable et juridiction</h2>
-      <p>Les présentes CGU sont régies par le droit français. En cas de litige, compétence exclusive est donnée aux tribunaux du ressort du siège social de {{ entreprise.name }}.</p>
-    </section>
-  </article>
-</div>
+  <div class="cgu-wrapper">
+    <article class="cgu-content">
+      <section>
+        <h1>Conditions Générales d’Utilisation</h1>
+        <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
+        <h2>1. Objet du site</h2>
+        <p>Le site permet :</p>
+        <ul>
+          <li>la consultation d’annonces de logements à louer pour des séjours de courte durée,</li>
+          <li>la réservation en ligne,</li>
+          <li>le paiement sécurisé via Stripe ou virement bancaire (sous conditions),</li>
+          <li>la gestion des réservations via un espace personnel,</li>
+          <li>l’accès à des informations pratiques, calendriers, services et formulaires de contact.</li>
+        </ul>
+        <h2>2. Acceptation des CGU</h2>
+        <p>
+          L’utilisation du site implique l’acceptation pleine et entière des présentes CGU. Si l’utilisateur n’accepte pas tout ou partie des CGU, il lui est demandé de ne pas utiliser le site.
+        </p>
+        <h2>3. Accès au site</h2>
+        <p>
+          Le site est accessible gratuitement à tout utilisateur disposant d’un accès Internet. Certains services nécessitent la création d’un compte utilisateur sécurisé. L’accès peut être suspendu temporairement pour maintenance ou interruption involontaire.
+        </p>
+        <h2>4. Création de compte et sécurité</h2>
+        <p>
+          L’utilisateur est responsable de la confidentialité de ses identifiants et de toute action effectuée via son compte. En cas d’utilisation frauduleuse, il doit immédiatement prévenir {{ entreprise.name }}.
+        </p>
+        <h2>5. Réservation et espace personnel</h2>
+        <p>Chaque utilisateur peut :</p>
+        <ul>
+          <li>réserver un logement,</li>
+          <li>accéder à un calendrier interactif de disponibilités,</li>
+          <li>consulter ses réservations passées et à venir,</li>
+          <li>signer son contrat de location,</li>
+          <li>gérer ses informations personnelles et échanges avec l’agence.</li>
+        </ul>
+        <h2>6. Paiement sécurisé</h2>
+        <p>
+          Les paiements sont traités par Stripe, prestataire certifié PCI-DSS. Aucune donnée bancaire n’est stockée par {{ entreprise.name }}. Le Client accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions d’utilisation de Stripe</a> lors de chaque paiement.
+          <p>
+            Le paiement est conservé temporairement par Stripe jusqu’à l’expiration de la période d’annulation. En tant que mandataire, {{ entreprise.name }} ne perçoit que la commission indiquée dans ses conditions tarifaires. Le solde est automatiquement reversé au propriétaire après validation du séjour ou selon les conditions prévues.
+          </p>
+        </p>
+        <h2>7. Mandat de gestion des paiements</h2>
+        <p>
+          Dans le cadre de la réservation de logements via le site, {{ entreprise.name }} agit en qualité d’intermédiaire technique entre les utilisateurs (voyageurs) et les propriétaires.
+        </p>
+        <p>
+          À ce titre, chaque propriétaire, en acceptant les présentes CGU, donne expressément mandat à {{ entreprise.name }} pour :
+        </p>
+        <ul>
+          <li>encaisser les sommes dues par les voyageurs au nom et pour le compte du propriétaire via Stripe,</li>
+          <li>prélever la commission convenue sur chaque réservation,</li>
+          <li>reverser le solde dû au propriétaire à l’issue de la période d’annulation définie pour le logement concerné.</li>
+        </ul>
+        <p>
+          Les sommes perçues par {{ entreprise.name }} pour le compte du propriétaire sont conservées sur le compte Stripe de la plateforme, en attente de leur transfert au propriétaire à la date convenue.
+        </p>
+        <p>
+          En aucun cas {{ entreprise.name }} ne devient propriétaire des fonds collectés. Elle agit uniquement en tant que <strong>mandataire de paiement</strong>, dans le respect des Conditions Générales de Stripe (<a href="https://stripe.com/fr/legal/connect-account" target="_blank">https://stripe.com/fr/legal/connect-account</a>).
+        </p>
+        <p>
+          Le reversement des fonds est effectué après l’expiration du délai d’annulation, ou selon toute autre règle de versement définie contractuellement entre {{ entreprise.name }} et le propriétaire. En cas d’annulation éligible, les fonds peuvent être remboursés intégralement au voyageur selon les conditions définies dans l’annonce.
+        </p>
+        <h2>18. Facturation</h2>
+        <p>Dans le cadre du fonctionnement de la plateforme :</p>
+        <ul>
+          <li>
+            <strong>Le propriétaire est seul responsable de l’émission des factures</strong> liées aux réservations de ses logements. Il facture directement le montant total de la réservation au voyageur, incluant le tarif du séjour, les frais de ménage, taxes éventuelles et autres prestations annexes.
+          </li>
+          <li>
+            <strong>{{ entreprise.name }}</strong> agit comme intermédiaire technique et commercial dans le cadre de cette mise en relation. La société facture au propriétaire <strong>une commission de service</strong> pour chaque réservation confirmée, dont le montant est précisé dans les conditions tarifaires en vigueur au moment de la réservation.
+          </li>
+          <li>
+            Une facture correspondant à cette commission est émise par {{ entreprise.name }} et transmise au propriétaire. Le montant est automatiquement prélevé sur le paiement total reçu via Stripe avant reversement du solde.
+          </li>
+        </ul>
+        <p>
+          Il appartient au propriétaire de déclarer ses revenus locatifs selon les règles fiscales qui lui sont applicables. {{ entreprise.name }} ne saurait être tenue responsable à cet égard.
+        </p>
+        <h2>9. Responsabilités</h2>
+        <p>L’utilisateur est seul responsable :</p>
+        <ul>
+          <li>des informations qu’il saisit,</li>
+          <li>de toute activité sur son compte,</li>
+          <li>du respect des lois applicables à son usage.</li>
+        </ul>
+        <p>{{ entreprise.name }} décline toute responsabilité en cas de :</p>
+        <ul>
+          <li>mauvais usage du site,</li>
+          <li>indisponibilité temporaire,</li>
+          <li>perte de données ou dommages indirects,</li>
+          <li>contenus tiers (liens externes, prestataires...)</li>
+        </ul>
+        <h2>10. Propriété intellectuelle</h2>
+        <p>
+          Tous les éléments présents sur le site (textes, visuels, logos, code, fonctionnalités) sont protégés par le droit d’auteur et sont la propriété exclusive de {{ entreprise.name }} ou de ses partenaires. Toute reproduction ou utilisation non autorisée est interdite.
+        </p>
+        <h2>11. Données personnelles</h2>
+        <p>
+          Les données sont traitées conformément au RGPD. Pour en savoir plus, consultez notre <a href="{% url 'common:confidentiality' %}">politique de confidentialité</a>. Vous pouvez exercer vos droits à : <a href="mailto:contact@{{ entreprise.name|lower }}.com">contact@{{ entreprise.name|lower }}.com</a>
+        </p>
+        <h2>12. Cookies</h2>
+        <p>
+          Ce site utilise des cookies pour améliorer la navigation, sécuriser les sessions, et mesurer l’audience. L’utilisateur peut les refuser en configurant son navigateur.
+        </p>
+        <h2>13. Suspension ou suppression de compte</h2>
+        <p>
+          {{ entreprise.name }} se réserve le droit de suspendre ou supprimer un compte en cas de manquement aux CGU, suspicion de fraude ou d’usage abusif.
+        </p>
+        <h2>14. Modification des CGU</h2>
+        <p>
+          {{ entreprise.name }} peut modifier les CGU à tout moment. L’utilisateur sera informé lors de sa connexion. L’usage du site après modification vaut acceptation des nouvelles CGU.
+        </p>
+        <h2>15. Loi applicable et juridiction</h2>
+        <p>
+          Les présentes CGU sont régies par le droit français. En cas de litige, compétence exclusive est donnée aux tribunaux du ressort du siège social de {{ entreprise.name }}.
+        </p>
+      </section>
+    </article>
+  </div>
 {% endblock %}

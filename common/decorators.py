@@ -3,6 +3,8 @@ from django.shortcuts import get_object_or_404, redirect
 from logement.models import Logement, Room, Photo, Reservation
 from django.db.models import Q
 from django.contrib import messages
+from functools import wraps
+from accounts.models import Conversation
 
 
 def user_is_logement_admin(view_func):
@@ -23,9 +25,7 @@ def user_is_logement_admin(view_func):
                     logement_id = photo.logement.id
                 else:
                     # If neither logement_id nor room_id is provided, raise an error
-                    raise PermissionDenied(
-                        "Arguments insuffisants pour vérifier l'accès"
-                    )
+                    raise PermissionDenied("Arguments insuffisants pour vérifier l'accès")
 
         logement = get_object_or_404(Logement, id=logement_id)
 
@@ -34,6 +34,7 @@ def user_is_logement_admin(view_func):
             request.user == logement.owner
             or request.user == logement.admin
             or request.user.is_admin
+            or request.user.is_superuser
         ):
             return view_func(request, *args, **kwargs)
 
@@ -50,9 +51,13 @@ def user_has_logement(view_func):
             return view_func(request, *args, **kwargs)
 
         # Check if the user is either the owner or an admin of any Logement
-        has_logement = Logement.objects.filter(
-            Q(owner=request.user) | Q(admin=request.user)
-        ).exists() or request.user.is_owner or request.user.is_owner_admin
+        has_logement = (
+            Logement.objects.filter(Q(owner=request.user) | Q(admin=request.user)).exists()
+            or request.user.is_owner
+            or request.user.is_owner_admin
+            or request.user.is_superuser
+            or request.user.is_admin
+        )
 
         if has_logement:
             return view_func(request, *args, **kwargs)
@@ -76,6 +81,7 @@ def user_is_reservation_admin(view_func):
             request.user == logement.owner
             or request.user == logement.admin
             or request.user.is_admin
+            or request.user.is_superuser
         ):
             return view_func(request, *args, **kwargs)
 
@@ -86,14 +92,45 @@ def user_is_reservation_admin(view_func):
 
 
 def user_has_reservation(view_func):
+    @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         code = kwargs["code"]
 
-        if Reservation.objects.filter(code=code, user=request.user).exists():
+        if (
+            Reservation.objects.filter(code=code, user=request.user).exists()
+            or request.user.is_superuser
+            or request.user.is_admin
+        ):
             return view_func(request, *args, **kwargs)
 
         # If the user is not authorized, redirect to dashboard
         messages.error(request, "Accès refusé : vous n'avez pas réservé ce logement.")
+        return redirect("accounts:dashboard")
+
+    return _wrapped_view
+
+
+def user_in_conversation(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        conversation_id = kwargs.get("conversation_id")
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+
+        user = request.user
+        reservation = conversation.reservation
+
+        is_participant = (
+            reservation.user == user
+            or reservation.logement.owner == user
+            or (reservation.logement.admin and reservation.logement.admin == user)
+            or user.is_admin
+            or user.is_superuser
+        )
+
+        if is_participant:
+            return view_func(request, *args, **kwargs)
+
+        messages.error(request, "Accès refusé : vous ne participez pas à cette conversation.")
         return redirect("accounts:dashboard")
 
     return _wrapped_view

@@ -1,0 +1,39 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+<div class="form-field">
+    <label for="{{ form.max_traveler.id_for_label }}">{{ form.max_traveler.label }}</label>
+    {{ form.max_traveler|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.nominal_traveler.id_for_label }}">{{ form.nominal_traveler.label }}</label>
+    {{ form.nominal_traveler|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.superficie.id_for_label }}">{{ form.superficie.label }}</label>
+    <div class="input-symbol with-symbol">
+        {{ form.superficie|add_class:"form-input" }}
+        <span class="unit-label">m²</span>
+    </div>
+</div>
+<div class="form-field">
+    <label for="{{ form.bathrooms.id_for_label }}">{{ form.bathrooms.label }}</label>
+    {{ form.bathrooms|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
+    {{ form.bedrooms|add_class:"form-input" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.beds.id_for_label }}">{{ form.beds.label }}</label>
+    {{ form.beds|add_class:"form-input" }}
+</div>
+<div class="form-field checkbox-field">
+    <input type="checkbox" id="{{ form.smoking.id_for_label }}" name="{{ form.smoking.name }}" {{ form.smoking.value|yesno:"checked," }}>
+    <label for="{{ form.smoking.id_for_label }}">{{ form.smoking.label }}</label>
+</div>
+<div class="form-field checkbox-field">
+    <input type="checkbox" id="{{ form.animals.id_for_label }}" name="{{ form.animals.name }}" {{ form.animals.value|yesno:"checked," }}>
+    <label for="{{ form.animals.id_for_label }}">{{ form.animals.label }}</label>
+</div>

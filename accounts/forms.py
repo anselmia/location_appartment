@@ -42,12 +42,8 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if CustomUser.objects.filter(email=email).exists():
-            logger.warning(
-                f"Tentative d'enregistrement avec un email déjà utilisé : {email}"
-            )
-            raise ValidationError(
-                "Cet email est déjà utilisé. Veuillez en choisir un autre."
-            )
+            logger.warning(f"Tentative d'enregistrement avec un email déjà utilisé : {email}")
+            raise ValidationError("Cet email est déjà utilisé. Veuillez en choisir un autre.")
         return email
 
     def clean_username(self):
@@ -73,9 +69,7 @@ class CustomUserCreationForm(UserCreationForm):
         phone = self.cleaned_data.get("phone")
         phone_validator(phone)  # this raises ValidationError if invalid
         if CustomUser.objects.filter(phone=phone).exists():
-            raise ValidationError(
-                "Ce numéro de téléphone est déjà utilisé. Veuillez en choisir un autre."
-            )
+            raise ValidationError("Ce numéro de téléphone est déjà utilisé. Veuillez en choisir un autre.")
         return phone
 
 
@@ -107,9 +101,7 @@ class CustomUserChangeForm(UserChangeForm):
         user = self.instance
         phone_validator(phone)  # this raises ValidationError if invalid
         if CustomUser.objects.filter(phone=phone).exclude(id=user.id).exists():
-            raise ValidationError(
-                "Ce numéro de téléphone est déjà utilisé par un autre utilisateur."
-            )
+            raise ValidationError("Ce numéro de téléphone est déjà utilisé par un autre utilisateur.")
         return phone
 
     # Optional: You can add more custom validation for the is_admin field if needed
@@ -126,8 +118,15 @@ class MessageForm(forms.ModelForm):
         fields = ["content"]
         widgets = {
             "content": forms.Textarea(
-                attrs={"rows": 3, "placeholder": "Votre message..."}
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Votre message...",
+                    "class": "form-control",  # <-- Bootstrap style
+                }
             ),
+        }
+        labels = {
+            "content": "",  # No label above the field
         }
 
 

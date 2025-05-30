@@ -27,7 +27,7 @@
   --spacing-lg: 2.4rem;
   --spacing-xl: 4rem;
 
-  --max-content-width: 960px;
+  --max-content-width: 1200px;
 
   --light-bg: #f8f5f2;
   --bg-white: #ffffff;
@@ -46,6 +46,12 @@
 
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   --radius: 12px;
+
+  --light-border: #e0e0e0;
+  --message-mine-bg: #d1e7ff;
+  --message-other-bg: #f1f1f1;
+  --unread-badge-bg: #dc3545;
+  --unread-badge-color: #fff;
 }
 
 html,
@@ -471,11 +477,11 @@ ul.list-unstyled li .ml-3 {
 }
 
 #chat-log .user-message {
-    color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 #chat-log .bot-message {
-    color: var(--secondary-color);
+  color: var(--secondary-color);
 }
 
 #chatbot-input {

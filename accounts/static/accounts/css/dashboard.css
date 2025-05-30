@@ -1,74 +1,76 @@
-
-
 /* Dashboard */
 .client-dashboard {
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   background-color: var(--light-bg);
-  padding: 2rem 1rem;
+  padding: var(--spacing-lg) var(--spacing-sm);
+  color: var(--text-dark);
 }
 
 .client-dashboard h2 {
   color: var(--secondary-color);
+  font-family: var(--font-title);
   font-weight: 600;
-  font-size: 2.2rem;
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
 }
 
 /* Nav Tabs */
 .nav-pills .nav-link {
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
+  border-radius: var(--radius);
+  margin-bottom: var(--spacing-xs);
   font-weight: 500;
-  padding: 0.75rem 1rem;
-  background: #eae6e2;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--light-gray);
   color: var(--secondary-color);
-  transition: 0.3s ease;
+  transition: background-color 0.3s ease;
+  font-family: var(--font-body);
 }
 
 .nav-pills .nav-link:hover {
-  background-color: #e1ddd9;
+  background-color: var(--background-highlight);
 }
 
 .nav-pills .nav-link.active {
   background-color: var(--primary-color);
-  color: white;
+  color: #fff;
 }
 
 /* Cards */
 .card {
   border: none;
-  border-radius: 1rem;
-  background: white;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
+  border-radius: var(--radius);
+  background: var(--bg-white);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--spacing-lg);
+  font-family: var(--font-body);
 }
 
 .card-header {
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
+  border-radius: var(--radius) var(--radius) 0 0;
   background-color: var(--secondary-color);
-  color: white;
+  color: #fff;
   font-weight: 600;
-  font-size: 1.1rem;
-  padding: 1rem 1.5rem;
+  font-size: 1.125rem;
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .card-body {
-  padding: 2rem;
+  padding: var(--spacing-lg);
 }
 
 /* Forms */
 .form-label {
   font-weight: 500;
   color: var(--secondary-color);
-  margin-bottom: 0.3rem;
+  margin-bottom: var(--spacing-xs);
 }
 
 .form-control {
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
-  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--light-border);
+  padding: 0.6rem 1rem;
   font-size: 1rem;
-  font-family: var(--font-family);
+  font-family: var(--font-body);
 }
 
 .form-control:focus {
@@ -78,15 +80,17 @@
 
 /* Buttons */
 .btn {
-  border-radius: 2rem;
+  border-radius: 999px;
   font-weight: 500;
-  transition: 0.3s ease;
-  font-family: var(--font-family);
+  font-family: var(--font-body);
+  padding: 0.5rem 1.25rem;
+  transition: all 0.3s ease;
 }
 
 .btn-primary {
   background-color: var(--primary-color);
   border: none;
+  color: #fff;
 }
 
 .btn-primary:hover {
@@ -100,26 +104,26 @@
 
 .btn-outline-primary:hover {
   background-color: var(--primary-color);
-  color: white;
+  color: #fff;
 }
 
 .btn-outline-danger {
-  border-color: #c0392b;
-  color: #c0392b;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
 }
 
 .btn-outline-danger:hover {
-  background-color: #c0392b;
-  color: white;
+  background-color: var(--danger-color);
+  color: #fff;
 }
 
 /* Reservation List */
 .list-group-item {
-  background: white;
-  border: 1px solid #e4e6eb;
-  border-radius: 0.75rem;
+  background: var(--bg-white);
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
   padding: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-sm);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
 }
 
@@ -127,46 +131,46 @@
 .badge {
   font-size: 0.75rem;
   padding: 0.4rem 0.7rem;
-  border-radius: 1rem;
+  border-radius: 999px;
   font-weight: 500;
 }
 
 .badge-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
 }
 
 .badge.bg-secondary {
   background-color: #6c757d;
-  color: white;
+  color: #fff;
 }
 
 .badge.bg-warning {
-  background-color: #ffcc80;
+  background-color: var(--warning-color);
   color: var(--secondary-color);
 }
 
 .badge.bg-info {
-  background-color: #a3d8f4;
+  background-color: var(--info-color);
   color: var(--secondary-color);
 }
 
 .badge.bg-success {
-  background-color: #2ecc71;
-  color: white;
+  background-color: var(--success-color);
+  color: #fff;
 }
 
 .badge.bg-danger {
-  background-color: #e74c3c;
-  color: white;
+  background-color: var(--danger-color);
+  color: #fff;
 }
 
 /* Delete Account */
 .client-dashboard .delete-account {
   max-width: 320px;
-  margin: 3rem auto 0;
+  margin: var(--spacing-xl) auto 0;
 }
 
 /* Search */
@@ -182,11 +186,11 @@ form[role="search"] .btn {
 /* Responsive */
 @media (max-width: 768px) {
   .client-dashboard {
-    padding: 1rem 0.5rem;
+    padding: var(--spacing-sm);
   }
 
   .client-dashboard h2 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .nav-pills .nav-link {
@@ -195,7 +199,7 @@ form[role="search"] .btn {
   }
 
   .card-body {
-    padding: 1.5rem;
+    padding: var(--spacing-md);
   }
 
   .badge-container {
