@@ -197,3 +197,17 @@ def send_mail_on_payment_failure(logement, reservation, user):
 
     except Exception as e:
         logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
+
+
+def send_mail_contact(cd):
+    try:
+        send_mail(
+            subject="Contact depuis le site",
+            message=f"Message de {cd['name']} ({cd['email']}):\n\n{cd['message']}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.CONTACT_EMAIL],
+            fail_silently=False,
+        )
+    except Exception as e:
+        logger.error(f"Erreur d'envoi de mail: {e}")
+        raise

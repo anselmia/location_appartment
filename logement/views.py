@@ -25,6 +25,7 @@ from logement.services.reservation_service import (
 from logement.services.logement import filter_logements
 
 from logement.services.calendar_service import generate_ical
+from logement.services.email_service import send_mail_contact
 from logement.services.payment_service import create_stripe_checkout_session_with_deposit, PAYMENT_FEE_VARIABLE
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
@@ -43,12 +44,24 @@ def home(request):
         config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
         logements = Logement.objects.prefetch_related("photos").filter(statut="open")
 
-        initial_data = {
-            "name": (request.user if request.user.is_authenticated else ""),
-            "email": request.user.email if request.user.is_authenticated else "",
-        }
+        if request.method == "POST":
+            form = ContactForm(request.POST)
+            if form.is_valid():
+                cd = form.cleaned_data
+                try:
+                    send_mail_contact(cd)
+                    messages.success(request, "✅ Message envoyé avec succès.")
+                    return redirect("logement:home")
+                except Exception as e:
+                    logger.error(f"Erreur d'envoi de mail: {e}")
+                    messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
+        else:
+            initial_data = {
+                "name": (request.user if request.user.is_authenticated else ""),
+                "email": request.user.email if request.user.is_authenticated else "",
+            }
 
-        contact_form = ContactForm(**initial_data)
+            form = ContactForm(**initial_data)
 
         return render(
             request,
@@ -56,12 +69,12 @@ def home(request):
             {
                 "logements": logements,
                 "config": config,
-                "contact_form": contact_form,
+                "contact_form": form,
             },
         )
     except Exception as e:
         logger.exception(f"Error rendering homepage: {e}")
-        return HttpResponse("Erreur interne du serveur", status=500)
+        raise
 
 
 def autocomplete_cities(request):

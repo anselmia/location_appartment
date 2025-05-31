@@ -238,14 +238,13 @@
                     <p>Une question, un besoin particulier ou une demande de réservation ? Nous sommes à votre écoute.</p>
                 </div>
                 <div class="contact-card">
-                    <form method="post"
-                          action="{% url 'accounts:contact' %}"
-                          class="contact-form">
+                    <form method="post" action="" class="contact-form">
                         {% csrf_token %}
                         <div class="form-group">
                             {{ contact_form.name.label_tag }}
                             {{ contact_form.name }}
                         </div>
+                        <input type="hidden" name="subject_id" value="Contact">
                         <div class="form-group">
                             {{ contact_form.email.label_tag }}
                             {{ contact_form.email }}
