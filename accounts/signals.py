@@ -22,7 +22,7 @@ Vous avez reçu un nouveau message concernant la réservation : {instance.conver
 Message :
 {instance.content}
 
-Connectez-vous pour répondre : https://valrose.home-arnaud.ovh/accounts/messages/{instance.conversation.id}/
+Connectez-vous pour répondre : {settings.SITE_ADDRESS}/accounts/messages/{instance.conversation.id}/
 """
             send_mail(
                 subject=subject,

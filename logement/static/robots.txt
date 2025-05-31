@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin-area/
 Disallow: /accounts/
 
-Sitemap: https://valrose.home-arnaud.ovh/sitemap.xml
+Sitemap: https://www.bnbazure.fr/sitemap.xml

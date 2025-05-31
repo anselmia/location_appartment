@@ -5,7 +5,7 @@
 <html lang="{{ LANGUAGE_CODE }}" ontouchstart>
     <head>
         <meta charset="UTF-8">
-        <title>Location Valrose – Appartement à louer à Nice</title>
+        <title>Location {entreprise.name} – Appartement à louer à Nice</title>
         <link rel="shortcut icon" href="{% static 'logement/img/favicon.ico' %}">
         <meta name="description"
               content="Logement à louer à Nice Centre. Chambres confortables, cuisine, salle de bain, wifi. Idéal étudiants, touristes et familles. Réservation simple et rapide.">
@@ -14,8 +14,8 @@
         <meta name="robots" content="index, follow">
         <meta property="og:title" content="Location appartement Centre de Nice" />
         <meta property="og:description"
-              content="Réservez facilement un logement à Nice dans notre résidence à Valrose. Réservation rapide et fiable." />
-        <meta property="og:url" content="https://valrose.home-arnaud.ovh/" />
+              content="Réservez facilement un logement de vacance ou de courte durée. Réservation rapide et fiable." />
+        <meta property="og:url" content={site_address}/>
         <meta property="og:type" content="website" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <!-- Bootstrap Bundle (includes Popper.js) -->
@@ -51,9 +51,9 @@
         {
           "@context": "https://schema.org",
           "@type": "LodgingBusiness",
-          "name": "Résidence Valrose",
-          "description": "location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice",
-          "url": "https://valrose.home-arnaud.ovh",
+          "name": "{entreprise.name}",
+          "description": "location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice, Conciergerie",
+          "url": "{site_address}",
           "priceRange": "€€",
           "address": {
             "@type": "PostalAddress",

@@ -303,7 +303,7 @@ def export_ical(request, code):
         ics_content = generate_ical(code)
         if ics_content:
             response = HttpResponse(ics_content, content_type="text/calendar")
-            response["Content-Disposition"] = "attachment; filename=valrose_calendar.ics"
+            response["Content-Disposition"] = f"attachment; filename={code}_calendar.ics"
             return response
         else:
             return HttpResponse("Aucune donnée à exporter", status=204)

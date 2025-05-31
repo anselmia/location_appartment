@@ -1,5 +1,6 @@
 from datetime import datetime
 from administration.models import Entreprise
+from django.conf import settings
 
 
 def entreprise_info(request):
@@ -7,7 +8,4 @@ def entreprise_info(request):
         entreprise = Entreprise.objects.first()
     except Entreprise.DoesNotExist:
         entreprise = None
-    return {
-        "entreprise": entreprise,
-        "current_year": datetime.now().year,
-    }
+    return {"entreprise": entreprise, "current_year": datetime.now().year, "site_address": settings.SITE_ADDRESS}

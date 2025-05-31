@@ -12,6 +12,7 @@ from datetime import timedelta
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 from logement.services.payment_service import get_payment_fee, get_platform_fee
+from django.conf import settings
 
 
 class City(models.Model):
@@ -163,7 +164,7 @@ class Logement(models.Model):
 
     @property
     def calendar_link(self):
-        return f"https://valrose.home-arnaud.ovh/api/export/ical/{self.code}/"
+        return f"{settings.SITE_ADDRESS}api/export/ical/{self.code}/"
 
 
 class Price(models.Model):

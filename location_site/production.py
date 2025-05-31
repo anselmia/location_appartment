@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
+SITE_ADDRESS = "https://www.bnbazure.fr/"
+DOMAIN = "bnbazure.fr"
+
 # SECURITY SETTINGS
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
@@ -45,10 +48,10 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://valrose.home-arnaud.ovh",
+    "https://bnbazure.fr",
 ]
 
-LOG_DIR = "/srv/location_site/location_appartment/logs"
+LOG_DIR = "/srv/location/logs"
 
 # Create the log directory if it doesn't exist
 if not os.path.exists(LOG_DIR):
@@ -144,5 +147,5 @@ EMAIL_HOST = "localhost"
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
-DEFAULT_FROM_EMAIL = "noreply@valrose.home-arnaud.ovh"
-CONTACT_EMAIL = "contact@valrose.home-arnaud.ovh"
+DEFAULT_FROM_EMAIL = "noreply@bnbazure.fr"
+CONTACT_EMAIL = "contact@bnbazure.fr"
