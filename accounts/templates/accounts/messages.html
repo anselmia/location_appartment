@@ -6,7 +6,7 @@
 {% endblock extrahead %}
 {% block content %}
     <div class="container-fluid mt-4 messaging-interface">
-        <button class="btn btn-outline-secondary mb-2" id="toggle-sidebar">📋 Conversations</button>
+        <button class="btn mb-2" id="toggle-sidebar">📋 Conversations</button>
         <div class="d-flex messaging-layout sidebar-open" id="messaging-layout">
             <!-- Sidebar: Conversations List -->
             <div class="messaging-sidebar flex-shrink-0">
@@ -27,7 +27,7 @@
                     </div>
                 {% endif %}
                 <div class="card h-100">
-                    <div class="card-header bg-light">
+                    <div class="card-header">
                         <strong>💬 Conversations</strong>
                     </div>
                     <ul class="list-group list-group-flush overflow-auto"
@@ -70,53 +70,7 @@
             </div>
             <!-- Main: Messages -->
             <div class="messaging-main flex-grow-1">
-                {% if active_conversation %}
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <strong>Conversation pour : {{ active_conversation.reservation }}</strong>
-                        </div>
-                        <div class="card-body overflow-auto"
-                             style="max-height: 60vh"
-                             id="message-list">
-                            {% for message in active_conversation.messages.all %}
-                                {% if message.sender == user %}
-                                    <div class="text-end mb-2">
-                                        <div class="d-inline-block rounded p-2 bg-primary-subtle text-dark border">
-                                            <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
-                                            <br>
-                                            {{ message.content|linebreaksbr }}
-                                            {% if message.read_by.count > 1 %}
-                                                <div class="mt-1">
-                                                    <small class="text-muted">✅ Lu</small>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <div class="text-start mb-2">
-                                        <div class="d-inline-block bg-light border rounded p-2">
-                                            <small><strong>{{ message.sender }}</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
-                                            <br>
-                                            {{ message.content|linebreaksbr }}
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            {% empty %}
-                                <p class="text-muted">Aucun message pour cette conversation.</p>
-                            {% endfor %}
-                        </div>
-                        <div class="card-footer">
-                            <form method="post"
-                                  action="{% url 'accounts:messages_conversation' active_conversation.id %}">
-                                {% csrf_token %}
-                                {{ form.as_p }}
-                                <button type="submit" class="btn btn-primary">Envoyer</button>
-                            </form>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">Sélectionnez une conversation à gauche pour commencer.</div>
-                {% endif %}
+                {% include "accounts/partials/_conversation.html" %}
             </div>
         </div>
     </div>

@@ -123,14 +123,15 @@
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}
 {% block extra_js %}
   <script>const monthlyRevenue = {{ monthly_revenue|safe }};</script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- Luxon + Adapter pour Chart.js v4 -->
+  <  <!-- Luxon d'abord -->
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <!-- Chart.js ensuite -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Adapter après -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{% static 'administration/js/charts.js' %}"></script>
-{% endblock %}
+{% endblock extra_js%}

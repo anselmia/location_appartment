@@ -183,9 +183,10 @@ def messages_view(request, conversation_id=None):
             messages.error(request, "Vous n'avez pas accès à cette conversation.")
             return redirect("accounts:messages")
 
-        messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by").order_by("timestamp")
+        messages_qs = (
+            active_conversation.messages.select_related("sender").prefetch_related("read_by").order_by("timestamp")
+        )
 
-        # Marquer comme lus les messages reçus par cet utilisateur
         for msg in messages_qs:
             if user in msg.recipients.all() and user not in msg.read_by.all():
                 msg.read_by.add(user)
@@ -201,16 +202,27 @@ def messages_view(request, conversation_id=None):
                 msg.save()
                 return redirect("accounts:messages_conversation", conversation_id=active_conversation.id)
 
-    return render(
-        request,
-        "accounts/messages.html",
-        {
-            "conversations": conversations,
-            "active_conversation": active_conversation,
-            "form": form,
-            "reservations_to_start": reservations_without_conversation,
-        },
-    )
+    context = {
+        "conversations": conversations,
+        "active_conversation": active_conversation,
+        "form": form,
+        "reservations_to_start": reservations_without_conversation,
+    }
+
+    # Return only the main panel if AJAX
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return render(request, "accounts/partials/_conversation.html", context)
+
+    return render(request, "accounts/messages.html", context)
+
+
+def conversation_view(request, reservation_code):
+    conv = get_object_or_404(Conversation, reservation_code=reservation_code)
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return render(request, "account/partials/_conversation.html", {"conversation": conv})
+
+    return render(request, "messages/conversation_full.html", {"conversation": conv})
 
 
 @login_required

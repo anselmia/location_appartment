@@ -44,6 +44,11 @@
   gap: 1rem;
 }
 
+.messaging-layout.messaging-collapsing {
+  pointer-events: none;
+  opacity: 0.95;
+}
+
 /* Sidebar adjusts to content height */
 .messaging-sidebar {
   width: 340px;
@@ -95,6 +100,7 @@ form textarea {
 .messaging-interface .list-group-item.active {
   background-color: var(--primary-color);
   color: white;
+  opacity: 0.8;
 }
 
 .messaging-interface .list-group-item.active small {
@@ -183,6 +189,14 @@ form textarea {
   transition: background-color 0.2s ease;
 }
 
+.messaging-interface #toggle-sidebar {
+  background-color: var(--primary-color);
+}
+
+.messaging-interface #toggle-sidebar:hover {
+  background-color: var(--primary-color);
+}
+
 .messaging-interface button[type="submit"]:hover {
   background-color: #0056b3;
 }
@@ -192,6 +206,23 @@ form textarea {
   border-radius: 6px;
   border: 1px solid var(--light-border);
   width: 100%;
+}
+
+.messaging-interface .card {
+  border: 2px solid var(--primary-color);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.messaging-interface .card-header {
+  background-color: #fdfdfd;
+  color: #444;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid #86848493;
 }
 
 /* Responsive */
@@ -209,9 +240,7 @@ form textarea {
     padding: 0.2rem 0.5rem;
   }
 
-  .card-header {
-    padding: 0.4rem 0.5rem;
-  }
+
 
   .list-group-item {
     padding: 0.4rem 0.5rem;

@@ -55,6 +55,11 @@
                 <ul class="list-unstyled row text-center g-4">
                     <li class="col-md-6 col-lg-3">
                         <div class="p-3 border rounded shadow-sm h-100">
+                            <div class="mb-3 rounded-4 overflow-hidden shadow-sm bg-light p-2">
+                                <img src="{% static 'logement/img/price_commitment.jpg' %}"
+                                     alt="Tarifs justes"
+                                     class="img-fluid rounded-3 engagement-img">
+                            </div>
                             <i class="bi bi-tag-fill fs-3 text-primary mb-2"></i>
                             <p class="fw-bold">Tarifs justes</p>
                             <p class="text-muted small">Des prix flexibles et compétitifs via nos partenaires de confiance.</p>
@@ -62,6 +67,11 @@
                     </li>
                     <li class="col-md-6 col-lg-3">
                         <div class="p-3 border rounded shadow-sm h-100">
+                            <div class="mb-3 rounded-4 overflow-hidden shadow-sm bg-light p-2">
+                                <img src="{% static 'logement/img/proximity_commitment.jpg' %}"
+                                     alt="Service réactif"
+                                     class="img-fluid rounded-3 engagement-img">
+                            </div>
                             <i class="bi bi-headset fs-3 text-primary mb-2"></i>
                             <p class="fw-bold">Service réactif</p>
                             <p class="text-muted small">Une assistance personnalisée avant, pendant et après votre séjour.</p>
@@ -69,6 +79,11 @@
                     </li>
                     <li class="col-md-6 col-lg-3">
                         <div class="p-3 border rounded shadow-sm h-100">
+                            <div class="mb-3 rounded-4 overflow-hidden shadow-sm bg-light p-2">
+                                <img src="{% static 'logement/img/quality_commitment.jpg' %}"
+                                     alt="Logements de qualité"
+                                     class="img-fluid rounded-3 engagement-img">
+                            </div>
                             <i class="bi bi-house-door fs-3 text-primary mb-2"></i>
                             <p class="fw-bold">Logements de qualité</p>
                             <p class="text-muted small">Bien situés, propres et équipés, ils répondent aux standards d’hospitalité moderne.</p>
@@ -76,6 +91,11 @@
                     </li>
                     <li class="col-md-6 col-lg-3">
                         <div class="p-3 border rounded shadow-sm h-100">
+                            <div class="mb-3 rounded-4 overflow-hidden shadow-sm bg-light p-2">
+                                <img src="{% static 'logement/img/booking_commitment.jpg' %}"
+                                     alt="Réservation simple"
+                                     class="img-fluid rounded-3 engagement-img">
+                            </div>
                             <i class="bi bi-lightning-charge-fill fs-3 text-primary mb-2"></i>
                             <p class="fw-bold">Réservation simple</p>
                             <p class="text-muted small">Réservez en quelques clics et partez l’esprit tranquille.</p>
@@ -185,27 +205,6 @@
                             <blockquote>
                                 “{{ avis.content }}”
                             </blockquote>
-                        </div>
-                    {% endfor %}
-                </div>
-            </section>
-        {% endif %}
-        {% if config.commitments %}
-            <section class="commitments-section fade-in-up">
-                <h2>Nos Engagements</h2>
-                <div class="commitments-grid">
-                    {% for e in config.commitments.all %}
-                        <div class="commitment-card fade-in-up">
-                            {% if e.background_image %}
-                                <div class="commitment-img"
-                                     style="background-image: url('{{ e.background_image.url }}')"></div>
-                            {% else %}
-                                <div class="commitment-img" style="background-color: #eaeaea;"></div>
-                            {% endif %}
-                            <div class="card-body">
-                                <h3 class="commitment-title">{{ e.title }}</h3>
-                                <p>{{ e.text }}</p>
-                            </div>
                         </div>
                     {% endfor %}
                 </div>

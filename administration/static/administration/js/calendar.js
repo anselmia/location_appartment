@@ -11,9 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const logements = JSON.parse(
     document.getElementById("logements-data").textContent
   );
-  console.log(logements);
-  console.log("typeof logements =", typeof logements);
-  console.log("isArray =", Array.isArray(logements));
+
   const selector = document.getElementById("logement-selector");
   const calendarEl = document.getElementById("calendar");
 
@@ -58,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 end: fetchInfo.endStr,
               }
             );
-            console.log("✅ API Response (res.data.data):", res.data.data);
 
             // 1. Daily Prices (background display)
             const priceEvents = res.data.data.map((e) => ({
@@ -102,11 +99,6 @@ document.addEventListener("DOMContentLoaded", function () {
             dailyPriceMap = {};
             res.data.data.forEach((e) => {
               dailyPriceMap[e.date] = parseFloat(e.price);
-              console.log(
-                "💡 dailyPriceMap[e.date] =",
-                e.date,
-                parseFloat(e.price)
-              );
             });
 
             dailyStatutMap = {};
@@ -136,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             successCallback([
               ...priceEvents,
-              ...closedEvents, 
+              ...closedEvents,
               ...bookings,
               ...airbnbBookings,
               ...bookingBookings,
@@ -289,13 +281,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       price = minPrice !== Infinity ? minPrice : 0;
       statut = hasClosedDay ? 0 : 1;
-
-      console.log("🟡 showPanel startStr:", startStr);
-      console.log("🟡 dailyPriceMap[startStr]:", dailyPriceMap[startStr]);
-      console.log(
-        "🟡 typeof dailyPriceMap[startStr]:",
-        typeof dailyPriceMap[startStr]
-      );
     }
 
     // Show base price
