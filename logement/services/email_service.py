@@ -9,11 +9,10 @@ from administration.models import Entreprise
 
 logger = logging.getLogger(__name__)
 
-entreprise = Entreprise.objects.first()
-
 
 def send_mail_on_new_reservation(logement, reservation, user):
     try:
+        entreprise = Entreprise.objects.first()
         # Build context for the email
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
@@ -51,6 +50,8 @@ def send_mail_on_new_reservation(logement, reservation, user):
 
 def send_mail_on_refund(logement, reservation, user):
     try:
+        entreprise = Entreprise.objects.first()
+
         # Context for email templates
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
@@ -87,6 +88,7 @@ def send_mail_on_refund(logement, reservation, user):
 
 def send_mail_on_new_transfer(logement, reservation, user_type):
     try:
+        entreprise = Entreprise.objects.first()
         # Context for email templates
         user = logement.admin if user_type == "admin" else logement.owner
         amount = reservation.admin_transferred_amount if user_type == "admin" else reservation.transferred_amount
@@ -132,6 +134,7 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
 
 def send_mail_payment_link(reservation, session):
     try:
+        entreprise = Entreprise.objects.first()
         # Context for email templates
 
         email_context = {
@@ -160,6 +163,7 @@ def send_mail_payment_link(reservation, session):
 
 def send_mail_on_payment_failure(logement, reservation, user):
     try:
+        entreprise = Entreprise.objects.first()
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
         # ===== ADMIN EMAIL =====
