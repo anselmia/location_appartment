@@ -48,10 +48,10 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://bnbazure.fr",
+    "https://www.bnbazure.fr",
 ]
 
-LOG_DIR = "/srv/location/logs"
+LOG_DIR = "/var/log/location_app/"
 
 # Create the log directory if it doesn't exist
 if not os.path.exists(LOG_DIR):
