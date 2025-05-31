@@ -1002,7 +1002,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
         total_revenu = brut_revenue - total_refunds
 
         total_reservations = reservations.count()
-        average_price = brut_revenue / total_reservations
+        average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
 
         # Fill all 12 months, even if 0
         monthly_revenue = [0] * 12

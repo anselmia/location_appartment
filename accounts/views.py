@@ -12,10 +12,9 @@ from .forms import (
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from logement.models import Reservation
 
-from .models import Message, CustomUser, Conversation
+from .models import Message, Conversation
 from django.core.mail import send_mail
 from django.contrib.auth import update_session_auth_hash
 from common.views import is_stripe_admin
@@ -25,6 +24,7 @@ from django_ratelimit.decorators import ratelimit
 from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
 from logement.services.reservation_service import get_user_reservation
 from common.decorators import user_is_reservation_customer
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -256,7 +256,6 @@ def contact_view(request):
         form = ContactForm(request.POST)
 
         if form.is_valid():
-            admin = CustomUser.objects.filter(is_admin=True).first()
             cd = form.cleaned_data
             # Optional: send email
             try:
@@ -264,7 +263,7 @@ def contact_view(request):
                     subject=cd["subject"],
                     message=f"Message de {cd['name']} ({cd['email']}):\n\n{cd['message']}",
                     from_email=cd["email"],
-                    recipient_list=[admin.email],  # define this in settings
+                    recipient_list=[settings.CONTACT_EMAIL],  # define this in settings
                     fail_silently=False,
                 )
                 logger.info(f"Message de contact reçu de {cd['name']} ({cd['email']})")

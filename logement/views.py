@@ -44,7 +44,7 @@ def home(request):
         logements = Logement.objects.prefetch_related("photos").filter(statut="open")
 
         initial_data = {
-            "name": (request.user.get_full_name() if request.user.is_authenticated else ""),
+            "name": (request.user if request.user.is_authenticated else ""),
             "email": request.user.email if request.user.is_authenticated else "",
         }
 
