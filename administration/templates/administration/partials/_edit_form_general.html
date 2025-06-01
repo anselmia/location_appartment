@@ -16,20 +16,11 @@
     </div>
     <div class="form-field">
         <label for="{{ form.admin.id_for_label }}">{{ form.admin.label }}</label>
-        {{ form.owner|add_class:"form-input" }}
+        {{ form.admin|add_class:"form-input" }}
     </div>
 {% else %}
-    <div class="form-field">
-        <label for="id_owner_display">{{ form.owner.label }}</label>
-        <input type="text"
-               id="id_owner_display"
-               class="form-control disabled"
-               value="{{ form.instance.owner.get_full_name }} ({{ form.instance.owner.username }})"
-               readonly
-               disabled>
-        {{ form.owner.as_hidden }}
-    </div>
-    {% if form.admin %}
+    {{ form.owner.as_hidden }}
+    {% if form.instance.admin %}
         <div class="form-field">
             <label for="id_admin_display">{{ form.admin.label }}</label>
             <input type="text"

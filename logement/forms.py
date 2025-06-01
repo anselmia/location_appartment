@@ -136,14 +136,12 @@ class LogementForm(forms.ModelForm):
                     required=False,
                     widget=forms.Select(attrs={"class": "form-control"}),
                 )
-                self.fields["admin"].initial = getattr(self.instance, "admin", None)
+                admin_value = getattr(self.instance, "admin", None)
+                self.fields["admin"].initial = admin_value if admin_value else None
         else:
             # Sinon, afficher une version readonly
             if "owner" in self.fields:
-                self.fields["owner"].widget = forms.TextInput(
-                    attrs={"readonly": "readonly", "class": "form-control disabled"}
-                )
-                self.fields["owner"].initial = self._format_user_display(getattr(self.instance, "owner", None))
+                self.owner_field = self.fields.pop("owner")  # Retire du rendu mais garde la logique
 
             if "admin" in self.fields:
                 self.fields["admin"].widget = forms.TextInput(
@@ -156,20 +154,6 @@ class LogementForm(forms.ModelForm):
 
         if "ville" in self.fields:
             self.fields["ville"].queryset = City.objects.all().order_by("code_postal", "name")
-
-        if "owner" in self.fields:
-            if self.instance.pk is None and not self.initial.get("owner") and user:
-                self.fields["owner"].initial = user
-
-        if "owner" in self.fields and isinstance(self.fields["owner"].widget, forms.TextInput):
-            owner = self.initial.get("owner") or getattr(self.instance, "owner", None)
-            if owner:
-                self.fields["owner"].initial = self._format_user_display(owner)
-
-        if "admin" in self.fields and isinstance(self.fields["admin"].widget, forms.TextInput):
-            admin = self.initial.get("admin") or getattr(self.instance, "admin", None)
-            if admin:
-                self.fields["admin"].initial = self._format_user_display(admin)
 
         # Fields that should have numeric step=1
         step_1_fields = [
@@ -218,15 +202,15 @@ class LogementForm(forms.ModelForm):
             self.add_error("caution", "Le montant de la caution ne peut pas être négatif.")
 
         statut = cleaned_data.get("statut")
-        owner = cleaned_data.get("owner")
+        owner = self.cleaned_data.get("owner") or getattr(self.instance, "owner", None)
         admin = cleaned_data.get("admin")
 
         if statut == "open":
             if not owner:
-                self.add_error("owner", "Le logement ne peut pas être ouvert sans propriétaire.")
+                self.add_error(None, "Le logement ne peut pas être ouvert sans propriétaire.")
             else:
                 if not getattr(owner, "stripe_account_id", None):
-                    self.add_error("owner", "Le propriétaire doit avoir un compte Stripe connecté.")
+                    self.add_error(None, "Le propriétaire doit avoir un compte Stripe connecté.")
 
             if admin:
                 if not getattr(admin, "stripe_account_id", None):
@@ -238,19 +222,8 @@ class LogementForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        # Si on modifie un logement existant, restaurer les champs désactivés
-        if self.instance.pk:
-            if "owner" in self.fields:
-                instance.owner = self.instance.owner
-            if "admin" in self.fields:
-                instance.admin = self.instance.admin
-
-        # Si c'est une création, on doit avoir un utilisateur (self.user)
-        else:
-            if hasattr(self, "user") and self.user:
-                instance.owner = self.user
-            else:
-                raise ValueError("Impossible de créer un logement sans owner")
+        if not instance.pk and not getattr(instance, "owner", None):
+            instance.owner = self.user
 
         if commit:
             instance.save()
