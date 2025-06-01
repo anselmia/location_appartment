@@ -205,11 +205,18 @@ section a:hover {
   transform: translateY(-4px);
 }
 
-.service-img {
-  background-size: cover;
-  background-position: center;
-  height: 180px;
-  width: 100%;
+.img-wrapper {
+    height: 180px;
+    overflow: hidden;
+    border-radius: 12px; /* optionnel */
+}
+
+.img-fit {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 .card-body {

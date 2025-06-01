@@ -182,8 +182,9 @@
                     {% for service in config.services.all %}
                         <div class="service-card fade-in-up">
                             {% if service.background_image %}
-                                <div class="service-img"
-                                     style="background-image: url('{{ service.background_image.url }}')"></div>
+                                <div class="img-wrapper">
+                                    <img src="{{ service.background_image.url }}" alt="{{ service.title }}" class="img-fit" />
+                                </div>
                             {% else %}
                                 <div class="service-img" style="background-color: #f3f4f6;"></div>
                             {% endif %}
