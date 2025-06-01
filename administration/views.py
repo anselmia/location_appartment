@@ -192,16 +192,24 @@ def delete_room(request, room_id):
         logger.exception(f"Error deleting room {room_id}: {e}")
 
 
+MAX_UPLOAD_SIZE = 2 * 1024 * 1024  # 2MB
+
+
 @login_required
 @user_is_logement_admin
 @require_POST
 def upload_photos(request, logement_id):
     try:
+        files = request.FILES.getlist("photo")
+        for f in files:
+            if f.size > MAX_UPLOAD_SIZE:
+                messages.error(request, f"Le fichier '{f.name}' dépasse la taille maximale de 2 Mo.")
+                return redirect("administration:edit_logement", logement_id=logement_id)
         logement = get_object_or_404(Logement, id=logement_id)
         room_id = request.POST.get("room_id")
         room = get_object_or_404(Room, id=room_id, logement=logement)
 
-        for uploaded_file in request.FILES.getlist("photo"):
+        for uploaded_file in files:
             Photo.objects.create(logement=logement, room=room, image=uploaded_file)
 
         logger.info(f"Photos uploaded for logement {logement_id} in room {room_id}")
@@ -772,6 +780,7 @@ def homepage_admin_view(request):
     except Exception as e:
         logger.exception(f"Erreur dans homepage_admin_view: {e}")
         raise
+
 
 @login_required
 @user_passes_test(is_admin)

@@ -208,3 +208,15 @@ document.getElementById("delete-all-photos").addEventListener("click", function 
             console.error("Erreur lors de la suppression de toutes les photos :", err);
         });
 });
+
+document.getElementById("photos").addEventListener("change", function (event) {
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const files = event.target.files;
+    for (let file of files) {
+        if (file.size > maxSize) {
+            alert(`Le fichier "${file.name}" dépasse 2 Mo.`);
+            event.target.value = "";  // Clear input
+            break;
+        }
+    }
+});
