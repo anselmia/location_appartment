@@ -183,7 +183,9 @@
                         <div class="service-card fade-in-up">
                             {% if service.background_image %}
                                 <div class="img-wrapper">
-                                    <img src="{{ service.background_image.url }}" alt="{{ service.title }}" class="img-fit" />
+                                    <img src="{{ service.background_image.url }}"
+                                         alt="{{ service.title }}"
+                                         class="img-fit" />
                                 </div>
                             {% else %}
                                 <div class="service-img" style="background-color: #f3f4f6;"></div>
