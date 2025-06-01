@@ -5,9 +5,7 @@ body {
   color: var(--secondary-color);
 }
 
-h1, h2, h3, h5, .section-title { font-family: var(--font-title); }
-p, dd,dt, li, .feature-item { font-family: var(--font-body); }
-button, input, .btn { font-family: var(--font-sans); }
+
 
 .container {
   background-color: #ffffff;

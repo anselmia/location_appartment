@@ -73,6 +73,26 @@ body {
   letter-spacing: 0.2px;
 }
 
+h1,
+h2,
+h3,
+h5,
+.section-title {
+  font-family: var(--font-title);
+}
+p,
+dd,
+dt,
+li,
+.feature-item {
+  font-family: var(--font-body);
+}
+button,
+input,
+.btn {
+  font-family: var(--font-sans);
+}
+
 .page-wrapper {
   display: flex;
   flex-direction: column;
@@ -457,7 +477,6 @@ ul.list-unstyled li .ml-3 {
   justify-content: space-between;
   align-items: center;
   height: 13%;
-
 }
 
 #chat-log {
