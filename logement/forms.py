@@ -237,11 +237,20 @@ class LogementForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # Restaurer owner si le champ est désactivé et donc non soumis
-        if "owner" in self.fields:
-            instance.owner = self.instance.owner
-        if "admin" in self.fields:
-            instance.admin = self.instance.admin
+
+        # Si on modifie un logement existant, restaurer les champs désactivés
+        if self.instance.pk:
+            if "owner" in self.fields:
+                instance.owner = self.instance.owner
+            if "admin" in self.fields:
+                instance.admin = self.instance.admin
+
+        # Si c'est une création, on doit avoir un utilisateur (self.user)
+        else:
+            if hasattr(self, "user") and self.user:
+                instance.owner = self.user
+            else:
+                raise ValueError("Impossible de créer un logement sans owner")
 
         if commit:
             instance.save()
