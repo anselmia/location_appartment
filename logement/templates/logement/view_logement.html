@@ -202,7 +202,10 @@
         <div id="imageModal" class="image-modal">
             <span id="closeModal" class="close-btn">&times;</span>
             <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
-            <img id="modalImage" class="modal-content" src="">
+            <div class="modal-image-wrapper">
+                <img id="modalImage" class="modal-content" src="">
+                <span id="modalRoomLabel" class="room-label"></span>
+            </div>
             <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
         </div>
         <div class="booking-toggle toggleText" id="bookingToggle">Réserver</div>
@@ -240,6 +243,7 @@
     const logementId = {{ logement.id }};
     const periodLimit = {{ logement.availablity_period }};      
     const allPhotoUrls = {{ photo_urls|safe }};
+    const allRoomLabels  = {{ rooms_labels|safe }};
     </script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>

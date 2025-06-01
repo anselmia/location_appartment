@@ -25,10 +25,7 @@ from logement.services.reservation_service import (
 from logement.services.logement import filter_logements
 
 from logement.services.calendar_service import generate_ical
-from logement.services.email_service import send_mail_contact
 from logement.services.payment_service import create_stripe_checkout_session_with_deposit, PAYMENT_FEE_VARIABLE
-from administration.models import HomePageConfig
-from accounts.forms import ContactForm
 from collections import defaultdict
 from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
 from common.decorators import user_has_reservation
@@ -71,6 +68,7 @@ def view_logement(request, logement_id):
                 "reserved_dates_start_json": json.dumps(sorted(reserved_dates_start)),
                 "reserved_dates_end_json": json.dumps(sorted(reserved_dates_end)),
                 "photo_urls": [photo.image.url for photo in logement.photos.all()],
+                "rooms_labels": [photo.room.name for photo in logement.photos.all()],
                 "grouped_equipment": grouped_equipment,
                 "EquipmentType": EquipmentType,
                 "payment_fee": PAYMENT_FEE_VARIABLE * 100,

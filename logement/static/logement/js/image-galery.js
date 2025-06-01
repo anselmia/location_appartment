@@ -6,6 +6,7 @@ const closeModal = document.getElementById('closeModal');
 
 // Gather all images into an array
 let currentIndex = 0;
+const modalRoomLabel = document.getElementById('modalRoomLabel');
 
 function showModal(index) {
     currentIndex = index;
@@ -15,6 +16,7 @@ function showModal(index) {
     modalImage.style.opacity = 0;
     setTimeout(() => {
         modalImage.src = allPhotoUrls[currentIndex];
+        modalRoomLabel.textContent = allRoomLabels[currentIndex] || 'Général';
         modalImage.style.opacity = 1;
     }, 100);
 }

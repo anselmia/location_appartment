@@ -1,176 +1,200 @@
 /* Modal */
 
 .image-modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    padding-top: 60px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    display: none;
-    overflow: auto;
-    justify-content: center;
-    align-items: center;
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  padding-top: 60px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: none;
+  overflow: auto;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-    max-width: 90%; /* Adjust width to be responsive */
-    max-height: 80%; /* Adjust height to maintain proportion */
-    margin: auto;
-    display: block;
-    width: auto;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 0 20px #000;
-    object-fit: contain; /* Ensures the image maintains its aspect ratio */
-    transition: opacity 0.2s ease;
+  max-width: 90%; /* Adjust width to be responsive */
+  max-height: 80%; /* Adjust height to maintain proportion */
+  margin: auto;
+  display: block;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #000;
+  object-fit: contain; /* Ensures the image maintains its aspect ratio */
+  transition: opacity 0.2s ease;
 }
 
 .modal-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 3rem;
-    color: white;
-    cursor: pointer;
-    padding: 10px;
-    background-color: rgba(0,0,0,0.4);
-    border-radius: 50%;
-    user-select: none;
-    z-index: 10000;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  user-select: none;
+  z-index: 10000;
+}
+
+.modal-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#modalImage {
+  display: block;
+  max-height: 90vh;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.room-label {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  z-index: 2;
 }
 
 .modal-arrow-left {
-    left: 30px;
+  left: 30px;
 }
 
 .modal-arrow-right {
-    right: 30px;
+  right: 30px;
 }
 
 .image-gallery {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 8px;
-    border-radius: 16px;
-    overflow: hidden;
-    padding: 8px;
-    max-height: 50vh;
-    height: 100%;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 8px;
+  max-height: 50vh;
+  height: 100%;
 }
 
 .gallery-left,
 .gallery-right,
 .gallery-left img,
 .small-photo img {
-    height: 100%;
-    max-height: 50vh;
-    object-fit: cover;
+  height: 100%;
+  max-height: 50vh;
+  object-fit: cover;
 }
 
 .enhanced-gallery {
-    position: relative;
+  position: relative;
 }
 
 /* Image Galery */
 .gallery-left img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    aspect-ratio: 4 / 3;
-    border-radius: 12px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
 }
 
 .gallery-right {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .small-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    aspect-ratio: 1 / 1;
-    border-radius: 12px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
 }
 
 .gallery-top-right-details {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 0.85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    text-align: right;
-    opacity: 0.5;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  text-align: right;
+  opacity: 0.5;
 }
 
 .gallery-top-right-details i {
-    color: #333;
-    margin-right: 6px;
+  color: #333;
+  margin-right: 6px;
 }
 
 .gallery-badge-top {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 0.85rem;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    opacity: 0.5;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  opacity: 0.5;
 }
 
 .gallery-badge-top i {
-    margin-right: 4px;
-    color: #555;
+  margin-right: 4px;
+  color: #555;
 }
 
 .gallery-icons-overlay {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    z-index: 2;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 6px 10px;
-    border-radius: 8px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .gallery-icons-overlay i {
-    color: white;
-    font-size: 1.1rem;
-    transition: transform 0.2s;
+  color: white;
+  font-size: 1.1rem;
+  transition: transform 0.2s;
 }
 
 .gallery-icons-overlay i:hover {
-    transform: scale(1.2);
+  transform: scale(1.2);
 }
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
-    .image-gallery {
-        grid-template-columns: 1fr;
-    }
+  .image-gallery {
+    grid-template-columns: 1fr;
+  }
 
-    .gallery-right {
-        grid-template-columns: 1fr 1fr;
-    }
+  .gallery-right {
+    grid-template-columns: 1fr 1fr;
+  }
 }
