@@ -5,7 +5,7 @@
 <html lang="{{ LANGUAGE_CODE }}" ontouchstart>
     <head>
         <meta charset="UTF-8">
-        <title>Location {entreprise.name} – Appartement à louer à Nice</title>
+        <title>Location {{ entreprise.name }} – Appartement à louer</title>
         <link rel="shortcut icon" href="{% static 'logement/img/favicon.ico' %}">
         <meta name="description"
               content="Logement à louer à Nice Centre. Chambres confortables, cuisine, salle de bain, wifi. Idéal étudiants, touristes et familles. Réservation simple et rapide.">
@@ -49,31 +49,22 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@type": "LodgingBusiness",
-          "name": "{entreprise.name}",
-          "description": "location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice, Conciergerie",
-          "url": "{site_address}",
-          "priceRange": "€€",
-          "address": {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        "name": "BnB Azure",
+        "description": "location Nice, location vacances Nice, chambre à louer Nice, location courte durée Nice, appartement meublé Nice, hébergement Nice université, Airbnb Nice, Conciergerie",
+        "url": "www.bnbazure.fr",
+        "priceRange": "€€",
+        "address": {
             "@type": "PostalAddress",
             "addressLocality": "Nice",
             "addressCountry": "FR"
-          },
-          "geo": {
+        },
+        "geo": {
             "@type": "GeoCoordinates",
             "latitude": 43.7000,
             "longitude": 7.2700
-          },
-          "amenityFeature": [
-            { "@type": "LocationFeatureSpecification", "name": "Wifi", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Cuisine équipée", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Salle de bain privée", "value": true }
-          ],
-          "sameAs": [
-            "https://www.airbnb.fr/rooms/48121442?guests=1&adults=1&s=67&unique_share_id=9aed57ba-2770-43e8-9412-4945aef18a18",
-            "https://www.booking.com/Share-vmmyTIy"
-          ]
+        },
         }
         </script>
         {% block extrahead %}{% endblock %}
