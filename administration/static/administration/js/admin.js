@@ -209,7 +209,7 @@ document.getElementById("delete-all-photos").addEventListener("click", function 
         });
 });
 
-document.getElementById("photos").addEventListener("change", function (event) {
+document.getElementById("photo").addEventListener("change", function (event) {
     const maxSize = 2 * 1024 * 1024; // 2MB
     const files = event.target.files;
     for (let file of files) {
