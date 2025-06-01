@@ -15,12 +15,8 @@ def process_calendar(url, source):
     try:
         response = requests.get(url)
         if response.status_code != 200:
-            logger.error(
-                f"Failed to fetch calendar from {source}. Status code: {response.status_code}"
-            )
-            raise ValueError(
-                f"Failed to fetch calendar. Status code: {response.status_code}"
-            )
+            logger.error(f"Failed to fetch calendar from {source}. Status code: {response.status_code}")
+            raise ValueError(f"Failed to fetch calendar. Status code: {response.status_code}")
 
         # Check for valid iCal content
         if response.headers.get("Content-Type", "").startswith("text/calendar"):
@@ -63,22 +59,16 @@ def process_calendar(url, source):
 
                         # Create or update the reservation for Airbnb or Booking
                         if source == "airbnb":
-                            reservation, created = (
-                                airbnb_booking.objects.update_or_create(
-                                    logement=logement,
-                                    start=start,
-                                    end=end,
-                                )
+                            reservation, created = airbnb_booking.objects.update_or_create(
+                                logement=logement,
+                                start=start,
+                                end=end,
                             )
                             if created:
-                                logger.info(
-                                    f"Airbnb reservation created: {reservation}"
-                                )
+                                logger.info(f"Airbnb reservation created: {reservation}")
                                 added += 1
                             else:
-                                logger.info(
-                                    f"Airbnb reservation updated: {reservation}"
-                                )
+                                logger.info(f"Airbnb reservation updated: {reservation}")
                                 updated += 1
 
                     elif source == "booking":
@@ -126,10 +116,7 @@ def delete_old_reservations(event_dates, source):
         for reservation in reservations:
             is_found = False
             for event_start, event_end in event_dates:
-                if (
-                    reservation.start == event_start.date()
-                    and reservation.end == event_end.date()
-                ):
+                if reservation.start == event_start.date() and reservation.end == event_end.date():
                     is_found = True
                     break
 
@@ -172,9 +159,7 @@ def sync_calendar():
         if booking_url:
             try:
                 logger.info(f"Syncing Booking calendar for logement {logement.id}...")
-                added, updated, deleted = process_calendar(
-                    booking_url, source="booking"
-                )
+                added, updated, deleted = process_calendar(booking_url, source="booking")
                 logement_results["booking"] = {
                     "added": added,
                     "updated": updated,
@@ -193,14 +178,10 @@ def sync_calendar():
 def delete_expired_pending_reservations():
     try:
         expiry_time = timezone.now() - timedelta(minutes=30)
-        count, _ = Reservation.objects.filter(
-            statut="en_attente", date_reservation__lt=expiry_time
-        ).delete()
+        count, _ = Reservation.objects.filter(statut="en_attente", date_reservation__lt=expiry_time).delete()
 
         expiry_time = timezone.now() - timedelta(weeks=1)
-        count2, _ = Reservation.objects.filter(
-            statut="echec_paiement", date_reservation__lt=expiry_time
-        ).delete()
+        count2, _ = Reservation.objects.filter(statut="echec_paiement", date_reservation__lt=expiry_time).delete()
 
         logger.info(f"Deleted {count} expired pending reservations")
         logger.info(f"Deleted {count2} expired reservations in failed payment")

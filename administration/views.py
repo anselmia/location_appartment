@@ -40,6 +40,7 @@ from common.decorators import (
 )
 from common.mixins import AdminRequiredMixin, UserHasLogementMixin
 from common.views import is_admin, is_stripe_admin
+from common.models import PaymentTask
 
 from logement.forms import DiscountForm, LogementForm
 from logement.models import (
@@ -1256,3 +1257,25 @@ def user_delete_view(request, user_id):
         messages.success(request, "Utilisateur supprimé avec succès.")
         return redirect("administration:user_update_view")
     return redirect("administration:user_update_view_with_id", user_id=user_id)
+
+
+def payment_task_list(request):
+    tasks = PaymentTask.objects.select_related("reservation", "reservation__logement")
+
+    # Filter logic
+    task_type = request.GET.get("type")
+    status = request.GET.get("status")
+    code = request.GET.get("code")
+
+    if task_type:
+        tasks = tasks.filter(type=task_type)
+    if status:
+        tasks = tasks.filter(status=status)
+    if code:
+        tasks = tasks.filter(reservation__code__icontains=code)
+
+    context = {
+        "tasks": tasks.order_by("-updated_at"),
+        "types": PaymentTask.TASK_TYPES,
+    }
+    return render(request, "administration/payment_tasks.html", context)
