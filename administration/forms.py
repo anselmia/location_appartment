@@ -1,5 +1,5 @@
 from django import forms
-from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise
+from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise, SiteConfig
 from django import forms
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
@@ -17,6 +17,14 @@ class HomePageConfigForm(forms.ModelForm):
             "primary_color",
             "font_family",
             "contact_title",
+        ]
+
+
+class SiteConfigForm(forms.ModelForm):
+    class Meta:
+        model = SiteConfig
+        fields = [
+            "sms",
         ]
 
 

@@ -1,130 +1,151 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %}
-
+{% load widget_tweaks %}
 {% block extrahead %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'administration/css/base_site.css' %}">
+  <link rel="stylesheet"
+        href="{% static 'administration/css/base_site.css' %}">
 {% endblock %}
-
-{% block title %}Configuration de la page d'accueil{% endblock %}
-
 {% block content %}
-<div class="custom-admin-container">
-  <h1 class="admin-title">Gestion de la page d'accueil</h1>
-
-  <form method="post" enctype="multipart/form-data" class="custom-admin-form">
-    {% csrf_token %}
-    <fieldset class="section-block">
-      <legend>Identité du site</legend>
-      {{ form.devise.label_tag }} {{ form.devise }}
-      {{ form.cta_text.label_tag }} {{ form.cta_text }}
-      {{ form.banner_image.label_tag }} {{ form.banner_image }}
-    </fieldset>
-
-    <fieldset class="section-block">
-      <legend>Description de l'entreprise</legend>
-      {{ form.description.label_tag }} {{ form.description }}
-    </fieldset>
-
-    <fieldset class="section-block">
-      <legend>Style Visuel</legend>
-      {{ form.primary_color.label_tag }} {{ form.primary_color }}
-      {{ form.font_family.label_tag }} {{ form.font_family }}
-      {{ form.contact_title.label_tag }} {{ form.contact_title }}
-    </fieldset>
-
-    <button type="submit" class="default">💾 Enregistrer la configuration</button>
-  </form>
-
-  <div class="inline-section">
-    <h2>Services</h2>
-    {% for service in services %}
-      <div class="inline-item">
-        <div class="inline-header">
-          <div>
-            <strong>{{ service.title }}</strong> <br>
-            {% if service.background_image %}
-              <div style="margin: 0.5rem 0;">
-                <img src="{{ service.background_image.url }}" alt="BG" style="max-width: 150px; border-radius: 6px;">
-              </div>
-            {% endif %}
-            <small>{{ service.icon_class }}</small>
+  <div class="container my-4">
+    <h1 class="mb-4 text-center">🎛️ Gestion de la page d'accueil</h1>
+    <div class="card mb-5 shadow-sm">
+      <div class="card-header bg-primary text-white">🖼 Identité du site</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.devise.label_tag }} {{ form.devise|add_class:"form-control" }}</div>
+            <div class="col-md-6">{{ form.cta_text.label_tag }} {{ form.cta_text|add_class:"form-control" }}</div>
+            <div class="col-12">{{ form.banner_image.label_tag }} {{ form.banner_image|add_class:"form-control" }}</div>
           </div>
-          <form method="post" class="inline-delete-form">
-            {% csrf_token %}
-            <input type="hidden" name="delete_service_id" value="{{ service.id }}">
-            <button type="submit" class="danger-button">🗑 Supprimer</button>
-          </form>
-        </div>
+          <div class="mt-4">{{ form.description.label_tag }} {{ form.description|add_class:"form-control" }}</div>
+          <div class="row g-3 mt-4">
+            <div class="col-md-4">{{ form.primary_color.label_tag }} {{ form.primary_color|add_class:"form-control" }}</div>
+            <div class="col-md-4">{{ form.font_family.label_tag }} {{ form.font_family|add_class:"form-control" }}</div>
+            <div class="col-md-4">{{ form.contact_title.label_tag }} {{ form.contact_title|add_class:"form-control" }}</div>
+          </div>
+          <div class="mt-4 text-end">
+            <button type="submit" class="btn btn-success">💾 Enregistrer la configuration</button>
+          </div>
+        </form>
       </div>
-    {% empty %}
-      <p>Aucun service défini.</p>
-    {% endfor %}
-  
-    <form method="post" class="inline-form" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ service_form.as_p }}
-      <button type="submit" name="add_service" class="default">+ Ajouter</button>
-    </form>    
-  </div>
-
-  <div class="inline-section">
-    <h2>Témoignages</h2>
-    {% for t in testimonials %}
-        <div class="inline-item">
-          <div class="inline-header">
-            <div>
-              <blockquote>{{ t.content }}</blockquote> <br>
+    </div>
+    <div class="card mb-5 shadow-sm">
+      <div class="card-header bg-secondary text-white">🔧 Configuration du site</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3">
+            {% for field in site_config_form %}
+              <div class="col-md-6">{{ field.label_tag }} {{ field|add_class:"form-control" }}</div>
+            {% endfor %}
+          </div>
+          <div class="mt-4 text-end">
+            <button type="submit" name="update_site_config" class="btn btn-primary">💾 Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- === Services Section === -->
+    <div class="mb-5">
+      <h2 class="h4 mb-3">🛎️ Services</h2>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for service in services %}
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body d-flex justify-content-between align-items-start">
+                <div>
+                  <h5 class="card-title">{{ service.title }}</h5>
+                  <p class="card-text">
+                    <small class="text-muted">{{ service.icon_class }}</small>
+                  </p>
+                  {% if service.background_image %}
+                    <img src="{{ service.background_image.url }}"
+                         class="img-fluid rounded mt-2"
+                         style="max-width: 150px">
+                  {% endif %}
+                </div>
+                <form method="post" class="ms-3">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_service_id" value="{{ service.id }}">
+                  <button class="btn btn-outline-danger btn-sm">🗑</button>
+                </form>
+              </div>
             </div>
-            <form method="post" class="inline-delete-form">
+          </div>
+        {% empty %}
+          <p class="text-muted">Aucun service défini.</p>
+        {% endfor %}
+      </div>
+      <form method="post" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        {{ service_form.as_p }}
+        <button type="submit" name="add_service" class="btn btn-outline-primary">+ Ajouter un service</button>
+      </form>
+    </div>
+    <!-- === Testimonials Section === -->
+    <div class="mb-5">
+      <h2 class="h4 mb-3">💬 Témoignages</h2>
+      {% for t in testimonials %}
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body d-flex justify-content-between">
+            <blockquote class="mb-0">
+              {{ t.content }}
+            </blockquote>
+            <form method="post">
               {% csrf_token %}
               <input type="hidden" name="delete_testimonial_id" value="{{ t.id }}">
-              <button type="submit" class="danger-button">🗑 Supprimer</button>
+              <button class="btn btn-outline-danger btn-sm">🗑</button>
             </form>
           </div>
         </div>
-    {% empty %}
-      <p>Aucun témoignage pour le moment.</p>
-    {% endfor %}
-
-    <form method="post" class="inline-form">
-      {% csrf_token %}
-      {{ testimonial_form.as_p }}
-      <button type="submit" name="add_testimonial">+ Ajouter</button>
-    </form>
-  </div>
-
-  <div class="inline-section">
-    <h2>Engagements</h2>
-    {% for c in commitments %}
-      <div class="inline-item">
-        <div class="inline-header">
-          <div>
-            <strong>{{ c.title }}</strong> <br>
-            {% if c.background_image %}
-              <div style="margin: 0.5rem 0;">
-                <img src="{{ c.background_image.url }}" alt="BG" style="max-width: 150px; border-radius: 6px;">
+      {% empty %}
+        <p class="text-muted">Aucun témoignage.</p>
+      {% endfor %}
+      <form method="post" class="mt-3">
+        {% csrf_token %}
+        {{ testimonial_form.as_p }}
+        <button type="submit" name="add_testimonial" class="btn btn-outline-primary">+ Ajouter un témoignage</button>
+      </form>
+    </div>
+    <!-- === Commitments Section === -->
+    <div>
+      <h2 class="h4 mb-3">🤝 Engagements</h2>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for c in commitments %}
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body d-flex justify-content-between">
+                <div>
+                  <h5>{{ c.title }}</h5>
+                  <p>
+                    <i class="fas fa-check-circle text-success"></i> {{ c.text }}
+                  </p>
+                  {% if c.background_image %}
+                    <img src="{{ c.background_image.url }}"
+                         class="img-fluid rounded"
+                         style="max-width: 150px">
+                  {% endif %}
+                </div>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_commitment_id" value="{{ c.id }}">
+                  <button class="btn btn-outline-danger btn-sm">🗑</button>
+                </form>
               </div>
-            {% endif %}
-            <p><i class="fas fa-check-circle"></i> {{ c.text }}</p>
+            </div>
           </div>
-          <form method="post" class="inline-delete-form">
-            {% csrf_token %}
-            <input type="hidden" name="delete_commitment_id" value="{{ c.id }}">
-            <button type="submit" class="danger-button">🗑 Supprimer</button>
-          </form>
-        </div>
+        {% empty %}
+          <p class="text-muted">Aucun engagement défini.</p>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p>Aucun engagement défini.</p>
-    {% endfor %}
-
-    <form method="post" class="inline-form" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ commitment_form.as_p }}
-      <button type="submit" name="add_commitment" class="default">+ Ajouter</button>
-    </form>
+      <form method="post" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        {{ commitment_form.as_p }}
+        <button type="submit" name="add_commitment" class="btn btn-outline-primary">+ Ajouter un engagement</button>
+      </form>
+    </div>
   </div>
-</div>
 {% endblock %}

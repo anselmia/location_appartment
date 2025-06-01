@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise
+from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise, SiteConfig
 
 
 class ServiceInline(admin.TabularInline):
@@ -18,6 +18,8 @@ class CommitmentInline(admin.TabularInline):
 
 
 admin.site.register(Entreprise)
+
+admin.site.register(SiteConfig)
 
 
 @admin.register(HomePageConfig)

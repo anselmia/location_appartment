@@ -75,14 +75,8 @@ from administration.services.logs import parse_log_file
 from administration.services.revenu import get_economie_stats
 from administration.services.traffic import get_traffic_dashboard_data
 
-from .forms import (
-    CommitmentForm,
-    EntrepriseForm,
-    HomePageConfigForm,
-    ServiceForm,
-    TestimonialForm,
-)
-from .models import Entreprise, HomePageConfig
+from .forms import CommitmentForm, EntrepriseForm, HomePageConfigForm, ServiceForm, TestimonialForm, SiteConfigForm
+from .models import Entreprise, HomePageConfig, SiteConfig
 from .serializers import DailyPriceSerializer
 
 
@@ -737,6 +731,9 @@ def homepage_admin_view(request):
         commitment_form = CommitmentForm()
         main_form = HomePageConfigForm(instance=config)
 
+        site_config = SiteConfig.objects.first() or SiteConfig.objects.create()
+        site_config_form = SiteConfigForm(instance=site_config)
+
         if request.method == "POST":
             if "delete_service_id" in request.POST:
                 config.services.filter(id=request.POST["delete_service_id"]).delete()
@@ -762,6 +759,11 @@ def homepage_admin_view(request):
                     instance = commitment_form.save(commit=False)
                     instance.config = config
                     instance.save()
+            elif "update_site_config" in request.POST:
+                site_config_form = SiteConfigForm(request.POST, instance=site_config)
+                if site_config_form.is_valid():
+                    site_config_form.save()
+                    messages.success(request, "La configuration du site a bien été mise à jour.")
             else:
                 main_form = HomePageConfigForm(request.POST, request.FILES, instance=config)
                 if main_form.is_valid():
@@ -776,6 +778,7 @@ def homepage_admin_view(request):
             "service_form": service_form,
             "testimonial_form": testimonial_form,
             "commitment_form": commitment_form,
+            "site_config_form": site_config_form,
         }
         return render(request, "administration/base_site.html", context)
     except Exception as e:
