@@ -38,8 +38,6 @@ logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 
-
-
 def autocomplete_cities(request):
     q = request.GET.get("q", "")
     try:

@@ -238,11 +238,10 @@ class LogementForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         # Restaurer owner si le champ est désactivé et donc non soumis
-        if not (self.user.is_admin or self.user.is_superuser):
-            if "owner" in self.fields:
-                instance.owner = self.instance.owner
-            if "admin" in self.fields:
-                instance.admin = self.instance.admin
+        if "owner" in self.fields:
+            instance.owner = self.instance.owner
+        if "admin" in self.fields:
+            instance.admin = self.instance.admin
 
         if commit:
             instance.save()
