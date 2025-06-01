@@ -134,6 +134,13 @@
                 </li>
             </ul>
         </section>
+        <section class="section-block logement-description-block">
+            <h2 class="section-title">Règles du logement</h2>
+            <div class="logement-description-wrapper">
+                <div class="logement-description collapsed" id="logementRules">{{ logement.rules|safe }}</div>
+                <button class="toggle-rules-btn" id="toggleRules">Voir plus</button>
+            </div>
+        </section>
         <section class="section-block caution-section">
             <h2 class="section-title">Caution (remboursable)</h2>
             <ul class="logement-list">

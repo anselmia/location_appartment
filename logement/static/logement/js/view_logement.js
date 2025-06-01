@@ -15,4 +15,15 @@ document.addEventListener("DOMContentLoaded", function () {
         desc.classList.toggle("collapsed", !isExpanded);
         toggleBtn.textContent = isExpanded ? "Voir moins" : "Voir plus";
     });
+
+    const rules = document.getElementById("logementRules");
+    const toggleRules = document.getElementById("toggleDescription");
+
+    let isRulesExpanded = false;
+
+    toggleRules.addEventListener("click", function () {
+        isRulesExpanded = !isRulesExpanded;
+        rules.classList.toggle("collapsed", !isRulesExpanded);
+        toggleRules.textContent = isRulesExpanded ? "Voir moins" : "Voir plus";
+    });
 });

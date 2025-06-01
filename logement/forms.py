@@ -10,6 +10,7 @@ class LogementForm(forms.ModelForm):
         fields = [
             "name",
             "description",
+            "rules",
             "adresse",
             "ville",
             "price",
@@ -47,6 +48,7 @@ class LogementForm(forms.ModelForm):
         labels = {
             "name": "Nom du logement",
             "description": "Description",
+            "rules": "Règles du logement",
             "adresse": "Adresse",
             "ville": "Ville",
             "statut": "Statut",
@@ -86,6 +88,7 @@ class LogementForm(forms.ModelForm):
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 10}),
+            "rules": forms.Textarea(attrs={"rows": 10}),
             "entrance_hour_min": forms.TimeInput(attrs={"type": "time"}),
             "entrance_hour_max": forms.TimeInput(attrs={"type": "time"}),
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
