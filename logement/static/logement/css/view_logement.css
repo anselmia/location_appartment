@@ -138,6 +138,19 @@ select,
   );
 }
 
+.toggle-description-btn
+.toggle-rules-btn {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 1rem;
+  margin-top: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
 .toggle-description-btn {
   display: inline-block;
   background: none;

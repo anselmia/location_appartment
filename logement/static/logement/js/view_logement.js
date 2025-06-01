@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     const rules = document.getElementById("logementRules");
-    const toggleRules = document.getElementById("toggleDescription");
+    const toggleRules = document.getElementById("toggleRules");
 
     let isRulesExpanded = false;
 
