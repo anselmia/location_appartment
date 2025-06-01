@@ -57,7 +57,7 @@ def user_login(request):
                 login(request, user)
                 logger.info(f"Connexion réussie pour {username}")
                 messages.success(request, f"Bienvenue {username}!")
-                return redirect("logement:home")  # adapt to your homepage view name
+                return redirect("common:home")  # adapt to your homepage view name
             else:
                 logger.warning(f"Échec de connexion pour {username}")
         messages.error(request, "Nom d'utilisateur ou mot de passe invalide.")
@@ -70,7 +70,7 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     messages.info(request, "Vous avez été déconnecté.")
-    return redirect("logement:home")
+    return redirect("common:home")
 
 
 @login_required
@@ -272,7 +272,7 @@ def contact_view(request):
                 logger.error(f"Erreur d'envoi de mail: {e}")
                 messages.error(request, "Erreur lors de l'envoi du message. Réessayez plus tard.")
 
-            return redirect("logement:home")
+            return redirect("common:home")
     else:
         if request.user.is_authenticated:
             form = ContactForm(name=request.user, email=request.user.email)
@@ -300,7 +300,7 @@ def delete_account(request):
     # If allowed, delete user
     user.delete()
     messages.success(request, "✅ Votre compte a été supprimé avec succès.")
-    return redirect("logement:home")
+    return redirect("common:home")
 
 
 @login_required

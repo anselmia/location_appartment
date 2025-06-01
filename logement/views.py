@@ -38,43 +38,6 @@ logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 
-def home(request):
-    logger.info("Rendering homepage")
-    try:
-        config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
-        logements = Logement.objects.prefetch_related("photos").filter(statut="open")
-
-        if request.method == "POST":
-            form = ContactForm(request.POST)
-            if form.is_valid():
-                cd = form.cleaned_data
-                try:
-                    send_mail_contact(cd)
-                    messages.success(request, "✅ Message envoyé avec succès.")
-                    return redirect("logement:home")
-                except Exception as e:
-                    logger.error(f"Erreur d'envoi de mail: {e}")
-                    messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
-        else:
-            initial_data = {
-                "name": (request.user if request.user.is_authenticated else ""),
-                "email": request.user.email if request.user.is_authenticated else "",
-            }
-
-            form = ContactForm(**initial_data)
-
-        return render(
-            request,
-            "logement/home.html",
-            {
-                "logements": logements,
-                "config": config,
-                "contact_form": form,
-            },
-        )
-    except Exception as e:
-        logger.exception(f"Error rendering homepage: {e}")
-        raise
 
 
 def autocomplete_cities(request):
@@ -292,7 +255,7 @@ def payment_cancel(request, code):
     except Exception as e:
         logger.exception(f"Error handling payment cancellation: {e}")
         messages.error(request, "Une erreur est survenue.")
-        return redirect("logement:home")
+        return redirect("common:home")
 
 
 @login_required

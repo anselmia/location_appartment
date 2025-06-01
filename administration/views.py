@@ -355,11 +355,7 @@ def calendar(request):
         )
     except Exception as e:
         logger.error(f"Error occurred in calendar view: {e}", exc_info=True)
-        return render(
-            request,
-            "common/error.html",
-            {"error_message": "Une erreur est survenue en essayant d'accéder au calendrier"},
-        )
+        raise
 
 
 class DailyPriceViewSet(viewsets.ModelViewSet):
@@ -719,11 +715,7 @@ def reservation_dashboard(request, logement_id=None):
 
     except Exception as e:
         logger.error(f"Error in reservation_dashboard: {e}", exc_info=True)
-        return render(
-            request,
-            "common/error.html",
-            {"error_message": "Une erreur est survenue en récupérant les réservations."},
-        )
+        raise
 
 
 @login_required
@@ -779,8 +771,7 @@ def homepage_admin_view(request):
         return render(request, "administration/base_site.html", context)
     except Exception as e:
         logger.exception(f"Erreur dans homepage_admin_view: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
-
+        raise
 
 @login_required
 @user_passes_test(is_admin)
@@ -798,7 +789,7 @@ def edit_entreprise(request):
         return render(request, "administration/edit_entreprise.html", {"form": form})
     except Exception as e:
         logger.exception(f"Erreur dans edit_entreprise: {e}")
-        return render(request, "common/error.html", {"error_message": "Erreur interne serveur"})
+        raise
 
 
 @login_required

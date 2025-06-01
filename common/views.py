@@ -1,6 +1,7 @@
+import stripe
+import json
 import logging
 import json
-import openai
 from openai import OpenAI, RateLimitError
 from datetime import date
 
@@ -9,18 +10,62 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.urls import reverse
+from django.urls import reverse,
+from django. shortcuts import redirect
+from django.contrib import messages
 
+from logement.models import Logement
+from logement.services.email_service import send_mail_contact
+from administration.models import HomePageConfig
+from accounts.forms import ContactForm
+
+
+stripe.api_key = settings.STRIPE_PRIVATE_KEY
 logger = logging.getLogger(__name__)
 client = OpenAI(api_key=settings.OPENAI_KEY)
 
 
-# Set up a logger for the view
-logger = logging.getLogger(__name__)
-
-
 def is_admin(user):
     return user.is_authenticated and (getattr(user, "is_admin", False) or user.is_superuser)
+
+
+def home(request):
+    logger.info("Rendering homepage")
+    try:
+        config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
+        logements = Logement.objects.prefetch_related("photos").filter(statut="open")
+
+        if request.method == "POST":
+            form = ContactForm(request.POST)
+            if form.is_valid():
+                cd = form.cleaned_data
+                try:
+                    send_mail_contact(cd)
+                    messages.success(request, "✅ Message envoyé avec succès.")
+                    return redirect("logement:home")
+                except Exception as e:
+                    logger.error(f"Erreur d'envoi de mail: {e}")
+                    messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
+        else:
+            initial_data = {
+                "name": (request.user if request.user.is_authenticated else ""),
+                "email": request.user.email if request.user.is_authenticated else "",
+            }
+
+            form = ContactForm(**initial_data)
+
+        return render(
+            request,
+            "logement/home.html",
+            {
+                "logements": logements,
+                "config": config,
+                "contact_form": form,
+            },
+        )
+    except Exception as e:
+        logger.exception(f"Error rendering homepage: {e}")
+        raise
 
 
 def is_stripe_admin(user):
@@ -41,18 +86,7 @@ def cgv_view(request):
     return render(request, "common/cgv.html")
 
 
-def error_view(request, error_message="An unexpected error occurred."):
-    """
-    Common error view to handle and display errors to the user.
-    """
-    logger.error(f"Error encountered: {error_message}")  # Log the error
 
-    # Render the error page with the provided error message
-    return render(
-        request,
-        "common/error.html",  # Common error template
-        {"error_message": error_message},
-    )
 
 
 def custom_bad_request(request, exception):
