@@ -56,7 +56,7 @@ def home(request):
 
         return render(
             request,
-            "common/home.html",
+            "home.html",
             {
                 "logements": logements,
                 "config": config,
