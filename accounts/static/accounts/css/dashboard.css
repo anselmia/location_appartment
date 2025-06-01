@@ -6,6 +6,10 @@
   color: var(--text-dark);
 }
 
+h1, h2, h3, h5, .section-title { font-family: var(--font-title); }
+p, li, .feature-item { font-family: var(--font-body); }
+button, input, .btn { font-family: var(--font-sans); }
+
 .client-dashboard h2 {
   color: var(--secondary-color);
   font-family: var(--font-title);
@@ -82,7 +86,7 @@
 .btn {
   border-radius: 999px;
   font-weight: 500;
-  font-family: var(--font-body);
+  font-family: var(--font-family);
   padding: 0.5rem 1.25rem;
   transition: all 0.3s ease;
 }
