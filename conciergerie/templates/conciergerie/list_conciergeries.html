@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'conciergerie/css/conciergerie_list.css' %}">
+{% endblock %}
 {% block content %}
-    <div class="container py-5">
+    <div class="container py-5 conciergerie-list-wrapper">
         <h2 class="mb-4 text-center">📋 Gestion des Conciergeries</h2>
         <!-- Filtres -->
         <form method="get" class="mb-4">
@@ -40,19 +44,24 @@
                 {% for c in conciergeries %}
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm rounded-4 position-relative">
-                            <div class="position-absolute top-0 start-0 p-2">
+                            <!-- Checkbox -->
+                            <div class="position-absolute top-0 start-0 p-2 z-1">
                                 <input type="checkbox"
                                        name="selected_ids"
                                        value="{{ c.id }}"
                                        class="form-check-input">
                             </div>
+                            <!-- Image -->
                             {% if c.logo %}
                                 <img src="{{ c.logo.url }}"
                                      class="card-img-top rounded-top-4"
                                      style="object-fit: cover;
                                             height: 180px">
                             {% endif %}
-                            <div class="card-body">
+                            <!-- Body -->
+                            <div class="card-body position-relative">
+                                <!-- Lien invisible étendu -->
+                                <a href="{% url 'conciergerie:detail' c.id %}" class="stretched-link"></a>
                                 <h5 class="card-title">{{ c.name }}</h5>
                                 <p class="text-muted small mb-1">📍 {{ c.ville.name }} – {{ c.code_postal }}</p>
                                 <p class="mb-1">

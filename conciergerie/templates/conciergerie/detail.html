@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+  <link rel="stylesheet"
+        href="{% static 'conciergerie/css/conciergerie_detail.css' %}">
+{% endblock %}
+{% block content %}
+  <div class="conciergerie-detail-wrapper py-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+      <div class="row g-0">
+        {% if conciergerie.logo %}
+          <div class="col-md-5 d-none d-md-block">
+            <img src="{{ conciergerie.logo.url }}"
+                 alt="{{ conciergerie.name }}"
+                 class="img-fluid h-100 object-fit-cover">
+          </div>
+        {% endif %}
+        <div class="{% if conciergerie.logo %}col-md-7{% else %}col-12{% endif %}">
+          <div class="card-body p-4">
+            <h2 class="card-title mb-2">{{ conciergerie.name }}</h2>
+            {% if conciergerie.description %}<p class="text-muted">{{ conciergerie.description }}</p>{% endif %}
+            <hr>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <h6 class="mb-1">📍 Adresse</h6>
+                <p class="mb-0 small text-muted">
+                  {{ conciergerie.adresse }}
+                  <br>
+                  {{ conciergerie.code_postal }} {{ conciergerie.ville.name }}, {{ conciergerie.pays }}
+                </p>
+              </div>
+              <div class="col-sm-6">
+                <h6 class="mb-1">📞 Contact</h6>
+                <p class="mb-0 small text-muted">
+                  {{ conciergerie.telephone }}
+                  <br>
+                  {{ conciergerie.email }}
+                </p>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <h6 class="mb-1">📄 Informations légales</h6>
+                <p class="mb-0 small text-muted">
+                  {{ conciergerie.forme_juridique|default:"—" }}
+                  <br>
+                  SIRET : {{ conciergerie.siret|default:"—" }}
+                </p>
+              </div>
+              <div class="col-sm-6">
+                <h6 class="mb-1">👤 Représentant</h6>
+                <p class="mb-0 small text-muted">
+                  {{ conciergerie.nom_representant|default:"—" }}
+                  <br>
+                  {{ conciergerie.email_representant|default:"—" }}
+                  <br>
+                  {{ conciergerie.telephone_representant|default:"—" }}
+                </p>
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <span class="text-muted small">📅 Créée le</span>
+                <br>
+                <strong>{{ conciergerie.date_creation|date:"d M Y" }}</strong>
+              </div>
+              <div class="col-md-4">
+                <span class="text-muted small">✅ Validation</span>
+                <br>
+                {% if conciergerie.validated %}
+                  <span class="badge bg-success">Validée</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">En attente</span>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <span class="text-muted small">🔄 Active</span>
+                <br>
+                {% if conciergerie.actif %}
+                  <span class="badge bg-primary">Oui</span>
+                {% else %}
+                  <span class="badge bg-secondary">Non</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{% url 'conciergerie:update_conciergerie' conciergerie.id %}"
+                 class="btn btn-outline-primary">✏️ Modifier</a>
+              <a href="{% url 'conciergerie:list_conciergeries' %}"
+                 class="btn btn-outline-secondary">⬅️ Retour à la liste</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- row -->
+    </div>
+  </div>
+{% endblock %}

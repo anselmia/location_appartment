@@ -20,6 +20,13 @@
         <div class="nav-links" id="navLinks">
             <a href="/">{% trans "Accueil" %}</a>
             <a href="{% url 'logement:logement_search' %}">{% trans "Réserver" %}</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">{% trans "Nous Choisir" %}</a>
+                <div class="dropdown-menu">
+                    <a href="{% url 'common:join_owner' %}">{% trans "Propriétaires/Conciergeries" %}</a>
+                    <a href="{% url 'common:join_user' %}">{% trans "Clients" %}</a>
+                </div>
+            </div>
             {% if user.is_authenticated %}
                 {% if user.is_superuser or user.is_admin or user.is_owner or user.is_owner_admin %}
                     <div class="dropdown">

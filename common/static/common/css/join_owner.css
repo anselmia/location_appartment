@@ -1,0 +1,93 @@
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+}
+
+.hero-section {
+  background: linear-gradient(to right, rgba(34, 34, 34, 0.85), rgba(0, 0, 0, 0.65));
+  color: white;
+  background-blend-mode: darken;
+  position: relative;
+}
+
+.hero-section h1 {
+  font-family: var(--font-title);
+  font-size: 3rem;
+}
+
+.hero-section p.lead {
+  font-size: 1.2rem;
+  color: #f1f1f1;
+}
+
+section {
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+}
+
+h2.section-title,
+h2.display-5 {
+  color: var(--accent-color);
+  font-family: var(--font-title);
+}
+
+h3 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.value-card,
+.shadow-sm.rounded {
+  border: 1px solid var(--light-border);
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.value-card:hover,
+.shadow-sm.rounded:hover {
+  transform: translateY(-4px);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #a68f56;
+  border-color: #a68f56;
+}
+
+.btn-light {
+  background-color: #ffffff;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.btn-light:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-primary {
+  color: var(--accent-color) !important;
+}
+
+.border-top {
+  border-top: 1px solid var(--light-border) !important;
+}
+
+.bg-light {
+  background-color: var(--light-bg) !important;
+}
+
+.bg-white {
+  background-color: var(--bg-white) !important;
+}

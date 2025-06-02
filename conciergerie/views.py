@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Conciergerie
 from .forms import ConciergerieForm
 from logement.models import City
+from .decorators import user_is_owner_admin
+from common.decorators import is_admin
 
 
 @login_required
@@ -24,10 +26,14 @@ def create_conciergerie(request):
     return render(request, "conciergerie/create_conciergerie.html", {"form": form, "is_edit": False})
 
 
+@user_is_owner_admin
 @login_required
-def update_conciergerie(request):
+def update_conciergerie(request, pk=None):
     try:
-        conciergerie = Conciergerie.objects.get(user=request.user)
+        if pk:
+            conciergerie = Conciergerie.objects.get(id=pk)
+        else:
+            conciergerie = Conciergerie.objects.get(user=request.user)
     except Conciergerie.DoesNotExist:
         messages.error(request, "Vous n'avez pas encore de conciergerie à modifier.")
         return redirect("accounts:dashboard")
@@ -37,7 +43,10 @@ def update_conciergerie(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Conciergerie mise à jour avec succès.")
-            return redirect("accounts:dashboard")  # ou un dashboard
+            if request.user.is_admin or request.user.is_superuser:
+                return redirect("conciergerie:list_conciergeries")
+            else:
+                return redirect("accounts:dashboard")  # ou un dashboard
         else:
             messages.error(request, "Merci de corriger les erreurs dans le formulaire.")
     else:
@@ -46,6 +55,7 @@ def update_conciergerie(request):
     return render(request, "conciergerie/create_conciergerie.html", {"form": form, "is_edit": True})
 
 
+@is_admin
 def list_conciergeries(request):
     conciergeries = Conciergerie.objects.all()
     villes = City.objects.all()
@@ -69,6 +79,7 @@ def list_conciergeries(request):
     )
 
 
+@is_admin
 def bulk_action(request):
     if request.method == "POST":
         ids = request.POST.getlist("selected_ids")
@@ -93,3 +104,9 @@ def bulk_action(request):
             messages.error(request, "Action non reconnue.")
 
     return redirect("conciergerie:list_conciergeries")
+
+
+@is_admin
+def conciergerie_detail(request, pk):
+    conciergerie = get_object_or_404(Conciergerie, pk=pk)
+    return render(request, "conciergerie/detail.html", {"conciergerie": conciergerie})

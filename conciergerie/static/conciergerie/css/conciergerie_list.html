@@ -1,0 +1,110 @@
+.conciergerie-list-wrapper {
+  --primary-color: #bfa66b;
+  --secondary-color: #3b2f2f;
+  --accent-color: #2b3d55;
+  --bg-color: #f9f9f9;
+  --text-color: #333;
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --radius: 16px;
+  --transition: 0.3s ease-in-out;
+  --font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+.conciergerie-list-wrapper {
+  background-color: var(--bg-color);
+  font-family: var(--font-family);
+}
+
+.conciergerie-list-wrapper .card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  transition: box-shadow var(--transition), transform var(--transition);
+  background-color: #fff;
+}
+
+.conciergerie-list-wrapper .card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+
+.conciergerie-list-wrapper .card-img-top {
+  height: 180px;
+  object-fit: cover;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+
+.conciergerie-list-wrapper .card-body {
+  padding: 1.25rem;
+}
+
+.conciergerie-list-wrapper .card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: 0.5rem;
+}
+
+.conciergerie-list-wrapper .badge {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+}
+
+.conciergerie-list-wrapper .form-check-input {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.conciergerie-list-wrapper form .btn {
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.conciergerie-list-wrapper .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.conciergerie-list-wrapper .btn-success:hover {
+  background-color: #157347;
+}
+
+.conciergerie-list-wrapper .btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.conciergerie-list-wrapper .btn-danger:hover {
+  background-color: #bb2d3b;
+}
+
+.conciergerie-list-wrapper .form-label {
+  font-weight: 500;
+}
+
+.conciergerie-list-wrapper select.form-select,
+.conciergerie-list-wrapper input.form-check-input {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.conciergerie-list-wrapper .alert {
+  border-radius: var(--radius);
+}
+
+.conciergerie-list-wrapper h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.conciergerie-list-wrapper .text-muted {
+  font-size: 0.9rem;
+  color: #6c757d !important;
+}

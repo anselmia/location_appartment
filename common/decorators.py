@@ -7,6 +7,18 @@ from functools import wraps
 from accounts.models import Conversation
 
 
+def is_admin(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Allow admins to bypass the check
+        if request.user.is_authenticated and (request.user.is_admin or request.user.is_superuser):
+            return view_func(request, *args, **kwargs)
+
+        # If the user is neither the owner nor an admin, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
 def user_is_logement_admin(view_func):
     def _wrapped_view(request, *args, **kwargs):
         # Get the logement instance
@@ -96,18 +108,13 @@ def user_is_reservation_customer(view_func):
         reservation = get_object_or_404(Reservation, code=kwargs["code"])
 
         # Check if the user is the admin or the owner of the logement
-        if (
-            request.user == reservation.user
-            or request.user.is_admin
-            or request.user.is_superuser
-        ):
+        if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
             return view_func(request, *args, **kwargs)
 
         # If the user is not authorized, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
     return _wrapped_view
-
 
 
 def user_has_reservation(view_func):

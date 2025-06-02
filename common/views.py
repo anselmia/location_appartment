@@ -86,7 +86,11 @@ def cgv_view(request):
     return render(request, "common/cgv.html")
 
 
+def join_owner(request):
+    return render(request, "common/join_owner.html")
 
+def join_user(request):
+    return render(request, "common/join_user.html")
 
 
 def custom_bad_request(request, exception):

@@ -1,0 +1,143 @@
+/* === WRAPPERS === */
+.conciergerie-wrapper,
+.conciergerie-detail-wrapper {
+  background-color: var(--light-bg);
+  font-family: var(--font-body);
+  color: var(--text-dark);
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+}
+
+/* === TITLES === */
+.conciergerie-wrapper h1,
+.conciergerie-wrapper h2,
+.conciergerie-detail-wrapper h2,
+.conciergerie-detail-wrapper h5 {
+  font-family: var(--font-title);
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* === CARDS === */
+.conciergerie-card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--light-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--bg-white);
+}
+
+.conciergerie-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+.conciergerie-card .card-body {
+  padding: var(--spacing-md);
+}
+
+.conciergerie-card .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.conciergerie-card .card-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.conciergerie-card .badge {
+  font-size: 0.8rem;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.7rem;
+}
+
+/* === BUTTONS === */
+.conciergerie-wrapper .btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  padding: 0.45rem 1rem;
+}
+
+.conciergerie-wrapper .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.conciergerie-wrapper .btn-outline-secondary {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.conciergerie-wrapper .btn-outline-secondary:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+/* === FORMS === */
+.conciergerie-wrapper .form-control,
+.conciergerie-wrapper .form-select {
+  border-radius: 0.4rem;
+  border-color: var(--color-border);
+  font-size: 0.95rem;
+}
+
+.conciergerie-wrapper label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--text-dark);
+}
+
+/* === TABLES === */
+.conciergerie-wrapper .table th,
+.conciergerie-wrapper .table td {
+  vertical-align: middle;
+}
+
+.conciergerie-wrapper .table th {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* === CHECKBOX FILTERS === */
+.conciergerie-wrapper .filter-group {
+  background-color: var(--light-bg);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--spacing-sm);
+}
+
+.conciergerie-wrapper .filter-group label {
+  font-size: 0.9rem;
+  margin-left: 0.4rem;
+}
+
+/* === RESPONSIVE GRIDS === */
+@media (max-width: 768px) {
+  .conciergerie-card .card-body {
+    padding: var(--spacing-sm);
+  }
+
+  .conciergerie-wrapper h1,
+  .conciergerie-detail-wrapper h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* === BADGES === */
+.badge-valid {
+  background-color: var(--success-color);
+  color: #fff;
+}
+
+.badge-inactive {
+  background-color: var(--danger-color);
+  color: #fff;
+}
+
+.badge-pending {
+  background-color: var(--warning-color);
+  color: #000;
+}
