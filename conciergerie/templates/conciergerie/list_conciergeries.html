@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container py-5">
+        <h2 class="mb-4 text-center">📋 Gestion des Conciergeries</h2>
+        <!-- Filtres -->
+        <form method="get" class="mb-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label for="ville" class="form-label">Ville</label>
+                    <select name="ville" id="ville" class="form-select">
+                        <option value="">Toutes les villes</option>
+                        {% for ville in villes %}
+                            <option value="{{ ville.id }}"
+                                    {% if ville.id|stringformat:'s' == request.GET.ville %}selected{% endif %}>
+                                {{ ville.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="validated"
+                               id="validated"
+                               {% if request.GET.validated %}checked{% endif %}>
+                        <label class="form-check-label" for="validated">Seulement les conciergeries validées</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">🔍 Filtrer</button>
+                </div>
+            </div>
+        </form>
+        <!-- Liste des conciergeries avec formulaire de suppression -->
+        <form method="post" action="{% url 'conciergerie:bulk_action' %}">
+            {% csrf_token %}
+            <div class="row g-4">
+                {% for c in conciergeries %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm rounded-4 position-relative">
+                            <div class="position-absolute top-0 start-0 p-2">
+                                <input type="checkbox"
+                                       name="selected_ids"
+                                       value="{{ c.id }}"
+                                       class="form-check-input">
+                            </div>
+                            {% if c.logo %}
+                                <img src="{{ c.logo.url }}"
+                                     class="card-img-top rounded-top-4"
+                                     style="object-fit: cover;
+                                            height: 180px">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ c.name }}</h5>
+                                <p class="text-muted small mb-1">📍 {{ c.ville.name }} – {{ c.code_postal }}</p>
+                                <p class="mb-1">
+                                    <strong>Email :</strong> {{ c.email }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Tél. :</strong> {{ c.telephone }}
+                                </p>
+                                <p>
+                                    <strong>Statut :</strong>
+                                    {% if c.validated %}
+                                        <span class="badge bg-success">Validée</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non validée</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-warning text-center">Aucune conciergerie ne correspond aux filtres.</div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if conciergeries %}
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="submit"
+                            name="action"
+                            value="validate"
+                            class="btn btn-success"
+                            onclick="return confirm('Valider les conciergeries sélectionnées ?')">
+                        ✅ Valider la sélection
+                    </button>
+                    <button type="submit"
+                            name="action"
+                            value="delete"
+                            class="btn btn-danger"
+                            onclick="return confirm('Supprimer les conciergeries sélectionnées ?')">
+                        🗑️ Supprimer la sélection
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+{% endblock %}

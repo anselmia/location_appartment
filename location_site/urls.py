@@ -46,6 +46,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),  # optional
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
+    path("conciergerie/", include("conciergerie.urls", namespace="conciergerie")),
     path("", include("logement.urls", namespace="logement")),  # main site
     re_path(
         r"^sitemap\.xml$", sitemap, {"sitemaps": sitemaps}, name="sitemap"

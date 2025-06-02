@@ -2,64 +2,97 @@
 {% load static %}
 {% load widget_tweaks %}
 {% load extra_tags %}
-
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
 {% endblock %}
-
 {% block content %}
-<div class="container client-dashboard mt-5">
-  <h2 class="mb-5 text-center fw-semibold display-5 text-dark">Tableau de bord</h2>
-  <div class="row dashboard">
-    <!-- Tabs on the left -->
-        <div class="col-md-3 mb-4">
+  <div class="container client-dashboard mt-5">
+    <h2 class="mb-5 text-center fw-semibold display-5 text-dark">Tableau de bord</h2>
+    <div class="row dashboard">
+      <!-- Tabs on the left -->
+      <div class="col-md-3 mb-4">
         <ul class="nav flex-column nav-pills" id="dashboardTabs" role="tablist">
+          <li class="nav-item mb-2">
+            <a class="nav-link active w-100"
+               id="profile-tab-link"
+               data-toggle="pill"
+               href="#profile-tab"
+               role="tab">Informations personnelles</a>
+          </li>
+          <li class="nav-item mb-2">
+            <a class="nav-link w-100"
+               id="password-tab-link"
+               data-toggle="pill"
+               href="#password-tab"
+               role="tab">Changer mon mot de passe</a>
+          </li>
+          <li class="nav-item mb-2">
+            <a class="nav-link w-100"
+               id="reservations-tab-link"
+               data-toggle="pill"
+               href="#reservations-tab"
+               role="tab">Mes Réservations</a>
+          </li>
+          {% if user.is_owner_admin or user.is_admin or user.is_superuser %}
             <li class="nav-item mb-2">
-            <a class="nav-link active w-100" id="profile-tab-link" data-toggle="pill" href="#profile-tab" role="tab">Informations personnelles</a>
+              <a class="nav-link w-100"
+                 id="admin-tab-link"
+                 data-toggle="pill"
+                 href="#admin-tab"
+                 role="tab">Compte Conciergerie</a>
             </li>
+          {% endif %}
+          {% if is_stripe_admin %}
             <li class="nav-item mb-2">
-            <a class="nav-link w-100" id="password-tab-link" data-toggle="pill" href="#password-tab" role="tab">Changer mon mot de passe</a>
+              <a class="nav-link w-100"
+                 id="stripe-tab-link"
+                 data-toggle="pill"
+                 href="#stripe-tab"
+                 role="tab">Compte Stripe</a>
             </li>
-            <li class="nav-item mb-2">
-            <a class="nav-link w-100" id="reservations-tab-link" data-toggle="pill" href="#reservations-tab" role="tab">Mes Réservations</a>
-            </li>
-            {% if is_stripe_admin %}
-                <li class="nav-item mb-2">
-                    <a class="nav-link w-100" id="stripe-tab-link" data-toggle="pill" href="#stripe-tab" role="tab">
-                    Compte Stripe
-                    </a>
-                </li>
-            {% endif %}
+          {% endif %}
         </ul>
-        </div>
-
-        <!-- Tab content on the right -->
-        <div class="col-md-9">
+      </div>
+      <!-- Tab content on the right -->
+      <div class="col-md-9">
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="profile-tab" role="tabpanel" aria-labelledby="profile-tab-link">
-            {% include "accounts/partials/profile_form.html" %}
-            </div>
-            <div class="tab-pane fade" id="password-tab" role="tabpanel" aria-labelledby="password-tab-link">
-            {% include "accounts/partials/password_form.html" %}
-            </div>
-            <div class="tab-pane fade" id="reservations-tab" role="tabpanel" aria-labelledby="reservations-tab-link">
-            {% include "accounts/partials/reservation_list.html" %}
-            </div>
-            {% if is_stripe_admin %}
-            <div class="tab-pane fade" id="stripe-tab" role="tabpanel" aria-labelledby="stripe-tab-link">
-                {% include "accounts/partials/stripe_dashboard.html" %}
-            </div>
-            {% endif %}
+          <div class="tab-pane fade show active"
+               id="profile-tab"
+               role="tabpanel"
+               aria-labelledby="profile-tab-link">{% include "accounts/partials/profile_form.html" %}</div>
+          <div class="tab-pane fade"
+               id="password-tab"
+               role="tabpanel"
+               aria-labelledby="password-tab-link">{% include "accounts/partials/password_form.html" %}</div>
+          <div class="tab-pane fade"
+               id="reservations-tab"
+               role="tabpanel"
+               aria-labelledby="reservations-tab-link">{% include "accounts/partials/reservation_list.html" %}</div>
+          {% if user.is_owner_admin or user.is_admin or user.is_superuser %}
+            <div class="tab-pane fade"
+                 id="admin-tab"
+                 role="tabpanel"
+                 aria-labelledby="admin-tab-link">{% include "accounts/partials/conciergerie_dashboard.html" with conciergerie=user_conciergerie %}</div>
+          {% endif %}
+          {% if is_stripe_admin %}
+            <div class="tab-pane fade"
+                 id="stripe-tab"
+                 role="tabpanel"
+                 aria-labelledby="stripe-tab-link">{% include "accounts/partials/stripe_dashboard.html" %}</div>
+          {% endif %}
         </div>
-        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center mt-5">
+      <form method="post"
+            action="{% url 'accounts:delete_account' %}"
+            onsubmit="return confirm('Confirmez-vous la suppression de votre compte ? Cette action est irréversible.')"
+            class="w-100"
+            style="max-width: 320px">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger w-100">Supprimer mon compte</button>
+      </form>
+    </div>
   </div>
-
-  <div class="d-flex justify-content-center mt-5">
-    <form method="post" action="{% url 'accounts:delete_account' %}" onsubmit="return confirm('Confirmez-vous la suppression de votre compte ? Cette action est irréversible.')" class="w-100" style="max-width: 320px;">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-outline-danger w-100">Supprimer mon compte</button>
-    </form>
-  </div>
-</div>
 {% endblock %}

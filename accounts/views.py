@@ -24,6 +24,7 @@ from django_ratelimit.decorators import ratelimit
 from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
 from logement.services.reservation_service import get_user_reservation
 from common.decorators import user_is_reservation_customer
+from conciergerie.models import Conciergerie
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,7 @@ def client_dashboard(request):
 
         dashboard_link = None
         stripe_account = None
+        conciergerie = None
         reservations = []
         code_filter = request.GET.get("code", None)
 
@@ -131,6 +133,9 @@ def client_dashboard(request):
                     "Une erreur est survenue lors du chargement de vos données Stripe.",
                 )
 
+        if user.is_owner_admin or user.is_admin or user.is_superuser:
+            conciergerie = Conciergerie.objects.filter(user=request.user).first()
+
         return render(
             request,
             "accounts/dashboard.html",
@@ -143,6 +148,7 @@ def client_dashboard(request):
                 "is_stripe_admin": user_is_stripe_admin,
                 "dashboard_link": dashboard_link,
                 "code_filter": code_filter,
+                "user_conciergerie": conciergerie,
             },
         )
 

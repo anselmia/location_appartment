@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "django_q",
     "common",
+    "conciergerie.apps.ConciergerieConfig",
     "accounts",
     "administration",
     "logement.apps.LogementConfig",

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'administration/css/payment_tasks.css' %}">
+{% endblock extrahead %}
+
+{% block content %}
+<div class="conciergerie-form-wrapper">
+    <div class="form-section">
+        <h2>
+            {% if is_edit %}Modifier{% else %}Créer{% endif %} une conciergerie
+        </h2>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3 required">
+                    <label for="id_name">Nom</label>
+                    {{ form.name }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_logo">Logo</label>
+                    {{ form.logo }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_description">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3 required">
+                    <label for="id_adresse">Adresse postale</label>
+                    {{ form.adresse }}
+                </div>
+                <div class="col-md-3 mb-3 required">
+                    <label for="id_code_postal">Code postal</label>
+                    {{ form.code_postal }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="id_ville">Ville</label>
+                    {{ form.ville }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_pays">Pays</label>
+                    {{ form.pays }}
+                </div>
+                <div class="col-md-3 mb-3 required">
+                    <label for="id_telephone">Téléphone</label>
+                    {{ form.telephone }}
+                </div>
+                <div class="col-md-3 mb-3 required">
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <h4 class="mb-3">Informations juridiques</h4>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_forme_juridique">Forme juridique</label>
+                    {{ form.forme_juridique }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_siret">SIRET</label>
+                    {{ form.siret }}
+                </div>
+            </div>
+
+            <h4 class="mb-3">Représentant légal</h4>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_nom_representant">Nom</label>
+                    {{ form.nom_representant }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="id_email_representant">Email</label>
+                    {{ form.email_representant }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="id_telephone_representant">Téléphone</label>
+                    {{ form.telephone_representant }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-2 mb-3 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        {{ form.actif }}
+                        <label class="form-check-label ms-2" for="id_actif">Active</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-4">
+                {% if is_edit %}Mettre à jour{% else %}Enregistrer{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

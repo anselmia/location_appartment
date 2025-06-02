@@ -1,0 +1,59 @@
+{% load static %}
+<div class="card shadow rounded-4 border-0 mb-4">
+    <div class="card-header text-white rounded-top-4">
+        <h5 class="mb-0">🏠 Conciergerie</h5>
+    </div>
+    <div class="card-body">
+        {% if not conciergerie %}
+            <p class="text-muted mb-3">Aucune conciergerie n’est enregistrée pour le moment.</p>
+            <a href="{% url 'conciergerie:create_conciergerie' %}"
+               class="btn btn-primary">➕ Créer ma conciergerie</a>
+        {% else %}
+            <div class="mb-3">
+                <div class="row gy-3">
+                    <div class="col-md-6">
+                        <strong>Nom :</strong>
+                        <div class="text-muted small">{{ conciergerie.name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Email :</strong>
+                        <div class="text-muted small">{{ conciergerie.email }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Téléphone :</strong>
+                        <div class="text-muted small">{{ conciergerie.telephone }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Adresse :</strong>
+                        <div class="text-muted small">
+                            {{ conciergerie.adresse }}, {{ conciergerie.code_postal }} {{ conciergerie.ville.name }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Forme juridique :</strong>
+                        <div class="text-muted small">{{ conciergerie.forme_juridique|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>SIRET :</strong>
+                        <div class="text-muted small">{{ conciergerie.siret|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted">Créée le {{ conciergerie.date_creation|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Validée :</strong>
+                        {% if conciergerie.validated %}
+                            <span class="badge bg-success">✅ Validée</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">⏳ En attente</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="{% url 'conciergerie:update_conciergerie' %}"
+                   class="btn btn-outline-primary">✏️ Modifier ma conciergerie</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
