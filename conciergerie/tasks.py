@@ -1,7 +1,9 @@
 from django.core.mail import send_mail
 from django.conf import settings
+from huey.contrib.djhuey import task
 
 
+@task()
 def send_conciergerie_validation_email(conciergerie_id):
     from .models import Conciergerie
 

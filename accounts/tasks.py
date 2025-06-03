@@ -2,10 +2,12 @@ import logging
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Message, CustomUser
+from huey.contrib.djhuey import task
 
 logger = logging.getLogger(__name__)
 
 
+@task()
 def send_message_notification(message_id, recipient_id):
     try:
         message = Message.objects.select_related("conversation__reservation", "sender").get(id=message_id)
@@ -39,6 +41,7 @@ Connectez-vous pour répondre : {settings.SITE_ADDRESS}/accounts/messages/{messa
         logger.exception(f"Échec de la notification pour message {message_id} à utilisateur {recipient_id}")
 
 
+@task()
 def send_contact_email(cd):
     try:
         send_mail(

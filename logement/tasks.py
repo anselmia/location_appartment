@@ -3,8 +3,10 @@ import requests
 from icalendar import Calendar
 from datetime import datetime, date, time
 from logement.models import Logement
-from reservation.models import airbnb_booking, booking_booking, Reservation
+from reservation.models import airbnb_booking, booking_booking
 from reservation.services.reservation_service import delete_old_reservations
+from huey.contrib.djhuey import periodic_task
+from huey import crontab
 
 # Setup a logger
 logger = logging.getLogger(__name__)
@@ -100,6 +102,7 @@ def process_calendar(url, source):
         raise ValueError(f"Error processing calendar from {source}: {str(e)}")
 
 
+@periodic_task(crontab(hour='*/1'))  # toutes les heures
 def sync_calendar():
     results = {}
 
@@ -140,12 +143,3 @@ def sync_calendar():
         results[logement.id] = logement_results
 
     return results
-
-
-def transfert_funds():
-    from payment.services.payment_service import charge_reservation
-
-    reservations = Reservation.objects.filter(statut="confirmee")
-    for reservation in reservations:
-        if reservation.refundable_period_passed:
-            charge_reservation(reservation)

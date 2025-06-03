@@ -12,9 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-
+from huey import RedisHuey
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+HUEY = RedisHuey("location_site")
 # Application definition
 
 INSTALLED_APPS = [
@@ -26,15 +29,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django.contrib.humanize",
-    "widget_tweaks",
-    "django_q",
-    "common",    
+    "widget_tweaks", 
+    "huey.contrib.djhuey",
+    "common",
     "accounts.apps.AccountsConfig",
     "conciergerie.apps.ConciergerieConfig",
     "administration",
     "logement.apps.LogementConfig",
     "payment.apps.PaymentConfig",
-    "reservation.apps.ReservationConfig"
+    "reservation.apps.ReservationConfig",
 ]
 
 MIDDLEWARE = [
@@ -143,9 +146,7 @@ DEFAULT_FROM_EMAIL = "noreply@localhost"
 # Admins who get error emails or notifications via mail_admins
 ADMINS = [("Dev Admin", "admin@example.com")]
 
-SESSION_SAVE_EVERY_REQUEST = (
-    True  # Save the session on every request to reset the timeout period
-)
+SESSION_SAVE_EVERY_REQUEST = True  # Save the session on every request to reset the timeout period
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Close session when browser is closed
 

@@ -10,7 +10,6 @@ from django.contrib.auth import update_session_auth_hash
 from django.urls import reverse
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
-from django_q.tasks import async_task
 
 from accounts.models import Message, Conversation
 from accounts.forms import (
@@ -22,6 +21,7 @@ from accounts.forms import (
 )
 from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
 from accounts.decorators import stripe_attempt_limiter
+from accounts.tasks import send_contact_email
 
 from reservation.models import Reservation
 from reservation.services.reservation_service import get_user_reservation
@@ -277,7 +277,7 @@ def contact_view(request):
             cd = form.cleaned_data
             # Optional: send email
             try:
-                async_task("accounts.tasks.send_contact_email", cd)
+                send_contact_email(cd)()
                 messages.success(request, "✅ Message envoyé avec succès.")
             except Exception as e:
                 logger.error(f"Erreur d'envoi de mail: {e}")

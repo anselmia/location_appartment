@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django_q.tasks import async_task
 from .models import Conciergerie
 from .forms import ConciergerieForm
 from logement.models import City
 from .decorators import user_is_owner_admin
 from common.decorators import is_admin
+from conciergerie.tasks import send_conciergerie_validation_email
 
 
 @login_required
@@ -106,7 +106,7 @@ def bulk_action(request):
             for conciergerie in queryset:
                 conciergerie.validated = True
                 conciergerie.save()
-                async_task("conciergerie.tasks.send_conciergerie_validation_email", conciergerie.id)
+                send_conciergerie_validation_email(conciergerie.id)()
             messages.success(request, f"{queryset.count()} conciergerie(s) validée(s) avec notification.")
 
         else:
