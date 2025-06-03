@@ -416,6 +416,7 @@ def user_update_view(request, user_id=None):
         form = UserAdminUpdateForm(request.POST, instance=selected_user)
         if form.is_valid():
             form.save()
+            logger.info(f"User {selected_user.get_full_name} updated")
             return redirect("accounts:user_update_view_with_id", user_id=selected_user.id)
 
     selected_user = get_object_or_404(CustomUser, id=user_id)
