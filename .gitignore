@@ -26,9 +26,6 @@ staticfiles/
 media/
 db.sqlite3
 
-# Django migrations
-**/migrations/
-!*/migrations/__init__.py
 
 # Build / packaging
 build/
