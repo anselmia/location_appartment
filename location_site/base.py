@@ -28,13 +28,13 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "widget_tweaks",
     "django_q",
-    "common",
+    "common",    
+    "accounts.apps.AccountsConfig",
     "conciergerie.apps.ConciergerieConfig",
-    "accounts",
     "administration",
     "logement.apps.LogementConfig",
-    "payment",
-    "reservation"
+    "payment.apps.PaymentConfig",
+    "reservation.apps.ReservationConfig"
 ]
 
 MIDDLEWARE = [

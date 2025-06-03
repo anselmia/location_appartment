@@ -1,7 +1,7 @@
 import logging
 from django.utils import timezone
-from datetime import datetime, timedelta
-from logement.models import airbnb_booking, booking_booking, Reservation
+from datetime import timedelta
+from reservation.models import Reservation
 
 # Setup a logger
 logger = logging.getLogger(__name__)
