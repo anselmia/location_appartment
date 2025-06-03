@@ -1,6 +1,7 @@
 from django.core.validators import EmailValidator
 from django import forms
 from .models import CustomUser, Message
+from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
