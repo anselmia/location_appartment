@@ -1,0 +1,261 @@
+.admin-logement-edit .form-box {
+  background: var(--bg-white);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  max-width: var(--max-content-width);
+  margin: var(--spacing-xl) auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.admin-logement-edit h2,
+.admin-logement-edit .section-title {
+  color: var(--color-title);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-title);
+}
+
+.admin-logement-edit .section-title {
+  font-size: 1.25rem;
+  margin-top: var(--spacing-lg);
+  border-bottom: 2px solid var(--light-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+.admin-logement-edit .nav-pills {
+  border-bottom: 2px solid var(--light-border);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.admin-logement-edit .nav-pills .nav-link {
+  color: var(--text-dark);
+  font-weight: 600;
+  border-radius: var(--radius);
+  margin-right: var(--spacing-sm);
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.admin-logement-edit .nav-pills .nav-link.active {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.admin-logement-edit .nav-pills .nav-link:hover:not(.active) {
+  background-color: var(--background-highlight);
+}
+
+.admin-logement-edit .form-field {
+  margin-bottom: var(--spacing-md);
+}
+
+.admin-logement-edit label {
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  display: block;
+  color: var(--text-dark);
+  font-family: var(--font-sans);
+}
+
+.admin-logement-edit .form-input,
+.admin-logement-edit .form-select,
+.admin-logement-edit .form-textarea {
+  width: 100%;
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
+  background-color: var(--light-bg);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-body);
+}
+
+.admin-logement-edit .form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.admin-logement-edit .form-input:focus,
+.admin-logement-edit .form-select:focus,
+.admin-logement-edit .form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(191, 166, 107, 0.2);
+}
+
+.input-symbol.with-symbol {
+  display: flex;
+  align-items: center;
+}
+
+.input-symbol.with-symbol input {
+  flex: 1;
+}
+
+.input-symbol.with-symbol .unit-label {
+  margin-left: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.checkbox-field label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+.admin-logement-edit .btn {
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: transform 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.admin-logement-edit .btn:hover {
+  transform: scale(1.02);
+}
+
+.admin-logement-edit .btn-outline-primary {
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+}
+
+.admin-logement-edit .btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.equipment-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.equipment-group h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-title);
+  border-bottom: 1px solid var(--light-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+/* Case à cocher personnalisée */
+.equip-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 12px;
+  background: var(--light-bg);
+  border: 1px solid var(--light-border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+.equip-card input[type="checkbox"] {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.equip-card i {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+.equip-card:hover {
+  background-color: var(--background-highlight);
+  border-color: var(--primary-color);
+}
+
+.equip-card input[type="checkbox"]:checked + i,
+.equip-card input[type="checkbox"]:checked + span {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Correction structure pour checkbox + label dans .equip-card */
+.equip-card input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+}
+
+.equip-card {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.equip-card input:checked ~ * {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .equipment-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .equip-card {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+  
+  .admin-logement-edit .form-box {
+    padding: var(--spacing-md);
+  }
+
+  .admin-logement-edit .nav-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .admin-logement-edit .photo-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-logement-edit .photo-item > div:last-child {
+    margin-top: var(--spacing-sm);
+    width: 100%;
+    gap: var(--spacing-sm);
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .admin-logement-edit .room-select {
+    width: 100%;
+  }
+}

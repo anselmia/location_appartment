@@ -1,9 +1,10 @@
 import logging
 import requests
 from icalendar import Calendar
-from django.utils import timezone
-from datetime import datetime, date, time, timedelta
-from logement.models import Logement, airbnb_booking, booking_booking, Reservation
+from datetime import datetime, date, time
+from logement.models import Logement
+from reservation.models import airbnb_booking, booking_booking, Reservation
+from reservation.services.reservation_service import delete_old_reservations
 
 # Setup a logger
 logger = logging.getLogger(__name__)
@@ -99,40 +100,6 @@ def process_calendar(url, source):
         raise ValueError(f"Error processing calendar from {source}: {str(e)}")
 
 
-def delete_old_reservations(event_dates, source):
-    """
-    Deletes future reservations that are no longer present in the calendar.
-    """
-    try:
-        deleted = 0
-
-        # Determine the model to use based on the source
-        if source == "airbnb":
-            reservations = airbnb_booking.objects.filter(start__gte=datetime.now())
-        elif source == "booking":
-            reservations = booking_booking.objects.filter(start__gte=datetime.now())
-
-        # Find reservations that are not in the event_dates list
-        for reservation in reservations:
-            is_found = False
-            for event_start, event_end in event_dates:
-                if reservation.start == event_start.date() and reservation.end == event_end.date():
-                    is_found = True
-                    break
-
-            if not is_found:
-                # If the reservation is not found in the updated calendar, delete it
-                logger.info(f"Deleting reservation: {reservation}")
-                reservation.delete()
-                deleted += 1
-
-        return deleted
-
-    except Exception as e:
-        logger.error(f"Error deleting old reservations from {source}: {str(e)}")
-        raise ValueError(f"Error deleting old reservations from {source}: {str(e)}")
-
-
 def sync_calendar():
     results = {}
 
@@ -175,37 +142,8 @@ def sync_calendar():
     return results
 
 
-def delete_expired_pending_reservations():
-    try:
-        expiry_time = timezone.now() - timedelta(minutes=30)
-        count, _ = Reservation.objects.filter(statut="en_attente", date_reservation__lt=expiry_time).delete()
-
-        expiry_time = timezone.now() - timedelta(weeks=1)
-        count2, _ = Reservation.objects.filter(statut="echec_paiement", date_reservation__lt=expiry_time).delete()
-
-        logger.info(f"Deleted {count} expired pending reservations")
-        logger.info(f"Deleted {count2} expired reservations in failed payment")
-        return f"Deleted {count} expired pending reservations and {count2} expired reservations in failed payment"
-    except Exception as e:
-        logger.exception(f"Error deleting expired reservations: {e}")
-        return "Failed to delete expired reservations"
-
-
-def end_reservations():
-    try:
-        today = timezone.now()
-        ended = Reservation.objects.filter(statut="confirmee", end__lt=today)
-        count = ended.count()
-        ended.update(statut="terminee")
-        logger.info(f"Ended {count} reservations")
-        return f"Ended {count} reservations"
-    except Exception as e:
-        logger.exception(f"Error ending reservations: {e}")
-        return "Failed to end reservations"
-
-
 def transfert_funds():
-    from logement.services.payment_service import charge_reservation
+    from payment.services.payment_service import charge_reservation
 
     reservations = Reservation.objects.filter(statut="confirmee")
     for reservation in reservations:

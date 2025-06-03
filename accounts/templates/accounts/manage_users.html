@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'accounts/css/manage_users.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="user-admin-panel">
+        <div class="container py-4">
+            <!-- User selector -->
+            <form method="get"
+                  action="{% url 'accounts:user_update_view' %}"
+                  class="mb-4 d-flex gap-3 flex-wrap align-items-end">
+                <div>
+                    <label for="selected_user" class="form-label">Sélectionner un utilisateur :</label>
+                    <select id="selected_user"
+                            name="user_id"
+                            class="form-select"
+                            onchange="this.form.submit()">
+                        {% for u in all_users %}
+                            <option value="{{ u.id }}"
+                                    {% if u.id == selected_user.id %}selected{% endif %}>
+                                {{ u.username }} ({{ u.email }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <h2 class="mb-4">{{ title }}</h2>
+            <div class="d-flex gap-2 mt-4 flex-wrap">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <!-- Username -->
+                        <div class="col-md-6">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
+                            {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                            {% for error in form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Nom -->
+                        <div class="col-md-6">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Prénom -->
+                        <div class="col-md-6">
+                            {{ form.last_name.label_tag }}
+                            {{ form.last_name }}
+                            {% for error in form.last_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Téléphone -->
+                        <div class="col-md-6">
+                            {{ form.phone.label_tag }}
+                            {{ form.phone }}
+                            {% for error in form.phone.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Dernière activité (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label">Dernière activité</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ selected_user.last_activity|date:'d/m/Y H:i' }}"
+                                   readonly>
+                        </div>
+                        <!-- Stripe Customer ID -->
+                        <div class="col-md-6">
+                            {{ form.stripe_customer_id.label_tag }}
+                            {{ form.stripe_customer_id }}
+                            {% for error in form.stripe_customer_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <!-- Stripe Account ID -->
+                        <div class="col-md-6">
+                            {{ form.stripe_account_id.label_tag }}
+                            {{ form.stripe_account_id }}
+                            {% for error in form.stripe_account_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                {{ form.is_admin }}
+                                <label class="form-check-label" for="{{ form.is_admin.id_for_label }}">{{ form.is_admin.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                {{ form.is_owner }}
+                                <label class="form-check-label" for="{{ form.is_owner.id_for_label }}">{{ form.is_owner.label }}</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                {{ form.is_owner_admin }}
+                                <label class="form-check-label" for="{{ form.is_owner_admin.id_for_label }}">{{ form.is_owner_admin.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit button -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Mettre à jour</button>
+                    </div>
+                </form>
+                <!-- Delete form -->
+                <form method="post"
+                      action="{% url 'accounts:user_delete_view' selected_user.id %}"
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">Supprimer l'utilisateur</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

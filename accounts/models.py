@@ -16,8 +16,8 @@ class CustomUser(AbstractUser):
     is_owner_admin = models.BooleanField(default=False)
     phone = models.CharField(
         max_length=15,
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
         validators=[phone_validator],
         unique=True,
         help_text="Numéro au format international, ex: +33612345678",
@@ -28,6 +28,7 @@ class CustomUser(AbstractUser):
         max_length=255,
         blank=True,
         null=True,
+        unique=True,
         help_text="Identifiant client Stripe associé pour paiements et impressions de carte.",
     )
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
@@ -42,13 +43,20 @@ class CustomUser(AbstractUser):
 
 
 class Conversation(models.Model):
-    reservation = models.OneToOneField("logement.Reservation", on_delete=models.CASCADE, related_name="conversation")
+    reservation = models.OneToOneField(
+        "reservation.Reservation", on_delete=models.CASCADE, related_name="conversation", unique=True
+    )
     participants = models.ManyToManyField(CustomUser, related_name="conversations")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Conversation #{self.id} - Réservation {self.reservation_id}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["updated_at"]),
+        ]
 
 
 class Message(models.Model):
@@ -60,6 +68,10 @@ class Message(models.Model):
     read_by = models.ManyToManyField(CustomUser, related_name="messages_read", blank=True)
 
     class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+            models.Index(fields=["sender"]),
+        ]
         ordering = ["timestamp"]
         verbose_name = "Message"
         verbose_name_plural = "Messages"

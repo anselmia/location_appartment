@@ -41,9 +41,9 @@
         <li><a href="{% url 'logement:logement_search' %}">{% trans "Nos Locations" %}</a></li>
         <li><a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a></li>
         {% if user.is_authenticated and user.is_admin %}
-          <li><a href="{% url 'administration:dashboard' %}">{% trans "Accès Logements" %}</a></li>
+          <li><a href="{% url 'logement:dashboard' %}">{% trans "Accès Logements" %}</a></li>
         {% elif user.is_authenticated and user.is_superuser %}
-          <li><a href="{% url 'administration:dashboard' %}">{% trans "Accès Logements" %}</a></li>
+          <li><a href="{% url 'logement:dashboard' %}">{% trans "Accès Logements" %}</a></li>
         {% endif %}
       </ul>
     </div>

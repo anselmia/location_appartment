@@ -34,7 +34,7 @@ class LogementSitemap(Sitemap):
         return Logement.objects.all()
 
     def location(self, obj):
-        return reverse("logement:book", kwargs={"logement_id": obj.id})
+        return reverse("reservation:book", kwargs={"logement_id": obj.id})
 
 
 sitemaps = {
@@ -47,10 +47,10 @@ urlpatterns = [
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("conciergerie/", include("conciergerie.urls", namespace="conciergerie")),
-    path("", include("logement.urls", namespace="logement")),  # main site
-    re_path(
-        r"^sitemap\.xml$", sitemap, {"sitemaps": sitemaps}, name="sitemap"
-    ),  # ✅ this avoids redirect
+    path("", include("logement.urls", namespace="logement")),
+    path("payment/", include("payment.urls", namespace="payment")),
+    path("reservation/", include("reservation.urls", namespace="reservation")),
+    re_path(r"^sitemap\.xml$", sitemap, {"sitemaps": sitemaps}, name="sitemap"),  # ✅ this avoids redirect
 ]
 
 # Append the static files URLs

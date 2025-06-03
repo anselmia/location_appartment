@@ -1,7 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from logement.models import Logement
-from django.db.models import Q
-from common.views import is_admin
+from django import forms
 
 
 class AdminRequiredMixin:
@@ -11,17 +9,12 @@ class AdminRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class UserHasLogementMixin:
-    def dispatch(self, request, *args, **kwargs):
-        has_logement = (
-            Logement.objects.filter(Q(owner=request.user) | Q(admin=request.user)).exists()
-            or request.user.is_owner
-            or request.user.is_owner_admin
-            or request.user.is_superuser
-            or request.user.is_admin
-        )
+class BootstrapFormMixin:
+    def apply_bootstrap_classes(self):
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs["class"] = "form-control"
 
-        if not (has_logement or is_admin(request.user)):
-            raise PermissionDenied("Vous n'avez pas les droits pour accéder à cette page.")
-
-        return super().dispatch(request, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_bootstrap_classes()

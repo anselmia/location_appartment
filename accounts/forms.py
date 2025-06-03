@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.contrib.auth.forms import PasswordChangeForm
+from common.mixins import BootstrapFormMixin
 
 import logging
 
@@ -38,21 +39,6 @@ class CustomUserCreationForm(UserCreationForm):
             "password2",
         ]
 
-    # Custom validation for email uniqueness
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if CustomUser.objects.filter(email=email).exists():
-            logger.warning(f"Tentative d'enregistrement avec un email déjà utilisé : {email}")
-            raise ValidationError("Cet email est déjà utilisé. Veuillez en choisir un autre.")
-        return email
-
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if CustomUser.objects.filter(username=username).exists():
-            raise ValidationError("Ce nom d'utilisateur est déjà pris.")
-        return username
-
-    # Ensure that the name and last name are not empty
     def clean_name(self):
         name = self.cleaned_data.get("name")
         if not name:
@@ -65,12 +51,25 @@ class CustomUserCreationForm(UserCreationForm):
             raise ValidationError("Le prénom est obligatoire.")
         return last_name
 
-    def clean_phone(self):
-        phone = self.cleaned_data.get("phone")
-        phone_validator(phone)  # this raises ValidationError if invalid
-        if CustomUser.objects.filter(phone=phone).exists():
-            raise ValidationError("Ce numéro de téléphone est déjà utilisé. Veuillez en choisir un autre.")
-        return phone
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email")
+        username = cleaned_data.get("username")
+        phone = cleaned_data.get("phone")
+
+        if phone:
+            phone_validator(phone)
+        conflicts = CustomUser.objects.filter(Q(email=email) | Q(username=username) | Q(phone=phone))
+
+        for user in conflicts:
+            if user.email == email:
+                self.add_error("email", "Cet email est déjà utilisé.")
+            if user.username == username:
+                self.add_error("username", "Ce nom d'utilisateur est déjà pris.")
+            if user.phone == phone:
+                self.add_error("phone", "Ce numéro de téléphone est déjà utilisé.")
+
+        return cleaned_data
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -94,7 +93,7 @@ class CustomUserChangeForm(UserChangeForm):
 
         # Remove the password field
         if "password" in self.fields:
-            self.fields.pop("password")
+            self.fields.pop("password", None)
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
@@ -106,7 +105,9 @@ class CustomUserChangeForm(UserChangeForm):
 
     # Optional: You can add more custom validation for the is_admin field if needed
     def clean_is_admin(self):
-        is_admin = self.cleaned_data.get("is_admin")
+        if "is_admin" not in self.cleaned_data:
+            return self.instance.is_admin
+        is_admin = self.cleaned_data["is_admin"]
         if not is_admin:
             raise ValidationError("L'utilisateur doit être un administrateur.")
         return is_admin
@@ -159,3 +160,53 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         label="Confirmation du nouveau mot de passe",
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].widget.attrs.update({"autocomplete": "current-password"})
+        self.fields["new_password1"].widget.attrs.update({"autocomplete": "new-password"})
+        self.fields["new_password2"].widget.attrs.update({"autocomplete": "new-password"})
+
+
+class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
+    email = forms.EmailField(
+        required=True, label="Email", validators=[EmailValidator(message="Veuillez entrer un email valide.")]
+    )
+    is_admin = forms.BooleanField(required=False)
+    is_owner = forms.BooleanField(required=False)
+    is_owner_admin = forms.BooleanField(required=False)
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            "username",
+            "name",
+            "last_name",
+            "email",
+            "phone",
+            "is_admin",
+            "is_owner",
+            "is_owner_admin",
+            "stripe_customer_id",
+            "stripe_account_id",
+        ]
+        labels = {
+            "name": "Nom",
+            "last_name": "Prénom",
+            "phone": "Téléphone",
+            "is_admin": "Administrateur plateforme",
+            "is_owner_admin": "Administrateur de conciergerie",
+            "email": "E-mail",
+            "is_owner": "Propriétaire",
+            "stripe_customer_id": "Compte client Stripe",
+            "stripe_account_id": "Compte stripe Connect",
+        }
+
+    def clean_stripe_customer_id(self):
+        customer_id = self.cleaned_data.get("stripe_customer_id")
+        if (
+            customer_id
+            and CustomUser.objects.filter(stripe_customer_id=customer_id).exclude(pk=self.instance.pk).exists()
+        ):
+            raise forms.ValidationError("Cet identifiant client Stripe est déjà utilisé.")
+        return customer_id

@@ -6,7 +6,7 @@ class Entreprise(models.Model):
     contact_address = models.CharField(max_length=255, blank=True, null=True)
     contact_phone = models.CharField(max_length=30, blank=True, null=True)
     contact_email = models.EmailField(blank=True, null=True)
-    name = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100)
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
@@ -18,6 +18,11 @@ class SiteVisit(models.Model):
     user_agent = models.TextField()
     path = models.CharField(max_length=200)
     timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+        ]
 
 
 class HomePageConfig(models.Model):
@@ -32,13 +37,21 @@ class HomePageConfig(models.Model):
     def __str__(self):
         return "Configuration de la page d’accueil"
 
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Configuration de la page d'accueil"
+        verbose_name_plural = "Configuration de la page d'accueil"
+
 
 class SiteConfig(models.Model):
     sms = models.BooleanField(default=False)
 
 
 class Service(models.Model):
-    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="services")
+    config = models.ForeignKey(HomePageConfig, on_delete=models.PROTECT, related_name="services")
     icon_class = models.CharField(max_length=50, default="fas fa-star")
     description = models.TextField(blank=True, null=True)
     title = models.CharField(max_length=100)
@@ -47,9 +60,17 @@ class Service(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Configuration de la page d'accueil"
+        verbose_name_plural = "Configuration de la page d'accueil"
+
 
 class Testimonial(models.Model):
-    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="testimonials")
+    config = models.ForeignKey(HomePageConfig, on_delete=models.PROTECT, related_name="testimonials")
     content = models.TextField()
 
     def __str__(self):
@@ -57,7 +78,7 @@ class Testimonial(models.Model):
 
 
 class Commitment(models.Model):
-    config = models.ForeignKey(HomePageConfig, on_delete=models.CASCADE, related_name="commitments")
+    config = models.ForeignKey(HomePageConfig, on_delete=models.PROTECT, related_name="commitments")
     title = models.CharField(max_length=100, default="")
     text = models.CharField(max_length=255)
     background_image = models.ImageField(upload_to="administration/", blank=True, null=True)

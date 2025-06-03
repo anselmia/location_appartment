@@ -1,0 +1,84 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+<div class="text-end mb-3">
+    <button id="delete-all-photos" class="btn btn-danger btn-sm">🗑️ {% trans "Supprimer toutes les photos" %}</button>
+</div>
+<div id="delete-all-photos-url"
+     data-url="{% url 'logement:delete_all_photos' logement.id %}"></div>
+<ul id="photo-list" class="list-unstyled">
+    {% for photo in photos %}
+        <li class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 photo-item"
+            data-photo-id="{{ photo.id }}"
+            data-photo-order="{{ photo.order }}">
+            <div class="d-flex align-items-center">
+                <picture>
+                    <source srcset="{{ photo.image_webp.url }}" type="image/webp">
+                    <img src="{{ photo.image_webp.url }}"
+                         alt="{{ photo.room.name }}"
+                         class="me-3"
+                         style="max-height: 80px">
+                </picture>
+                <div>
+                    <span class="badge bg-secondary">📸 {{ photo.room.name|default:"Général" }}</span>
+                    <small class="d-block text-muted">#{{ photo.order }}</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <select name="room_id"
+                        class="form-select form-select-sm me-2 room-select"
+                        data-photo-id="{{ photo.id }}">
+                    <option value="">{% trans "Général" %}</option>
+                    {% for room in rooms %}
+                        <option value="{{ room.id }}"
+                                {% if photo.room.id == room.id %}selected{% endif %}>{{ room.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button"
+                        class="btn btn-sm btn-light me-1 move-photo"
+                        data-direction="up">⬆️</button>
+                <button type="button"
+                        class="btn btn-sm btn-light me-1 move-photo"
+                        data-direction="down">⬇️</button>
+                <button type="button" class="btn btn-sm btn-danger delete-photo ms-2">🗑️</button>
+                <button type="button"
+                        class="btn btn-sm btn-warning rotate-photo ms-2"
+                        data-photo-id="{{ photo.id }}">🔄</button>
+            </div>
+        </li>
+    {% endfor %}
+</ul>
+<div id="move-photo-url"
+     data-url="{% url 'logement:move_photo' photo_id=1 direction='UP' %}"></div>
+<div id="change-photo-room-url"
+     data-url="{% url 'logement:change_photo_room' photo_id=1 %}"></div>
+<div id="delete-photo-url"
+     data-url="{% url 'logement:delete_photo' photo_id=1 %}"></div>
+<div id="rotate-photo-url"
+     data-url="{% url 'logement:rotate_photo' photo_id=1 %}"></div>
+<form action="{% url 'logement:upload_photos' logement.id %}"
+      method="post"
+      enctype="multipart/form-data"
+      class="mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="room" class="form-label fw-bold">{% trans "Associer à une pièce" %}</label>
+        <select name="room_id" id="room" class="form-select form-select-lg">
+            <option value="">{% trans "Général" %}</option>
+            {% for room in rooms %}<option value="{{ room.id }}">{{ room.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="photos" class="form-label">{% trans "Sélectionner des photos" %}</label>
+        <input type="file"
+               name="photo"
+               multiple
+               required
+               class="form-control"
+               id="photos">
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-info btn-lg">📥 {% trans "Ajouter des photos" %}</button>
+    </div>
+</form>

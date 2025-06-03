@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+{% load extra_tags %}
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'logement/css/revenu.css' %}">
+{% endblock extrahead %}
+{% block content %}
+  <div class="container my-5" id="revenue-page">
+    <h2 class="text-center fw-bold display-5 mb-5">Performance Mensuelle</h2>
+    <!-- Filtres -->
+    <div class="card shadow-sm mb-5">
+      <div class="card-body">
+        <form method="get" class="row g-3 align-items-end justify-content-center">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted">Logement</label>
+            <select name="logement_id" class="form-select" onchange="this.form.submit()">
+              <option value="" {% if not logement_id %}selected{% endif %}>Tous les logements</option>
+              {% for loge in logements %}
+                <option value="{{ loge.id }}"
+                        {% if loge.id|stringformat:"s" == logement_id|stringformat:"s" %}selected{% endif %}>
+                  {{ loge.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted">Année</label>
+            <select name="year" class="form-select" onchange="this.form.submit()">
+              {% for y in available_years %}
+                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted">Mois</label>
+            <select name="month" class="form-select" onchange="this.form.submit()">
+              {% for m in available_months %}
+                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m|get_month_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Résumé économique -->
+    <div class="card shadow-lg mb-5">
+      <div class="card-body">
+        <h4 class="fw-semibold mb-4">Résumé - {{ selected_month|get_month_name }} {{ selected_year }}</h4>
+        <!-- Indicateurs clés -->
+        <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+          <div class="col">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="text-muted">Taux d'occupation</h6>
+                <p class="display-6 text-primary fw-bold">{{ occupancy_rate }}%</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="text-muted">Jours vides</h6>
+                <p class="display-6 fw-bold">{{ days_vacant }} jours</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="text-muted">Réservations</h6>
+                <p class="display-6 fw-bold">{{ total_reservations }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="text-muted">Prix moyen / nuit</h6>
+                <p class="display-6 fw-bold">{{ average_price|floatformat:2 }} €</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Revenu Brut</h6>
+              <p class="display-6 fw-bold text-success" id="total-revenue">0.00 €</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Remboursements</h6>
+              <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Net versé</h6>
+              <p class="display-6 fw-bold text-primary" id="net-profit">0.00 €</p>
+            </div>
+          </div>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Commission plateforme</h6>
+              <p class="display-6 fw-bold" id="total-admin">0.00 €</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Frais de paiement</h6>
+              <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Taxes collectées</h6>
+              <p class="display-6 fw-bold" id="total-taxes">0.00 €</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Graphique annuel -->
+    <div class="card shadow-lg">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold mb-0">Graphique des Revenus - {{ selected_year }}</h5>
+          <small class="text-muted">Vue cumulée des revenus nets, frais et remboursements</small>
+        </div>
+        <canvas id="economy-chart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+{% block extra_js %}
+  <script>
+  const logementId = {{ logement_id|default:"null" }};
+  const labels = {{ chart_labels|safe }};
+  const totalRevenuNet = {{ revenue_net_data|safe }};
+  const totalRevenuBrut = {{ revenue_brut_data|safe }};
+  const admintotalRevenu = {{ admin_revenue_data|safe }};
+  const totalRefunds = {{ refunds_data|safe }};
+  const platformEarnings = {{ platform_fee_data|safe }};
+  const paymentFees = {{ payment_fee_data|safe }};
+  const taxes = {{ tax_data|safe }};
+  const csrfToken = "{{ csrf_token }}";
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js"></script>
+  <script src="{% static 'logement/js/revenu.js' %}"></script>
+{% endblock extra_js %}

@@ -2,9 +2,6 @@ from django.contrib import admin
 from .models import (
     Logement,
     Photo,
-    Reservation,
-    booking_booking,
-    airbnb_booking,
     Discount,
     DiscountType,
     City,
@@ -20,9 +17,7 @@ class PhotoInline(admin.TabularInline):
 
     def preview(self, obj):
         if obj.image:
-            return format_html(
-                '<img src="{}" style="max-height:100px;">', obj.image.url
-            )
+            return format_html('<img src="{}" style="max-height:100px;">', obj.image.url)
         return "Pas d'image"
 
     preview.short_description = "Aperçu"
@@ -35,31 +30,8 @@ class LogementAdmin(admin.ModelAdmin):
 
 admin.site.register(Logement, LogementAdmin)
 admin.site.register(Photo)
-
-
-class ReservationAdmin(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "code",
-        "logement",
-        "user",
-        "start",
-        "end",
-        "statut",
-        "guest",
-        "date_reservation",
-        "price",
-        "tax",
-    ]
-    list_filter = ["statut", "logement", "start"]
-    ordering = ["-date_reservation"]
-
-
-admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(City)
 
-admin.site.register(airbnb_booking)
-admin.site.register(booking_booking)
 admin.site.register(Discount)
 admin.site.register(DiscountType)
 

@@ -20,25 +20,19 @@ def get_stripe_account_info(user):
 
 
 def get_reservation_stripe_data(user):
-    from logement.models import Reservation
+    from reservation.models import Reservation
 
     data = []
-    reservations = Reservation.objects.filter(logement__owner=user).select_related(
-        "logement"
-    )
+    reservations = Reservation.objects.filter(logement__owner=user).select_related("logement")
 
     for r in reservations:
         payment_intent = refund = None
         # Main payment intent
         if r.stripe_payment_intent_id:
             try:
-                payment_intent = stripe.PaymentIntent.retrieve(
-                    r.stripe_payment_intent_id
-                )
+                payment_intent = stripe.PaymentIntent.retrieve(r.stripe_payment_intent_id)
             except Exception as e:
-                logger.warning(
-                    f"[Stripe] Error fetching payment intent for {r.code}: {e}"
-                )
+                logger.warning(f"[Stripe] Error fetching payment intent for {r.code}: {e}")
 
         if r.stripe_refund_id:
             try:
@@ -50,13 +44,9 @@ def get_reservation_stripe_data(user):
         # Deposit payment intent
         if r.stripe_deposit_payment_intent_id:
             try:
-                deposit_intent = stripe.PaymentIntent.retrieve(
-                    r.stripe_deposit_payment_intent_id
-                )
+                deposit_intent = stripe.PaymentIntent.retrieve(r.stripe_deposit_payment_intent_id)
             except Exception as e:
-                logger.warning(
-                    f"[Stripe] Error fetching deposit intent for {r.code}: {e}"
-                )
+                logger.warning(f"[Stripe] Error fetching deposit intent for {r.code}: {e}")
         data.append(
             {
                 "reservation": r,

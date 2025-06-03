@@ -11,3 +11,4 @@ def user_is_owner_admin(view_func):
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
     return _wrapped_view
+

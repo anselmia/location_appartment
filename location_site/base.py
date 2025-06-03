@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     "accounts",
     "administration",
     "logement.apps.LogementConfig",
+    "payment",
+    "reservation"
 ]
 
 MIDDLEWARE = [

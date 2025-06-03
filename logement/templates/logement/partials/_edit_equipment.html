@@ -1,0 +1,34 @@
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% load extra_tags %}
+<form method="post"
+      action="{% url 'logement:update_equipment' logement.id %}">
+    {% csrf_token %}
+    <div class="equipment-grid">
+        {% for type_key, type_label in equipment_type_choices %}
+            {% with grouped_equipment|get:type_key as current_equips %}
+                {% if current_equips %}
+                    <div class="equipment-group">
+                        <h3>{{ type_label }}</h3>
+                        <div class="equipment-grid">
+                            {% for equip in current_equips %}
+                                <label class="equip-card">
+                                    <input type="checkbox"
+                                           name="equipment"
+                                           value="{{ equip.id }}"
+                                           {% if equip.id in selected_equipment_ids %}checked{% endif %}>
+                                    {% if equip.icon %}<i class="{{ equip.icon }}"></i>{% endif %}
+                                    <span>{{ equip.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary mt-4 px-4 py-2">💾 {% trans "Enregistrer les équipements" %}</button>
+    </div>
+</form>

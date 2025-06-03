@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django_q.tasks import async_task
 from .models import Conciergerie
 from .forms import ConciergerieForm
 from logement.models import City
@@ -34,6 +35,11 @@ def update_conciergerie(request, pk=None):
             conciergerie = Conciergerie.objects.get(id=pk)
         else:
             conciergerie = Conciergerie.objects.get(user=request.user)
+
+        if not (request.user.is_superuser or request.user.is_admin) and conciergerie.user != request.user:
+            messages.error(request, "Accès non autorisé à cette conciergerie.")
+            return redirect("accounts:dashboard")
+
     except Conciergerie.DoesNotExist:
         messages.error(request, "Vous n'avez pas encore de conciergerie à modifier.")
         return redirect("accounts:dashboard")
@@ -97,8 +103,11 @@ def bulk_action(request):
             messages.success(request, f"{count} conciergerie(s) supprimée(s).")
 
         elif action == "validate":
-            updated = queryset.update(validated=True)
-            messages.success(request, f"{updated} conciergerie(s) validée(s).")
+            for conciergerie in queryset:
+                conciergerie.validated = True
+                conciergerie.save()
+                async_task("conciergerie.tasks.send_conciergerie_validation_email", conciergerie.id)
+            messages.success(request, f"{queryset.count()} conciergerie(s) validée(s) avec notification.")
 
         else:
             messages.error(request, "Action non reconnue.")

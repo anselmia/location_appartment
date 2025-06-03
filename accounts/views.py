@@ -2,30 +2,38 @@ import logging
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .forms import (
+
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.urls import reverse
+from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
+from django_q.tasks import async_task
+
+from accounts.models import Message, Conversation
+from accounts.forms import (
     CustomUserCreationForm,
     CustomUserChangeForm,
     MessageForm,
     ContactForm,
     CustomPasswordChangeForm,
 )
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
-from logement.models import Reservation
-
-from .models import Message, Conversation
-from django.core.mail import send_mail
-from django.contrib.auth import update_session_auth_hash
-from common.views import is_stripe_admin
-from django.urls import reverse
-from django.core.cache import cache
-from django_ratelimit.decorators import ratelimit
 from accounts.services.conversations import get_reservations_for_conversations_to_start, get_conversations
-from logement.services.reservation_service import get_user_reservation
-from common.decorators import user_is_reservation_customer
+from accounts.decorators import stripe_attempt_limiter
+
+from reservation.models import Reservation
+from reservation.services.reservation_service import get_user_reservation
+
+from common.decorators import is_admin
+from common.services.network import get_client_ip
+from common.services.helper_fct import is_ajax
+
 from conciergerie.models import Conciergerie
-from django.conf import settings
+
+from payment.services.payment_service import is_stripe_admin
+
 
 logger = logging.getLogger(__name__)
 
@@ -93,9 +101,9 @@ def client_dashboard(request):
             messages.error(request, "Impossible de charger vos réservations.")
 
         formUser = CustomUserChangeForm(instance=user)
-        password_form = CustomPasswordChangeForm(user=user, data=request.POST or None)
 
         if request.method == "POST" and "change_password" in request.POST:
+            password_form = CustomPasswordChangeForm(user=user, data=request.POST)
             if password_form.is_valid():
                 try:
                     password_form.save()
@@ -109,6 +117,8 @@ def client_dashboard(request):
             else:
                 logger.warning(f"⚠️ Password form invalid for user {user.id}")
                 messages.error(request, "Veuillez corriger les erreurs du formulaire.")
+        else:
+            password_form = CustomPasswordChangeForm(user=user)
 
         user_is_stripe_admin = is_stripe_admin(user)
 
@@ -184,14 +194,14 @@ def messages_view(request, conversation_id=None):
     form = MessageForm()
 
     if conversation_id:
-        active_conversation = get_object_or_404(Conversation, id=conversation_id)
+        active_conversation = get_object_or_404(
+            Conversation.objects.prefetch_related("participants"), id=conversation_id
+        )
         if user not in active_conversation.participants.all() and not (user.is_admin or user.is_superuser):
             messages.error(request, "Vous n'avez pas accès à cette conversation.")
             return redirect("accounts:messages")
 
-        messages_qs = (
-            active_conversation.messages.select_related("sender").prefetch_related("read_by").order_by("timestamp")
-        )
+        messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by")
 
         for msg in messages_qs:
             if user in msg.recipients.all() and user not in msg.read_by.all():
@@ -216,7 +226,7 @@ def messages_view(request, conversation_id=None):
     }
 
     # Return only the main panel if AJAX
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    if is_ajax(request):
         return render(request, "accounts/partials/_conversation.html", context)
 
     return render(request, "accounts/messages.html", context)
@@ -225,7 +235,7 @@ def messages_view(request, conversation_id=None):
 def conversation_view(request, reservation_code):
     conv = get_object_or_404(Conversation, reservation_code=reservation_code)
 
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    if is_ajax(request):
         return render(request, "account/partials/_conversation.html", {"conversation": conv})
 
     return render(request, "messages/conversation_full.html", {"conversation": conv})
@@ -247,7 +257,9 @@ def start_conversation(request):
             return redirect("accounts:messages")
 
         # Créer ou récupérer une conversation liée à cette réservation
-        conversation, created = Conversation.objects.get_or_create(reservation=reservation)
+        conversation, created = Conversation.objects.get_or_create(
+            reservation=reservation, defaults={"updated_at": timezone.now()}
+        )
 
         if created:
             conversation.participants.set(participants)
@@ -265,14 +277,7 @@ def contact_view(request):
             cd = form.cleaned_data
             # Optional: send email
             try:
-                send_mail(
-                    subject=cd["subject"],
-                    message=f"Message de {cd['name']} ({cd['email']}):\n\n{cd['message']}",
-                    from_email=cd["email"],
-                    recipient_list=[settings.CONTACT_EMAIL],  # define this in settings
-                    fail_silently=False,
-                )
-                logger.info(f"Message de contact reçu de {cd['name']} ({cd['email']})")
+                async_task("accounts.tasks.send_contact_email", cd)
                 messages.success(request, "✅ Message envoyé avec succès.")
             except Exception as e:
                 logger.error(f"Erreur d'envoi de mail: {e}")
@@ -309,23 +314,11 @@ def delete_account(request):
     return redirect("common:home")
 
 
+@stripe_attempt_limiter("stripe_account_attempts:{user_id}")
 @login_required
 def create_stripe_account(request):
     user = request.user
-    from common.services.network import get_client_ip
-
     ip = get_client_ip(request)
-
-    key = f"stripe_account_attempts:{user.id}"
-    attempts = cache.get(key, 0)
-
-    if attempts >= 3:
-        logger.warning(f"[Stripe] Limite atteinte pour création Stripe | user={user.username} | ip={ip}")
-        messages.error(request, "Trop de tentatives. Réessayez plus tard.")
-        return redirect("accounts:dashboard")
-
-    cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
-
     if user.stripe_account_id:
         logger.info(f"[Stripe] Création refusée — compte déjà existant pour {user.username} ({user.email}), IP: {ip}")
         messages.info(request, "Un compte Stripe est déjà associé à votre profil.")
@@ -336,6 +329,11 @@ def create_stripe_account(request):
 
         refresh_url = request.build_absolute_uri(reverse("accounts:create_stripe_account"))
         return_url = request.build_absolute_uri(reverse("accounts:dashboard"))
+
+        if not user.email:
+            logger.warning(f"[Stripe] User {user.id} has no valid email")
+            messages.error(request, "Impossible de créer un compte Stripe sans adresse e-mail.")
+            return redirect("accounts:dashboard")
 
         account, account_link = create_stripe_connect_account(user, refresh_url, return_url)
         user.stripe_account_id = account.id
@@ -350,23 +348,12 @@ def create_stripe_account(request):
         return redirect("accounts:dashboard")
 
 
+@stripe_attempt_limiter("stripe_update_account_attempts:{user_id}")
 @login_required
 def update_stripe_account_view(request):
     user = request.user
-    from common.services.network import get_client_ip
 
     ip = get_client_ip(request)
-
-    key = f"stripe_update_account_attempts:{user.id}"
-    attempts = cache.get(key, 0)
-
-    if attempts >= 3:
-        logger.warning(f"[Stripe] Limite atteinte pour mse à jour du compte Stripe | user={user.username} | ip={ip}")
-        messages.error(request, "Trop de tentatives. Réessayez plus tard.")
-        return redirect("accounts:dashboard")
-
-    cache.set(key, attempts + 1, timeout=60 * 60)  # 1h
-
     if not user.stripe_account_id:
         logger.warning(f"[Stripe] Mise à jour refusée — aucun compte Stripe pour {user.username}, IP: {ip}")
         messages.error(request, "Aucun compte Stripe n'est associé à votre profil.")
@@ -404,7 +391,56 @@ def update_stripe_account_view(request):
 
 
 @login_required
-@user_is_reservation_customer
-def reservation_detail(request, code):
-    reservation = get_object_or_404(Reservation, code=code)
-    return render(request, "accounts/reservation_detail.html", {"reservation": reservation})
+@is_admin
+def user_update_view(request, user_id=None):
+    from accounts.models import CustomUser
+    from accounts.forms import UserAdminUpdateForm
+
+    all_users = CustomUser.objects.all().order_by("username")
+
+    # Fallback to query parameter if not provided in path
+    if not user_id:
+        user_id = request.GET.get("user_id")
+        if user_id:
+            return redirect("accounts:user_update_view_with_id", user_id=user_id)
+
+    # If still no ID, redirect to first user
+    if not user_id:
+        user_qs = CustomUser.objects.order_by("username")
+        if user_qs.exists():
+            return redirect("accounts:user_update_view_with_id", user_id=all_users.first().id)
+
+    selected_user = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == "POST":
+        form = UserAdminUpdateForm(request.POST, instance=selected_user)
+        if form.is_valid():
+            form.save()
+            return redirect("accounts:user_update_view_with_id", user_id=selected_user.id)
+
+    selected_user = get_object_or_404(CustomUser, id=user_id)
+    form = UserAdminUpdateForm(instance=selected_user)
+
+    return render(
+        request,
+        "accounts/manage_users.html",
+        {
+            "form": form,
+            "title": f"Modifier l'utilisateur : {selected_user.username}",
+            "all_users": all_users,
+            "selected_user": selected_user,
+        },
+    )
+
+
+@login_required
+@is_admin
+def user_delete_view(request, user_id):
+    from accounts.models import CustomUser
+
+    target_user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == "POST":
+        target_user.delete()
+        messages.success(request, "Utilisateur supprimé avec succès.")
+        return redirect("accounts:user_update_view")
+    return redirect("accounts:user_update_view_with_id", user_id=user_id)

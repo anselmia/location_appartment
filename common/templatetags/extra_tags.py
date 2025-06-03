@@ -42,3 +42,9 @@ def cents_to_euros(value):
         return float(value) / 100
     except (ValueError, TypeError):
         return 0.00
+    
+@register.filter
+def get(dict_obj, key):
+    if isinstance(dict_obj, dict):
+        return dict_obj.get(key, [])
+    return []

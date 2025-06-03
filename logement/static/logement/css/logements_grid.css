@@ -22,7 +22,7 @@
       rgba(0, 0, 0, 0.2)
     ),
     url("your-image-url-here"); /* already handled via inline in template */
-    height: 60vh;
+    height: 70vh;
 }
 
 .logements-section::before {

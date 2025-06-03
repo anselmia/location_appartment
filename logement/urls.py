@@ -1,45 +1,71 @@
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
 from django.conf.urls.i18n import set_language
+from logement.views import DailyPriceViewSet
+from .views import RevenueView
 
 app_name = "logement"
 
-urlpatterns = [    
+router = DefaultRouter()
+router.register(r"prices", DailyPriceViewSet, basename="price")
+
+urlpatterns = [
     path("logement/<int:logement_id>/", views.view_logement, name="view_logement"),
-    path('cities/', views.autocomplete_cities, name='autocomplete_cities'),
+    path("cities/", views.autocomplete_cities, name="autocomplete_cities"),
     path("i18n/setlang/", set_language, name="set_language"),
-    path("book/<int:logement_id>/", views.book, name="book"),
     path(
         "api/get_price/<int:logement_id>/<str:date>/",
         views.get_price_for_date,
         name="get_price_for_date",
     ),
+    path("api/export/ical/<str:code>/", views.export_ical, name="export-ical"),
+    path("search/", views.logement_search, name="logement_search"),
+    path("logement/add/", views.manage_logement, name="add_logement"),
+    path("edit-logement/<int:logement_id>/", views.manage_logement, name="edit_logement"),
+    path("edit-logement/<int:logement_id>/add_room/", views.add_room, name="add_room"),
+    path("room/<int:room_id>/delete/", views.delete_room, name="delete_room"),
     path(
-        "api/check_availability/<int:logement_id>/",
-        views.check_availability,
-        name="check_availability",
+        "edit-logement/<int:logement_id>/upload_photos/",
+        views.upload_photos,
+        name="upload_photos",
     ),
     path(
-        "api/check_booking_input/<int:logement_id>/",
-        views.check_booking_input,
-        name="check_booking_input",
+        "api/change-photo-room/<int:photo_id>/",
+        views.change_photo_room,
+        name="change_photo_room",
     ),
     path(
-        "payment/success/<str:code>/",
-        views.payment_success,
-        name="payment_success",
+        "api/move-photo/<int:photo_id>/<str:direction>/",
+        views.move_photo,
+        name="move_photo",
+    ),
+    path("api/delete-photo/<int:photo_id>/", views.delete_photo, name="delete_photo"),
+    path(
+        "api/delete-all-photos/<int:logement_id>/",
+        views.delete_all_photos,
+        name="delete_all_photos",
+    ),
+    path("api/rotate-photos/<int:photo_id>/", views.rotate_photo, name="rotate_photo"),
+    path(
+        "update-equipment/<int:logement_id>/",
+        views.update_equipment,
+        name="update_equipment",
+    ),
+    path("calendar/", views.calendar, name="calendar"),
+    path(
+        "logement/discounts/<int:logement_id>/",
+        views.manage_discounts,
+        name="manage_discounts",
     ),
     path(
-        "payment/cancel/<str:code>/",
-        views.payment_cancel,
-        name="payment_cancel",
+        "logement/discounts/",
+        views.manage_discounts,
+        name="manage_discounts",
     ),
-    path(
-        "cancel-booking/<str:code>/",
-        views.cancel_booking,
-        name="cancel_booking",
-    ),
-    path('api/export/ical/<str:code>/', views.export_ical, name='export-ical'),
-    path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
-    path('search/', views.logement_search, name='logement_search'),    
+    path("revenu/", RevenueView.as_view(), name="revenu"),
+    path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
+    path("logement-dashboard/", views.logement_dashboard, name="dashboard"),
 ]
+
+urlpatterns += router.urls

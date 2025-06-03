@@ -2,7 +2,7 @@ from icalendar import Calendar, Event
 from datetime import datetime
 from django.utils.timezone import make_aware
 from django.shortcuts import get_object_or_404
-from logement.models import Reservation, Logement
+from reservation.models import Reservation, Logement
 from django.conf import settings
 import logging
 

@@ -25,9 +25,8 @@ urlpatterns = [
         views.update_stripe_account_view,
         name="update_stripe_account",
     ),
-    path(
-        "reservation-details/<str:code>/",
-        views.reservation_detail,
-        name="reservation_detail",
-    ),
+    
+    path("users/", views.user_update_view, name="user_update_view"),
+    path("users/<int:user_id>/edit/", views.user_update_view, name="user_update_view_with_id"),
+    path("users/<int:user_id>/delete/", views.user_delete_view, name="user_delete_view"),
 ]

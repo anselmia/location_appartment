@@ -12,7 +12,7 @@ function fetchWithLoader(url, options = {}) {
 }
 
 function logToServer(level, message, meta = {}) {
-  fetchWithLoader("/admin-area/api/log-js/", {
+  fetchWithLoader("/api/log-js/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

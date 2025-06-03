@@ -1,26 +1,23 @@
-import stripe
-import json
 import logging
 import json
-from openai import OpenAI, RateLimitError
+from openai import OpenAI, RateLimitError, AuthenticationError, APIError, Timeout
 from datetime import date
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.urls import reverse
-from django. shortcuts import redirect
+from django.shortcuts import redirect
 from django.contrib import messages
 
 from logement.models import Logement
-from logement.services.email_service import send_mail_contact
+from common.services.email_service import send_mail_contact
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
 
 
-stripe.api_key = settings.STRIPE_PRIVATE_KEY
 logger = logging.getLogger(__name__)
 client = OpenAI(api_key=settings.OPENAI_KEY)
 
@@ -48,7 +45,7 @@ def home(request):
                     messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
         else:
             initial_data = {
-                "name": (request.user if request.user.is_authenticated else ""),
+                "name": request.user.get_full_name() or request.user.username if request.user.is_authenticated else "",
                 "email": request.user.email if request.user.is_authenticated else "",
             }
 
@@ -68,43 +65,47 @@ def home(request):
         raise
 
 
-def is_stripe_admin(user):
-    return user.is_authenticated and (
-        getattr(user, "is_admin", False) or user.is_superuser or user.is_owner or user.is_owner_admin
-    )
-
-
+@require_GET
 def cgu_view(request):
     return render(request, "common/cgu.html")
 
 
+@require_GET
 def confidentiality_view(request):
     return render(request, "common/confidentiality.html")
 
 
+@require_GET
 def cgv_view(request):
     return render(request, "common/cgv.html")
 
 
+@require_GET
 def join_owner(request):
     return render(request, "common/join_owner.html")
 
+
+@require_GET
 def join_user(request):
     return render(request, "common/join_user.html")
 
 
+@require_GET
 def custom_bad_request(request, exception):
     return render(request, "400.html", status=400)
 
 
+@require_GET
 def custom_permission_denied(request, exception):
     return render(request, "403.html", status=403)
 
 
+@require_GET
 def custom_page_not_found(request, exception):
     return render(request, "404.html", status=404)
 
 
+@require_GET
 def custom_server_error(request):
     return render(request, "500.html", status=500)
 
@@ -115,7 +116,11 @@ MAX_MESSAGES_PER_DAY = 5
 @csrf_exempt
 @require_POST
 def chatbot_api(request):
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Requête JSON invalide."}, status=400)
+
     user_input = data.get("message")
 
     # Récupération de la session
@@ -186,6 +191,45 @@ def chatbot_api(request):
         return JsonResponse(
             {"error": "Le service est momentanément saturé. Veuillez réessayer dans un instant."}, status=429
         )
-
+    except AuthenticationError:
+        return JsonResponse({"error": "Clé API invalide."}, status=403)
+    except Timeout:
+        return JsonResponse({"error": "Temps d’attente dépassé. Réessayez."}, status=504)
+    except APIError:
+        logger.exception("OpenAI APIError")
+        return JsonResponse({"error": "Erreur côté serveur IA"}, status=502)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def js_logger(request):
+    logger = logging.getLogger("frontend")
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            level = data.get("level", "info").lower()
+            message = data.get("message", "")
+            meta = data.get("meta", {})
+
+            # Format message with metadata
+            formatted_msg = f"[JS] {message} | Meta: {meta}"
+
+            if level == "debug":
+                logger.debug(formatted_msg)
+            elif level == "info":
+                logger.info(formatted_msg)
+            elif level == "warning":
+                logger.warning(formatted_msg)
+            elif level == "error":
+                logger.error(formatted_msg)
+            elif level == "critical":
+                logger.critical(formatted_msg)
+            else:
+                logger.info(formatted_msg)
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            logger.exception(f"Failed to log JS message: {e}")
+            return HttpResponseBadRequest("Invalid data")
+    return JsonResponse({"error": "Méthode non autorisée"}, status=400)

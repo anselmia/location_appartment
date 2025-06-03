@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from django.conf import settings
 
 from common.services.stripe.stripe_event import EventType, StripeEvent
-from logement.services.payment_service import (
+from payment.services.payment_service import (
     handle_payment_intent_succeeded,
     handle_checkout_session_completed,
     handle_payment_failed,

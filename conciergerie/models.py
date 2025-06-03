@@ -2,6 +2,7 @@ from django.db import models
 from logement.models import City
 from accounts.models import CustomUser
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
@@ -18,7 +19,7 @@ class Conciergerie(models.Model):
     ville = models.ForeignKey(City, related_name="conciergeries", on_delete=models.SET_NULL, null=True, blank=True)
     pays = models.CharField("Pays", max_length=100, default="France")
     telephone = models.CharField("Téléphone", max_length=20)
-    email = models.EmailField("Email")
+    email = models.EmailField("Email", unique=True)
 
     # Informations légales
     forme_juridique = models.CharField("Forme juridique", max_length=100, blank=True)
@@ -41,3 +42,7 @@ class Conciergerie(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.siret and (not self.siret.isdigit() or len(self.siret) != 14):
+            raise ValidationError({"siret": "Le numéro SIRET doit contenir exactement 14 chiffres."})

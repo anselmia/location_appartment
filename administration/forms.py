@@ -1,12 +1,11 @@
 from django import forms
 from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise, SiteConfig
-from django import forms
-from django.core.validators import EmailValidator
-from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
+from common.mixins import BootstrapFormMixin
 
-class HomePageConfigForm(forms.ModelForm):
+
+class HomePageConfigForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = HomePageConfig
         fields = [
@@ -20,7 +19,7 @@ class HomePageConfigForm(forms.ModelForm):
         ]
 
 
-class SiteConfigForm(forms.ModelForm):
+class SiteConfigForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = SiteConfig
         fields = [
@@ -28,7 +27,7 @@ class SiteConfigForm(forms.ModelForm):
         ]
 
 
-class ServiceForm(forms.ModelForm):
+class ServiceForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = Service
         fields = ["title", "icon_class", "description", "background_image"]
@@ -37,7 +36,7 @@ class ServiceForm(forms.ModelForm):
         }
 
 
-class TestimonialForm(forms.ModelForm):
+class TestimonialForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = Testimonial
         fields = ["content"]
@@ -46,16 +45,16 @@ class TestimonialForm(forms.ModelForm):
         }
 
 
-class CommitmentForm(forms.ModelForm):
+class CommitmentForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = Commitment
-        fields = fields = ["title", "text", "background_image"]
+        fields = ["title", "text", "background_image"]
         widgets = {
             "text": forms.Textarea(attrs={"rows": 3}),
         }
 
 
-class EntrepriseForm(forms.ModelForm):
+class EntrepriseForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = Entreprise
         fields = [
@@ -78,34 +77,11 @@ class EntrepriseForm(forms.ModelForm):
             "logo": forms.ClearableFileInput(attrs={"class": "form-control-file"}),
         }
 
+    def clean_contact_email(self):
+        email = self.cleaned_data.get("contact_email")
+        if not email:
+            raise forms.ValidationError("L'adresse e-mail est obligatoire.")
+        return email
+
 
 CustomUser = get_user_model()
-
-
-class UserAdminUpdateForm(forms.ModelForm):
-    email = forms.EmailField(
-        required=True, label="Email", validators=[EmailValidator(message="Veuillez entrer un email valide.")]
-    )
-
-    class Meta:
-        model = CustomUser
-        fields = [
-            "username",
-            "name",
-            "last_name",
-            "email",
-            "phone",
-            "is_admin",
-            "is_owner",
-            "is_owner_admin",
-            "stripe_customer_id",
-            "stripe_account_id",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Make most fields readonly
-        readonly_fields = ["username", "name", "last_name", "email", "phone"]
-        for field in readonly_fields:
-            self.fields[field].disabled = True
