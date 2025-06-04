@@ -16,8 +16,6 @@ class CustomUser(AbstractUser):
     is_owner_admin = models.BooleanField(default=False)
     phone = models.CharField(
         max_length=15,
-        blank=False,
-        null=False,
         validators=[phone_validator],
         unique=True,
         help_text="Numéro au format international, ex: +33612345678",
@@ -26,10 +24,9 @@ class CustomUser(AbstractUser):
     name = models.CharField(max_length=100, verbose_name="Nom")
     stripe_customer_id = models.CharField(
         max_length=255,
-        blank=True,
-        null=True,
-        unique=True,
         help_text="Identifiant client Stripe associé pour paiements et impressions de carte.",
+        null=True,
+        blank=True,
     )
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
     last_activity = models.DateTimeField(null=True, blank=True)  # Track the last activity time

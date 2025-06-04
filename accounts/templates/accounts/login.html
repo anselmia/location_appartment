@@ -24,8 +24,9 @@
             {{ form.password }}
             <button type="submit">{% trans "Se connecter" %}</button>
         </form>
-        <p style="text-align:center;">
-            <a href="{% url 'accounts:register' %}">{% trans "Créer un compte" %}</a>
-        </p>
+        <div class="text-center mt-3">
+            <a href="{% url 'accounts:register' %}"
+               class="btn btn-outline-secondary register-btn">{% trans "Créer un compte" %}</a>
+        </div>
     </div>
 {% endblock content %}

@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const formStart = document.getElementById("id_start");
   const formEnd = document.getElementById("id_end");
   const formGuest = document.getElementById("id_guest");
-  const logementId = logement_js.id; // Get the logement ID from Django context
 
   const checkbox = document.getElementById("cgv-check");
   const submitBtn = document.getElementById("submit-booking");
@@ -44,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to check if the input are correct
   function areInputCorrect(startDate, endDate, guest) {
-    const url = `/api/check_booking_input/${logementId}?start=${startDate}&end=${endDate}&guest=${guest}`;
+    const url = `/reservation/check_booking_input/${logementId}?start=${startDate}&end=${endDate}&guest=${guest}`;
     return new Promise((resolve, reject) => {
       fetchWithLoader(url)
         .then((response) => response.json())
@@ -283,26 +282,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   const stripe = Stripe(stripe_public_key);
-
-  function validateDateInput(inputElement, label = "Date") {
-    const value = inputElement.value.trim();
-
-    // Allow empty value while the user is typing
-    if (value === "") {
-      return false;
-    }
-
-    const parsedDate = new Date(value);
-    if (isNaN(parsedDate.getTime())) {
-      return false;
-    }
-
-    return true;
-  }
-
-  endInput.addEventListener("change", function () {
-    if (validateDateInput(formEnd, "Date de fin")) {
-      updateFinalPrice();
-    }
-  });
 });

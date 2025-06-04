@@ -31,16 +31,33 @@ document.addEventListener("DOMContentLoaded", function () {
   if (loader) {
     loader.style.display = "none";
   }
+
+  const banner = document.getElementById("cookie-banner");
+  const acceptBtn = document.getElementById("accept-cookies");
+
+  // Show banner if no consent cookie
+  if (!document.cookie.includes("cookie_consent=true")) {
+    banner.style.display = "block";
+  }
+
+  acceptBtn.addEventListener("click", function () {
+    // Set a cookie for 6 months
+    const date = new Date();
+    date.setMonth(date.getMonth() + 6);
+    document.cookie = `cookie_consent=true; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
+
+    banner.style.display = "none";
+
+    // OPTIONAL: initialize services
+    initOptionalCookies(); // e.g., analytics, chat widgets, etc.
+  });
 });
 
-if (!localStorage.getItem("cookiesAccepted")) {
-  document.getElementById("cookie-banner").style.display = "flex";
+function initOptionalCookies() {
+  // Load services that require consent
+  // Example: Google Analytics or Hotjar
 }
 
-document.getElementById("accept-cookies").addEventListener("click", () => {
-  localStorage.setItem("cookiesAccepted", true);
-  document.getElementById("cookie-banner").style.display = "none";
-});
 
 setTimeout(() => {
   const alerts = document.querySelectorAll(".alert");

@@ -27,7 +27,6 @@ def is_admin(user):
 
 
 def home(request):
-    logger.info("Rendering homepage")
     try:
         config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
         logements = Logement.objects.prefetch_related("photos").filter(statut="open")

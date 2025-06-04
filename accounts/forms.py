@@ -203,6 +203,15 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
             "stripe_account_id": "Compte stripe Connect",
         }
 
+    def clean_stripe_account_id(self):
+        customer_id = self.cleaned_data.get("stripe_account_id")
+        if (
+            customer_id
+            and CustomUser.objects.filter(stripe_account_id=customer_id).exclude(pk=self.instance.pk).exists()
+        ):
+            raise forms.ValidationError("Ce compte Stripe Connect est déjà utilisé.")
+        return customer_id
+
     def clean_stripe_customer_id(self):
         customer_id = self.cleaned_data.get("stripe_customer_id")
         if (
@@ -211,3 +220,9 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
         ):
             raise forms.ValidationError("Cet identifiant client Stripe est déjà utilisé.")
         return customer_id
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field in ["is_admin", "is_owner", "is_owner_admin"]:
+            cleaned_data[field] = bool(self.data.get(field))
+        return cleaned_data

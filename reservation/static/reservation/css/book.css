@@ -288,6 +288,12 @@ button#submit-booking:disabled:hover {
   color: var(--primary-color);
 }
 
+.logement-info-card {
+  background-color: #fff;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   #reservation-form {

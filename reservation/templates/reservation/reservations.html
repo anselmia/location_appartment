@@ -91,13 +91,17 @@
                             <td class="logement-cell align-middle" data-label="Logement">
                                 <div class="logement-info">
                                     {% if r.logement.photos.all %}
-                                        <img src="{{ r.logement.photos.all.0.image.url }}"
-                                             alt="{{ r.logement.name }}"
-                                             title="{{ r.logement.name }}"
-                                             class="logement-thumbnail">
+                                        <a href="{% url 'logement:view_logement' r.logement.id %}">
+                                            <img src="{{ r.logement.photos.all.0.image.url }}"
+                                                 alt="{{ r.logement.name }}"
+                                                 title="{{ r.logement.name }}"
+                                                 class="logement-thumbnail">
+                                        </a>
                                     {% else %}
-                                        <div title="{{ r.logement.name }}"
-                                             class="logement-thumbnail placeholder-img"></div>
+                                        <a href="{% url 'logement:view_logement' r.logement.id %}">
+                                            <div title="{{ r.logement.name }}"
+                                                 class="logement-thumbnail placeholder-img"></div>
+                                        </a>
                                     {% endif %}
                                     <span class="logement-name d-none d-md-inline">{{ r.logement.name }}</span>
                                 </div>

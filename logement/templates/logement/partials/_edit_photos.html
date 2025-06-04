@@ -59,6 +59,7 @@
      data-url="{% url 'logement:rotate_photo' photo_id=1 %}"></div>
 <form action="{% url 'logement:upload_photos' logement.id %}"
       method="post"
+      id="upload_photos"
       enctype="multipart/form-data"
       class="mt-4">
     {% csrf_token %}

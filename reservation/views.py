@@ -23,7 +23,7 @@ from reservation.services.reservation_service import (
     mark_reservation_cancelled,
 )
 
-from payment.services.payment_service import create_stripe_checkout_session_with_deposit
+from payment.services.payment_service import create_stripe_checkout_session_with_deposit, PAYMENT_FEE_VARIABLE
 
 from logement.models import Logement
 from logement.decorators import user_has_logement
@@ -52,6 +52,14 @@ def book(request, logement_id):
             "fee_per_extra_traveler": str(logement.fee_per_extra_traveler),
             "cleaning_fee": str(logement.cleaning_fee),
             "tax": str(logement.tax),
+            "caution": logement.caution,
+            "type_display": logement.get_type_display(),
+            "cancelation_period": logement.cancelation_period,
+            "bedrooms": logement.bedrooms,
+            "bathrooms": logement.bathrooms,
+            "beds": logement.beds,
+            "ville": logement.ville.name if logement.ville else "Not Available",
+            "payment_fee": PAYMENT_FEE_VARIABLE
         }
 
         if request.method == "POST":
@@ -87,7 +95,7 @@ def book(request, logement_id):
 
         return render(
             request,
-            "logement/book.html",
+            "reservation/book.html",
             {
                 "form": form,
                 "logement": logement,
@@ -100,6 +108,7 @@ def book(request, logement_id):
         )
     except Exception as e:
         logger.exception(f"Booking failed: {e}")
+        raise
 
 
 @login_required

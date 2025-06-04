@@ -11,7 +11,7 @@ urlpatterns = [
         name="check_availability",
     ),
     path(
-        "api/check_booking_input/<int:logement_id>/",
+        "check_booking_input/<int:logement_id>/",
         views.check_booking_input,
         name="check_booking_input",
     ),

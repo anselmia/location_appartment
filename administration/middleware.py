@@ -30,8 +30,7 @@ class UpdateUserActivityMiddleware:
 
         # Update last activity for the authenticated user
         if request.user.is_authenticated:
-            request.user.last_activity = timezone.now()
-            request.user.save()
+            request.user.__class__.objects.filter(pk=request.user.pk).update(last_activity=timezone.now())
 
         return response
 

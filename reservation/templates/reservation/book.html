@@ -5,8 +5,8 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="{% static 'logement/css/book.css' %}">
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{% static 'reservation/css/book.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
@@ -120,6 +120,49 @@
                                value="0">
                         <input type="hidden" id="reservation-tax" name="reservation_tax" value="0">
                     </div>
+                    <div class="card logement-info-card mt-4 shadow-sm p-3">
+                        <div class="card-body">
+                            <h2 class="section-title">Détails du logement</h2>
+                            <ul class="list-unstyled mb-0">
+                                <li>
+                                    <strong>Type :</strong> {{ logement_data.type_display }}
+                                </li>
+                                <li>
+                                    <strong>Ville :</strong> {{ logement_data.ville.name }}
+                                </li>
+                                <li>
+                                    <strong>Capacité :</strong> {{ logement_data.max_traveler }} voyageurs
+                                </li>
+                                <li>
+                                    <strong>Chambres :</strong> {{ logement_data.bedrooms }}
+                                </li>
+                            </ul>
+                            <section class="section-block caution-section">
+                                <h2 class="section-title">Caution (remboursable)</h2>
+                                <ul class="logement-list">
+                                    <li>
+                                        <strong>Montant :</strong> {{ logement_data.caution }} € / réservation
+                                    </li>
+                                    <li>
+                                        <strong>Forme de paiement :</strong> Pré-autorisation sur carte bancaire
+                                    </li>
+                                </ul>
+                            </section>
+                            <section class="section-block cancellation-section">
+                                <h2 class="section-title">Conditions d'annulation</h2>
+                                <ul class="logement-list">
+                                    <li>
+                                        <strong>Avant {{ logement_data.cancelation_period }} jours :</strong>
+                                        Annulation avec retenu des frais de paiement ({{ payment_fee }} %).
+                                    </li>
+                                    <li>
+                                        <strong>À partir de {{ logement_data.cancelation_period }} jours avant l’entrée :</strong>
+                                        L'annulation est non remboursable.
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
                 </div>
                 <!-- Booking Summary Right -->
                 <div class="col-lg-6">
@@ -190,20 +233,22 @@
 {% endblock %}
 {% block extra_js %}
     <script>
-    const logement_js = {{ logement_data|safe }};
-    const logementId = {{ logement.id }};  
-    const csrfToken = "{{ csrf_token }}";
-    const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
-    const reservedDatesStart = {{ reserved_dates_start_json|safe }};
-    const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
-    const today = new Date().toISOString().slice(0, 10);
-    const allPhotoUrls = {{ photo_urls|safe }};
-    const periodLimit = {{ logement.availablity_period }};  
+        // Defining all required JS variables before script loading
+        const logement_js = {{ logement_data|safe }};
+        const logementId = {{ logement.id }};  
+        const csrfToken = "{{ csrf_token }}";
+        const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
+        const reservedDatesStart = {{ reserved_dates_start_json|safe }};
+        const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
+        const today = new Date().toISOString().slice(0, 10);
+        const allPhotoUrls = {{ photo_urls|safe }};
+        const periodLimit = {{ logement.availablity_period }};
     </script>
+    <!-- External JS files -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="{% static 'logement/js/image-galery.js' %}"></script>
-    <script src="{% static 'logement/js/booking.js' %}"></script>
+    <script src="{% static 'reservation/js/booking.js' %}"></script>
     <script src="{% static 'logement/js/calendar.js' %}"></script>
 {% endblock %}

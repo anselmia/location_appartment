@@ -38,10 +38,20 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
-# SECURITY HARDENING
-SECURE_SSL_REDIRECT = False
+# Cookies
+
+# Sessions
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True  # JS can't access session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # Prevents CSRF between sites
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Optional: custom cookie for consent (readable from server)
+COOKIE_CONSENT_NAME = 'cookie_consent'
+
+# SECURITY HARDENING
+SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 X_FRAME_OPTIONS = "DENY"
 SECURE_BROWSER_XSS_FILTER = True

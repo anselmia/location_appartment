@@ -86,8 +86,6 @@ def user_logout(request):
 def client_dashboard(request):
     try:
         user = request.user
-        logger.info(f"🔐 Accessing client dashboard for user {user.id} ({user.email})")
-
         dashboard_link = None
         stripe_account = None
         conciergerie = None
@@ -414,13 +412,14 @@ def user_update_view(request, user_id=None):
 
     if request.method == "POST":
         form = UserAdminUpdateForm(request.POST, instance=selected_user)
-        if form.is_valid():
-            form.save()
-            logger.info(f"User {selected_user.get_full_name} updated")
-            return redirect("accounts:user_update_view_with_id", user_id=selected_user.id)
 
-    selected_user = get_object_or_404(CustomUser, id=user_id)
-    form = UserAdminUpdateForm(instance=selected_user)
+        if form.is_valid():
+            instance = form.save()
+            logger.info(f"User {instance.get_full_name()} updated")
+            messages.success(request, "Utilisateur mis à jour avec succès.")
+            return redirect("accounts:user_update_view_with_id", user_id=instance.id)
+    else:
+        form = UserAdminUpdateForm(instance=selected_user)
 
     return render(
         request,

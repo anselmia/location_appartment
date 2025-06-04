@@ -179,12 +179,14 @@
             {% for logement in page_obj %}
               <div class="card logement-card fade-in-up">
                 <div class="logement-img-wrapper">
-                  <picture>
-                    <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
-                    <img src="{{ logement.photos.first.image.url }}"
-                         loading="lazy"
-                         alt="{{ logement.name }}">
-                  </picture>
+                  <a href="{% url 'logement:view_logement' logement.id %}">
+                    <picture>
+                      <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+                      <img src="{{ logement.photos.first.image.url }}"
+                           loading="lazy"
+                           alt="{{ logement.name }}">
+                    </picture>
+                  </a>
                   <!-- Top-left badge -->
                   <div class="logement-badge">
                     <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
@@ -200,9 +202,7 @@
                     {% if logement.animals %}
                       <i class="fas fa-paw" title="Animaux acceptés"></i>
                     {% else %}
-                      <i class="fas fa-paw"
-                         style="opacity: 0.4"
-                         title="Animaux non autorisés"></i>
+                      <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
                     {% endif %}
                     {% if logement.smoking %}
                       <i class="fas fa-smoking" title="Fumeurs autorisés"></i>

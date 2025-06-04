@@ -230,6 +230,7 @@ input,
 }
 
 input[type="text"],
+input[type="email"],
 select,
 textarea {
   width: 100%;
@@ -536,6 +537,11 @@ ul.list-unstyled li .ml-3 {
   z-index: 10000;
   font-size: 0.95rem;
 }
+
+.cookie-banner p{
+  color: white;
+}
+
 .cookie-banner a {
   color: #ffd700;
   text-decoration: underline;

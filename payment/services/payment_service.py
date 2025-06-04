@@ -80,8 +80,8 @@ def create_stripe_checkout_session_with_deposit(reservation, request):
         amount = int(reservation.price * 100)
 
         # Build full URLs
-        success_url = request.build_absolute_uri(reverse("logement:payment_success", args=[reservation.code]))
-        cancel_url = request.build_absolute_uri(reverse("logement:payment_cancel", args=[reservation.code]))
+        success_url = request.build_absolute_uri(reverse("payment:payment_success", args=[reservation.code]))
+        cancel_url = request.build_absolute_uri(reverse("payment:payment_cancel", args=[reservation.code]))
 
         session_args = {
             "payment_method_types": ["card"],
