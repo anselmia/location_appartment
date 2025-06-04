@@ -29,6 +29,7 @@ from django.views.generic import TemplateView
 class LogementSitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.8
+    protocol = "https"
 
     def items(self):
         return Logement.objects.all()
@@ -40,6 +41,7 @@ class LogementSitemap(Sitemap):
 class StaticViewSitemap(Sitemap):
     priority = 0.5
     changefreq = "monthly"
+    protocol = "https"
 
     def items(self):
         return ["common:home", "accounts:contact", "logement:logement_search"]
@@ -65,8 +67,8 @@ urlpatterns = [
     path(
         "sitemap.xml",
         sitemap,
-        {"sitemaps": sitemaps, "protocol": "https"},
-        name="django.contrib.sitemaps.views.sitemap",
+        {"sitemaps": sitemaps},
+        name="sitemap",
     ),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 ]
