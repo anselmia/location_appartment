@@ -9,7 +9,7 @@ class PaymentTask(models.Model):
         ("transfer_admin", "Transfer to Admin"),
         ("charge_deposit", "Charge Deposit"),
         ("refund", "Refund"),
-        (""),
+        ("checkout", "Check Out"),
     ]
 
     reservation = models.ForeignKey("reservation.Reservation", on_delete=models.CASCADE)
@@ -19,7 +19,7 @@ class PaymentTask(models.Model):
     error = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    task_id = models.CharField(max_length=50, choices=TASK_TYPES)
+    task_id = models.CharField(max_length=50)
 
     def mark_success(self, id):
         self.status = "success"
