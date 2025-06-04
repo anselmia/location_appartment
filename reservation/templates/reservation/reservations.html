@@ -7,37 +7,32 @@
           href="{% static 'reservation/css/reservation.css' %}">
 {% endblock %}
 {% block content %}
-    <div class="container-reservation py-4">
-        <div class="reservation-filters mb-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                <h1 class="reservation-title mb-2">Réservations</h1>
-                <!-- Status filters -->
-                <div class="status-filters d-none d-md-flex gap-2">
-                    <button class="btn btn-outline-secondary btn-filter"
-                            onclick="filterStatus('all')">Tout</button>
-                    <button class="btn btn-outline-success btn-filter"
-                            onclick="filterStatus('confirmee')">Confirmée</button>
-                    <button class="btn btn-outline-info btn-filter"
-                            onclick="filterStatus('terminee')">Terminée</button>
-                    <button class="btn btn-outline-danger btn-filter"
-                            onclick="filterStatus('annulee')">Annulée</button>
-                </div>
-                <!-- Mobile Status Filter -->
-                <select class="form-select d-md-none" onchange="filterStatus(this.value)">
-                    <option value="all">Tout</option>
-                    <option value="confirmee">Confirmée</option>
-                    <option value="terminee">Terminée</option>
-                    <option value="annulee">Annulée</option>
-                </select>
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+            <h1 class="mb-2">Réservations</h1>
+            <div class="d-none d-md-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm"
+                        onclick="filterStatus('all')">Tout</button>
+                <button class="btn btn-outline-success btn-sm"
+                        onclick="filterStatus('confirmee')">Confirmée</button>
+                <button class="btn btn-outline-info btn-sm"
+                        onclick="filterStatus('terminee')">Terminée</button>
+                <button class="btn btn-outline-danger btn-sm"
+                        onclick="filterStatus('annulee')">Annulée</button>
             </div>
+            <select class="form-select d-md-none w-100"
+                    onchange="filterStatus(this.value)">
+                <option value="all">Tout</option>
+                <option value="confirmee">Confirmée</option>
+                <option value="terminee">Terminée</option>
+                <option value="annulee">Annulée</option>
+            </select>
         </div>
-        <!-- Filter form -->
-        <form method="get"
-              class="filter-form row g-2 align-items-center flex-wrap mb-3">
-            <div class="col-auto">
-                <label for="yearFilter" class="col-form-label">Année</label>
+        <form method="get" class="row g-2 align-items-center mb-4">
+            <div class="col-md-auto">
+                <label for="yearFilter" class="form-label mb-0">Année</label>
             </div>
-            <div class="col-auto">
+            <div class="col-md-2">
                 <select id="yearFilter" name="year" class="form-select">
                     <option value="">Toutes</option>
                     {% for y in available_years %}
@@ -46,10 +41,10 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto">
-                <label for="monthFilter" class="col-form-label">Mois</label>
+            <div class="col-md-auto">
+                <label for="monthFilter" class="form-label mb-0">Mois</label>
             </div>
-            <div class="col-auto">
+            <div class="col-md-2">
                 <select id="monthFilter" name="month" class="form-select">
                     <option value="">Tous</option>
                     {% for m in available_months %}
@@ -61,16 +56,15 @@
                 </select>
             </div>
         </form>
-        <div class="search-wrapper mb-4">
+        <div class="mb-4">
             <input type="text"
                    id="searchInput"
-                   class="form-control search-input"
+                   class="form-control"
                    placeholder="Rechercher un voyageur...">
         </div>
-        <div class="table-responsive shadow-sm rounded">
-            <table class="table reservation-table align-middle text-center"
-                   id="reservationTable">
-                <thead class="table-head">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle text-center">
+                <thead class="table-light">
                     <tr>
                         <th>Logement</th>
                         <th>Code</th>
@@ -88,38 +82,43 @@
                 <tbody>
                     {% for r in reservations %}
                         <tr data-status="{{ r.statut|lower }}">
-                            <td class="logement-cell align-middle" data-label="Logement">
-                                <div class="logement-info">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
                                     {% if r.logement.photos.all %}
                                         <a href="{% url 'logement:view_logement' r.logement.id %}">
                                             <img src="{{ r.logement.photos.all.0.image.url }}"
                                                  alt="{{ r.logement.name }}"
-                                                 title="{{ r.logement.name }}"
-                                                 class="logement-thumbnail">
+                                                 class="img-thumbnail"
+                                                 style="width: 60px;
+                                                        height: 60px;
+                                                        object-fit: cover">
                                         </a>
                                     {% else %}
                                         <a href="{% url 'logement:view_logement' r.logement.id %}">
-                                            <div title="{{ r.logement.name }}"
-                                                 class="logement-thumbnail placeholder-img"></div>
+                                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 60px;
+                                                        height: 60px">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
                                         </a>
                                     {% endif %}
-                                    <span class="logement-name d-none d-md-inline">{{ r.logement.name }}</span>
+                                    <span class="d-none d-md-inline">{{ r.logement.name }}</span>
                                 </div>
                             </td>
-                            <td data-label="Code">{{ r.code }}</td>
-                            <td data-label="Statut">
-                                <span class="badge status-badge {{ r.statut|lower }}">{{ r.get_statut_display|title }}</span>
+                            <td>{{ r.code }}</td>
+                            <td>
+                                <span class="badge bg-{{ r.statut|lower }}">{{ r.get_statut_display|title }}</span>
                             </td>
-                            <td data-label="Voyageur">{{ r.user.name }} {{ r.user.last_name }}</td>
-                            <td data-label="Arrivée">{{ r.start|date:"d M Y" }}</td>
-                            <td data-label="Départ">{{ r.end|date:"d M Y" }}</td>
-                            <td data-label="Réservée le">{{ r.date_reservation|date:"d M Y H:i" }}</td>
-                            <td data-label="Invité(s)">{{ r.guest }}</td>
-                            <td data-label="Prix">{{ r.price|floatformat:2 }} €</td>
-                            <td data-label="Taxes">{{ r.tax|floatformat:2 }} €</td>
-                            <td data-label="Détail">
+                            <td>{{ r.user.name }} {{ r.user.last_name }}</td>
+                            <td>{{ r.start|date:"d M Y" }}</td>
+                            <td>{{ r.end|date:"d M Y" }}</td>
+                            <td>{{ r.date_reservation|date:"d M Y H:i" }}</td>
+                            <td>{{ r.guest }}</td>
+                            <td>{{ r.price|floatformat:2 }} €</td>
+                            <td>{{ r.tax|floatformat:2 }} €</td>
+                            <td>
                                 <a href="{% url 'reservation:reservation_detail' r.code %}"
-                                   class="btn btn-outline-primary btn-sm rounded-pill">
+                                   class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Voir
                                 </a>
                             </td>

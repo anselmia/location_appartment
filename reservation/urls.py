@@ -20,22 +20,22 @@ urlpatterns = [
         views.cancel_booking,
         name="cancel_booking",
     ),
-    path("", views.reservation_dashboard, name="reservation_dashboard"),
-    path("<str:code>/", views.reservation_detail, name="reservation_detail"),
-    path(
-        "<str:code>/cancel/",
-        views.cancel_reservation,
-        name="cancel_reservation",
-    ),
-    path(
-        "<int:logement_id>/",
-        views.reservation_dashboard,
-        name="reservation_dashboard_by_id",
-    ),
     path("admin-reservations/", views.manage_reservations, name="manage_reservations"),
     path(
         "details/<str:code>/",
         views.customer_reservation_detail,
         name="customer_reservation_detail",
+    ),
+    path("", views.reservation_dashboard, name="reservation_dashboard"),
+    path(
+        "<int:logement_id>/",
+        views.reservation_dashboard,
+        name="reservation_dashboard_by_id",
+    ),
+    path("<str:code>/", views.reservation_detail, name="reservation_detail"),
+    path(
+        "<str:code>/cancel/",
+        views.cancel_reservation,
+        name="cancel_reservation",
     ),
 ]
