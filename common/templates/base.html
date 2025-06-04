@@ -66,10 +66,12 @@
             "longitude": 7.2700
         },
         }
+
         </script>
         {% block extrahead %}{% endblock %}
     </head>
     <body class="page-wrapper">
+        <div id="google_translate_element" style="display:none;"></div>
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3"
@@ -119,6 +121,7 @@
             </p>
             <button id="accept-cookies">J'accepte</button>
         </div>
+        <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
         <script src="{% static 'common/js/nav.js' %}"></script>
         <script src="{% static 'common/js/global.js' %}"></script>
         <script> chat_url= "{% url 'common:chatbot_api' %}";</script>

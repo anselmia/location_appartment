@@ -538,7 +538,7 @@ ul.list-unstyled li .ml-3 {
   font-size: 0.95rem;
 }
 
-.cookie-banner p{
+.cookie-banner p {
   color: white;
 }
 
@@ -554,6 +554,34 @@ ul.list-unstyled li .ml-3 {
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.translate-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-color, #333);
+  padding: 0.5rem 1rem;
+  background: var(--bg-light, #f8f8f8);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.translate-select {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+}
+
+.translate-select:hover,
+.translate-select:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
 /* ==== RESPONSIVE === */

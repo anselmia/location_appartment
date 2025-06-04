@@ -67,30 +67,17 @@
             {% else %}
                 <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
             {% endif %}
-            <form action="{% url 'logement:set_language' %}"
-                  method="post"
-                  class="lang-form">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit"
-                        name="language"
-                        value="fr"
-                        class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français">
-                </button>
-                <button type="submit"
-                        name="language"
-                        value="en"
-                        class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/en.svg' %}" alt="English">
-                </button>
-                <button type="submit"
-                        name="language"
-                        value="es"
-                        class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
-                    <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español">
-                </button>
-            </form>
+            <div class="translate-container">
+                🌐
+                <select id="custom_translate_select" class="translate-select">
+                    <option value="">Français</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Português</option>
+                </select>
+            </div>
         </div>
     </nav>
 </header>
