@@ -38,7 +38,7 @@ def home(request):
                 try:
                     send_mail_contact(cd)
                     messages.success(request, "✅ Message envoyé avec succès.")
-                    return redirect("logement:home")
+                    return redirect("common:home")
                 except Exception as e:
                     logger.error(f"Erreur d'envoi de mail: {e}")
                     messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
