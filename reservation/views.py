@@ -247,4 +247,4 @@ def reservation_dashboard(request, logement_id=None):
 @user_is_reservation_customer
 def customer_reservation_detail(request, code):
     reservation = get_object_or_404(Reservation, code=code)
-    return render(request, "accounts/reservation_detail.html", {"reservation": reservation})
+    return render(request, "reservation/customer_reservation_detail.html", {"reservation": reservation})

@@ -163,7 +163,7 @@ def client_dashboard(request):
     except Exception as e:
         logger.exception(f"❌ Unexpected error in client_dashboard for user {request.user.id}: {e}")
         messages.error(request, "Une erreur inattendue est survenue.")
-        return redirect("homepage")  # Fallback route in case rendering fails
+        return redirect("common:home")  # Fallback route in case rendering fails
 
 
 @login_required
