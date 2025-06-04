@@ -133,7 +133,7 @@ def create_stripe_checkout_session_with_deposit(reservation, request):
         raise
 
 
-def send_stripe_payment_link(reservation):
+def send_stripe_payment_link(reservation, request):
     if not reservation.user.email:
         raise ValueError(f"L'utilisateur n'a pas d'e-mail lié à la réservation {reservation.code}")
 
@@ -141,7 +141,7 @@ def send_stripe_payment_link(reservation):
         raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
 
     try:
-        session = create_stripe_checkout_session_with_deposit(reservation)
+        session = create_stripe_checkout_session_with_deposit(reservation, request)
 
         logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session.url}")
 
@@ -254,7 +254,7 @@ def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservati
             idempotency_key=f"deposit_{reservation.code}",
         )
 
-        task.mark_success()
+        task.mark_success(intent.id)
 
         logger.info(f"✅ Deposit Charged successful for reservation {reservation.code}, intent ID: {intent.id}")
         return intent
@@ -262,31 +262,31 @@ def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservati
     except stripe.error.CardError as e:
         # Declines, etc.
         logger.error(f"❌ Carte refusée pour la réservation {reservation.code} : {e.user_message}")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         raise ValueError(f"Carte refusée : {e.user_message}")
 
     except stripe.error.InvalidRequestError as e:
         logger.error(f"❌ Mauvaise requête Stripe (paramètre invalide) : {e.user_message or str(e)}")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         raise
 
     except stripe.error.AuthenticationError as e:
         logger.critical(f"❌ Authentification Stripe invalide. Vérifiez la clé API: {e}.")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         raise
 
     except stripe.error.APIConnectionError as e:
         logger.error(f"❌ Erreur de connexion réseau avec Stripe: {e}")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         raise
 
     except stripe.error.StripeError as e:
         logger.exception("❌ Erreur Stripe générale inattendue : %s", str(e))
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         raise
 
     except Exception as e:
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(intent, "id", None) if intent else None)
         logger.exception(
             "❌ Erreur interne lors du chargement du paiement pour la réservation %s : %s",
             reservation.code,
@@ -396,37 +396,37 @@ def charge_reservation(reservation):
                 metadata={"code": reservation.code, "logement": reservation.logement.code, "transfer": "owner"},
                 idempotency_key=f"transfer_{reservation.code}",
             )
-            task.mark_success()
+            task.mark_success(transfer.id)
             logger.info(f"✅ Owner payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
 
         except stripe.error.InvalidRequestError as e:
             logger.exception(
                 f"❌ Invalid request to Stripe during transfer for reservation {reservation.code}: {e.user_message or str(e)}"
             )
-            task.mark_failure(e)
+            task.mark_failure(e, getattr(transfer, "id", None) if transfer else None)
             raise
 
         except stripe.error.AuthenticationError as e:
             logger.exception(
                 f"❌ Authentication with Stripe failed during transfer for reservation {reservation.code}: {e.user_message or str(e)}"
             )
-            task.mark_failure(e)
+            task.mark_failure(e, getattr(transfer, "id", None) if transfer else None)
             raise
         except stripe.error.APIConnectionError as e:
             logger.exception(
                 f"❌ Network error with Stripe during transfer for reservation {reservation.code}: {e.user_message or str(e)}"
             )
-            task.mark_failure(e)
+            task.mark_failure(e, getattr(transfer, "id", None) if transfer else None)
             raise
         except stripe.error.StripeError as e:
             logger.exception(
                 f"❌ General Stripe error during transfer for reservation {reservation.code}: {e.user_message or str(e)}"
             )
-            task.mark_failure(e)
+            task.mark_failure(e, getattr(transfer, "id", None) if transfer else None)
             raise
         except Exception as e:
             logger.exception(f"❌ Unexpected error during transfer for reservation {reservation.code}: {str(e)}")
-            task.mark_failure(e)
+            task.mark_failure(e, getattr(transfer, "id", None) if transfer else None)
             raise
     except Exception as e:
         logger.exception(f"❌ Unexpected error during transfer for reservation {reservation.code}: {str(e)}")
@@ -454,19 +454,19 @@ def refund_payment(reservation, refund="full", amount_cents=None):
             params["amount"] = int(amount_cents)
 
         refund = stripe.Refund.create(**params)
-        task.mark_success()
+        task.mark_success(refund.id)
         logger.info(f"✅ Refund processed: {refund.id}, Amount: {params.get('amount', 'full')} cents")
 
         return refund
 
     except stripe.error.StripeError as e:
         logger.exception(f"❌ Stripe refund error: {e}")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(refund, "id", None) if refund else None)
         raise
 
     except Exception as e:
         logger.exception(f"❌ Unexpected refund error: {e}")
-        task.mark_failure(e)
+        task.mark_failure(e, getattr(refund, "id", None) if refund else None)
         raise
 
 
@@ -687,6 +687,11 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 logger.info(f"ℹ️ Reservation {reservation.code} already confirmed.")
                 return
 
+            task, _ = PaymentTask.objects.get_or_create(
+                reservation=reservation,
+                type="checkout",
+            )
+
             try:
                 intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
             except stripe.error.StripeError as e:
@@ -720,6 +725,8 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 ]
             )
 
+            task.mark_success(payment_intent_id)
+
         logger.info(f"✅ Reservation {reservation.code} confirmed")
 
         try:
@@ -732,6 +739,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
         logger.exception(
             f"❌ Unexpected error in handle_checkout_session_completed for reservation {reservation_code or '[unknown]'}: {e}"
         )
+        task.mark_failure(e, payment_intent_id)
 
 
 def handle_transfer_created(data: StripeTransferEventData):

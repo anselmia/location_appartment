@@ -101,7 +101,7 @@ def stripe_webhook(request):
 def send_payment_link(request, code):
     try:
         reservation = Reservation.objects.get(code=code)
-        send_stripe_payment_link(reservation)  # Your helper function
+        send_stripe_payment_link(reservation, request)  # Your helper function
         messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
     except Exception as e:
         logger.exception(f"❌ Failed to send payment link for {code}: {e}")
