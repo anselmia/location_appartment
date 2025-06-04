@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">
@@ -8,22 +8,63 @@
     <section class="contact-section">
         <div class="contact-wrapper">
             <div class="contact-header">
-                <h1>Contactez notre équipe</h1>
-                <p>Vous êtes propriétaire, voyageur ou partenaire ? Notre équipe dédiée vous répond avec attention et efficacité.</p>
+                <h1>{% trans "Contactez notre équipe" %}</h1>
+                <p>
+                    {% trans "Vous êtes propriétaire, voyageur ou partenaire ? Notre équipe dédiée vous répond avec attention et efficacité." %}
+                </p>
             </div>
             <form method="post" class="contact-form" novalidate>
                 {% csrf_token %}
+                {# Global (non-field) form errors #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                {# Messages (Django messages framework) #}
                 {% if messages %}
                     {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
                 {% endif %}
                 <div class="form-row">
-                    <div class="form-field">{{ form.name.label_tag }} {{ form.name }}</div>
-                    <div class="form-field">{{ form.email.label_tag }} {{ form.email }}</div>
+                    <div class="form-field">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="error">
+                                {% for error in form.name.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-field">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="error">
+                                {% for error in form.email.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="form-field">{{ form.subject.label_tag }} {{ form.subject }}</div>
-                <div class="form-field">{{ form.message.label_tag }} {{ form.message }}</div>
+                <div class="form-field">
+                    {{ form.subject.label_tag }}
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                        <div class="error">
+                            {% for error in form.subject.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-field">
+                    {{ form.message.label_tag }}
+                    {{ form.message }}
+                    {% if form.message.errors %}
+                        <div class="error">
+                            {% for error in form.message.errors %}<small class="text-danger">{{ error }}</small>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
                 <div style="text-align: center;">
-                    <button type="submit" class="btn-contact">Envoyer ma demande</button>
+                    <button type="submit" class="btn-contact">{% trans "Envoyer ma demande" %}</button>
                 </div>
             </form>
         </div>

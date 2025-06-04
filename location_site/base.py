@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django.contrib.humanize",
-    "widget_tweaks", 
+    "widget_tweaks",
     "huey.contrib.djhuey",
     "common",
     "accounts.apps.AccountsConfig",
@@ -51,6 +51,7 @@ MIDDLEWARE = [
     "administration.middleware.TrafficLoggerMiddleware",
     "administration.middleware.UpdateUserActivityMiddleware",
     "administration.middleware.SessionTimeoutMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 ROOT_URLCONF = "location_site.urls"

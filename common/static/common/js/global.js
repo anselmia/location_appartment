@@ -27,19 +27,6 @@ function logToServer(level, message, meta = {}) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const select = document.getElementById("custom_translate_select");
-
-  select.addEventListener("change", function () {
-    const lang = select.value;
-    if (lang) {
-      const url = window.location.href;
-      const newUrl = `https://translate.google.com/translate?hl=${lang}&sl=fr&tl=${lang}&u=${encodeURIComponent(
-        url
-      )}`;
-      window.location.href = newUrl;
-    }
-  });
-
   const loader = document.getElementById("loader");
   if (loader) {
     loader.style.display = "none";
@@ -140,13 +127,3 @@ function toggleChat() {
   window.style.display = window.style.display === "none" ? "block" : "none";
 }
 
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement(
-    {
-      pageLanguage: "fr",
-      includedLanguages: "fr,en,es,de,it,pt",
-      autoDisplay: false,
-    },
-    "google_translate_element"
-  );
-}
