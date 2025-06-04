@@ -43,11 +43,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True  # JS can't access session cookie
-SESSION_COOKIE_SAMESITE = 'Lax'  # Prevents CSRF between sites
+SESSION_COOKIE_SAMESITE = "Lax"  # Prevents CSRF between sites
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Optional: custom cookie for consent (readable from server)
-COOKIE_CONSENT_NAME = 'cookie_consent'
+COOKIE_CONSENT_NAME = "cookie_consent"
 
 # SECURITY HARDENING
 SECURE_SSL_REDIRECT = False
@@ -58,6 +58,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://www.bnbazure.fr",
+    "https://bnbazure.fr",
 ]
 
 LOG_DIR = "/var/log/location_app/"
@@ -101,6 +102,9 @@ LOGGING = {
             "class": "django.utils.log.AdminEmailHandler",
             "formatter": "verbose",
         },
+        "null": {
+            "class": "logging.NullHandler",
+        },
     },
     "root": {
         "handlers": ["console", "file"],
@@ -136,6 +140,11 @@ LOGGING = {
             "handlers": ["console", "file"],
             "level": "INFO",
             "propagate": False,
+        },
+        "django.security.DisallowedHost": {
+            "handlers": ["null"],
+            "propagate": False,
+            "level": "CRITICAL",
         },
     },
 }
