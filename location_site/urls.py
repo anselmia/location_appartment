@@ -23,7 +23,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.contrib.sitemaps import Sitemap
 from logement.models import Logement  # Your model
 from django.urls import reverse
-from django.urls import re_path
+from django.views.generic import TemplateView
 
 
 class LogementSitemap(Sitemap):
@@ -37,8 +37,20 @@ class LogementSitemap(Sitemap):
         return reverse("reservation:book", kwargs={"logement_id": obj.id})
 
 
+class StaticViewSitemap(Sitemap):
+    priority = 0.5
+    changefreq = "monthly"
+
+    def items(self):
+        return ["common:home", "accounts:contact", "logement:logement_search"]
+
+    def location(self, item):
+        return reverse(item)
+
+
 sitemaps = {
     "logements": LogementSitemap,
+    "static": StaticViewSitemap,
 }
 
 urlpatterns = [
@@ -51,8 +63,12 @@ urlpatterns = [
     path("payment/", include("payment.urls", namespace="payment")),
     path("reservation/", include("reservation.urls", namespace="reservation")),
     path(
-        "sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"
-    ),  # ✅ this avoids redirect
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps, "protocol": "https"},
+        name="django.contrib.sitemaps.views.sitemap",
+    ),
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 ]
 
 # Append the static files URLs
