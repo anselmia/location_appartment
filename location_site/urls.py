@@ -50,7 +50,9 @@ urlpatterns = [
     path("", include("logement.urls", namespace="logement")),
     path("payment/", include("payment.urls", namespace="payment")),
     path("reservation/", include("reservation.urls", namespace="reservation")),
-    re_path(r"^sitemap\.xml$", sitemap, {"sitemaps": sitemaps}, name="sitemap"),  # ✅ this avoids redirect
+    path(
+        "sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"
+    ),  # ✅ this avoids redirect
 ]
 
 # Append the static files URLs
