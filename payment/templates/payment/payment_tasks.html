@@ -48,6 +48,7 @@
                     <tr>
                         <th>Réservation</th>
                         <th>Type</th>
+                        <th>ID</th>
                         <th>Statut</th>
                         <th>Message</th>
                         <th>Créé</th>
@@ -59,6 +60,7 @@
                         <tr>
                             <td>{{ task.reservation.code }}</td>
                             <td>{{ task.get_type_display }}</td>
+                            <td>{{ task.task_id }}</td>
                             <td>
                                 {% if task.status == "success" %}
                                     <span class="badge bg-success">Succès</span>
