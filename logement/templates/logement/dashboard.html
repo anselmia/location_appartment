@@ -2,8 +2,7 @@
 {% load static %}
 {% block extrahead %}
   {{ block.super }}
-  <link rel="stylesheet"
-        href="{% static 'logement/css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'logement/css/dashboard.css' %}">
 {% endblock %}
 {% block content %}
   <div class="admin-logement-container">
@@ -12,8 +11,7 @@
         <h2>Gestion des logements</h2>
         <p class="admin-subtitle">Gérez vos annonces, ajoutez ou modifiez les logements disponibles</p>
       </div>
-      <a href="{% url 'logement:add_logement' %}"
-         class="btn-add-logement">➕ Nouveau logement</a>
+      <a href="{% url 'logement:add_logement' %}" class="btn-add-logement">➕ Nouveau logement</a>
     </div>
     {% if logements %}
       <div class="logement-grid">
@@ -52,6 +50,40 @@
             </a>
           </div>
         {% endfor %}
+      </div>
+      <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Pagination">
+          <ul class="pagination-list">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a href="?page={{ page_obj.previous_page_number }}"
+                   aria-label="Précédent">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span>&laquo;</span>
+              </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a href="?page={{ page_obj.next_page_number }}" aria-label="Suivant">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span>&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
       </div>
     {% else %}
       <div class="no-logement">Aucun logement pour le moment.</div>

@@ -19,6 +19,7 @@ from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
 from django.db.models import Sum
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
+from django.core.paginator import Paginator
 
 from logement.models import (
     Logement,
@@ -191,7 +192,18 @@ def logement_search(request):
 def logement_dashboard(request):
     try:
         logements = get_logements(request.user)
-        return render(request, "logement/dashboard.html", {"logements": logements})
+
+        # Pagination
+        paginator = Paginator(logements, 20)  # 20 réservations par page
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        context = {
+            "logements": page_obj,
+            "page_obj": page_obj,
+        }
+
+        return render(request, "logement/dashboard.html", context)
     except Exception as e:
         logger.exception(f"Error rendering admin dashboard: {e}")
         raise
