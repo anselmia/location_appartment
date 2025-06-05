@@ -7,13 +7,12 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractYear, ExtractMonth
-from django.db.models import Q
+from django.db.models import Q, Sum, F, ExpressionWrapper, DurationField
 
 from reservation.models import Reservation, airbnb_booking, booking_booking, Logement
 from logement.models import CloseDate
 from logement.services.logement import set_price
 from payment.services.payment_service import refund_payment
-
 
 
 logger = logging.getLogger(__name__)
@@ -119,30 +118,83 @@ def get_reservation_years_and_months():
 
 
 def get_available_logement_in_period(start, end, logements):
+    """
+    Retourne les logements disponibles dans une période donnée,
+    en excluant les conflits de réservation, les fermetures, et en respectant la limite
+    annuelle de 120 jours pour les résidences principales.
+
+    :param start: date de début
+    :param end: date de fin
+    :param logements: queryset de Logement à filtrer
+    :return: queryset de Logement disponibles, triés par nom
+    """
     try:
         if not start or not end:
             return Logement.objects.none()
 
         logger.info(f"Fetching available logements between {start} and {end}.")
+
+        # 1. Récupère les conflits de réservation (réservations confirmées)
         reservation_conflits = Reservation.objects.filter(statut="confirmee", start__lt=end, end__gt=start).values_list(
             "logement_id", flat=True
         )
+
+        # 2. Conflits Airbnb
         airbnb_conflits = airbnb_booking.objects.filter(start__lt=end, end__gt=start).values_list(
             "logement_id", flat=True
         )
+
+        # 3. Conflits Booking.com
         booking_conflits = booking_booking.objects.filter(start__lt=end, end__gt=start).values_list(
             "logement_id", flat=True
         )
 
+        # 4. Fermetures manuelles (CloseDate)
         closed_conflicts = CloseDate.objects.filter(date__gte=start, date__lte=end).values_list(
             "logement_id", flat=True
         )
 
+        # Combine tous les IDs en conflit
         conflits_ids = set(reservation_conflits).union(airbnb_conflits, booking_conflits, closed_conflicts)
+
+        # 5. Exclure les logements en conflit et ceux qui ne respectent pas la booking_limit
         logements = logements.exclude(id__in=conflits_ids)
         logements = [l for l in logements if l.booking_limit <= start]
-        logger.debug(f"Found {len(logements)} available logements.")
-        return Logement.objects.filter(id__in=[l.id for l in logements]).order_by("name")
+
+        # 6. Appliquer la règle des 120 jours pour les résidences principales
+        year = start.year
+        days_to_add = (end - start).days
+
+        main_logement_ids = [l.id for l in logements if l.category == "main"]
+
+        # Agrégation du nombre de jours réservés par logement pour l'année
+        usage_counts = (
+            Reservation.objects.filter(
+                logement_id__in=main_logement_ids,
+                statut="confirmee",
+                start__year=year,
+            )
+            .annotate(nb_days=ExpressionWrapper(F("end") - F("start"), output_field=DurationField()))
+            .values("logement")
+            .annotate(total=Sum("nb_days"))
+        )
+
+        # Dictionnaire : logement_id -> jours réservés
+        usage_dict = {row["logement"]: row["total"].days if row["total"] else 0 for row in usage_counts}
+
+        # 7. Filtrage final
+        filtered_logement = []
+        for logement in logements:
+            if logement.category == "main":
+                used_days = usage_dict.get(logement.id, 0)
+                if used_days + days_to_add <= 120:
+                    filtered_logement.append(logement)
+            else:
+                filtered_logement.append(logement)
+
+        logger.debug(f"Found {len(filtered_logement)} available logements.")
+        return Logement.objects.filter(id__in=[l.id for l in filtered_logement]).order_by("name")
+
     except Exception as e:
         logger.error(f"Error checking logement availability: {e}", exc_info=True)
         return Logement.objects.none()

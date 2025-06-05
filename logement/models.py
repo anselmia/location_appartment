@@ -60,6 +60,15 @@ class Logement(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True)
     description = models.TextField()
+    category = models.CharField(
+        max_length=20,
+        choices=[
+            ("main", "Résidence Principale"),
+            ("secondary", "Résidence Secondaire"),
+        ],
+        default="main",
+    )
+    registered_number = models.CharField(max_length=50, unique=True, null=True)
     rules = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)

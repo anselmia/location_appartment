@@ -13,6 +13,8 @@ class LogementForm(forms.ModelForm):
             "rules",
             "adresse",
             "ville",
+            "category",
+            "registered_number",
             "price",
             "max_traveler",
             "nominal_traveler",
@@ -51,6 +53,8 @@ class LogementForm(forms.ModelForm):
             "rules": "Règles du logement",
             "adresse": "Adresse",
             "ville": "Ville",
+            "category": "Type de résidence",
+            "registered_number": "Numéro d'enregistrement",
             "statut": "Statut",
             "price": "Prix par nuit (€)",
             "max_traveler": "Voyageurs max.",
@@ -94,6 +98,13 @@ class LogementForm(forms.ModelForm):
             "leaving_hour": forms.TimeInput(attrs={"type": "time"}),
             "equipment": forms.CheckboxSelectMultiple,
             "map_link": forms.Textarea(attrs={"rows": 2}),
+            "category": forms.Select(
+                attrs={
+                    "class": "form-select",
+                    "required": True,
+                    "id": "category-select",
+                }
+            ),
         }
 
     def _format_user_display(self, user):
@@ -218,6 +229,16 @@ class LogementForm(forms.ModelForm):
                     self.add_error(
                         "admin",
                         f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
+                    )
+
+            category = cleaned_data.get("category")
+            registered_number = cleaned_data.get("registered_number")
+
+            if category and category == "main":
+                if not registered_number:
+                    self.add_error(
+                        "registered_number",
+                        "Le logement doit avoir un numéro d'enregistrement en mairie.",
                     )
 
     def save(self, commit=True):

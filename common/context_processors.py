@@ -8,4 +8,9 @@ def entreprise_info(request):
         entreprise = Entreprise.objects.first()
     except Entreprise.DoesNotExist:
         entreprise = None
-    return {"entreprise": entreprise, "current_year": datetime.now().year, "site_address": settings.SITE_ADDRESS}
+    return {
+        "entreprise": entreprise,
+        "current_year": datetime.now().year,
+        "site_address": settings.SITE_ADDRESS,
+        "contact_mail": settings.CONTACT_EMAIL,
+    }

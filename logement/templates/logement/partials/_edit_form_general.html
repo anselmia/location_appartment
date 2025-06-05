@@ -46,6 +46,14 @@
     {{ form.ville|add_class:"form-select" }}
 </div>
 <div class="form-field">
+    <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+    {{ form.category|add_class:"form-select" }}
+</div>
+<div class="form-field">
+    <label for="{{ form.registered_number.id_for_label }}">{{ form.registered_number.label }}</label>
+    {{ form.registered_number|add_class:"form-input" }}
+</div>
+<div class="form-field">
     <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
     {{ form.map_link|add_class:"form-input" }}
 </div>

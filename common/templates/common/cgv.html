@@ -8,78 +8,163 @@
     <div class="cgu-wrapper">
         <article class="cgu-content">
             <section>
-                <h1>Conditions Générales de Vente</h1>
+                <h1>Conditions Générales de Vente (CGV)</h1>
+                <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
                 <h2>1. Présentation</h2>
                 <p>
-                    La société {{ entreprise.name }} propose des contrats de location saisonnière en qualité de mandataire de propriétaires, via son site internet et différentes plateformes spécialisées. Les réservations et paiements sont sécurisés via Stripe ou, sous conditions spécifiques, par virement bancaire.
+                    La société {{ entreprise.name }}, [forme juridique], immatriculée au RCS de [ville] sous le numéro [SIRET], dont le siège social est situé à [adresse complète], agit en qualité de mandataire pour le compte de propriétaires particuliers ou professionnels. Elle propose à la location des logements meublés de courte durée via son site internet et différentes plateformes spécialisées. Les paiements sont gérés via Stripe, prestataire de paiement sécurisé.
                 </p>
-                <h2>2. Contrat de location</h2>
+                <h2>2. Formation du contrat</h2>
                 <p>
-                    La réservation implique l’acceptation pleine et entière du contrat de location, des présentes CGV ainsi que des CGU du site {{ entreprise.name }}. Le contrat est formé dès validation du paiement. En cas de refus de signature, d’absence de pièce d’identité valide ou de dépôt de garantie, la réservation pourra être annulée. {{ entreprise.name }} se réserve également le droit d’annuler en cas de suspicion de fraude ou comportement inapproprié du voyageur.
+                    La validation du paiement par le voyageur constitue une acceptation ferme et définitive de la réservation, impliquant l’adhésion aux présentes CGV, aux CGU du site, et aux conditions spécifiques au logement choisi. Un contrat de location peut être transmis pour signature électronique. À défaut de pièce d’identité valide, contrat signé ou dépôt de garantie, la réservation peut être annulée par {{ entreprise.name }}.
                 </p>
-                <h2>3. Réservation et annulation</h2>
+                <h2>3. Réservation – Annulation – Remboursement</h2>
                 <ul>
                     <li>
-                        <strong>Conditions d’annulation :</strong> Chaque logement dispose de ses propres règles d’annulation, indiquées avant la validation de la réservation. Ces règles précisent les délais et pourcentages de remboursement éventuels.
+                        <strong>Conditions d’annulation :</strong> Propres à chaque logement, indiquées avant paiement. Elles prévalent sur toute autre disposition.
                     </li>
                     <li>
-                        <strong>Frais de paiement :</strong> Les frais de traitement de paiement (2.5% du montant de la réservation), facturés par notre prestataire Stripe, ne sont en aucun cas remboursables, même en cas d’annulation gratuite selon les règles du logement.
+                        <strong>Frais Stripe :</strong> Les frais de traitement (2,5 %) ne sont pas remboursables, même en cas d’annulation gratuite.
                     </li>
                     <li>
-                        <strong>Frais d’annulation :</strong> Si des frais d’annulation sont prévus par les conditions du logement, ils seront déduits du montant remboursé. Ils s’appliquent indépendamment des frais Stripe.
+                        <strong>Frais d’annulation :</strong> En cas de conditions restrictives, les pénalités prévues sont déduites du remboursement, en sus des frais Stripe.
                     </li>
                     <li>
-                        En cas d’annulation ou de modification de notre part (indisponibilité, problème technique, etc.), un relogement ou un remboursement total ou partiel pourra être proposé selon les circonstances.
+                        <strong>Annulation par {{ entreprise.name }} :</strong> En cas de force majeure, fraude suspectée, comportement inapproprié ou indisponibilité, un relogement ou remboursement intégral peut être proposé.
                     </li>
                 </ul>
                 <h2>4. Dépôt de garantie</h2>
                 <p>
-                    Un dépôt de garantie est requis avant toute entrée dans le logement, via empreinte de carte bancaire (sans débit immédiat) ou virement validé par nos équipes. À défaut, l’accès au logement pourra être refusé sans remboursement. Le dépôt pourra être retenu en cas de dégradations, non-respect du ménage ou infraction aux règles contractuelles.
+                    Un dépôt de garantie est requis, par empreinte bancaire ou virement. À défaut, l’accès au logement peut être refusé sans remboursement. Il peut être utilisé pour couvrir :
                 </p>
-                <h2>5. Capacité d’accueil</h2>
+                <ul>
+                    <li>dommages au logement ou à son mobilier,</li>
+                    <li>non-respect du ménage ou des règles,</li>
+                    <li>retard de départ ou occupation non autorisée,</li>
+                    <li>perte de clés, badges ou autres accessoires.</li>
+                </ul>
+                <h2>5. Capacité et usage</h2>
                 <p>
-                    Le nombre de voyageurs ne doit en aucun cas dépasser celui précisé dans la réservation. Tout dépassement non autorisé pourra entraîner un refus d’accès, des pénalités ou une retenue sur caution.
+                    Le logement est loué pour un nombre précis de personnes. Toute personne supplémentaire non déclarée constitue un manquement grave, pouvant entraîner résiliation immédiate, expulsion sans remboursement et retenue sur caution.
                 </p>
                 <h2>6. Obligations du locataire</h2>
                 <ul>
-                    <li>Respecter les règles du logement et du voisinage.</li>
-                    <li>Ne pas organiser d’événements ni de fêtes sans autorisation écrite.</li>
-                    <li>Utiliser les lieux paisiblement, sans nuisance sonore (notamment entre 22h00 et 08h00).</li>
-                    <li>Ne pas sous-louer ni exercer d’activité commerciale depuis le logement.</li>
-                    <li>Maintenir le logement propre et respecter les meubles, équipements et agencement.</li>
-                    <li>Ne pas introduire d’animaux sans accord préalable écrit.</li>
+                    <li>Utilisation paisible du logement, sans nuisance sonore,</li>
+                    <li>Respect des voisins, des règlements intérieurs et de copropriété,</li>
+                    <li>Interdiction de fêtes ou d’événements sans autorisation écrite,</li>
+                    <li>Pas de sous-location ou d’activité professionnelle,</li>
+                    <li>Entretien du logement et restitution dans un état propre,</li>
+                    <li>Interdiction d’introduire des animaux sans accord écrit,</li>
                     <li>
-                        Autoriser {{ entreprise.name }} ou ses partenaires à accéder au logement en cas d’urgence, maintenance ou besoin légitime.
+                        Autorisation d’accès en cas d’urgence, d’entretien ou de contrôle par {{ entreprise.name }} ou ses prestataires.
                     </li>
                 </ul>
-                <h2>7. Arrivée et départ</h2>
+                <h2>7. Horaires</h2>
                 <ul>
                     <li>
-                        <strong>Arrivée :</strong> à partir de 15h00 (sauf indication contraire).
+                        <strong>Arrivée :</strong> à partir de 15h00 (sauf accord écrit).
                     </li>
                     <li>
-                        <strong>Départ :</strong> avant 11h00. Tout départ tardif non autorisé pourra entraîner une facturation de 50€ par heure entamée.
+                        <strong>Départ :</strong> avant 11h00. Toute heure entamée non autorisée pourra être facturée 50 € TTC.
                     </li>
                 </ul>
                 <h2>8. Services inclus</h2>
                 <p>
-                    Les logements incluent, sauf mention contraire : linge de maison, internet, TV, chauffage, eau, électricité. Climatisation, machine à laver et parking sont inclus s’ils sont explicitement mentionnés. Aucun frais de ménage n’est appliqué, mais le logement doit être restitué propre. Une retenue sur la caution est possible en cas de non-respect (vaisselle non faite, poubelles non sorties, etc.).
+                    Le logement comprend généralement : linge, électricité, eau, chauffage, Internet. Les équipements spécifiques (climatisation, parking, lave-linge…) ne sont garantis que s’ils sont explicitement mentionnés. Aucun ménage n’est inclus : le logement doit être restitué propre. Des frais pourront être retenus en cas de non-respect.
                 </p>
-                <h2>9. Responsabilité et assurance</h2>
+                <h2>9. Paiement sécurisé</h2>
                 <p>
-                    Le locataire est responsable de tout dommage causé durant son séjour. Une assurance responsabilité civile villégiature est fortement recommandée. {{ entreprise.name }} décline toute responsabilité en cas de vol, perte ou dégradation d’effets personnels, ainsi que pour les nuisances extérieures (voisinage, travaux, etc.) ou pannes de service indépendantes de sa volonté.
+                    Les paiements sont traités via Stripe. Le site ne conserve aucune donnée bancaire. L’acheteur accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions générales de Stripe</a>. Le paiement valide immédiatement la réservation, sans faculté de rétractation (article L.221-28 du Code de la consommation – prestations de services d’hébergement datées).
                 </p>
-                <h2>10. Litiges</h2>
+                <h2>10. Responsabilité et assurance</h2>
                 <p>
-                    Tout litige relatif aux présentes CGV est soumis au droit français. Les parties chercheront une solution amiable. À défaut, le litige relèvera des tribunaux compétents du siège de {{ entreprise.name }}.
+                    Le locataire est responsable de tout dommage matériel ou moral causé pendant le séjour. Il est fortement recommandé de disposer d’une assurance responsabilité civile villégiature.
+                    {{ entreprise.name }} ne peut être tenue responsable des vols, pertes, nuisances externes ou dysfonctionnements indépendants de sa volonté.
                 </p>
-                <h2>11. Données personnelles</h2>
                 <p>
-                    Les données collectées sont traitées conformément à notre politique de confidentialité, dans le respect du RGPD. Elles sont utilisées pour la gestion du séjour, la facturation, la sécurité et les obligations légales.
+                    Il est également recommandé que chaque propriétaire dispose d’une <strong>assurance propriétaire non-occupant (PNO)</strong>, couvrant notamment les sinistres pouvant survenir en l’absence de l’occupant habituel.
                 </p>
-                <h2>12. Modifications des CGV</h2>
+                <h2>11. Mandat de gestion financière</h2>
                 <p>
-                    {{ entreprise.name }} se réserve le droit de modifier à tout moment les présentes conditions. La version applicable est celle en vigueur à la date de la réservation.
+                    Le propriétaire mandate {{ entreprise.name }} pour encaisser les paiements, prélever sa commission, puis reverser le solde après vérification et application des conditions d’annulation. Les sommes perçues sont temporairement détenues sur le compte Stripe de la plateforme.
+                </p>
+                <h2>12. Responsabilité – Assurance</h2>
+                <p>
+                    Le locataire est responsable de tout dommage causé au logement, aux équipements ou à des tiers. Il est fortement conseillé de souscrire une assurance responsabilité civile villégiature. {{ entreprise.name }} décline toute responsabilité en cas :
+                </p>
+                <ul>
+                    <li>de vol, dégradation ou perte d’effets personnels,</li>
+                    <li>de nuisance extérieure (travaux, voisinage…),</li>
+                    <li>de panne ou interruption de services publics (eau, électricité…),</li>
+                    <li>de litige entre propriétaire et locataire non lié à une défaillance de la plateforme.</li>
+                </ul>
+                <h2>13. Règlementation applicable</h2>
+                <p>Le locataire s’engage à respecter la législation française. Le propriétaire est seul responsable :</p>
+                <ul>
+                    <li>de la conformité réglementaire de son logement,</li>
+                    <li>de l’obtention du numéro d’enregistrement le cas échéant,</li>
+                    <li>du respect des limitations (résidence principale : 120 jours/an),</li>
+                    <li>de toute autorisation administrative requise (notamment à Paris, Nice, Lyon, etc.).</li>
+                </ul>
+                <h2>14. Force majeure</h2>
+                <p>
+                    Aucune des parties ne pourra être tenue responsable en cas d’inexécution ou de retard dans l’exécution de ses obligations contractuelles dues à un cas de force majeure (pandémie, catastrophe naturelle, guerre, etc.).
+                    Si un tel événement rend impossible le séjour, un report, un avoir ou un remboursement partiel pourra être proposé selon les cas.
+                </p>
+                <h2>15. Contournement de la plateforme</h2>
+                <p>
+                    Il est interdit à un utilisateur de tenter de conclure une réservation en dehors de la plateforme avec un propriétaire rencontré via {{ entreprise.name }}. Tout comportement de contournement pourra entraîner des sanctions, la suppression du compte et/ou des poursuites judiciaires.
+                </p>
+                <h2>16. Données personnelles</h2>
+                <p>
+                    Les données collectées sont traitées dans le respect du RGPD, pour le traitement de la réservation, la sécurité, la facturation et le suivi légal. Plus d’informations : <a href="{% url 'common:confidentiality' %}">politique de confidentialité</a>. Contact : <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>
+                </p>
+                <h2>17. Réclamations – Médiation</h2>
+                <p>
+                    Pour toute réclamation, vous pouvez nous contacter à : <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>. En cas de litige persistant, et conformément à l’article L.612-1 du Code de la consommation, vous pouvez recourir à un médiateur de la consommation.
+                </p>
+                <h2>18. Loi applicable – Juridiction</h2>
+                <p>
+                    Les présentes CGV sont régies par le droit français. En cas de litige, compétence est donnée aux juridictions du siège social de {{ entreprise.name }}, sauf disposition impérative contraire.
+                </p>
+                <h2>19. Modifications</h2>
+                <p>
+                    {{ entreprise.name }} se réserve le droit de modifier les CGV à tout moment. La version applicable est celle acceptée au moment de la réservation.
+                </p>
+                                <h2>20. Rôle de la plateforme</h2>
+                <p>
+                    {{ entreprise.name }} agit exclusivement en tant qu’intermédiaire technique, mettant à disposition un espace en ligne permettant à des particuliers ou professionnels de proposer et réserver des logements meublés de courte durée. Elle ne fournit aucun service d’hébergement, n’intervient pas dans la conclusion ou l’exécution du contrat de location, et ne garantit ni la qualité, ni la légalité, ni la disponibilité des logements publiés.
+                </p>
+                <p>
+                    {{ entreprise.name }} ne peut être considérée comme un agent immobilier, un hôtelier, ni comme partie au contrat conclu entre hôtes et voyageurs.
+                </p>
+
+                <h2>21. Obligations réglementaires des utilisateurs</h2>
+                <ul>
+                    <li>Les propriétaires sont seuls responsables de la conformité légale de leur offre (autorisation de location, changement d’usage, déclaration en mairie, taxe de séjour, assurance).</li>
+                    <li>En cas de location de la résidence principale, la limite de 120 jours/an doit être respectée (article L. 324-1-1 du Code du tourisme).</li>
+                    <li>Les propriétaires doivent vérifier s’ils sont soumis à une obligation de déclaration préalable ou d’enregistrement, notamment dans des villes comme Paris, Nice ou Lyon.</li>
+                    <li>Les utilisateurs s’engagent à fournir des informations exactes sur le logement et à respecter les lois locales, fiscales et sociales applicables à leur situation.</li>
+                </ul>
+
+                <h2>22. Notifications de contenus illicites</h2>
+                <p>
+                    Conformément au Règlement (UE) 2022/2065 sur les services numériques (DSA), {{ entreprise.name }} met à disposition un formulaire permettant à toute personne de signaler un contenu illicite ou contraire à ses conditions d’utilisation.
+                    En cas de notification fondée, {{ entreprise.name }} se réserve le droit de retirer ou désactiver l’accès à ce contenu et d’informer l’utilisateur concerné.
+                </p>
+                <p>
+                    Un signalement abusif ou infondé peut entraîner des mesures de suspension temporaire de l’accès au service.
+                </p>
+
+                <h2>23. Suspension – Résiliation</h2>
+                <p>
+                    {{ entreprise.name }} peut suspendre ou résilier un compte utilisateur, annuler une réservation ou limiter l’accès à ses services sans préavis en cas de violation des présentes CGV, comportement frauduleux, litige répété ou utilisation abusive de la plateforme.
+                    En cas de suspension ou suppression, aucune compensation ne pourra être exigée.
+                </p>
+
+                <h2>24. Traitement des réclamations</h2>
+                <p>
+                    Les utilisateurs peuvent soumettre toute réclamation via le formulaire de contact ou par e-mail à <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>. En cas de désaccord persistant, une médiation pourra être proposée, conformément à l’article L.612-1 du Code de la consommation.
                 </p>
             </section>
         </article>
