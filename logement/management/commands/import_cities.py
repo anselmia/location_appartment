@@ -99,9 +99,10 @@ class Command(BaseCommand):
         for name, registration, department in major_cities:
             city, created_flag = City.objects.update_or_create(
                 name=name,
-                registration=registration,
                 code_postal=department,
-                defaults={},
+                defaults={
+                    "registration": registration,
+                }
             )
             if created_flag:
                 created += 1
