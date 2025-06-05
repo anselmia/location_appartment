@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 
 from reservation.forms import ReservationForm
 from reservation.models import Reservation
@@ -59,7 +60,7 @@ def book(request, logement_id):
             "bathrooms": logement.bathrooms,
             "beds": logement.beds,
             "ville": logement.ville.name if logement.ville else "Not Available",
-            "payment_fee": PAYMENT_FEE_VARIABLE
+            "payment_fee": PAYMENT_FEE_VARIABLE,
         }
 
         if request.method == "POST":
@@ -175,11 +176,17 @@ def manage_reservations(request):
     if query:
         reservations = reservations.filter(code__icontains=query)
 
-    reservations = reservations.order_by("-date_reservation")[:50]
+    reservations = reservations.order_by("-date_reservation")
+
+    # Pagination
+    paginator = Paginator(reservations, 20)  # 20 réservations par page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "reservations": reservations,
+        "reservations": page_obj,
         "query": query,
+        "page_obj": page_obj,
     }
     return render(request, "reservation/manage_reservations.html", context)
 
@@ -208,7 +215,7 @@ def reservation_detail(request, code):
 @user_has_logement
 def reservation_dashboard(request, logement_id=None):
     try:
-        if not request.user.is_admin or request.user.is_superuser:
+        if not (request.user.is_admin or request.user.is_superuser):
             logements = get_logements(request.user)
             if not logements.exists():
                 messages.info(request, "Vous devez ajouter un logement avant d’accéder au tableau de revenus.")
@@ -226,15 +233,21 @@ def reservation_dashboard(request, logement_id=None):
 
         years, months = get_reservation_years_and_months()
 
+        # Pagination
+        paginator = Paginator(reservations, 20)  # 20 réservations par page
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
         return render(
             request,
             "reservation/reservations.html",
             {
-                "reservations": reservations,
+                "reservations": page_obj,
                 "available_years": years,
                 "available_months": months,
                 "current_year": year,
                 "current_month": month,
+                "page_obj": page_obj,
             },
         )
 

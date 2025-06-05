@@ -584,6 +584,43 @@ ul.list-unstyled li .ml-3 {
   outline: none;
 }
 
+.pagination {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.pagination-list {
+  list-style: none;
+  padding: 0;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pagination-list li {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.pagination-list a {
+  color: white;
+}
+
+.pagination-list li.active {
+  background-color: var(--primary-color, #bfa66b);
+  color: white;
+  font-weight: bold;
+}
+
+.pagination-list li.disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
 /* ==== RESPONSIVE === */
 @media screen and (max-width: 900px) {
   .container {

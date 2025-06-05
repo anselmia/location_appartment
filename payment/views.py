@@ -12,6 +12,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.core.cache import cache
+from django.core.paginator import Paginator
 
 from reservation.models import Reservation
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
@@ -125,7 +126,7 @@ def transfer_reservation_payment(request, code):
 
 
 def payment_task_list(request):
-    tasks = PaymentTask.objects.select_related("reservation", "reservation__logement")
+    tasks = PaymentTask.objects.select_related("reservation", "reservation__logement").order_by("-updated_at")
 
     # Filter logic
     task_type = request.GET.get("type")
@@ -139,10 +140,17 @@ def payment_task_list(request):
     if code:
         tasks = tasks.filter(reservation__code__icontains=code)
 
+    # Pagination
+    paginator = Paginator(tasks, 20)  # 20 tâches par page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        "tasks": tasks.order_by("-updated_at"),
+        "tasks": page_obj,
         "types": PaymentTask.TASK_TYPES,
+        "page_obj": page_obj,
     }
+
     return render(request, "payment/payment_tasks.html", context)
 
 

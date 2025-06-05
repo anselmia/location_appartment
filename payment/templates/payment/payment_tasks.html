@@ -2,8 +2,7 @@
 {% load static %}
 {% block extrahead %}
     {{ block.super }}
-    <link rel="stylesheet"
-          href="{% static 'payment/css/payment_tasks.css' %}">
+    <link rel="stylesheet" href="{% static 'payment/css/payment_tasks.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container py-4">
@@ -79,6 +78,41 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Pagination">
+                <ul class="pagination-list">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a href="?{% if request.GET.type %}type={{ request.GET.type }}&{% endif %} {% if request.GET.status %}status={{ request.GET.status }}&{% endif %} {% if request.GET.code %}code={{ request.GET.code }}&{% endif %} page={{ page_obj.previous_page_number }}"
+                               aria-label="Précédent">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span>&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a href="?{% if request.GET.type %}type={{ request.GET.type }}&{% endif %} {% if request.GET.status %}status={{ request.GET.status }}&{% endif %} {% if request.GET.code %}code={{ request.GET.code }}&{% endif %} page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a href="?{% if request.GET.type %}type={{ request.GET.type }}&{% endif %} {% if request.GET.status %}status={{ request.GET.status }}&{% endif %} {% if request.GET.code %}code={{ request.GET.code }}&{% endif %} page={{ page_obj.next_page_number }}"
+                               aria-label="Suivant">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span >&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     </div>
 {% endblock content %}

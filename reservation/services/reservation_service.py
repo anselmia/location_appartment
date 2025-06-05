@@ -25,7 +25,7 @@ def get_reservations(user, logement_id=None):
             if logement.is_logement_admin(user):
                 return Reservation.objects.filter(logement=logement)
             return Reservation.objects.none()
-        if user.is_admin:
+        if user.is_admin or user.is_superuser:
             return Reservation.objects.all()
         logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
         return Reservation.objects.filter(logement__in=logements).order_by("-date_reservation")

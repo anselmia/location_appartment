@@ -75,7 +75,12 @@
                   <strong>Déjà remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
                 </li>
                 <li>
-                  <strong>Montant remboursable :</strong> {{ r.refundable_amount|floatformat:2 }} €
+                  <strong>Montant remboursable :</strong>
+                  {% if r.refundable %}
+                    {{ r.refundable_amount|floatformat:2 }} €
+                  {% else %}
+                    0.00 €
+                  {% endif %}
                 </li>
               </ul>
               {% if r.refundable %}
@@ -173,6 +178,41 @@
     {% empty %}
       <p class="text-muted text-center mt-5">Aucune réservation trouvée.</p>
     {% endfor %}
+  </div>
+  <div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Pagination">
+      <ul class="pagination-list">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+               aria-label="Précédent">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span>&laquo;</span>
+          </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a chref="?q={{ query }}&page={{ num }}">{{ num }}</a>
+          </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
+               aria-label="Suivant">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span>&raquo;</span>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
   </div>
 </div>
 {% endblock content %}
