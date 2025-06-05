@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def get_logements(user):
     try:
-        if user.is_admin:
+        if user.is_admin or user.is_superuser:
             # Admin users can see all reservations
             qs = Logement.objects.all()
         else:
