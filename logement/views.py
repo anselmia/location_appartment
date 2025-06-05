@@ -758,7 +758,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         platform_earnings = reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"] or Decimal("0.00")
         total_payment_fee = reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00")
         tax = reservations.aggregate(Sum("tax"))["tax__sum"] or Decimal("0.00")
-        total_revenu = brut_revenue - total_refunds - platform_earnings - total_payment_fee - tax
+        total_revenu = brut_revenue - total_refunds - platform_earnings - total_payment_fee
 
         total_reservations = reservations.count()
         average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
@@ -777,7 +777,6 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
             if nights_in_month
             else 0
         )
-        days_vacant = (nights_in_month * (logements.count() if not logement_id else 1)) - reserved_nights
 
         context.update(
             {
@@ -798,7 +797,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
                 "average_price": average_price,
                 "reservations": reservations.order_by("-date_reservation")[:100],
                 "occupancy_rate": occupancy_rate,
-                "days_vacant": days_vacant,
+                "days_booked": reserved_nights,
             }
         )
 

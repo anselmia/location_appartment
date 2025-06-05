@@ -231,15 +231,12 @@ class LogementForm(forms.ModelForm):
                         f"L'administrateur '{admin.username}' n'a pas de compte Stripe connecté.",
                     )
 
-            category = cleaned_data.get("category")
             registered_number = cleaned_data.get("registered_number")
 
-            if category and category == "main":
+            ville = cleaned_data.get("ville") or getattr(self.instance, "ville", None)
+            if ville and getattr(ville, "registration", False):
                 if not registered_number:
-                    self.add_error(
-                        "registered_number",
-                        "Le logement doit avoir un numéro d'enregistrement en mairie.",
-                    )
+                    self.add_error("registered_number", "Le logement doit avoir un numéro d'enregistrement en mairie.")
 
     def save(self, commit=True):
         instance = super().save(commit=False)

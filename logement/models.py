@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class City(models.Model):
     name = models.CharField(max_length=150)
+    registration = models.BooleanField(default=False)
     code_postal = models.CharField(max_length=10)
 
     class Meta:
@@ -68,7 +69,7 @@ class Logement(models.Model):
         ],
         default="main",
     )
-    registered_number = models.CharField(max_length=50, unique=True, null=True)
+    registered_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     rules = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)

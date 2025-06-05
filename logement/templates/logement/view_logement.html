@@ -74,7 +74,12 @@
         </div>
         <section class="section-block logement-header">
             <h1 class="logement-title">{{ logement.name }}</h1>
-            <p class="logement-subtitle">{{ logement.ville }} – {{ logement.get_type_display }}</p>
+            <p class="logement-subtitle">
+                {{ logement.ville }} – {{ logement.get_type_display }}
+                {% if logement.ville and logement.ville.registration %}
+                    {% if logement.registered_number %}– {{ logement.registered_number }}{% endif %}
+                {% endif %}
+            </p>
         </section>
         <section class="section-block logement-description-block">
             <h2 class="section-title">Description du logement</h2>

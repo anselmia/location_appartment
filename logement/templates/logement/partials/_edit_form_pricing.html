@@ -1,6 +1,7 @@
 {% load static %}
 {% load i18n %}
 {% load widget_tweaks %}
+
 {% for field, unit in pricing_fields %}
     <div class="form-field">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -8,5 +9,8 @@
             {{ field|add_class:"form-input" }}
             <span class="unit-label">{{ unit }}</span>
         </div>
+        {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
     </div>
 {% endfor %}

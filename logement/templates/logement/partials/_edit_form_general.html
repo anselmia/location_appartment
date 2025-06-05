@@ -4,19 +4,23 @@
 <div class="form-field">
     <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
     {{ form.name|add_class:"form-input" }}
+    {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.statut.id_for_label }}">{{ form.statut.label }}</label>
     {{ form.statut|add_class:"form-input" }}
+    {% for error in form.statut.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 {% if user.is_admin or user.is_superuser %}
     <div class="form-field">
         <label for="{{ form.owner.id_for_label }}">{{ form.owner.label }}</label>
         {{ form.owner|add_class:"form-input" }}
+        {% for error in form.owner.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
     <div class="form-field">
         <label for="{{ form.admin.id_for_label }}">{{ form.admin.label }}</label>
         {{ form.admin|add_class:"form-input" }}
+        {% for error in form.admin.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 {% else %}
     {{ form.owner.as_hidden }}
@@ -36,32 +40,40 @@
 <div class="form-field">
     <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
     {{ form.type|add_class:"form-input" }}
+    {% for error in form.type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.adresse.id_for_label }}">{{ form.adresse.label }}</label>
     {{ form.adresse|add_class:"form-input" }}
+    {% for error in form.adresse.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
     {{ form.ville|add_class:"form-select" }}
+    {% for error in form.ville.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
     {{ form.category|add_class:"form-select" }}
+    {% for error in form.category.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.registered_number.id_for_label }}">{{ form.registered_number.label }}</label>
     {{ form.registered_number|add_class:"form-input" }}
+    {% for error in form.registered_number.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.map_link.id_for_label }}">{{ form.map_link.label }}</label>
     {{ form.map_link|add_class:"form-input" }}
+    {% for error in form.map_link.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
     {{ form.description|add_class:"form-textarea" }}
+    {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
 <div class="form-field">
     <label for="{{ form.rules.id_for_label }}">{{ form.rules.label }}</label>
     {{ form.rules|add_class:"form-textarea" }}
+    {% for error in form.rules.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
 </div>
