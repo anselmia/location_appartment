@@ -85,6 +85,11 @@
   margin-top: 1rem;
 }
 
+#heatmap-container {
+  min-height: 200px;
+  border: 1px dashed #ccc;
+}
+
 /* Tables */
 #financial-dashboard-page .table {
   font-size: 0.95rem;

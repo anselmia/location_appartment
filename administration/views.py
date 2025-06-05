@@ -11,8 +11,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.db.models import Sum
-from django.db.models.functions import ExtractYear, ExtractMonth
+from django.db.models import Sum, Q
+from django.db.models.functions import ExtractYear, ExtractMonth, TruncDate
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
@@ -22,6 +22,7 @@ from django.views.generic import TemplateView
 
 from common.mixins import AdminRequiredMixin
 from common.views import is_admin
+from common.services.helper_fct import date_to_timestamp
 
 from payment.services.payment_service import retrieve_balance
 
@@ -44,8 +45,6 @@ from administration.models import Entreprise, HomePageConfig, SiteConfig
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
-
-
 
 
 @login_required
@@ -158,7 +157,7 @@ def homepage_admin_view(request):
                 main_form = HomePageConfigForm(request.POST, request.FILES, instance=config)
                 if main_form.is_valid():
                     main_form.save()
-            
+
             return redirect("administration:homepage_admin_view")
 
         context = {
@@ -206,7 +205,7 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
 
         year = self.request.GET.get("year")
         all_years = (
-            Reservation.objects.filter(statut="confirmee")
+            Reservation.objects.filter(Q(statut="confirmee") | Q(statut="annulee"))
             .annotate(year=ExtractYear("start"))
             .values_list("year", flat=True)
             .distinct()
@@ -253,6 +252,18 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
                 "reservations": reservations.order_by("-date_reservation")[:100],
             }
         )
+
+        daily_data = (
+            reservations.annotate(day=TruncDate("date_reservation"))
+            .values("day")
+            .annotate(total=Sum("price"))
+            .order_by("day")
+        )
+
+        # Convert to dict for frontend { "2025-06-01": 240.0, ... }
+        daily_revenue = {date_to_timestamp(entry["day"].isoformat()): float(entry["total"]) for entry in daily_data}
+
+        context["daily_revenue"] = daily_revenue
 
         try:
             balance = retrieve_balance()

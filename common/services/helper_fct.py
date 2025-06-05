@@ -1,5 +1,7 @@
 import random
 import string
+import time
+from datetime import datetime
 from django.http import HttpRequest
 from django.http import QueryDict
 
@@ -18,3 +20,8 @@ def normalize_decimal_input(data):
 
 def is_ajax(request: HttpRequest):
     return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+def date_to_timestamp(date_str):
+    dt = datetime.strptime(date_str, "%Y-%m-%d")
+    return int(time.mktime(dt.timetuple()))
