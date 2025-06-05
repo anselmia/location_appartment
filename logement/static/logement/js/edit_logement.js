@@ -1,27 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const tabTriggers = document.querySelectorAll(
-    '#logementTabs a[data-toggle="tab"]'
-  );
-
-  tabTriggers.forEach((tab) => {
-    tab.addEventListener("shown.bs.tab", function (e) {
-      const activeTabId = e.target.getAttribute("href");
-      localStorage.setItem("activeLogementTab", activeTabId);
+  document
+    .querySelectorAll('#logementTabs button[data-bs-toggle="tab"]')
+    .forEach((tab) => {
+      tab.addEventListener("shown.bs.tab", function (e) {
+        const target = e.target.getAttribute("data-bs-target");
+        localStorage.setItem("activeLogementTab", target);
+      });
     });
-  });
 
-  // Restore tab on load
+  // Restaurer l'onglet actif au rechargement
   const lastTab = localStorage.getItem("activeLogementTab");
   if (lastTab) {
-    const trigger = document.querySelector(
-      `#logementTabs a[href="${lastTab}"]`
+    const triggerEl = document.querySelector(
+      `#logementTabs button[data-bs-target="${lastTab}"]`
     );
-    if (trigger) {
-      new bootstrap.Tab(trigger).show(); // Bootstrap 5
+    if (triggerEl) {
+      new bootstrap.Tab(triggerEl).show();
     }
   }
 
-  const uploadForm = document.getElementById('upload_photos');
+  const uploadForm = document.getElementById("upload_photos");
   if (uploadForm) {
     uploadForm.addEventListener("submit", function () {
       showLoader();
@@ -30,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function showLoader() {
-    document.getElementById("loader").style.display = "flex";
+  document.getElementById("loader").style.display = "flex";
 }
 
 // Function to handle photo room change
