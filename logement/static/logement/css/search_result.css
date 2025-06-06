@@ -516,18 +516,18 @@ li {
     height: auto;
   }
 
-   .image-wrapper {
+  .image-wrapper {
     width: 100%;
-    height: auto;
+    height: 180px;
+    overflow: hidden;
   }
 
   .logement-thumb {
     width: 100%;
-    height: auto;
-    max-height: 200px;
+    height: 100%;
     object-fit: cover;
-    border-radius: 12px 12px 0 0;
     display: block;
+    border-radius: 0; /* No top-rounded border unless needed */
   }
 
   .view-btn {
