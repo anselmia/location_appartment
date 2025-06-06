@@ -193,7 +193,7 @@ def logement_search(request):
                     "name": l.name,
                     "lat": float(str(l.latitude).replace(",", ".")),
                     "lng": float(str(l.longitude).replace(",", ".")),
-                    "price": number_format(l.price, decimal_pos=2, use_l10n=False),
+                    "price": number_format(l.price, decimal_pos=2, use_l10n=False) if l.price else "0.00",
                     "url": reverse("logement:view_logement", args=[l.id]),
                     "image": (
                         l.photos.first().image_webp.url if l.photos.first() else static("logement/img/no-photo.jpg")
@@ -201,7 +201,7 @@ def logement_search(request):
                     "city": l.ville.name if l.ville else "",
                     "max_traveler": l.max_traveler,
                 }
-                for l in logements
+                for l in logements if l.latitude and l.longitude
             ]
         )
 
