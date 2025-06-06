@@ -1,4 +1,5 @@
 from django import template
+
 register = template.Library()
 
 
@@ -32,19 +33,21 @@ def to_month_range(value):
 
 
 @register.filter
-def get(dict_data, key):
-    return dict_data.get(key)
-
-
-@register.filter
 def cents_to_euros(value):
     try:
         return float(value) / 100
     except (ValueError, TypeError):
         return 0.00
-    
+
+
 @register.filter
 def get(dict_obj, key):
     if isinstance(dict_obj, dict):
         return dict_obj.get(key, [])
     return []
+
+
+@register.filter
+def replace(value, args):
+    old, new = args.split(",")
+    return value.replace(old, new)

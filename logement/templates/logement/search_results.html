@@ -7,6 +7,10 @@
         href="{% static 'logement/css/logements_grid.css' %}">
   <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
   <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
 {% endblock %}
 {% block content %}
@@ -74,9 +78,12 @@
         <i class="fas fa-search"></i>
       </button>
     </form>
+    <!-- FILTERS -->
+    <button type="button"
+            class="btn btn-outline-secondary d-md-none toggle-filters-btn"
+            onclick="toggleFilters()">🔽 Filtres</button>
     <div class="search-layout-container">
-      <!-- FILTERS -->
-      <aside class="search-filters">
+      <aside class="search-filters d-md-block" id="filter-panel">
         <form method="get" action="{% url 'logement:logement_search' %}">
           <!-- Type de logement -->
           <div class="filter-group">
@@ -173,102 +180,60 @@
         </form>
       </aside>
       <section class="logements-results">
-        <!-- LOGEMENTS GRID -->
-        <div class="logements-grid">
-          {% if page_obj %}
-            {% for logement in page_obj %}
-              <div class="card logement-card fade-in-up">
-                <div class="logement-img-wrapper">
-                  <a href="{% url 'logement:view_logement' logement.id %}">
-                    <picture>
-                      <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
-                      <img src="{{ logement.photos.first.image.url }}"
-                           loading="lazy"
-                           alt="{{ logement.name }}">
-                    </picture>
-                  </a>
-                  <!-- Top-left badge -->
-                  <div class="logement-badge">
-                    <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
-                    {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
-                  </div>
-                  <!-- Bottom-right icons -->
-                  <div class="logement-icons-overlay">
-                    {% for equip in logement.equipment.all %}
-                      {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
-                        <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
-                      {% endif %}
-                    {% endfor %}
-                    {% if logement.animals %}
-                      <i class="fas fa-paw" title="Animaux acceptés"></i>
-                    {% else %}
-                      <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
-                    {% endif %}
-                    {% if logement.smoking %}
-                      <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
-                    {% else %}
-                      <i class="fas fa-smoking-ban" title="Non fumeur"></i>
-                    {% endif %}
-                  </div>
-                  <!-- Location -->
-                  <div class="logement-location">
-                    <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
-                  </div>
-                </div>
-              </a>
-              <div class="card-body">
-                <h3 class="logement-title">{{ logement.name }}</h3>
-                <p class="price">
-                  À partir de {{ logement.price }}€ <span>par nuit</span>
-                </p>
-                <div class="logement-details">
-                  <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
-                  <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
-                  <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
-                </div>
-              </div>
-              <div class="card-actions">
-                <a href="{% url 'logement:view_logement' logement.id %}"
-                   class="btn-card btn-view">Voir</a>
-                <a href="{% url 'reservation:book' logement.id %}?start={{ request.GET.start_date }}&end={{ request.GET.end_date }}&guest={{ request.GET.guests|default:1 }}"
-                   class="btn-card btn-book">Réserver</a>
-              </div>
-            </div>
-          {% endfor %}
+        <div class="view-switcher">
+          <a href="?{{ request.GET.urlencode|add:"&view=grid" }}"
+             class="view-btn {% if request.GET.view == 'grid' or not request.GET.view %}active{% endif %}"><i class="fas fa-th"></i> Grille</a>
+          <a href="?{{ request.GET.urlencode|add:"&view=list" }}"
+             class="view-btn {% if request.GET.view == 'list' %}active{% endif %}"><i class="fas fa-list"></i> Liste</a>
+          <a href="?{{ request.GET.urlencode|add:"&view=map" }}"
+             class="view-btn {% if request.GET.view == 'map' %}active{% endif %}"><i class="fas fa-map"></i> Plan</a>
+        </div>
+        {% if request.GET.view == "list" %}
+          <div class="logements-list">{% include 'logement/partials/logement_list_view.html' %}</div>
+        {% elif request.GET.view == "map" %}
+          <div class="logements-map">{% include 'logement/partials/logement_map_view.html' %}</div>
         {% else %}
-          <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
+          <div class="logements-grid">{% include 'logement/partials/logement_grid_view.html' %}</div>
         {% endif %}
-      </div>
-      <div class="pagination">
-        <ul class="pagination-list">
-          {% if page_obj.has_previous %}
-            <li>
-              <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.previous_page_number }}">«</a>
-            </li>
-          {% else %}
-            <li class="disabled">«</li>
-          {% endif %}
-          {% for i in page_obj.paginator.page_range %}
-            {% if page_obj.number == i %}
-              <li class="active">{{ i }}</li>
-            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
-              <li>
-                <a href="?destination={{ destination }}&guests={{ guests }}&page={{ i }}">{{ i }}</a>
-              </li>
-            {% endif %}
-          {% endfor %}
-          {% if page_obj.has_next %}
-            <li>
-              <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.next_page_number }}">»</a>
-            </li>
-          {% else %}
-            <li class="disabled">»</li>
-          {% endif %}
-        </ul>
-      </div>
-    </section>
-  </div>
-{% endblock %}
-{% block extra_js %}
-  <script src="{% static 'logement/js/search_result.js' %}"></script>
-{% endblock %}
+        {% if request.GET.view == "list" or  request.GET.view == "grid" %}
+          <div class="pagination">
+            <ul class="pagination-list">
+              {% if page_obj.has_previous %}
+                <li>
+                  <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.previous_page_number }}">«</a>
+                </li>
+              {% else %}
+                <li class="disabled">«</li>
+              {% endif %}
+              {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                  <li class="active">{{ i }}</li>
+                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                  <li>
+                    <a href="?destination={{ destination }}&guests={{ guests }}&page={{ i }}">{{ i }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              {% if page_obj.has_next %}
+                <li>
+                  <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.next_page_number }}">»</a>
+                </li>
+              {% else %}
+                <li class="disabled">»</li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  {% endblock %}
+  {% block extra_js %}
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Marker Cluster CSS -->
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="{% static 'logement/js/search_result.js' %}"></script>
+  {% endblock %}

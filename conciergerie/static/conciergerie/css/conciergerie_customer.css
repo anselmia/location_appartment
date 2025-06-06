@@ -1,0 +1,90 @@
+/* == Card Grid Layout == */
+.conciergerie-list-wrapper {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    font-family: var(--font-body);
+    color: var(--text-dark);
+}
+
+/* == Card == */
+.card {
+    border: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    background-color: var(--bg-white);
+    box-shadow: var(--shadow);
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* == Card Image == */
+.card-img-top {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    object-fit: cover;
+    width: 100%;
+    height: 180px;
+}
+
+/* == Card Body == */
+.card-body {
+    padding: var(--spacing-md);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-family: var(--font-title);
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    margin-bottom: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* == Card Footer == */
+.card-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--light-bg);
+    border-top: 1px solid var(--light-border);
+}
+
+.card-footer .btn {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.card-footer .btn:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+/* == Responsive Behavior == */
+@media (max-width: 767.98px) {
+    .card-title {
+        font-size: 1.1rem;
+    }
+
+    .card-img-top {
+        height: 150px;
+    }
+
+    .card p {
+        font-size: 0.9rem;
+    }
+}
+
+/* == Utility == */
+.stretched-link {
+    z-index: 1;
+}

@@ -1,0 +1,65 @@
+        <div class="logements-grid">
+          {% if page_obj %}
+            {% for logement in page_obj %}
+              <div class="card logement-card fade-in-up">
+                <div class="logement-img-wrapper">
+                  <a href="{% url 'logement:view_logement' logement.id %}">
+                    <picture>
+                      <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+                      <img src="{{ logement.photos.first.image.url }}"
+                           loading="lazy"
+                           alt="{{ logement.name }}">
+                    </picture>
+                  </a>
+                  <!-- Top-left badge -->
+                  <div class="logement-badge">
+                    <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                    {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
+                  </div>
+                  <!-- Bottom-right icons -->
+                  <div class="logement-icons-overlay">
+                    {% for equip in logement.equipment.all %}
+                      {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                        <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                      {% endif %}
+                    {% endfor %}
+                    {% if logement.animals %}
+                      <i class="fas fa-paw" title="Animaux acceptés"></i>
+                    {% else %}
+                      <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
+                    {% endif %}
+                    {% if logement.smoking %}
+                      <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                    {% else %}
+                      <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                    {% endif %}
+                  </div>
+                  <!-- Location -->
+                  <div class="logement-location">
+                    <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <h3 class="logement-title">{{ logement.name }}</h3>
+                <p class="price">
+                  À partir de {{ logement.price }}€ <span>par nuit</span>
+                </p>
+                <div class="logement-details">
+                  <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
+                  <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
+                  <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <a href="{% url 'logement:view_logement' logement.id %}"
+                   class="btn-card btn-view">Voir</a>
+                <a href="{% url 'reservation:book' logement.id %}?start={{ request.GET.start_date }}&end={{ request.GET.end_date }}&guest={{ request.GET.guests|default:1 }}"
+                   class="btn-card btn-book">Réserver</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
+        {% endif %}
+      </div>

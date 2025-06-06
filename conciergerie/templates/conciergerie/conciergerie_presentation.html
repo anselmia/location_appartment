@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'conciergerie/css/conciergerie_detail_customer.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container conciergerie-profile my-5">
+        <div class="mb-4 text-end">
+            <a href="{% url 'conciergerie:customer_list' %}"
+               class="btn btn-outline-secondary">← Retour à la liste</a>
+        </div>
+        <div class="row g-4 align-items-center">
+            <!-- Logo -->
+            <div class="col-md-4 text-center">
+                {% if conciergerie.logo %}
+                    <img src="{{ conciergerie.logo.url }}"
+                         alt="Logo {{ conciergerie.name }}"
+                         class="img-fluid rounded shadow-sm conciergerie-logo">
+                {% endif %}
+            </div>
+            <!-- Basic Info -->
+            <div class="col-md-8">
+                <h2 class="fw-bold">{{ conciergerie.name }}</h2>
+                <p class="text-muted mb-1">📍 {{ conciergerie.ville.name }} – {{ conciergerie.code_postal }}</p>
+                <p class="text-muted">{{ conciergerie.adresse }}</p>
+                <ul class="list-unstyled mt-3">
+                    {% if conciergerie.email %}
+                        <li>
+                            <i class="bi bi-envelope me-1 text-secondary"></i>
+                            <a href="mailto:{{ conciergerie.email }}">{{ conciergerie.email }}</a>
+                        </li>
+                    {% endif %}
+                    {% if conciergerie.telephone %}
+                        <li>
+                            <i class="bi bi-telephone me-1 text-secondary"></i>
+                            <a href="tel:{{ conciergerie.telephone }}">{{ conciergerie.telephone }}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        <!-- Description -->
+        {% if conciergerie.description %}
+            <div class="row mt-4">
+                <div class="col">
+                    <h5 class="section-heading">À propos de la conciergerie</h5>
+                    <div class="conciergerie-description">{{ conciergerie.description|safe }}</div>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Legal Info -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted mb-2">Informations légales</h6>
+                <ul class="list-unstyled">
+                    {% if conciergerie.forme_juridique %}
+                        <li>
+                            <strong>Forme juridique :</strong> {{ conciergerie.forme_juridique }}
+                        </li>
+                    {% endif %}
+                    {% if conciergerie.siret %}
+                        <li>
+                            <strong>N° SIRET :</strong> {{ conciergerie.siret }}
+                        </li>
+                    {% endif %}
+                    {% if conciergerie.pays %}
+                        <li>
+                            <strong>Pays :</strong> {{ conciergerie.pays }}
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted mb-2">Représentant</h6>
+                <ul class="list-unstyled">
+                    {% if conciergerie.nom_representant %}
+                        <li>
+                            <strong>Nom :</strong> {{ conciergerie.nom_representant }}
+                        </li>
+                    {% endif %}
+                    {% if conciergerie.email_representant %}
+                        <li>
+                            <strong>Email :</strong> {{ conciergerie.email_representant }}
+                        </li>
+                    {% endif %}
+                    {% if conciergerie.telephone_representant %}
+                        <li>
+                            <strong>Téléphone :</strong> {{ conciergerie.telephone_representant }}
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

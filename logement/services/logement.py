@@ -30,20 +30,10 @@ def get_logements(user):
         raise
 
 
-def filter_logements(request):
+def filter_logements(
+    destination, start_date, end_date, guests, equipment_ids, bedrooms, bathrooms, smoking, animals, type
+):
     from reservation.services.reservation_service import get_available_logement_in_period
-
-    page_number = request.GET.get("page", 1)
-    destination = request.GET.get("destination", "").strip()
-    start_date = request.GET.get("start_date")
-    end_date = request.GET.get("end_date")
-    guests = request.GET.get("guests")
-    equipment_ids = request.GET.getlist("equipments")
-    bedrooms = request.GET.get("bedrooms")
-    bathrooms = request.GET.get("bathrooms")
-    smoking = request.GET.get("is_smoking_allowed") == "1"
-    animals = request.GET.get("is_pets_allowed") == "1"
-    type = request.GET.get("type")
 
     logements = Logement.objects.prefetch_related("photos").filter(statut="open")
 
@@ -82,10 +72,7 @@ def filter_logements(request):
     if type:
         logements = logements.filter(type=type)
 
-    paginator = Paginator(logements, 9)
-    page_obj = paginator.get_page(page_number)
-
-    return page_obj, equipment_ids, guests, type
+    return logements
 
 
 def get_best_discounts(discounts, start_date, end_date):

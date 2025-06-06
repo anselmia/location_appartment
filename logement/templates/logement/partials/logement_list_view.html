@@ -1,0 +1,33 @@
+{% load static %}
+
+{% for logement in page_obj %}
+  <div class="logement-list-card d-flex flex-row shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="image-wrapper">
+      {% if logement.photos.first %}
+        <picture>
+          <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+          <img src="{{ logement.photos.first.image.url }}"
+               alt="{{ logement.name }}"
+               loading="lazy"
+               class="logement-thumb">
+        </picture>
+      {% else %}
+        <img src="{% static 'logement/img/no-photo.jpg' %}"
+             alt="Aucune photo"
+             class="logement-thumb">
+      {% endif %}
+    </div>
+    <div class="info p-3">
+      <h3 class="mb-2">{{ logement.name }}</h3>
+      <p class="mb-1 text-muted">
+        <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
+      </p>
+      <p class="mb-1">
+        À partir de <strong>{{ logement.price }}€</strong> / nuit
+      </p>
+      <p class="mb-2">{{ logement.bedrooms }} chambres · {{ logement.bathrooms }} sdb · {{ logement.max_traveler }} pers</p>
+      <a href="{% url 'logement:view_logement' logement.id %}"
+         class="btn btn-outline btn-sm">Voir</a>
+    </div>
+  </div>
+{% endfor %}

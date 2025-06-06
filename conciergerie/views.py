@@ -1,12 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Conciergerie
-from .forms import ConciergerieForm
-from logement.models import City
-from .decorators import user_is_owner_admin
-from common.decorators import is_admin
+from django.core.paginator import Paginator
+
+from conciergerie.models import Conciergerie
+from conciergerie.forms import ConciergerieForm
 from conciergerie.tasks import send_conciergerie_validation_email
+from conciergerie.decorators import user_is_owner_admin
+
+from logement.models import City
+
+from common.decorators import is_admin
 
 
 @login_required
@@ -75,12 +79,18 @@ def list_conciergeries(request):
     if validated:
         conciergeries = conciergeries.filter(validated=True)
 
+    # Pagination
+    paginator = Paginator(conciergeries, 20)  # 10 conciergeries par page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(
         request,
         "conciergerie/list_conciergeries.html",
         {
-            "conciergeries": conciergeries,
+            "conciergeries": page_obj,
             "villes": villes,
+            "page_obj": page_obj,
         },
     )
 
@@ -119,3 +129,32 @@ def bulk_action(request):
 def conciergerie_detail(request, pk):
     conciergerie = get_object_or_404(Conciergerie, pk=pk)
     return render(request, "conciergerie/detail.html", {"conciergerie": conciergerie})
+
+
+def customer_conciergerie_list(request):
+    conciergeries = Conciergerie.objects.filter(actif=True, validated=True)
+    villes = City.objects.all()
+
+    # Optional filtering
+    ville_id = request.GET.get("ville")
+    if ville_id:
+        conciergeries = conciergeries.filter(ville_id=ville_id)
+
+    paginator = Paginator(conciergeries, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "conciergerie/conciergerie_list_customer.html",
+        {
+            "conciergeries": page_obj,
+            "villes": villes,
+            "page_obj": page_obj,
+        },
+    )
+
+
+def customer_conciergerie_detail(request, pk):
+    conciergerie = get_object_or_404(Conciergerie, pk=pk, actif=True, validated=True)
+    return render(request, "conciergerie/conciergerie_presentation.html", {"conciergerie": conciergerie})

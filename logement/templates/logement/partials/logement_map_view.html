@@ -1,0 +1,11 @@
+{% load static %}
+{% load extra_tags %}
+<div id="logement-map"
+     style="width: 100%;
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden"></div>
+<script>  
+  const all_logements = {{ all_logements|safe }}
+  console.log(all_logements);
+</script>

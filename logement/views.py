@@ -20,6 +20,8 @@ from django.views.decorators.http import require_http_methods, require_POST, req
 from django.db.models import Sum
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from django.core.paginator import Paginator
+from django.utils.formats import number_format
+from django.templatetags.static import static
 
 from logement.models import (
     Logement,
@@ -160,12 +162,48 @@ def logement_search(request):
         type_display_map = dict(Logement._meta.get_field("type").choices)
         types = [(val, type_display_map.get(val, val)) for val in raw_types]
 
-        page_obj, equipment_ids, guests, type = filter_logements(request)
+        page_number = request.GET.get("page", 1)
+        destination = request.GET.get("destination", "").strip()
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        guests = request.GET.get("guests")
+        equipment_ids = request.GET.getlist("equipments")
+        bedrooms = request.GET.get("bedrooms")
+        bathrooms = request.GET.get("bathrooms")
+        smoking = request.GET.get("is_smoking_allowed") == "1"
+        animals = request.GET.get("is_pets_allowed") == "1"
+        type = request.GET.get("type")
+
+        logements = filter_logements(
+            destination, start_date, end_date, guests, equipment_ids, bedrooms, bathrooms, smoking, animals, type
+        )
+
+        paginator = Paginator(logements, 9)
+        page_obj = paginator.get_page(page_number)
 
         selected_equipment_ids = [str(eid) for eid in equipment_ids]
         guests = int(guests) if guests and str(guests).isdigit() else 1
 
         logger.info(f"Search returned {page_obj.paginator.count} logements")
+
+        all_logements_json = json.dumps(
+            [
+                {
+                    "id": l.id,
+                    "name": l.name,
+                    "lat": float(str(l.latitude).replace(",", ".")),
+                    "lng": float(str(l.longitude).replace(",", ".")),
+                    "price": number_format(l.price, decimal_pos=2, use_l10n=False),
+                    "url": reverse("logement:view_logement", args=[l.id]),
+                    "image": (
+                        l.photos.first().image_webp.url if l.photos.first() else static("logement/img/no-photo.jpg")
+                    ),
+                    "city": l.ville.name if l.ville else "",
+                    "max_traveler": l.max_traveler,
+                }
+                for l in logements
+            ]
+        )
 
         return render(
             request,
@@ -180,6 +218,7 @@ def logement_search(request):
                 "number_range": number_range,
                 "types": types,
                 "selected_type": type,
+                "all_logements": all_logements_json,
             },
         )
     except Exception as e:
@@ -219,7 +258,9 @@ def manage_logement(request, logement_id=None):
         is_editing = logement_id is not None
 
         if is_editing:
-            logement = get_object_or_404(Logement.objects.prefetch_related("rooms", "photos", "equipment"), id=logement_id)
+            logement = get_object_or_404(
+                Logement.objects.prefetch_related("rooms", "photos", "equipment"), id=logement_id
+            )
 
         form = LogementForm(request.POST or None, instance=logement, user=request.user)
 

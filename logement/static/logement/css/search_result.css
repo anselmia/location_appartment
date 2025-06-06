@@ -368,14 +368,118 @@ li {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
+.view-switcher {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.view-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  background: white;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.view-btn i {
+  margin-right: 5px;
+}
+
+.view-btn.active,
+.view-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+#logement-map {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ddd;
+  margin-top: 1rem;
+}
+
+.logement-list-card {
+  display: flex;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.logement-list-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.image-wrapper {
+  flex: 0 0 200px;
+  height: 160px;
+  overflow: hidden;
+}
+
+.logement-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.logement-list-card .info {
+  flex: 1;
+  padding: 1rem;
+}
+
+.logement-list-card h3 {
+  font-size: 1.25rem;
+  color: var(--secondary-color);
+}
+
+@media (min-width: 769px) {
   .search-layout-container {
-    flex-direction: column;
+    display: flex;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    align-items: flex-start;
   }
 
   .search-filters {
-    order: 2;
-    padding: 1.5rem;
+    flex: 0 0 300px;
+    display: block !important; /* override toggle hidden */
+    margin-top: 0;
+    padding: 2rem 1.5rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 100px; /* optionally keep filters visible while scrolling */
+    height: fit-content;
+  }
+
+  .logements-results {
+    flex: 1;
+  }
+
+  .toggle-filters-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-layout-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    align-items: flex-start;
   }
 
   .logements-results {
@@ -401,5 +505,56 @@ li {
 
   .hero-banner .overlay {
     padding: 1rem;
+  }
+
+  .logement-list-card {
+    flex-direction: column;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 200px;
+  }
+
+  .view-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .search-filters {
+    order: 0; /* show first */
+    width: 100%;
+    display: none;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1rem 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    background: white;
+    border-radius: 12px;
+  }
+
+  .search-filters.show {
+    display: block;
+  }
+
+  .toggle-filters-btn {
+    width: 100%;
+    margin: 1rem auto 0;
+    font-size: 1rem;
+    border-radius: 30px;
+    background: var(--primary-color, #bfa66b);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    display: block;
+  }
+
+  .toggle-filters-btn:hover {
+    background-color: #d4af7f;
+  }
+
+  .logements-results {
+    order: 1;
+    width: 100%;
   }
 }

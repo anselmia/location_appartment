@@ -1,5 +1,6 @@
 import os
 import logging
+import requests
 from datetime import time
 from django.db import models
 from django.dispatch import receiver
@@ -137,6 +138,8 @@ class Logement(models.Model):
     equipment = models.ManyToManyField(Equipment, blank=True, related_name="logements")
 
     map_link = models.URLField(blank=True, null=True, max_length=500)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -151,6 +154,24 @@ class Logement(models.Model):
             else:
                 logger.error("Échec de la génération du code logement après 10 essais.")
                 raise ValueError("Échec génération code unique pour le logement.")
+
+        if (not self.latitude or not self.longitude) and self.adresse and self.ville:
+            full_address = f"{self.adresse}, {self.ville.name}, France"
+            try:
+                response = requests.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={"q": full_address, "format": "json", "limit": 1},
+                    headers={"User-Agent": "yourapp/1.0 (contact@yourdomain.com)"},
+                )
+                data = response.json()
+                if data:
+                    self.latitude = float(data[0]["lat"])
+                    self.longitude = float(data[0]["lon"])
+                    logger.info(f"Geocoded {self.name} at ({self.latitude}, {self.longitude})")
+                else:
+                    logger.warning(f"Geocoding failed: no results for {full_address}")
+            except Exception as e:
+                logger.error(f"Error during geocoding {full_address}: {e}")
 
         super().save(*args, **kwargs)
 
