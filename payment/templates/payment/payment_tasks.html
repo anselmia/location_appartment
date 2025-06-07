@@ -62,9 +62,9 @@
                             <td>{{ task.task_id }}</td>
                             <td>
                                 {% if task.status == "success" %}
-                                    <span class="badge bg-success">Succès</span>
+                                    <span class="badge-status validee">Succès</span>
                                 {% else %}
-                                    <span class="badge bg-danger">Échec</span>
+                                    <span class="badge-status annulee">Échec</span>
                                 {% endif %}
                             </td>
                             <td class="text-muted small">{{ task.error|truncatechars:60 }}</td>
@@ -108,7 +108,7 @@
                         </li>
                     {% else %}
                         <li class="page-item disabled">
-                            <span >&raquo;</span>
+                            <span>&raquo;</span>
                         </li>
                     {% endif %}
                 </ul>

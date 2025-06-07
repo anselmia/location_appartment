@@ -195,6 +195,7 @@ def logement_search(request):
                     "lng": float(str(l.longitude).replace(",", ".")),
                     "price": number_format(l.price, decimal_pos=2, use_l10n=False) if l.price else "0.00",
                     "url": reverse("logement:view_logement", args=[l.id]),
+                    "book_url": reverse("reservation:book", args=[l.id]),
                     "image": (
                         l.photos.first().image_webp.url if l.photos.first() else static("logement/img/no-photo.jpg")
                     ),

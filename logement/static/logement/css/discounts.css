@@ -2,9 +2,19 @@
   --table-header-bg: rgba(191, 166, 107, 0.9);
 }
 
-.table-header th {
+.table th {
   background-color: var(--table-header-bg);
   color: white;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--neutral-bg);
+}
+
+.card-header {
+  background-color: transparent;
+  font-weight: 600;
+  color: var(--primary-color);
 }
 
 .discounts-container {
@@ -144,5 +154,35 @@
   .discount-list input,
   .discount-list .btn {
     width: 100%;
+  }
+
+  table.table {
+    display: none;
+  }
+  .discount-card {
+    display: block;
+  }
+
+  .card-body,
+  .discount-form {
+    padding: 1rem !important;
+  }
+  .discount-form .form-label {
+    font-size: 0.85rem;
+  }
+
+  #logement-select {
+    width: 100% !important;
+  }
+  
+  td .btn {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (min-width: 769px) {
+  .discount-card {
+    display: none;
   }
 }

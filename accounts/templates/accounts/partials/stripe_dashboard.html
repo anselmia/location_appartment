@@ -1,6 +1,5 @@
 {% load extra_tags %}
 {% load static %}
-
 <div class="card shadow rounded-4 border-0 mb-4">
   <div class="card-header text-white rounded-top-4">
     <h5 class="mb-0">💼 Compte Stripe</h5>
@@ -8,9 +7,8 @@
   <div class="card-body">
     {% if not stripe_account %}
       <p class="text-muted mb-3">Aucun compte Stripe connecté pour le moment.</p>
-      <a href="{% url 'accounts:create_stripe_account' %}" class="btn btn-primary">
-        ➕ Créer un compte Stripe
-      </a>
+      <a href="{% url 'accounts:create_stripe_account' %}"
+         class="btn btn-primary">➕ Créer un compte Stripe</a>
     {% else %}
       <div class="mb-3">
         <div class="row gy-2">
@@ -22,9 +20,9 @@
             <strong>Statut :</strong>
             <div class="small">
               {% if stripe_account.details_submitted %}
-                <span class="badge bg-success">✅ Validé</span>
+                <span class="badge-status validee">✅ Validé</span>
               {% else %}
-                <span class="badge bg-danger">❌ Incomplet</span>
+                <span class="badge-status annulee">❌ Incomplet</span>
               {% endif %}
             </div>
           </div>
@@ -38,26 +36,25 @@
           </div>
         </div>
       </div>
-
       {% if stripe_account.requirements.currently_due %}
         <div class="alert alert-warning">
           ⚠️ Informations manquantes :
           <ul class="mb-0">
             {% for field in stripe_account.requirements.currently_due %}
-              <li><code>{{ field }}</code></li>
+              <li>
+                <code>{{ field }}</code>
+              </li>
             {% endfor %}
           </ul>
         </div>
       {% endif %}
-
       <div class="d-flex flex-wrap gap-2 mt-3">
-        <a href="{% url 'accounts:update_stripe_account' %}" class="btn btn-outline-primary">
-          📝 Mettre à jour
-        </a>
+        <a href="{% url 'accounts:update_stripe_account' %}"
+           class="btn btn-outline-primary">📝 Mettre à jour</a>
         {% if dashboard_link %}
-          <a href="{{ dashboard_link }}" target="_blank" class="btn btn-outline-secondary">
-            🔗 Ouvrir le Dashboard Stripe
-          </a>
+          <a href="{{ dashboard_link }}"
+             target="_blank"
+             class="btn btn-outline-secondary">🔗 Ouvrir le Dashboard Stripe</a>
         {% endif %}
       </div>
     {% endif %}

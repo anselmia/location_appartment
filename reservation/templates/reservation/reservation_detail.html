@@ -69,28 +69,18 @@
             <dl class="row">
               <dt class="col-sm-5">Statut</dt>
               <dd class="col-sm-7">
-                {% if reservation.statut == "confirmee" %}
-                  <span class="badge bg-success">Confirmée</span>
-                {% elif reservation.statut == "en_attente" %}
-                  <span class="badge bg-warning text-dark">En attente</span>
-                {% elif reservation.statut == "annulee" %}
-                  <span class="badge bg-danger">Annulée</span>
-                {% elif reservation.statut == "terminee" %}
-                  <span class="badge bg-secondary">Terminée</span>
-                {% else %}
-                  {{ reservation.get_statut_display }}
-                {% endif %}
+                <span class="badge-status {{ reservation.statut|default:'inconnu' }}">{{ reservation.get_statut_display }}</span>
               </dd>
               <dt class="col-sm-5">État actuel</dt>
               <dd class="col-sm-7">
                 {% if reservation.ongoing %}
-                  <span class="badge bg-warning text-dark">En cours</span>
+                  <span class="badge-status en-cours">En cours</span>
                 {% elif reservation.ended %}
-                  <span class="badge bg-secondary">Terminée</span>
+                  <span class="badge-status terminee">Terminée</span>
                 {% elif reservation.coming %}
-                  <span class="badge bg-info text-dark">À venir</span>
+                  <span class="badge-status a-venir">À venir</span>
                 {% else %}
-                  <span class="badge bg-light text-dark">Inconnu</span>
+                  <span class="badge-status inconnu">Inconnu</span>
                 {% endif %}
               </dd>
             </dl>

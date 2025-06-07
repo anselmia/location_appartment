@@ -126,18 +126,4 @@
   }
 }
 
-/* === BADGES === */
-.badge-valid {
-  background-color: var(--success-color);
-  color: #fff;
-}
 
-.badge-inactive {
-  background-color: var(--danger-color);
-  color: #fff;
-}
-
-.badge-pending {
-  background-color: var(--warning-color);
-  color: #000;
-}

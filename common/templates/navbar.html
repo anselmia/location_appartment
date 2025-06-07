@@ -3,7 +3,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 <header class="navbar">
     <div class="logo ml-3">
-        <a href="/">
+        <a href="{% url 'common:home' %}">
             <picture>
                 <source srcset="{% static 'logement/img/logo.webp' %}" type="image/webp">
                 <img src="{% static 'logement/img/logo.jpg' %}"
@@ -13,15 +13,23 @@
             </picture>
         </a>
     </div>
-    <nav>
-        <!-- Hamburger Icon -->
-        <div class="nav-toggle" id="navToggle">&#9776;</div>
-        <!-- Links Container -->
+    <nav role="navigation" aria-label="{% trans 'Menu principal' %}">
+        <div class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</div>
         <div class="nav-links" id="navLinks">
-            <a href="/">{% trans "Accueil" %}</a>
+            <!-- Close Button for Mobile -->
+            <div class="nav-close d-md-none text-end px-3 py-2 w-100">
+                <span style="cursor:pointer"
+                      onclick="document.getElementById('navLinks').classList.remove('show')">✕</span>
+            </div>
+            <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
             <a href="{% url 'logement:logement_search' %}">{% trans "Réserver" %}</a>
+            <!-- Nous choisir -->
             <div class="dropdown">
-                <a href="#" class="dropdown-toggle">{% trans "Nous Choisir" %}</a>
+                <a href="#"
+                   class="dropdown-toggle"
+                   role="button"
+                   aria-expanded="false"
+                   aria-haspopup="true">{% trans "Nous Choisir" %}</a>
                 <div class="dropdown-menu">
                     <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
                     <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
@@ -31,7 +39,11 @@
             {% if user.is_authenticated %}
                 {% if user.is_superuser or user.is_admin or user.is_owner or user.is_owner_admin %}
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle">{% trans "Logements" %}</a>
+                        <a href="#"
+                           class="dropdown-toggle"
+                           role="button"
+                           aria-expanded="false"
+                           aria-haspopup="true">{% trans "Logements" %}</a>
                         <div class="dropdown-menu">
                             <a href="{% url 'logement:dashboard' %}">{% trans "Tableau de bord" %}</a>
                             <a href="{% url 'logement:calendar' %}">{% trans "Calendrier" %}</a>
@@ -43,7 +55,11 @@
                 {% endif %}
                 {% if user.is_superuser or user.is_admin %}
                     <div class="dropdown">
-                        <a href="#" class="dropdown-toggle">{% trans "Admin" %}</a>
+                        <a href="#"
+                           class="dropdown-toggle"
+                           role="button"
+                           aria-expanded="false"
+                           aria-haspopup="true">{% trans "Admin" %}</a>
                         <div class="dropdown-menu">
                             <a href="{% url 'administration:financial_dashboard' %}">{% trans "Tableau de bord" %}</a>
                             <a href="{% url 'administration:edit_entreprise' %}">{% trans "Entreprise" %}</a>
@@ -58,7 +74,11 @@
                     </div>
                 {% endif %}
                 <div class="dropdown">
-                    <a href="#" class="dropdown-toggle">{% trans "Mon compte" %} ({{ user.username }})</a>
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Mon compte" %} ({{ user.username }})</a>
                     <div class="dropdown-menu">
                         <a href="{% url 'accounts:dashboard' %}">{% trans "Tableau de bord" %}</a>
                         <a href="{% url 'accounts:messages' %}">📬 {% trans "Messagerie" %}</a>
@@ -68,6 +88,7 @@
             {% else %}
                 <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
             {% endif %}
+            <!-- Language Switcher -->
             <form action="{% url 'logement:set_language' %}"
                   method="post"
                   class="lang-form">

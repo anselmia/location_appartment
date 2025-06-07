@@ -30,18 +30,18 @@
               <div class="reservation-actions text-end mt-3 mt-md-0">
                 <div class="badges mb-2">
                   {% if r.ended %}
-                    <span class="badge bg-secondary">Terminée</span>
+                    <span class="badge-status terminee">Terminée</span>
                   {% elif r.ongoing %}
-                    <span class="badge bg-warning text-dark">En cours</span>
+                    <span class="badge-status en-cours">En cours</span>
                   {% elif r.coming %}
-                    <span class="badge bg-info text-dark">À venir</span>
+                    <span class="badge-status a-venir">À venir</span>
                   {% elif r.statut == "annulee" %}
-                    <span class="badge bg-danger">Annulée</span>
+                    <span class="badge-status annulee">Annulée</span>
                   {% endif %}
                   {% if r.refundable %}
-                    <span class="badge bg-info">Remboursable: {{ r.refundable_amount|floatformat:2 }} €</span>
+                    <span class="badge-status remboursable">Remboursable: {{ r.refundable_amount|floatformat:2 }} €</span>
                   {% elif r.refunded %}
-                    <span class="badge bg-success">Remboursé: {{ r.refund_amount|floatformat:2 }} €</span>
+                    <span class="badge-status rembourse">Remboursé: {{ r.refund_amount|floatformat:2 }} €</span>
                   {% endif %}
                 </div>
                 <div class="d-flex gap-2 justify-content-end">

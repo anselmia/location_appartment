@@ -14,6 +14,8 @@
   --color-text: #222;
   --color-title: #111;
   --color-border: #ddd;
+  --primary-light: #7d5a50;
+  --secondary-light: #584a43;
 
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
@@ -45,6 +47,8 @@
   --text-muted: #7f8c8d;
 
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.12);
   --radius: 12px;
 
   --light-border: #e0e0e0;
@@ -143,7 +147,8 @@ input,
   font-weight: 600;
   text-transform: capitalize;
   border-radius: 999px;
-  line-height: 1;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 .badge-status.confirmee {
@@ -163,6 +168,36 @@ input,
 
 .badge-status.en_attente {
   background-color: var(--warning-color);
+  color: #000;
+}
+
+.badge-status.en-cours {
+  background-color: var(--warning-color);
+  color: #000;
+}
+
+.badge-status.a-venir {
+  background-color: var(--info-color);
+  color: #000;
+}
+
+.badge-status.remboursable {
+  background-color: var(--info-color);
+  color: #fff;
+}
+
+.badge-status.rembourse {
+  background-color: var(--success-color);
+  color: #fff;
+}
+
+.badge-status.validee {
+  background-color: var(--success-color);
+  color: #fff;
+}
+
+.badge-status.inconnu {
+  background-color: var(--light-border);
   color: #000;
 }
 
@@ -353,12 +388,21 @@ button,
 }
 
 .btn-primary {
-  background-color: #2b3d55 !important;
+  background-color: var(--primary-color) !important;
   color: #fff !important;
 }
 
 .btn-primary:hover {
-  background-color: #1a5fd1;
+  background-color: var(--primary-light) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color) !important;
+  color: #fff !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-light) !important;
 }
 
 .btn-danger {

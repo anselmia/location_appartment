@@ -1,107 +1,90 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block extrahead %}
-    <link rel="stylesheet"
-          href="{% static 'conciergerie/css/conciergerie_customer.css' %}">
+<link rel="stylesheet" href="{% static 'conciergerie/css/conciergerie_customer.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h2 class="mb-4 text-center">🔎 Trouvez votre conciergerie</h2>
+<div class="container py-5 conciergerie-list-wrapper">
+  <h2 class="mb-4 text-center">🔎 Trouvez votre conciergerie</h2>
 
-    <!-- Ville Filter -->
-    <form method="get" class="mb-4">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <label for="ville" class="form-label">Filtrer par ville</label>
-                <div class="input-group">
-                    <select name="ville" id="ville" class="form-select">
-                        <option value="">Toutes les villes</option>
-                        {% for v in villes %}
-                            <option value="{{ v.id }}"
-                                    {% if request.GET.ville == v.id|stringformat:"s" %}selected{% endif %}>
-                                {{ v.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn btn-primary">Filtrer</button>
-                </div>
-            </div>
+  <!-- Ville Filter -->
+  <form method="get" class="mb-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <label for="ville" class="form-label">Filtrer par ville</label>
+        <div class="input-group shadow-sm">
+          <select name="ville" id="ville" class="form-select form-select-lg rounded-start">
+            <option value="">Toutes les villes</option>
+            {% for v in villes %}
+              <option value="{{ v.id }}" {% if request.GET.ville == v.id|stringformat:"s" %}selected{% endif %}>{{ v.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary btn-lg rounded-end">Filtrer</button>
         </div>
-    </form>
-
-    <!-- Conciergerie Cards -->
-    <div class="row g-4">
-        {% for c in conciergeries %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm rounded-4 border-0 position-relative">
-                    <a href="{% url 'conciergerie:conciergerie_detail' c.id %}" class="stretched-link"></a>
-                    {% if c.logo %}
-                        <img src="{{ c.logo.url }}"
-                             alt="Logo {{ c.name }}"
-                             class="card-img-top rounded-top-4"
-                             style="height: 180px; object-fit: contain;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ c.name }}</h5>
-                        <p class="text-muted mb-1">📍 {{ c.ville.name }} – {{ c.code_postal }}</p>
-                        {% if c.description %}
-                            <p class="mb-2">{{ c.description|truncatewords_html:20|safe }}</p>
-                        {% endif %}
-                        {% if c.telephone %}
-                            <p class="mb-1"><strong>Tél :</strong> {{ c.telephone }}</p>
-                        {% endif %}
-                        {% if c.email %}
-                            <p class="mb-1"><strong>Email :</strong> {{ c.email }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer bg-white border-0 text-end">
-                        <a href="{% url 'conciergerie:conciergerie_detail' c.id %}" class="btn btn-sm btn-outline-primary">En savoir plus</a>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <div class="col-12">
-                <div class="alert alert-warning text-center">Aucune conciergerie disponible pour le moment.</div>
-            </div>
-        {% endfor %}
+      </div>
     </div>
+  </form>
 
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-        <div class="d-flex justify-content-center mt-4">
-            <nav aria-label="Pagination">
-                <ul class="pagination-list">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ page_obj.previous_page_number }}"
-                               aria-label="Précédent">
-                                &laquo;
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled"><span>&laquo;</span></li>
-                    {% endif %}
-
-                    {% for num in page_obj.paginator.page_range %}
-                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ page_obj.next_page_number }}"
-                               aria-label="Suivant">
-                                &raquo;
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled"><span>&raquo;</span></li>
-                    {% endif %}
-                </ul>
-            </nav>
+  <!-- Conciergerie Cards -->
+  <div class="row g-4">
+    {% for c in conciergeries %}
+      <div class="col-sm-12 col-md-6 col-lg-4">
+        <div class="card h-100 shadow rounded-4 border-0 position-relative">
+          <a href="{% url 'conciergerie:conciergerie_detail' c.id %}" class="stretched-link"></a>
+          {% if c.logo %}
+            <img src="{{ c.logo.url }}" alt="Logo {{ c.name }}" class="card-img-top rounded-top-4">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ c.name }}</h5>
+            <p class="text-muted small mb-1">📍 {{ c.ville.name }} &mdash; {{ c.code_postal }}</p>
+            {% if c.description %}
+              <p class="mb-2">{{ c.description|truncatewords_html:25|safe }}</p>
+            {% endif %}
+            {% if c.telephone %}<p class="mb-1"><strong>Tél :</strong> {{ c.telephone }}</p>{% endif %}
+            {% if c.email %}<p class="mb-1"><strong>Email :</strong> {{ c.email }}</p>{% endif %}
+          </div>
+          <div class="card-footer bg-white border-0 text-end">
+            <a href="{% url 'conciergerie:conciergerie_detail' c.id %}" class="btn btn-outline-primary btn-sm">En savoir plus</a>
+          </div>
         </div>
-    {% endif %}
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-warning text-center">Aucune conciergerie disponible pour le moment.</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center mt-5">
+      <nav aria-label="Pagination">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ num }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %}page={{ page_obj.next_page_number }}">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

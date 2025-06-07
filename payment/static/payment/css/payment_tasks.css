@@ -82,16 +82,6 @@
   border-radius: 0.4rem;
 }
 
-.badge-success {
-  background-color: var(--success-color);
-  color: #fff;
-}
-
-.badge-failed {
-  background-color: var(--danger-color);
-  color: #fff;
-}
-
 .text-muted-small {
   font-size: 0.85rem;
   color: var(--text-muted);

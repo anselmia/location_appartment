@@ -167,31 +167,6 @@
   margin-top: var(--spacing-xs);
 }
 
-.badge.bg-secondary {
-  background-color: #6c757d;
-  color: #fff;
-}
-
-.badge.bg-warning {
-  background-color: var(--warning-color);
-  color: var(--secondary-color);
-}
-
-.badge.bg-info {
-  background-color: var(--info-color);
-  color: var(--secondary-color);
-}
-
-.badge.bg-success {
-  background-color: var(--success-color);
-  color: #fff;
-}
-
-.badge.bg-danger {
-  background-color: var(--danger-color);
-  color: #fff;
-}
-
 /* Delete Account */
 .client-dashboard .delete-account {
   max-width: 320px;
@@ -238,4 +213,10 @@ form[role="search"] .btn {
   .btn {
     width: 100%;
   }
+
+  .badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
 }

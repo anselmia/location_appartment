@@ -15,204 +15,216 @@
              placeholder="🔍 Rechercher par numéro de réservation"
              value="{{ query|default:'' }}">
     </form>
-    <div id="reservationAccordion">
+    <div class="accordion" id="reservationAccordion">
       {% for r in reservations %}
-        {% with collapse_id="r"|add:r.code %}
-          <div class="card mb-3 shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">
-                <button class="btn btn-link text-dark text-left p-0"
-                        type="button"
-                        data-toggle="collapse"
-                        data-target="#{{ collapse_id }}"
-                        aria-expanded="false"
-                        aria-controls="{{ collapse_id }}">
-                  {{ r.code }} - {{ r.logement.name }} <span class="ml-3 badge {% if r.statut == 'confirmee' %}bg-success {% elif r.statut == 'en_attente' %}bg-warning text-dark {% elif r.statut == 'annulee' %}bg-danger {% elif r.statut == 'terminee' %}bg-secondary {% else %}bg-light text-dark{% endif %}">
-                  {{ r.get_statut_display }}
-                </span>
+        {% with collapse_id="collapse"|add:r.code %}
+          <div class="accordion-item mb-3 shadow-sm">
+            <h2 class="accordion-header" id="heading{{ r.code }}">
+              <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#{{ collapse_id }}"
+                      aria-expanded="false"
+                      aria-controls="{{ collapse_id }}">
+                <div class="me-3">
+                  <strong>{{ r.code }}</strong> - {{ r.logement.name }}
+                </div>
+                <span class="badge-status {{ r.statut|default:'inconnu' }}">{{ r.get_statut_display }}</span>
               </button>
-            </h5>
-            <small class="text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</small>
-          </div>
-          <div id="{{ collapse_id }}"
-               class="collapse"
-               data-parent="#reservationAccordion">
-            <div class="card-body">
-              <!-- Infos Générales -->
-              <p class="mb-1">
-                👤 <strong>Client :</strong> {{ r.user }}
-                <br>
-                📅 <strong>Séjour :</strong> du {{ r.start }} au {{ r.end }}
-                <br>
-                👥 <strong>Voyageurs :</strong> {{ r.guest }}
-              </p>
-              <!-- Paiement -->
-              <h6 class="text-muted">💶 Paiement</h6>
-              <ul class="list-unstyled small mb-2">
-                <li>
-                  <strong>Prix :</strong> {{ r.price }} €
-                </li>
-                <li>
-                  <strong>Taxes :</strong> {{ r.tax|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Méthode :</strong> {{ r.stripe_saved_payment_method_id|default:"—" }}
-                </li>
-                <li>
-                  <strong>Intent :</strong> {{ r.stripe_payment_intent_id|default:"—" }}
-                </li>
-              </ul>
-              <!-- Remboursement -->
-              <h6 class="text-muted">💸 Remboursement</h6>
-              <ul class="list-unstyled small mb-2">
-                <li>
-                  <strong>Déjà remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Montant remboursable :</strong>
-                  {% if r.refundable %}
-                    {{ r.refundable_amount|floatformat:2 }} €
-                  {% else %}
-                    0.00 €
-                  {% endif %}
-                </li>
-              </ul>
-              {% if r.refundable %}
-                <form method="post"
-                      action="{% url 'payment:refund_reservation' r.code %}"
-                      class="d-flex align-items-center gap-2 mb-2"
-                      onsubmit="return confirm('Confirmer le remboursement ?');">
-                  {% csrf_token %}
-                  <input type="number"
-                         name="amount"
-                         step="0.01"
-                         min="0"
-                         max="{{ r.refundable_amount|stringformat:'f' }}"
-                         class="form-control form-control-sm"
-                         style="max-width: 140px"
-                         placeholder="Montant (€)">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
-                </form>
-              {% else %}
-                <p class="text-muted">Aucun remboursement supplémentaire possible.</p>
-              {% endif %}
-              <!-- Caution -->
-              <h6 class="text-muted mt-3">🔐 Caution</h6>
-              <ul class="list-unstyled small mb-2">
-                <li>
-                  <strong>Caution prévue :</strong> {{ r.logement.caution|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Déjà chargée :</strong> {{ r.amount_charged|floatformat:2 }} €
-                </li>
-                <li>
-                  <strong>Restant à charger :</strong> {{ r.chargeable_deposit|floatformat:2 }} €
-                </li>
-              </ul>
-              {% if r.stripe_payment_intent_id and r.chargeable_deposit > 0 %}
-                <form method="post"
-                      action="{% url 'payment:charge_deposit' r.code %}"
-                      class="d-flex align-items-center gap-2 mb-2"
-                      onsubmit="return confirm('Charger la caution restante ?');">
-                  {% csrf_token %}
-                  <input type="number"
-                         name="deposit_amount"
-                         step="0.01"
-                         min="0"
-                         max="{{ r.chargeable_deposit|stringformat:'f' }}"
-                         class="form-control form-control-sm"
-                         style="max-width: 140px"
-                         placeholder="Montant (€)">
-                  <button type="submit" class="btn btn-sm btn-outline-primary">💳 Charger</button>
-                </form>
-              {% endif %}
-              <!-- Transferts -->
-              <h6 class="text-muted mt-3">📤 Transferts</h6>
-              <p class="mb-1">
-                <strong>Propriétaire :</strong>
-                {% if r.transferred %}
-                  <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
-                  <br>
-                  <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
-                {% else %}
-                  <ul class="list-unstyled small mb-2">
-                    <li>
-                      <strong>Montant à transférer :</strong> {{ r.transferable_amount|floatformat:2 }} €
-                    </li>
-                  </ul>
-                  <form method="post"
-                        action="{% url 'payment:transfer_reservation' r.code %}"
-                        onsubmit="return confirm('Effectuer le transfert ?');"
-                        class="d-inline-block">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-success">💶 Transférer</button>
-                  </form>
-                {% endif %}
-              </p>
-              {% if r.logement.admin %}
-                <p class="mb-0">
-                  <strong>Admin :</strong>
-                  {% if r.admin_transferred %}
-                    <span class="text-success">✔️ {{ r.admin_transferred_amount|floatformat:2 }} €</span>
-                    <br>
-                    <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
-                  {% else %}
-                    <ul class="list-unstyled small mb-2">
+            </h2>
+            <div id="{{ collapse_id }}"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="heading{{ r.code }}"
+                 data-bs-parent="#reservationAccordion">
+              <div class="accordion-body">
+                <div class="row mb-3 small">
+                  <div class="col-md-6">
+                    <p class="mb-1">
+                      <strong>Client :</strong> {{ r.user }}
+                    </p>
+                    <p class="mb-1">
+                      <strong>Séjour :</strong> du {{ r.start }} au {{ r.end }}
+                    </p>
+                    <p class="mb-1">
+                      <strong>Voyageurs :</strong> {{ r.guest }}
+                    </p>
+                    <p class="mb-1 text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p class="mb-1">
+                      <strong>Statut actuel :</strong>
+                      {% if r.ongoing %}
+                        <span class="badge-status en-cours">En cours</span>
+                      {% elif r.ended %}
+                        <span class="badge-status terminee">Terminée</span>
+                      {% elif r.coming %}
+                        <span class="badge-status a-venir">A venir</span>
+                      {% else %}
+                        <span class="badge-status inconnu">Inconnu</span>
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+                <div class="row small">
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold">Paiement</h6>
+                    <ul class="list-unstyled">
                       <li>
-                        <strong>Montant à transférer :</strong> {{ r.admin_transferable_amount|floatformat:2 }} €
+                        <strong>Prix :</strong> {{ r.price }} €
+                      </li>
+                      <li>
+                        <strong>Taxes :</strong> {{ r.tax|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Méthode :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
+                      </li>
+                      <li>
+                        <strong>Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
                       </li>
                     </ul>
-                  {% endif %}
-                </p>
-              {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold">Remboursement</h6>
+                    <ul class="list-unstyled">
+                      <li>
+                        <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
+                      </li>
+                    </ul>
+                    {% if r.refundable %}
+                      <form method="post"
+                            action="{% url 'payment:refund_reservation' r.code %}"
+                            class="d-flex gap-2 align-items-center"
+                            onsubmit="return confirm('Confirmer le remboursement ?');">
+                        {% csrf_token %}
+                        <input type="number"
+                               name="amount"
+                               class="form-control form-control-sm"
+                               min="0"
+                               max="{{ r.refundable_amount|stringformat:'f' }}"
+                               step="0.01"
+                               placeholder="Montant">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
+                      </form>
+                    {% else %}
+                      <p class="text-muted">Aucun remboursement possible.</p>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="row mt-3 small">
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold">Caution</h6>
+                    <ul class="list-unstyled">
+                      <li>
+                        <strong>Prévue :</strong> {{ r.logement.caution|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Chargée :</strong> {{ r.amount_charged|floatformat:2 }} €
+                      </li>
+                      <li>
+                        <strong>Restante :</strong> {{ r.chargeable_deposit|floatformat:2 }} €
+                      </li>
+                    </ul>
+                    {% if r.stripe_payment_intent_id and r.chargeable_deposit > 0 %}
+                      <form method="post"
+                            action="{% url 'payment:charge_deposit' r.code %}"
+                            class="d-flex gap-2 align-items-center"
+                            onsubmit="return confirm('Charger la caution restante ?');">
+                        {% csrf_token %}
+                        <input type="number"
+                               name="deposit_amount"
+                               class="form-control form-control-sm"
+                               min="0"
+                               max="{{ r.chargeable_deposit|stringformat:'f' }}"
+                               step="0.01"
+                               placeholder="Montant">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">💳 Charger</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold">Transferts</h6>
+                    <p class="mb-1">
+                      <strong>Propriétaire :</strong>
+                      {% if r.transferred %}
+                        <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
+                        <br>
+                        <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                      {% else %}
+                        {{ r.transferable_amount|floatformat:2 }} €
+                        <form method="post"
+                              action="{% url 'payment:transfer_reservation' r.code %}"
+                              class="d-inline-block ms-2"
+                              onsubmit="return confirm('Effectuer le transfert ?');">
+                          {% csrf_token %}
+                          <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
+                        </form>
+                      {% endif %}
+                    </p>
+                    {% if r.logement.admin %}
+                      <p class="mb-1">
+                        <strong>Admin :</strong>
+                        {% if r.admin_transferred %}
+                          <span class="text-success">✔️ {{ r.admin_transferred_amount|floatformat:2 }} €</span>
+                          <br>
+                          <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
+                        {% else %}
+                          {{ r.admin_transferable_amount|floatformat:2 }} €
+                        {% endif %}
+                      </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      {% endwith %}
-    {% empty %}
-      <p class="text-muted text-center mt-5">Aucune réservation trouvée.</p>
-    {% endfor %}
+        {% endwith %}
+      {% empty %}
+        <p class="text-center text-muted mt-5">Aucune réservation trouvée.</p>
+      {% endfor %}
+    </div>
+    <div class="d-flex justify-content-center mt-4">
+      <nav aria-label="Pagination">
+        <ul class="pagination-list">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+                 aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span>&laquo;</span>
+            </li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a chref="?q={{ query }}&page={{ num }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
+                 aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span>&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
   </div>
-  <div class="d-flex justify-content-center mt-4">
-    <nav aria-label="Pagination">
-      <ul class="pagination-list">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
-               aria-label="Précédent">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span>&laquo;</span>
-          </li>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-          <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-            <a chref="?q={{ query }}&page={{ num }}">{{ num }}</a>
-          </li>
-        {% endfor %}
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
-               aria-label="Suivant">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span>&raquo;</span>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
-</div>
 {% endblock content %}

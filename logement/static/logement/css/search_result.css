@@ -409,27 +409,42 @@ logement-list-card {
   flex-wrap: nowrap; /* pour desktop par défaut */
   width: 100%;
   background: white;
-  border: 1px solid #e5e5e5;
   border-radius: 1rem;
   overflow: hidden;
   transition: box-shadow 0.2s ease;
+  border: 1px solid var(--light-border);
 }
 
 .logement-list-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-hover);
 }
 
-.image-wrapper {
-  flex: 0 0 200px;
-  height: 160px;
-  overflow: hidden;
+.logement-thumb-wrapper {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logement-thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  border-radius: var(--radius);
+}
+
+.logement-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-title);
+}
+
+.image-wrapper {
+  flex: 0 0 200px;
+  height: 160px;
+  overflow: hidden;
 }
 
 .logement-list-card .info {
@@ -513,7 +528,7 @@ logement-list-card {
   .logement-list-card {
     flex-direction: column !important;
   }
-  
+
   .logement-list-card .info {
     padding: 1rem;
   }
@@ -577,5 +592,18 @@ logement-list-card {
   .logements-results {
     order: 1;
     width: 100%;
+  }
+
+  .logement-list-card {
+    flex-direction: row !important;
+  }
+
+  .logement-thumb-wrapper {
+    width: 90px;
+    height: 90px;
+  }
+
+  .logement-title {
+    font-size: 1rem;
   }
 }
