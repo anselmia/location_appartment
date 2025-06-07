@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <div class="container mt-5" style="max-width: 500px">
+        <h3 class="mb-4">{% trans "Renvoyer l'email de confirmation" %}</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="email" class="form-label">{% trans "Adresse email" %}</label>
+                <input type="email" name="email" id="email" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">{% trans "Renvoyer" %}</button>
+        </form>
+        <div class="mt-3">
+            <a href="{% url 'accounts:login' %}">{% trans "Retour à la connexion" %}</a>
+        </div>
+    </div>
+{% endblock %}

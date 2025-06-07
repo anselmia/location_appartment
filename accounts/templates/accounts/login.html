@@ -22,11 +22,19 @@
             {{ form.username }}
             <label for="id_password">{% trans "Mot de passe" %}</label>
             {{ form.password }}
-            <button type="submit">{% trans "Se connecter" %}</button>
+            <button class="btn btn-primary type="submit">{% trans "Se connecter" %}</button>
         </form>
         <div class="text-center mt-3">
             <a href="{% url 'accounts:register' %}"
-               class="btn btn-outline-secondary register-btn">{% trans "Créer un compte" %}</a>
+               class="btn btn-secondary register-btn">{% trans "Créer un compte" %}</a>
+        </div>
+        <div class="text-center mt-3">
+            <p class="mt-2 small">
+                {% trans "Mot de passe oublié ?" %} <a href="{% url 'accounts:password_reset' %}">{% trans "Réinitialiser mon mot de passe" %}</a>
+            </p>
+            <p class="mt-2 small">
+                {% trans "Pas reçu l'email ?" %} <a href="{% url 'accounts:resend_activation_email' %}">{% trans "Renvoyer l'email de confirmation" %}</a>
+            </p>
         </div>
     </div>
 {% endblock content %}

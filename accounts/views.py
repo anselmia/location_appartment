@@ -1,15 +1,20 @@
 import logging
 
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth.views import PasswordResetView
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
+
+from django.contrib.sites.shortcuts import get_current_site
+
 
 from accounts.models import Message, Conversation
 from accounts.forms import (
@@ -28,6 +33,7 @@ from reservation.services.reservation_service import get_user_reservation
 
 from common.decorators import is_admin
 from common.services.network import get_client_ip
+from common.services.email_service import send_mail_new_account_validation, resend_confirmation_email
 from common.services.helper_fct import is_ajax
 
 from conciergerie.models import Conciergerie
@@ -38,16 +44,20 @@ from payment.services.payment_service import is_stripe_admin
 logger = logging.getLogger(__name__)
 
 
+@ratelimit(key="ip", rate="5/m", block=True)
 def register(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            logger.info(f"Nouvel utilisateur enregistré : {user.username} ({user.email})")
-            messages.success(
-                request,
-                "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
-            )
+            user = form.save(commit=False)
+            user.is_active = False  # prevent login until email confirmed
+            user.save()
+
+            # Email confirmation
+            current_site = get_current_site(request)
+            send_mail_new_account_validation(user, current_site)
+
+            messages.success(request, "Un email de confirmation vous a été envoyé.")
             return redirect("accounts:login")
     else:
         form = CustomUserCreationForm()
@@ -444,3 +454,58 @@ def user_delete_view(request, user_id):
         messages.success(request, "Utilisateur supprimé avec succès.")
         return redirect("accounts:user_update_view")
     return redirect("accounts:user_update_view_with_id", user_id=user_id)
+
+
+def activate(request, uid, token):
+    try:
+        from accounts.models import CustomUser
+
+        uid = urlsafe_base64_decode(uid).decode()
+        user = CustomUser.objects.get(pk=uid)
+    except (CustomUser.DoesNotExist, ValueError, TypeError, OverflowError):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Votre compte a été activé. Vous pouvez vous connecter.")
+        return redirect("accounts:login")
+    else:
+        messages.error(request, "Le lien d'activation est invalide ou expiré.")
+        return redirect("accounts:register")
+
+
+def resend_activation_email(request):
+    from accounts.models import CustomUser
+
+    if request.method == "POST":
+        email = request.POST.get("email")
+        try:
+            user = CustomUser.objects.get(email=email)
+            if user.is_active:
+                messages.info(request, "Ce compte est déjà activé.")
+                return redirect("accounts:login")
+            current_site = get_current_site(request)
+            resend_confirmation_email(user, current_site)
+
+            messages.success(request, "Un nouvel email de confirmation a été envoyé.")
+            return redirect("accounts:login")
+
+        except CustomUser.DoesNotExist:
+            messages.error(request, "Aucun compte associé à cet email.")
+    return render(request, "accounts/resend_confirmation.html")
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = "accounts/password_reset_form.html"
+    email_template_name = "email/password_reset_email.txt"
+    subject_template_name = "email/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password_reset_done")
+
+    def get_context_data(self, **kwargs):
+        from administration.models import Entreprise
+
+        context = super().get_context_data(**kwargs)
+        entreprise = Entreprise.objects.first()  # ou selon l'utilisateur
+        context["entreprise"] = entreprise
+        return context
