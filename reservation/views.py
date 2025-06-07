@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from reservation.forms import ReservationForm
 from reservation.models import Reservation
@@ -223,7 +224,10 @@ def reservation_dashboard(request, logement_id=None):
 
         year = request.GET.get("year")
         month = request.GET.get("month")
+        status = request.GET.get("status", "all")
+        search_query = request.GET.get("search")
 
+        # Base queryset
         reservations = get_valid_reservations_for_admin(
             user=request.user,
             logement_id=logement_id,
@@ -231,12 +235,25 @@ def reservation_dashboard(request, logement_id=None):
             month=month,
         )
 
-        years, months = get_reservation_years_and_months()
+        # Filter by status
+        if status and status != "all":
+            reservations = reservations.filter(statut=status)
+
+        # Filter by search query (code or traveler name)
+        if search_query:
+            reservations = reservations.filter(
+                Q(code__icontains=search_query)
+                | Q(user__name__icontains=search_query)
+                | Q(user__last_name__icontains=search_query)
+            )
 
         # Pagination
-        paginator = Paginator(reservations, 20)  # 20 réservations par page
+        paginator = Paginator(reservations, 20)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
+
+        # Year/month options
+        years, months = get_reservation_years_and_months()
 
         return render(
             request,
@@ -247,6 +264,8 @@ def reservation_dashboard(request, logement_id=None):
                 "available_months": months,
                 "current_year": year,
                 "current_month": month,
+                "search_query": search_query,
+                "status": status,
                 "page_obj": page_obj,
             },
         )

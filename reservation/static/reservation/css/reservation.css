@@ -51,35 +51,6 @@
   background-color: var(--light-gray);
 }
 
-/* Badges */
-.status-badge {
-  padding: 0.5em 0.8em;
-  font-size: 0.9rem;
-  border-radius: 999px;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-badge.confirmee {
-  background-color: var(--success-color);
-  color: var(--bg-white);
-}
-
-.status-badge.terminee {
-  background-color: var(--info-color);
-  color: var(--bg-white);
-}
-
-.status-badge.annulee {
-  background-color: var(--danger-color);
-  color: var(--bg-white);
-}
-
-.status-badge.en_attente {
-  background-color: var(--warning-color);
-  color: var(--text-dark);
-}
-
 .reservation-filters {
   border-bottom: 1px solid var(--light-border);
   padding-bottom: var(--spacing-md);
@@ -149,33 +120,31 @@
   border-radius: 8px;
 }
 
-/* Status Badges */
-.status-badge {
-  font-size: 0.8rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
+.card-body h6 {
+  font-size: 1rem;
   font-weight: 600;
-  text-transform: capitalize;
+  margin-bottom: 0.2rem;
 }
 
-.status-badge.confirmee {
-  background-color: var(--success-color);
-  color: #fff;
+.card-body small {
+  color: var(--text-muted);
 }
 
-.status-badge.terminee {
-  background-color: var(--info-color);
-  color: #fff;
+.card .badge {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  font-weight: 600;
 }
 
-.status-badge.annulee {
-  background-color: var(--danger-color);
-  color: #fff;
+.card .logement-thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
-.status-badge.en_attente {
-  background-color: var(--warning-color);
-  color: var(--text-dark);
+.card .bi {
+  margin-right: 4px;
 }
 
 /* Responsive (Mobile First) */
@@ -268,5 +237,22 @@
 
   .status-filters {
     flex-direction: column;
+  }
+
+   .card .badge {
+    font-size: 0.75rem;
+  }
+
+  .card h6 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .card ul {
+    margin-bottom: 0.75rem;
+  }
+
+  .card img {
+    border-radius: 0.5rem;
   }
 }
