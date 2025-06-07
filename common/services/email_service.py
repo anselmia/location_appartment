@@ -1,11 +1,12 @@
 import logging
+
+from datetime import timedelta, date
+
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.core.mail import mail_admins
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 
 from administration.models import Entreprise
@@ -15,44 +16,49 @@ logger = logging.getLogger(__name__)
 
 
 def send_mail_new_account_validation(user, current_site):
-    subject = "Confirmez votre adresse email"
+    try:
+        subject = "Confirmez votre adresse email"
+        email_context = {
+            "user": user,
+            "domain": current_site.domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": default_token_generator.make_token(user),
+        }
+        message = render_to_string("email/confirmation_email.txt", email_context)
 
-    # Build context for the email
-    email_context = {
-        "user": user,
-        "domain": current_site.domain,
-        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-        "token": default_token_generator.make_token(user),
-    }
-
-    message = render_to_string("email/confirmation_email.txt", email_context)
-
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
-    )
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        logger.info(f"📧 Validation email sent to {user.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send account validation email to {user.email}: {e}")
 
 
 def resend_confirmation_email(user, current_site):
-    subject = "Confirmez votre adresse email"
-    email_context = {
-        "user": user,
-        "domain": current_site.domain,
-        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-        "token": default_token_generator.make_token(user),
-    }
-    message = render_to_string("email/confirmation_email.txt", email_context)
+    try:
+        subject = "Confirmez votre adresse email"
+        email_context = {
+            "user": user,
+            "domain": current_site.domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": default_token_generator.make_token(user),
+        }
+        message = render_to_string("email/confirmation_email.txt", email_context)
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
-    )
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        logger.info(f"🔁 Confirmation email resent to {user.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to resend confirmation email to {user.email}: {e}")
 
 
 def send_mail_on_new_reservation(logement, reservation, user):
@@ -99,6 +105,49 @@ def send_mail_on_new_reservation(logement, reservation, user):
 
     except Exception as e:
         logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
+
+
+def send_pre_checkin_reminders():
+    try:
+        from reservation.models import Reservation
+
+        today = date.today()
+        for delta in [1, 2, 3]:
+            target_day = today + timedelta(days=delta)
+            reservations = Reservation.objects.filter(
+                checkin_date=target_day,
+                status="confirmee",
+                pre_checkin_email_sent=False,
+            )
+
+            for res in reservations:
+                entreprise = Entreprise.objects.first()
+                if not entreprise:
+                    logger.warning("No Entreprise config found, emails may lack branding info.")
+                    continue
+
+                context = {
+                    "reservation": res,
+                    "logement": res.logement,
+                    "user_contact": res.logement.admin if res.logement.admin else res.logement.owner,
+                    "entreprise": entreprise,
+                }
+                subject = f"Votre séjour approche - {res.logement.name}"
+                message = render_to_string("email/pre_checkin_reminder.txt", context)
+
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [res.user.email],
+                    fail_silently=False,
+                )
+
+                res.pre_checkin_email_sent = True
+                res.save()
+                logger.info(f"📧 Pre-checkin reminder sent for reservation {res.code}")
+    except Exception as e:
+        logger.exception(f"❌ Error during pre-checkin reminders: {e}")
 
 
 def send_mail_on_refund(logement, reservation, user):

@@ -1,0 +1,12 @@
+Bonjour {{ reservation.user.get_full_name|default:reservation.user.username }},
+
+Votre séjour au logement **{{ logement.name }}** commence bientôt !
+
+📍 Adresse : {{ logement.addresse }}, {{ logement.ville }} 
+🕐 Heures d’arrivée : {{ logement.entrance_hour_min }}h - {{ logement.entrance_hour_max }}h
+📞 Contact : {{ user_contact.get_full_name|default:user_contact.username}} - {{ user_contact.phone }}
+
+
+Nous vous souhaitons un excellent séjour !
+
+L’équipe {{ entreprise.name }}

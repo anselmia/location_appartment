@@ -53,6 +53,7 @@ class Reservation(models.Model):
     admin_stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
     admin_transferred = models.BooleanField(default=False)
     admin_transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    pre_checkin_email_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.code}"
