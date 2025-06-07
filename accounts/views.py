@@ -506,6 +506,6 @@ class CustomPasswordResetView(PasswordResetView):
         from administration.models import Entreprise
 
         context = super().get_context_data(**kwargs)
-        entreprise = Entreprise.objects.first()  # ou selon l'utilisateur
+        entreprise = Entreprise.objects.first()
         context["entreprise"] = entreprise
         return context
