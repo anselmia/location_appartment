@@ -29,7 +29,6 @@
                 <select name="room_id"
                         class="form-select form-select-sm me-2 room-select"
                         data-photo-id="{{ photo.id }}">
-                    <option value="">{% trans "Général" %}</option>
                     {% for room in rooms %}
                         <option value="{{ room.id }}"
                                 {% if photo.room.id == room.id %}selected{% endif %}>{{ room.name }}</option>
