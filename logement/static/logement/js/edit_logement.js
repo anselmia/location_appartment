@@ -262,3 +262,33 @@ document.getElementById("photos").addEventListener("change", function (event) {
     }
   }
 });
+
+$(document).ready(function () {
+    $('.sync-calendar').on('click', function () {
+        const url = $(this).data('url');
+        const source = $(this).data('source');
+        const button = $(this);
+        const statusDiv = $('#sync-status');
+
+        button.prop('disabled', true).text('🔄…');
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken},
+            success: function (data) {
+                statusDiv.html(
+                    `<div class="alert alert-success">${source.toUpperCase()} : ${data.message}</div>`
+                );
+            },
+            error: function (xhr) {
+                statusDiv.html(
+                    `<div class="alert alert-danger">${source.toUpperCase()} : ${xhr.responseJSON?.error || 'Erreur lors de la synchronisation'}</div>`
+                );
+            },
+            complete: function () {
+                button.prop('disabled', false).text('🔄');
+            }
+        });
+    });
+});

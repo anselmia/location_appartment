@@ -2,19 +2,48 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-<div class="form-field">
+<script src="{% static 'js/jquery.min.js' %}"></script> <!-- if not already loaded -->
+
+<div class="form-field d-flex align-items-center gap-2">
     <label for="{{ form.airbnb_link.id_for_label }}">{{ form.airbnb_link.label }}</label>
-    {{ form.airbnb_link|add_class:"form-input" }}
+    {{ form.airbnb_link|add_class:"form-input flex-grow-1" }}
 </div>
-<div class="form-field">
+
+<div class="form-field d-flex align-items-center gap-2">
     <label for="{{ form.airbnb_calendar_link.id_for_label }}">{{ form.airbnb_calendar_link.label }}</label>
-    {{ form.airbnb_calendar_link|add_class:"form-input" }}
+    {{ form.airbnb_calendar_link|add_class:"form-input flex-grow-1" }}
+    {% if form.airbnb_calendar_link.value %}
+        <button type="button"
+                class="btn btn-sm btn-outline-primary sync-calendar"
+                data-url="{% url 'logement:sync_airbnb_calendar' logement.id %}"
+                data-source="airbnb"
+                title="{% trans 'Sync calendar' %}">
+            🔄
+        </button>
+    {% endif %}
 </div>
-<div class="form-field">
+
+<div class="form-field d-flex align-items-center gap-2">
     <label for="{{ form.booking_link.id_for_label }}">{{ form.booking_link.label }}</label>
-    {{ form.booking_link|add_class:"form-input" }}
+    {{ form.booking_link|add_class:"form-input flex-grow-1" }}
 </div>
-<div class="form-field">
+
+<div class="form-field d-flex align-items-center gap-2">
     <label for="{{ form.booking_calendar_link.id_for_label }}">{{ form.booking_calendar_link.label }}</label>
-    {{ form.booking_calendar_link|add_class:"form-input" }}
+    {{ form.booking_calendar_link|add_class:"form-input flex-grow-1" }}
+    {% if form.booking_calendar_link.value %}
+        <button type="button"
+                class="btn btn-sm btn-outline-primary sync-calendar"
+                data-url="{% url 'logement:sync_booking_calendar' logement.id %}"
+                data-source="booking"
+                title="{% trans 'Sync calendar' %}">
+            🔄
+        </button>
+    {% endif %}
 </div>
+
+<div id="sync-status" class="mt-2"></div>
+
+<script>
+
+</script>

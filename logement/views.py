@@ -35,7 +35,7 @@ from logement.models import (
     Discount,
     DiscountType,
 )
-from logement.services.calendar_service import generate_ical
+from logement.services.calendar_service import generate_ical, process_calendar
 from logement.services.logement import filter_logements, get_logements, set_price
 from logement.services.revenu import get_economie_stats
 from logement.forms import LogementForm, DiscountForm
@@ -202,7 +202,8 @@ def logement_search(request):
                     "city": l.ville.name if l.ville else "",
                     "max_traveler": l.max_traveler,
                 }
-                for l in logements if l.latitude and l.longitude
+                for l in logements
+                if l.latitude and l.longitude
             ]
         )
 
@@ -950,3 +951,27 @@ def api_economie_data(request, logement_id):
     except Exception as e:
         logger.exception(f"Erreur dans api_economie_data: {e}")
         return JsonResponse({"error": "Erreur interne serveur"}, status=500)
+
+
+@login_required
+@require_POST
+@user_is_logement_admin
+def sync_airbnb_calendar_view(request, logement_id):
+    logement = get_object_or_404(Logement, id=logement_id)
+    try:
+        added, updated, deleted = process_calendar(logement, logement.airbnb_calendar_link, "airbnb")
+        return JsonResponse({"message": f"{added} ajoutés, {updated} mis à jour, {deleted} supprimés"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@login_required
+@require_POST
+@user_is_logement_admin
+def sync_booking_calendar_view(request, logement_id):
+    logement = get_object_or_404(Logement, id=logement_id)
+    try:
+        added, updated, deleted = process_calendar(logement, logement.booking_calendar_link, "booking")
+        return JsonResponse({"message": f"{added} ajoutés, {updated} mis à jour, {deleted} supprimés"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
