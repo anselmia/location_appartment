@@ -104,7 +104,8 @@ class Logement(models.Model):
 
     admin_fee = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
-    cancelation_period = models.IntegerField(default=15)  # en jours ?
+    cancelation_period = models.IntegerField(default=15)  # en jours 
+    min_booking_days = models.IntegerField(default=1)  # en jours 
     superficie = models.IntegerField(blank=True, null=True)
     bathrooms = models.IntegerField(default=1)
     bedrooms = models.IntegerField(default=1)

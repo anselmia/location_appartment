@@ -294,6 +294,7 @@ def manage_logement(request, logement_id=None):
         ]
 
         timing_fields = [
+            ("min_booking_days", "jour(s)"),
             ("cancelation_period", "jour(s)"),
             ("ready_period", "jour(s)"),
             ("max_days", "jour(s)"),

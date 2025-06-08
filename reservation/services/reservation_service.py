@@ -157,8 +157,8 @@ def get_available_logement_in_period(start, end, logements):
         # Combine tous les IDs en conflit
         conflits_ids = set(reservation_conflits).union(airbnb_conflits, booking_conflits, closed_conflicts)
 
-        # 5. Exclure les logements en conflit et ceux qui ne respectent pas la booking_limit
-        logements = logements.exclude(id__in=conflits_ids)
+        # 5. Exclure les logements en conflit et ceux qui ne respectent pas la booking_limit ou le nombre de jours minimun
+        logements = logements.exclude(id__in=conflits_ids).exclude(min_booking_days__gt=(end - start).days)
         logements = [l for l in logements if l.booking_limit <= start]
 
         # 6. Appliquer la règle des 120 jours pour les résidences principales
@@ -184,6 +184,7 @@ def get_available_logement_in_period(start, end, logements):
 
         # 7. Filtrage final
         filtered_logement = []
+
         for logement in logements:
             if logement.category == "main":
                 used_days = usage_dict.get(logement.id, 0)

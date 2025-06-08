@@ -29,6 +29,7 @@ class LogementForm(forms.ModelForm):
             "ready_period",
             "entrance_hour_min",
             "entrance_hour_max",
+            "min_booking_days",
             "leaving_hour",
             "max_days",
             "availablity_period",
@@ -63,6 +64,7 @@ class LogementForm(forms.ModelForm):
             "bathrooms": "Nombre de salle de bain",
             "bedrooms": "Nombre de chambres",
             "beds": "Nombre de lits",
+            "min_booking_days": "Durée de réservation min (jours)",
             "fee_per_extra_traveler": "Frais par voyageur supplémentaire (€)",
             "cleaning_fee": "Frais de ménage (€)",
             "tax": "Taxe de séjour (%)",
@@ -181,6 +183,7 @@ class LogementForm(forms.ModelForm):
             "max_days",
             "availablity_period",
             "caution",
+            "min_booking_days",
         ]
         for field_name in step_1_fields:
             if field_name in self.fields:
