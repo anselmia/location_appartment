@@ -33,7 +33,11 @@ from reservation.services.reservation_service import get_user_reservation
 
 from common.decorators import is_admin
 from common.services.network import get_client_ip
-from common.services.email_service import send_mail_new_account_validation, resend_confirmation_email
+from common.services.email_service import (
+    send_mail_new_account_validation,
+    resend_confirmation_email,
+    send_email_new_message,
+)
 from common.services.helper_fct import is_ajax
 
 from conciergerie.models import Conciergerie
@@ -194,50 +198,73 @@ def update_profile(request):
 def messages_view(request, conversation_id=None):
     user = request.user
 
-    conversations = get_conversations(user)
-    reservations_without_conversation = get_reservations_for_conversations_to_start(user)
+    try:
+        conversations = get_conversations(user)
+        reservations_without_conversation = get_reservations_for_conversations_to_start(user)
 
-    active_conversation = None
-    messages_qs = Message.objects.none()
-    form = MessageForm()
+        active_conversation = None
+        messages_qs = Message.objects.none()
+        form = MessageForm()
 
-    if conversation_id:
-        active_conversation = get_object_or_404(
-            Conversation.objects.prefetch_related("participants"), id=conversation_id
-        )
-        if user not in active_conversation.participants.all() and not (user.is_admin or user.is_superuser):
-            messages.error(request, "Vous n'avez pas accès à cette conversation.")
-            return redirect("accounts:messages")
+        if conversation_id:
+            try:
+                active_conversation = Conversation.objects.prefetch_related("participants").get(id=conversation_id)
+            except Conversation.DoesNotExist:
+                logger.warning(f"[User:{user.id}] Tried to access non-existent conversation {conversation_id}")
+                messages.error(request, "La conversation n'existe pas.")
+                return redirect("accounts:messages")
 
-        messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by")
+            if user not in active_conversation.participants.all() and not (user.is_superuser or user.is_admin):
+                logger.warning(f"[User:{user.id}] Unauthorized access attempt to conversation {conversation_id}")
+                messages.error(request, "Vous n'avez pas accès à cette conversation.")
+                return redirect("accounts:messages")
 
-        for msg in messages_qs:
-            if user in msg.recipients.all() and user not in msg.read_by.all():
-                msg.read_by.add(user)
+            messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by")
 
-        if request.method == "POST":
-            form = MessageForm(request.POST)
-            if form.is_valid():
-                msg = form.save(commit=False)
-                msg.conversation = active_conversation
-                msg.sender = user
-                msg.save()
-                msg.recipients.set(active_conversation.participants.exclude(id=user.id))
-                msg.save()
-                return redirect("accounts:messages_conversation", conversation_id=active_conversation.id)
+            # Mark unread messages as read
+            for msg in messages_qs:
+                if user in msg.recipients.all() and user not in msg.read_by.all():
+                    msg.read_by.add(user)
 
-    context = {
-        "conversations": conversations,
-        "active_conversation": active_conversation,
-        "form": form,
-        "reservations_to_start": reservations_without_conversation,
-    }
+            if request.method == "POST":
+                form = MessageForm(request.POST)
+                if form.is_valid():
+                    try:
+                        msg = form.save(commit=False)
+                        msg.conversation = active_conversation
+                        msg.sender = user
+                        msg.save()
+                        msg.recipients.set(active_conversation.participants.exclude(id=user.id))
+                        msg.save()
 
-    # Return only the main panel if AJAX
-    if is_ajax(request):
-        return render(request, "accounts/partials/_conversation.html", context)
+                        send_email_new_message(msg)
+                        logger.info(f"[User:{user.id}] sent message {msg.id} in conversation {conversation_id}")
+                        return redirect("accounts:messages_conversation", conversation_id=active_conversation.id)
+                    except Exception as e:
+                        logger.error(
+                            f"[User:{user.id}] Error sending message in conversation {conversation_id}: {e}",
+                            exc_info=True,
+                        )
+                        messages.error(request, "Erreur lors de l'envoi du message.")
+                else:
+                    logger.warning(f"[User:{user.id}] Invalid message form: {form.errors.as_json()}")
 
-    return render(request, "accounts/messages.html", context)
+        context = {
+            "conversations": conversations,
+            "active_conversation": active_conversation,
+            "form": form,
+            "reservations_to_start": reservations_without_conversation,
+        }
+
+        if is_ajax(request):
+            return render(request, "accounts/partials/_conversation.html", context)
+
+        return render(request, "accounts/messages.html", context)
+
+    except Exception as e:
+        logger.exception(f"[User:{user.id}] Error in messages_view: {e}")
+        messages.error(request, "Une erreur est survenue lors du chargement des messages.")
+        return redirect("accounts:dashboard")
 
 
 def conversation_view(request, reservation_code):
@@ -503,9 +530,8 @@ class CustomPasswordResetView(PasswordResetView):
     success_url = reverse_lazy("accounts:password_reset_done")
 
     def get_context_data(self, **kwargs):
-        from administration.models import Entreprise
-
+        from common.services.helper_fct import get_entreprise
         context = super().get_context_data(**kwargs)
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         context["entreprise"] = entreprise
         return context

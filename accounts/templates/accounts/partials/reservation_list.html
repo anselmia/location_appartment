@@ -46,7 +46,7 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <a href="{% url 'reservation:customer_reservation_detail' r.code %}"
-                     class="btn btn-outline-primary btn-sm">
+                     class="btn btn-primary btn-sm">
                     <i class="bi bi-eye"></i> Voir
                   </a>
                   {% if r.coming and r.can_cancel %}

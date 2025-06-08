@@ -5,7 +5,8 @@ from django.conf import settings
 
 def entreprise_info(request):
     try:
-        entreprise = Entreprise.objects.first()
+        from common.services.helper_fct import get_entreprise
+        entreprise = get_entreprise()
     except Entreprise.DoesNotExist:
         entreprise = None
     return {

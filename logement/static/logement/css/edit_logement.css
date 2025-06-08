@@ -133,17 +133,6 @@
   transform: scale(1.02);
 }
 
-.admin-logement-edit .btn-outline-primary {
-  border: 1px solid var(--primary-color);
-  color: var(--primary-color);
-  background: transparent;
-}
-
-.admin-logement-edit .btn-outline-primary:hover {
-  background-color: var(--primary-color);
-  color: #fff;
-}
-
 .equipment-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

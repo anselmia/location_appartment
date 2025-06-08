@@ -1,11 +1,11 @@
 import logging
+from django.core.cache import cache
 
 from decimal import Decimal
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractYear, ExtractMonth
 from django.db.models import Q, Sum, F, ExpressionWrapper, DurationField
 
@@ -16,25 +16,42 @@ from payment.services.payment_service import refund_payment
 
 
 logger = logging.getLogger(__name__)
+CACHE_TIMEOUT_SHORT = 60 * 5  # 5 minutes
+CACHE_TIMEOUT_LONG = 60 * 60 * 24  # 24 hours
 
 
 def get_reservations(user, logement_id=None):
+    cache_key = f"reservations_{user.id}_{logement_id or 'all'}"
+    result = cache.get(cache_key)
+    if result is not None:
+        return result
+
     try:
         if logement_id:
-            logement = get_object_or_404(Logement, id=logement_id)
+            logement = Logement.objects.get(id=logement_id)
             if logement.is_logement_admin(user):
-                return Reservation.objects.filter(logement=logement)
-            return Reservation.objects.none()
-        if user.is_admin or user.is_superuser:
-            return Reservation.objects.all()
-        logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
-        return Reservation.objects.filter(logement__in=logements).order_by("-date_reservation")
+                result = Reservation.objects.filter(logement=logement)
+            else:
+                result = Reservation.objects.none()
+        elif user.is_admin or user.is_superuser:
+            result = Reservation.objects.all()
+        else:
+            logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
+            result = Reservation.objects.filter(logement__in=logements).order_by("-date_reservation")
+
+        cache.set(cache_key, result, CACHE_TIMEOUT_SHORT)
+        return result
     except Exception as e:
         logger.error(f"Error occurred while retrieving reservations: {e}", exc_info=True)
         raise
 
 
 def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=None):
+    cache_key = f"valid_resa_admin_{user.id}_{logement_id or 'all'}_{year or 'all'}_{month or 'all'}"
+    result = cache.get(cache_key)
+    if result is not None:
+        return result
+
     try:
         qs = get_reservations(user, logement_id)
         qs = (
@@ -47,7 +64,10 @@ def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=No
             qs = qs.annotate(res_year=ExtractYear("start")).filter(res_year=year)
         if month:
             qs = qs.annotate(res_month=ExtractMonth("start")).filter(res_month=month)
-        return qs.order_by("-date_reservation")
+
+        qs = qs.order_by("-date_reservation")
+        cache.set(cache_key, qs, CACHE_TIMEOUT_SHORT)
+        return qs
     except Exception as e:
         logger.error(f"Error fetching admin reservations: {e}", exc_info=True)
         raise
@@ -62,6 +82,11 @@ def get_valid_reservations_in_period(logement_id, start, end):
 
 
 def get_night_booked_in_period(logements, logement_id, start, end):
+    cache_key = f"nights_booked_{logement_id or 'all'}_{start}_{end}"
+    result = cache.get(cache_key)
+    if result is not None:
+        return result
+
     total_nights = 0
 
     def count_nights(resa_start, resa_end):
@@ -94,6 +119,7 @@ def get_night_booked_in_period(logements, logement_id, start, end):
             for res in external_reservations:
                 total_nights += count_nights(res.start, res.end)
 
+    cache.set(cache_key, total_nights, CACHE_TIMEOUT_SHORT)
     return total_nights
 
 
@@ -104,6 +130,10 @@ def get_user_reservation(user):
 
 
 def get_reservation_years_and_months():
+    cache_key = "reservation_years_months"
+    result = cache.get(cache_key)
+    if result:
+        return result
     try:
         years = (
             Reservation.objects.annotate(y=ExtractYear("start")).values_list("y", flat=True).distinct().order_by("y")
@@ -111,7 +141,9 @@ def get_reservation_years_and_months():
         months = (
             Reservation.objects.annotate(m=ExtractMonth("start")).values_list("m", flat=True).distinct().order_by("m")
         )
-        return years, months
+        result = (list(years), list(months))
+        cache.set(cache_key, result, CACHE_TIMEOUT_LONG)
+        return result
     except Exception as e:
         logger.error(f"Error fetching reservation years/months: {e}", exc_info=True)
         return [], []
@@ -131,6 +163,11 @@ def get_available_logement_in_period(start, end, logements):
     try:
         if not start or not end:
             return Logement.objects.none()
+
+        cache_key = f"available_logement_{start}_{end}"
+        result = cache.get(cache_key)
+        if result is not None:
+            return result
 
         logger.info(f"Fetching available logements between {start} and {end}.")
 
@@ -194,6 +231,7 @@ def get_available_logement_in_period(start, end, logements):
                 filtered_logement.append(logement)
 
         logger.debug(f"Found {len(filtered_logement)} available logements.")
+        cache.set(cache_key, result, CACHE_TIMEOUT_SHORT)
         return Logement.objects.filter(id__in=[l.id for l in filtered_logement]).order_by("name")
 
     except Exception as e:
@@ -203,6 +241,11 @@ def get_available_logement_in_period(start, end, logements):
 
 def get_booked_dates(logement, user=None):
     try:
+        cache_key = f"booked_dates_{logement.id}_{user.id if user else 'anon'}"
+        result = cache.get(cache_key)
+        if result is not None:
+            return result
+
         logger.info(f"Fetching booked dates for logement {logement.id}.")
         today = date.today()
         reserved_start = set()
@@ -244,9 +287,7 @@ def get_booked_dates(logement, user=None):
             reserved_end.add(d.isoformat())
 
         if logement.min_booking_days:
-            all_reserved = sorted(set(
-                datetime.fromisoformat(d).date() for d in reserved_start
-            ))
+            all_reserved = sorted(set(datetime.fromisoformat(d).date() for d in reserved_start))
 
             blocked_due_to_gap = set()
 
@@ -285,6 +326,7 @@ def get_booked_dates(logement, user=None):
             reserved_end.update(blocked_due_to_gap)
 
         logger.debug(f"{len(reserved_start)} dates réservées calculées pour logement {logement.id}")
+        cache.set(cache_key, (reserved_start, reserved_end), CACHE_TIMEOUT_SHORT)
         return sorted(reserved_start), sorted(reserved_end)
     except Exception as e:
         logger.error(
@@ -471,15 +513,14 @@ def delete_old_reservations(event_dates, source):
 
         # Find reservations that are not in the event_dates list
         for reservation in reservations:
-            is_found = False
-            for event_start, event_end in event_dates:
-                if reservation.start == event_start.date() and reservation.end == event_end.date():
-                    is_found = True
-                    break
+            # Vérifie si la réservation est toujours dans la liste des événements valides
+            is_found = any(
+                reservation.start == event_start.date() and reservation.end == event_end.date()
+                for event_start, event_end in event_dates
+            )
 
             if not is_found:
-                # If the reservation is not found in the updated calendar, delete it
-                logger.info(f"Deleting reservation: {reservation}")
+                logger.info(f"🗑️ Suppression de la réservation non trouvée dans le calendrier : {reservation}")
                 reservation.delete()
                 deleted += 1
 

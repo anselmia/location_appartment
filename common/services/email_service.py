@@ -9,7 +9,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
-from administration.models import Entreprise
+from common.services.helper_fct import get_entreprise
 
 
 logger = logging.getLogger(__name__)
@@ -67,9 +67,8 @@ def send_mail_on_new_reservation(logement, reservation, user):
             logger.warning(f"No valid user email for reservation {reservation.code}")
             return
 
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if not entreprise:
-            logger.warning("No Entreprise config found, emails may lack branding info.")
             return
 
         # Build context for the email
@@ -121,10 +120,9 @@ def send_pre_checkin_reminders():
             )
 
             for res in reservations:
-                entreprise = Entreprise.objects.first()
+                entreprise = get_entreprise()
                 if not entreprise:
-                    logger.warning("No Entreprise config found, emails may lack branding info.")
-                    continue
+                    return
 
                 context = {
                     "reservation": res,
@@ -156,9 +154,8 @@ def send_mail_on_refund(logement, reservation, user):
             logger.warning(f"No valid user email for reservation {reservation.code}")
             return
 
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if not entreprise:
-            logger.warning("No Entreprise config found, emails may lack branding info.")
             return
 
         # Context for email templates
@@ -197,9 +194,8 @@ def send_mail_on_refund(logement, reservation, user):
 
 def send_mail_on_new_transfer(logement, reservation, user_type):
     try:
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if not entreprise:
-            logger.warning("No Entreprise config found, emails may lack branding info.")
             return
 
         # Context for email templates
@@ -247,9 +243,8 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
 
 def send_mail_payment_link(reservation, session):
     try:
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if not entreprise:
-            logger.warning("No Entreprise config found, emails may lack branding info.")
             return
 
         # Context for email templates
@@ -284,9 +279,8 @@ def send_mail_on_payment_failure(logement, reservation, user):
             logger.warning(f"No valid user email for reservation {reservation.code}")
             return
 
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if not entreprise:
-            logger.warning("No Entreprise config found, emails may lack branding info.")
             return
 
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
@@ -340,3 +334,32 @@ def send_mail_contact(cd):
     except Exception as e:
         logger.error(f"❌ Erreur d'envoi de message de contact: nom={cd.get('name')} — erreur: {e}")
         raise
+
+
+def send_email_new_message(msg):
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        reservation = msg.conversation.reservation
+        for user in msg.recipients:
+            email_context = {"user": user, "reservation": reservation, "entreprise": entreprise}
+
+            # ===== EMAIL =====
+            message = render_to_string("email/new_message.txt", email_context)
+
+            send_mail(
+                subject=f"✉️ Nouveau message - Réservation {reservation.code}",
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[
+                    user.email,
+                ],
+                fail_silently=False,
+            )
+
+            logger.info(f"✅ new message email sent to {user.get_full_name()} for reservation {reservation.code}.")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send new message email for message {msg.id}: {e}")

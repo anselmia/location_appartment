@@ -1,12 +1,15 @@
 import logging
+import hashlib
+
 from datetime import timedelta, date
 from decimal import Decimal, InvalidOperation
 
-from django.core.paginator import Paginator
+from django.core.cache import cache
 from django.db.models import Count, Q
 from django.utils.dateparse import parse_date
 
 from logement.models import Price, Discount, Logement
+
 from payment.services.payment_service import get_payment_fee
 
 logger = logging.getLogger(__name__)
@@ -14,19 +17,22 @@ logger = logging.getLogger(__name__)
 
 def get_logements(user):
     try:
+        cache_key = f"user_logements_{user.id}"
+        logements = cache.get(cache_key)
+        if logements:
+            return logements
+
         if user.is_admin or user.is_superuser:
-            # Admin users can see all reservations
             qs = Logement.objects.all()
         else:
-            # Non-admin users: filter logements where the user is either the owner or an admin
             qs = Logement.objects.filter(Q(owner=user) | Q(admin=user))
 
-        return qs.order_by("name")
+        logements = qs.order_by("name")
+        cache.set(cache_key, logements, 300)  # 5 minutes
+        return logements
 
     except Exception as e:
-        # Log the error and raise an exception
         logger.error(f"Error occurred while retrieving reservations: {e}", exc_info=True)
-        # Optionally, you can re-raise the error or return a safe result, depending on the use case
         raise
 
 
@@ -34,6 +40,12 @@ def filter_logements(
     destination, start_date, end_date, guests, equipment_ids, bedrooms, bathrooms, smoking, animals, type
 ):
     from reservation.services.reservation_service import get_available_logement_in_period
+
+    key_input = f"{destination}-{start_date}-{end_date}-{guests}-{equipment_ids}-{bedrooms}-{bathrooms}-{smoking}-{animals}-{type}"
+    cache_key = f"filtered_logements_{hashlib.md5(key_input.encode()).hexdigest()}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
 
     logements = Logement.objects.prefetch_related("photos").filter(statut="open")
 
@@ -46,9 +58,7 @@ def filter_logements(
     if start_date and end_date:
         start = parse_date(start_date)
         end = parse_date(end_date)
-        if not start or not end:
-            logger.warning("Invalid dates for filter: %s to %s", start_date, end_date)
-        else:
+        if start and end:
             logements = get_available_logement_in_period(start, end, logements)
 
     if equipment_ids:
@@ -72,6 +82,7 @@ def filter_logements(
     if type:
         logements = logements.filter(type=type)
 
+    cache.set(cache_key, logements, 300)
     return logements
 
 
@@ -154,7 +165,10 @@ def apply_discounts(base_price, current_day, discounts_by_type):
 
 def set_price(logement, start, end, guestCount, base_price=None):
     try:
-        logger.info(f"Calculating price for logement {logement.id}, dates {start} to {end}, {guestCount} guests.")
+        key = f"logement_{logement.id}_price_{start}_{end}_{guestCount}_{base_price}"
+        cached_result = cache.get(key)
+        if cached_result:
+            return cached_result
 
         nights = (end - start).days or 1
         default_price = Decimal(str(logement.price))
@@ -175,36 +189,28 @@ def set_price(logement, start, end, guestCount, base_price=None):
             daily_price = base_price if base_price else price_map.get(current_day, default_price)
             total_base += daily_price
 
-            final_price, discounts_today = apply_discounts(Decimal(daily_price), current_day, best_discounts)
+            final_price, discounts_today = apply_discounts(daily_price, current_day, best_discounts)
             for name, amount in discounts_today:
-                amount = Decimal(str(amount))
                 discount_breakdown[name] = discount_breakdown.get(name, Decimal("0.00")) + amount
                 total_discount_amount += amount
 
         total_price = total_base - total_discount_amount
 
-        # Extra guest fee
         extra_guests = max(guestCount - logement.nominal_traveler, 0)
-        extra_fee = Decimal(str(logement.fee_per_extra_traveler)) * Decimal(str(extra_guests)) * Decimal(str(nights))
+        extra_fee = Decimal(str(logement.fee_per_extra_traveler)) * extra_guests * nights
         total_price += extra_fee
 
-        # Tax calculation
-        per_night = total_price / Decimal(str(nights))
-        guest_decimal = Decimal(str(guestCount))
+        per_night = total_price / nights
         tax_cap = Decimal(str(logement.tax_max))
-
-        tax_rate = min(
-            (Decimal(str(logement.tax)) / Decimal("100")) * (per_night / guest_decimal),
-            tax_cap,
-        )
-        taxAmount = tax_rate * guest_decimal * Decimal(str(nights))
+        guest_decimal = Decimal(str(guestCount))
+        tax_rate = min((Decimal(str(logement.tax)) / 100) * (per_night / guest_decimal), tax_cap)
+        taxAmount = tax_rate * guest_decimal * nights
 
         total_price += Decimal(str(logement.cleaning_fee)) + taxAmount
-
         payment_fee = get_payment_fee(total_price)
         total_price += Decimal(str(payment_fee))
 
-        return {
+        result = {
             "number_of_nights": nights,
             "total_base_price": total_base,
             "TotalextraGuestFee": extra_fee,
@@ -213,6 +219,8 @@ def set_price(logement, start, end, guestCount, base_price=None):
             "payment_fee": payment_fee,
             "total_price": total_price,
         }
+        cache.set(key, result, 300)  # 5 min
+        return result
     except Exception as e:
         logger.exception(f"Error calculating price: {e}")
         raise

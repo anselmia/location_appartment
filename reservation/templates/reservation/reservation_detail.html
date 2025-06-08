@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div class="d-flex align-items-center gap-3 ms-2">
         <a href="{% url 'reservation:reservation_dashboard' %}"
-           class="btn btn-outline-secondary btn-sm">
+           class="btn btn-secondary btn-sm">
           <i class="bi bi-arrow-left"></i> Retour
         </a>
         <h2 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h2>
@@ -233,7 +233,7 @@
                            placeholder="Montant (€)"
                            required
                            style="max-width: 120px" />
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Charger</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Charger</button>
                   </form>
                 </dd>
               {% endif %}

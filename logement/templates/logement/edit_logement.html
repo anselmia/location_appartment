@@ -10,7 +10,7 @@
     <div class="admin-logement-edit container-fluid">
         <div class="mb-3">
             <a href="{% url 'logement:dashboard' %}"
-               class="btn btn-outline-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
+               class="btn btn-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
         </div>
         <div class="form-box">
             {% if is_editing %}
@@ -18,7 +18,7 @@
                     <h2 class="mb-2">{{ logement.name }}</h2>
                     <a href="{% url 'logement:view_logement' logement.id %}"
                        target="_blank"
-                       class="btn btn-outline-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>
+                       class="btn btn-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>
                 </div>
             {% endif %}
             <!-- Tabs Navigation -->

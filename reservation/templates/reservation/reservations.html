@@ -81,7 +81,7 @@
                            value="{{ request.GET.search|default_if_none:'' }}"
                            class="form-control"
                            placeholder="🔍 Voyageur, code...">
-                    <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+                    <button class="btn btn-primary" type="submit">Rechercher</button>
                 </div>
             </div>
         </form>
@@ -141,7 +141,7 @@
                                 <td data-label="Taxes">{{ r.tax|floatformat:2 }} €</td>
                                 <td data-label="Voir">
                                     <a href="{% url 'reservation:reservation_detail' r.code %}"
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye"></i> Voir
                                     </a>
                                 </td>
@@ -193,7 +193,7 @@
                                     </div>
                                 </div>
                                 <a href="{% url 'reservation:reservation_detail' r.code %}"
-                                   class="btn btn-sm btn-outline-primary w-100">Voir la réservation</a>
+                                   class="btn btn-sm btn-primary w-100">Voir la réservation</a>
                             </div>
                         </div>
                     </div>

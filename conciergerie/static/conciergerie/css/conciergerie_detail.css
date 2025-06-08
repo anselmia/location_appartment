@@ -65,15 +65,6 @@
   border-color: var(--primary-color);
 }
 
-.conciergerie-wrapper .btn-outline-secondary {
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
-.conciergerie-wrapper .btn-outline-secondary:hover {
-  background-color: var(--accent-color);
-  color: #fff;
-}
 
 /* === FORMS === */
 .conciergerie-wrapper .form-control,

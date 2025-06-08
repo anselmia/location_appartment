@@ -14,7 +14,7 @@
     {{ form.airbnb_calendar_link|add_class:"form-input flex-grow-1" }}
     {% if form.airbnb_calendar_link.value %}
         <button type="button"
-                class="btn btn-sm btn-outline-primary sync-calendar"
+                class="btn btn-sm btn-primary sync-calendar"
                 data-url="{% url 'logement:sync_airbnb_calendar' logement.id %}"
                 data-source="airbnb"
                 title="{% trans 'Sync calendar' %}">
@@ -33,7 +33,7 @@
     {{ form.booking_calendar_link|add_class:"form-input flex-grow-1" }}
     {% if form.booking_calendar_link.value %}
         <button type="button"
-                class="btn btn-sm btn-outline-primary sync-calendar"
+                class="btn btn-sm btn-primary sync-calendar"
                 data-url="{% url 'logement:sync_booking_calendar' logement.id %}"
                 data-source="booking"
                 title="{% trans 'Sync calendar' %}">

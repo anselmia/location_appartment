@@ -22,7 +22,7 @@ from django.views.generic import TemplateView
 
 from common.mixins import AdminRequiredMixin
 from common.views import is_admin
-from common.services.helper_fct import date_to_timestamp
+from common.services.helper_fct import date_to_timestamp, get_entreprise
 
 from payment.services.payment_service import retrieve_balance
 
@@ -39,7 +39,7 @@ from administration.forms import (
     TestimonialForm,
     SiteConfigForm,
 )
-from administration.models import Entreprise, HomePageConfig, SiteConfig
+from administration.models import HomePageConfig, SiteConfig
 
 
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
@@ -181,7 +181,7 @@ def homepage_admin_view(request):
 @user_passes_test(is_admin)
 def edit_entreprise(request):
     try:
-        entreprise = Entreprise.objects.first()
+        entreprise = get_entreprise()
         if request.method == "POST":
             form = EntrepriseForm(request.POST, request.FILES, instance=entreprise)
             if form.is_valid():

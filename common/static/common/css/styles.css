@@ -16,6 +16,7 @@
   --color-border: #ddd;
   --primary-light: #d8c18b;
   --secondary-light: #584a43;
+  --accent-light: #3d5779;
 
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
@@ -397,12 +398,12 @@ button,
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color) !important;
+  background-color: var(--accent-color) !important;
   color: #fff !important;
 }
 
 .btn-secondary:hover {
-  background-color: var(--secondary-light) !important;
+  background-color: var(--accent-light) !important;
 }
 
 .btn-danger {

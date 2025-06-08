@@ -1,8 +1,9 @@
 import json
 import logging
+import hashlib
 import calendar as cal
-from decimal import Decimal
 
+from decimal import Decimal
 from datetime import datetime, timedelta, date
 from collections import defaultdict
 from rest_framework import viewsets
@@ -17,11 +18,14 @@ from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
+from django.views.decorators.cache import cache_page
 from django.db.models import Sum
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from django.core.paginator import Paginator
 from django.utils.formats import number_format
 from django.templatetags.static import static
+from django.core.cache import cache
+
 
 from logement.models import (
     Logement,
@@ -56,11 +60,13 @@ from logement.decorators import (
     user_is_logement_admin,
 )
 from logement.mixins import UserHasLogementMixin
+
 from common.services.helper_fct import normalize_decimal_input
 
 logger = logging.getLogger(__name__)
 
 
+@cache_page(60 * 60)  # Cache for 1 hour
 def autocomplete_cities(request):
     q = request.GET.get("q", "")
     try:
@@ -72,6 +78,7 @@ def autocomplete_cities(request):
         return JsonResponse({"error": "Erreur interne serveur"}, status=500)  # ← Add this
 
 
+@cache_page(60 * 10)  # Cache 10 minutes
 def view_logement(request, logement_id):
     try:
         logement = get_object_or_404(Logement.objects.prefetch_related("photos"), id=logement_id)
@@ -141,6 +148,15 @@ def export_ical(request, code):
 @require_GET
 def logement_search(request):
     try:
+        # Create cache key from sorted GET parameters
+        query_key = hashlib.md5(str(sorted(request.GET.items())).encode()).hexdigest()
+        cache_key = f"logement_search_{query_key}"
+        cached_response = cache.get(cache_key)
+        if cached_response:
+            logger.info(f"✅ Using cached search response for key {cache_key}")
+            return cached_response
+
+        # Setup
         number_range = [1, 2, 3, 4, 5]
         equipment_names = [
             "Piscine",
@@ -162,6 +178,7 @@ def logement_search(request):
         type_display_map = dict(Logement._meta.get_field("type").choices)
         types = [(val, type_display_map.get(val, val)) for val in raw_types]
 
+        # Query parameters
         page_number = request.GET.get("page", 1)
         destination = request.GET.get("destination", "").strip()
         start_date = request.GET.get("start_date")
@@ -174,8 +191,18 @@ def logement_search(request):
         animals = request.GET.get("is_pets_allowed") == "1"
         type = request.GET.get("type")
 
+        # Filtering
         logements = filter_logements(
-            destination, start_date, end_date, guests, equipment_ids, bedrooms, bathrooms, smoking, animals, type
+            destination,
+            start_date,
+            end_date,
+            guests,
+            equipment_ids,
+            bedrooms,
+            bathrooms,
+            smoking,
+            animals,
+            type,
         )
 
         paginator = Paginator(logements, 9)
@@ -184,8 +211,9 @@ def logement_search(request):
         selected_equipment_ids = [str(eid) for eid in equipment_ids]
         guests = int(guests) if guests and str(guests).isdigit() else 1
 
-        logger.info(f"Search returned {page_obj.paginator.count} logements")
+        logger.info(f"🔎 Search returned {page_obj.paginator.count} logements")
 
+        # JSON data for logements with coordinates
         all_logements_json = json.dumps(
             [
                 {
@@ -207,24 +235,29 @@ def logement_search(request):
             ]
         )
 
-        return render(
-            request,
-            "logement/search_results.html",
-            {
-                "logements": page_obj,
-                "equipments": equipments,
-                "destination": request.GET.get("destination", ""),
-                "guests": guests,
-                "page_obj": page_obj,
-                "selected_equipment_ids": selected_equipment_ids,
-                "number_range": number_range,
-                "types": types,
-                "selected_type": type,
-                "all_logements": all_logements_json,
-            },
-        )
+        context = {
+            "logements": page_obj,
+            "equipments": equipments,
+            "destination": destination,
+            "guests": guests,
+            "page_obj": page_obj,
+            "selected_equipment_ids": selected_equipment_ids,
+            "number_range": number_range,
+            "types": types,
+            "selected_type": type,
+            "all_logements": all_logements_json,
+        }
+
+        response = render(request, "logement/search_results.html", context)
+
+        # Cache response for 5 minutes
+        cache.set(cache_key, response, timeout=60 * 5)
+        logger.info(f"🗂️ Cached search result for key {cache_key}")
+
+        return response
+
     except Exception as e:
-        logger.exception(f"Error in logement search: {e}")
+        logger.exception(f"❌ Error in logement search: {e}")
         raise
 
 
@@ -806,7 +839,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         )
         all_months = [m["month"] for m in all_months]
         selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
-
+        
         reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year, selected_month)
 
         brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
@@ -945,9 +978,15 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
 
 def api_economie_data(request, logement_id):
     try:
-        year = int(request.GET.get("year", datetime.now().year))
+        year = request.GET.get("year", datetime.now().year)
         month = request.GET.get("month", "all")
-        data = get_economie_stats(logement_id=logement_id, year=year, month=month)
+        cache_key = f"eco_stats_{logement_id}_{year}_{month}"
+        cached = cache.get(cache_key)
+        if cached:
+            return JsonResponse(cached)
+
+        data = get_economie_stats(...)
+        cache.set(cache_key, data, 600)
         return JsonResponse(data)
     except Exception as e:
         logger.exception(f"Erreur dans api_economie_data: {e}")

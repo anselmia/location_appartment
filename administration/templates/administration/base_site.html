@@ -27,7 +27,7 @@
             <div class="col-md-4">{{ form.contact_title.label_tag }} {{ form.contact_title|add_class:"form-control" }}</div>
           </div>
           <div class="mt-4 text-end">
-            <button type="submit" class="btn btn-success">💾 Enregistrer la configuration</button>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
           </div>
         </form>
       </div>
@@ -82,7 +82,7 @@
       <form method="post" enctype="multipart/form-data" class="mt-4">
         {% csrf_token %}
         {{ service_form.as_p }}
-        <button type="submit" name="add_service" class="btn btn-outline-primary">+ Ajouter un service</button>
+        <button type="submit" name="add_service" class="btn btn-primary">+ Ajouter un service</button>
       </form>
     </div>
     <!-- === Testimonials Section === -->
@@ -107,7 +107,7 @@
       <form method="post" class="mt-3">
         {% csrf_token %}
         {{ testimonial_form.as_p }}
-        <button type="submit" name="add_testimonial" class="btn btn-outline-primary">+ Ajouter un témoignage</button>
+        <button type="submit" name="add_testimonial" class="btn btn-primary">+ Ajouter un témoignage</button>
       </form>
     </div>
     <!-- === Commitments Section === -->
@@ -144,7 +144,7 @@
       <form method="post" enctype="multipart/form-data" class="mt-4">
         {% csrf_token %}
         {{ commitment_form.as_p }}
-        <button type="submit" name="add_commitment" class="btn btn-outline-primary">+ Ajouter un engagement</button>
+        <button type="submit" name="add_commitment" class="btn btn-primary">+ Ajouter un engagement</button>
       </form>
     </div>
   </div>

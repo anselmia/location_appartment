@@ -50,11 +50,11 @@
       {% endif %}
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a href="{% url 'accounts:update_stripe_account' %}"
-           class="btn btn-outline-primary">📝 Mettre à jour</a>
+           class="btn btn-primary">📝 Mettre à jour</a>
         {% if dashboard_link %}
           <a href="{{ dashboard_link }}"
              target="_blank"
-             class="btn btn-outline-secondary">🔗 Ouvrir le Dashboard Stripe</a>
+             class="btn btn-secondary">🔗 Ouvrir le Dashboard Stripe</a>
         {% endif %}
       </div>
     {% endif %}

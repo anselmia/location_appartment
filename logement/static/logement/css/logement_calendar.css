@@ -75,6 +75,10 @@
   border-radius: 4px;
 }
 
+.fc .fc-bg-event:not(.fc-day-closed) {
+    background: #ededed !important;
+}
+
 /* Price text styling */
 .fc-event-price {
   display: block;

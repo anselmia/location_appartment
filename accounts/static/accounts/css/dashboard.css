@@ -97,15 +97,7 @@
   background-color: #a78d58;
 }
 
-.btn-outline-primary {
-  border: 1px solid var(--primary-color);
-  color: var(--primary-color);
-}
 
-.btn-outline-primary:hover {
-  background-color: var(--primary-color);
-  color: #fff;
-}
 
 .btn-outline-danger {
   border-color: var(--danger-color);

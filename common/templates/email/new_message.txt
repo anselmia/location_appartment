@@ -1,0 +1,10 @@
+Bonjour {{ user.name }} {{ user.last_name }},
+
+Vous avez reçu un nouveau message concernant la réservation {{ reservation.code }} du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}.
+
+Pour lire et répondre au message, connectez-vous à votre espace personnel.
+
+Nous vous recontacterons si nécessaire avec plus d'informations.
+
+Cordialement,  
+L'équipe de {{ entreprise.name }}

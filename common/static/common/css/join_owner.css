@@ -61,17 +61,6 @@ h3 {
   border-color: #a68f56;
 }
 
-.btn-light {
-  background-color: #ffffff;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-}
-
-.btn-light:hover {
-  background-color: var(--primary-color);
-  color: #fff;
-}
-
 .text-muted {
   color: var(--text-muted) !important;
 }

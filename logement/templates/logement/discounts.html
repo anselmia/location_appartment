@@ -107,7 +107,7 @@
                 <td class="d-flex gap-1 justify-content-center">
                   <button name="action"
                           value="update"
-                          class="btn btn-sm btn-outline-primary"
+                          class="btn btn-sm btn-primary"
                           title="Sauvegarder">
                     <i class="bi bi-save"></i>
                   </button>
@@ -142,7 +142,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="discount_id" value="{{ d.id }}">
                 <input type="hidden" name="discount_type" value="{{ d.discount_type.id }}">
-                <button name="action" value="update" class="btn btn-sm btn-outline-primary">
+                <button name="action" value="update" class="btn btn-sm btn-primary">
                   <i class="bi bi-save"></i>
                 </button>
                 <button name="action"

@@ -74,21 +74,7 @@ a:hover {
   color: var(--primary-color);
 }
 
-/* == Retour Button == */
-.btn-outline-secondary {
-  font-size: 0.95rem;
-  border-radius: var(--radius);
-  padding: 0.45rem 1rem;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  transition: all 0.2s ease;
-}
 
-.btn-outline-secondary:hover {
-  background-color: var(--light-bg);
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-}
 
 /* == Responsive == */
 @media (max-width: 768px) {
@@ -102,7 +88,4 @@ a:hover {
     margin-bottom: var(--spacing-sm);
   }
 
-  .btn-outline-secondary {
-    width: 100%;
-  }
 }
