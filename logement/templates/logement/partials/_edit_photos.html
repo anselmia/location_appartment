@@ -65,7 +65,6 @@
     <div class="mb-3">
         <label for="room" class="form-label fw-bold">{% trans "Associer à une pièce" %}</label>
         <select name="room_id" id="room" class="form-select form-select-lg">
-            <option value="">{% trans "Général" %}</option>
             {% for room in rooms %}<option value="{{ room.id }}">{{ room.name }}</option>{% endfor %}
         </select>
     </div>
