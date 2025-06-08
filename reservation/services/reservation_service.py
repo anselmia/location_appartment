@@ -243,6 +243,47 @@ def get_booked_dates(logement, user=None):
             reserved_start.add(d.isoformat())
             reserved_end.add(d.isoformat())
 
+        if logement.min_booking_days:
+            all_reserved = sorted(set(
+                datetime.fromisoformat(d).date() for d in reserved_start
+            ))
+
+            blocked_due_to_gap = set()
+
+            # Check gaps between reserved blocks
+            for i in range(len(all_reserved) - 1):
+                gap_start = all_reserved[i] + timedelta(days=1)
+                gap_end = all_reserved[i + 1]
+                gap_length = (gap_end - gap_start).days
+
+                if 0 < gap_length < logement.min_booking_days:
+                    for j in range(gap_length):
+                        day = gap_start + timedelta(days=j)
+                        blocked_due_to_gap.add(day.isoformat())
+
+            # Also check the gap before the first reservation and after the last one
+            if all_reserved:
+                # Gap before first reservation
+                gap_start = today
+                gap_end = all_reserved[0]
+                gap_length = (gap_end - gap_start).days
+                if 0 < gap_length < logement.min_booking_days:
+                    for j in range(gap_length):
+                        day = gap_start + timedelta(days=j)
+                        blocked_due_to_gap.add(day.isoformat())
+
+                # Gap after last reservation until booking_limit
+                gap_start = all_reserved[-1] + timedelta(days=1)
+                gap_end = logement.booking_limit
+                gap_length = (gap_end - gap_start).days
+                if 0 < gap_length < logement.min_booking_days:
+                    for j in range(gap_length):
+                        day = gap_start + timedelta(days=j)
+                        blocked_due_to_gap.add(day.isoformat())
+
+            reserved_start.update(blocked_due_to_gap)
+            reserved_end.update(blocked_due_to_gap)
+
         logger.debug(f"{len(reserved_start)} dates réservées calculées pour logement {logement.id}")
         return sorted(reserved_start), sorted(reserved_end)
     except Exception as e:
