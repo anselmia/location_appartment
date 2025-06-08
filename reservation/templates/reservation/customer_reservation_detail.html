@@ -101,6 +101,13 @@
                             <dd class="col-sm-7">
                                 {{ reservation.price|floatformat:2 }} €
                             </dd>
+                            {% if reservation.refunded %}
+                                <dt class="col-sm-5 text-danger">Remboursé</dt>
+                                <dd class="col-sm-7 text-danger">
+                                    Oui
+                                    {% if reservation.refund_amount %}({{ reservation.refund_amount|floatformat:2 }} €){% endif %}
+                                </dd>
+                            {% endif %}
                             <dt class="col-sm-5">Taxes de séjour</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.tax|floatformat:2 }} €
