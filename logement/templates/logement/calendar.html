@@ -31,7 +31,7 @@
       <div class="calendar-wrapper d-flex flex-wrap flex-md-nowrap position-relative">
         <div id="calendar"
              class="flex-grow-1 border rounded shadow-sm p-2 bg-white"
-             data-logement-id="{{ logements.first.id }}"></div>
+             data-logement-id="{{ logement.id }}"></div>
         <div id="price-panel"
              class="price-panel hidden border rounded shadow-sm p-3 bg-light">
           <h5 class="fw-bold mb-3">🛠 Modifier le prix</h5>
@@ -68,7 +68,7 @@
                id="share-link"
                class="form-control"
                readonly
-               value="{{ logements.first.calendar_link }}" />
+               value="{{ logement.calendar_link }}" />
         <button class="btn btn-outline-primary" onclick="copyShareLink()">Copier</button>
       </div>
     </div>

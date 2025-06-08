@@ -283,8 +283,9 @@ class DiscountForm(forms.ModelForm):
             "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, logement=None, **kwargs):
         update_id = kwargs.pop("update_id", None)
+        self.logement = logement or (kwargs.get('instance').logement if kwargs.get('instance') else None)
         super().__init__(*args, **kwargs)
         if update_id:
             try:
@@ -295,7 +296,7 @@ class DiscountForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         dt = cleaned_data.get("discount_type")
-        logement = self.instance.logement if self.instance.pk else Logement.objects.first()
+        logement = self.logement
 
         if logement and dt:
             existing_discount = (

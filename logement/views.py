@@ -707,7 +707,7 @@ def manage_discounts(request):
 
             elif action == "update":
                 instance = get_object_or_404(Discount, id=post_data["discount_id"], logement=logement)
-                form = DiscountForm(post_data, instance=instance)
+                form = DiscountForm(post_data, instance=instance, logement=logement)
                 if form.is_valid():
                     form.save()
                     messages.success(request, "Réduction mise à jour.")
@@ -725,7 +725,7 @@ def manage_discounts(request):
                         },
                     )
             else:
-                form = DiscountForm(post_data)
+                form = DiscountForm(post_data, logement=logement)
                 if form.is_valid():
                     new_discount = form.save(commit=False)
                     new_discount.logement = logement
@@ -755,7 +755,7 @@ def manage_discounts(request):
                 "discounts": discounts,
                 "discount_types": discount_types,
                 "all_logements": logements,
-                "form": DiscountForm(),
+                "form": DiscountForm(logement=logement),
             },
         )
     except Exception as e:
