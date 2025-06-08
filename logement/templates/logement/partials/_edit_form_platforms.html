@@ -2,8 +2,6 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-<script src="{% static 'js/jquery.min.js' %}"></script> <!-- if not already loaded -->
-
 <div class="form-field d-flex align-items-center gap-2">
     <label for="{{ form.airbnb_link.id_for_label }}">{{ form.airbnb_link.label }}</label>
     {{ form.airbnb_link|add_class:"form-input flex-grow-1" }}
