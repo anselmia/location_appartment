@@ -30,7 +30,8 @@ class Reservation(models.Model):
         ],
         default="en_attente",
     )
-    guest = models.IntegerField()
+    guest_adult = models.IntegerField()
+    guest_minor = models.IntegerField(default=0)
     date_reservation = models.DateTimeField(default=timezone.now)
     price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -232,6 +233,10 @@ class Reservation(models.Model):
             logger = logging.getLogger(__name__)
             logger.exception(f"Error calculating transferable_amount for admin for reservation {self.id}: {e}")
             return Decimal("0.00")
+
+    @property
+    def total_guest(self) -> int:
+        return int(self.guest_adult or 0) + int(self.guest_minor or 0)
 
 
 class airbnb_booking(models.Model):

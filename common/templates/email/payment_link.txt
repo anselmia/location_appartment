@@ -7,7 +7,7 @@ Nous espérons que vous allez bien. Pour finaliser votre réservation du logemen
 **Détails de votre réservation** :
 - 🏠 Logement : {{ logement.name }}
 - 📅 Séjour : du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
-- 👥 Nombre de voyageurs : {{ reservation.guest }}
+- 👥 Nombre de voyageurs : {{ reservation.total_guest }}
 - 💶 Montant à régler : {{ reservation.price|floatformat:2 }} € TTC
 
 Veuillez effectuer ce paiement dans les plus brefs délais afin de confirmer votre réservation.

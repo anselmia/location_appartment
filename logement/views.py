@@ -148,14 +148,6 @@ def export_ical(request, code):
 @require_GET
 def logement_search(request):
     try:
-        # Create cache key from sorted GET parameters
-        query_key = hashlib.md5(str(sorted(request.GET.items())).encode()).hexdigest()
-        cache_key = f"logement_search_{query_key}"
-        cached_response = cache.get(cache_key)
-        if cached_response:
-            logger.info(f"✅ Using cached search response for key {cache_key}")
-            return cached_response
-
         # Setup
         number_range = [1, 2, 3, 4, 5]
         equipment_names = [
@@ -183,7 +175,8 @@ def logement_search(request):
         destination = request.GET.get("destination", "").strip()
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
-        guests = request.GET.get("guests")
+        guest_adult = request.GET.get("guest_adult")
+        guest_minor = request.GET.get("guest_minor")
         equipment_ids = request.GET.getlist("equipments")
         bedrooms = request.GET.get("bedrooms")
         bathrooms = request.GET.get("bathrooms")
@@ -196,7 +189,8 @@ def logement_search(request):
             destination,
             start_date,
             end_date,
-            guests,
+            guest_adult,
+            guest_minor,
             equipment_ids,
             bedrooms,
             bathrooms,
@@ -209,7 +203,8 @@ def logement_search(request):
         page_obj = paginator.get_page(page_number)
 
         selected_equipment_ids = [str(eid) for eid in equipment_ids]
-        guests = int(guests) if guests and str(guests).isdigit() else 1
+        guest_adult = int(guest_adult) if guest_adult and str(guest_adult).isdigit() else 1
+        guest_minor = int(guest_minor) if guest_minor and str(guest_minor).isdigit() else 0
 
         logger.info(f"🔎 Search returned {page_obj.paginator.count} logements")
 
@@ -239,7 +234,8 @@ def logement_search(request):
             "logements": page_obj,
             "equipments": equipments,
             "destination": destination,
-            "guests": guests,
+            "guest_adult": guest_adult,
+            "guest_minor": guest_minor,
             "page_obj": page_obj,
             "selected_equipment_ids": selected_equipment_ids,
             "number_range": number_range,
@@ -249,11 +245,6 @@ def logement_search(request):
         }
 
         response = render(request, "logement/search_results.html", context)
-
-        # Cache response for 5 minutes
-        cache.set(cache_key, response, timeout=60 * 5)
-        logger.info(f"🗂️ Cached search result for key {cache_key}")
-
         return response
 
     except Exception as e:
@@ -593,7 +584,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
                     "start": b.start.isoformat(),
                     "end": b.end.isoformat(),
                     "name": b.user.name,
-                    "guests": b.guest,
+                    "guests": b.total_guest,
                     "total_price": str(b.price),
                 }
                 for b in get_valid_reservations_in_period(logement_id, start, end)
@@ -678,7 +669,8 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             start_str = request.data.get("start")
             end_str = request.data.get("end")
             base_price = request.data.get("base_price")
-            guestCount = request.data.get("guests", 1)
+            guest_adult = request.data.get("guest_adult", 1)
+            guest_minor = request.data.get("guest_minor", 0)
 
             if not logement_id or not start_str:
                 return Response({"error": "Missing required parameters."}, status=400)
@@ -687,7 +679,7 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             start = datetime.strptime(start_str, "%Y-%m-%d").date()
             end = datetime.strptime(end_str, "%Y-%m-%d").date()
 
-            price_data = set_price(logement, start, end, guestCount, base_price)
+            price_data = set_price(logement, start, end, guest_adult, guest_minor, base_price)
 
             details = {
                 f"Total {price_data['number_of_nights']} Nuit(s)": f"{round(price_data['total_base_price'], 2)} €"
@@ -839,7 +831,7 @@ class RevenueView(LoginRequiredMixin, UserHasLogementMixin, TemplateView):
         )
         all_months = [m["month"] for m in all_months]
         selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
-        
+
         reservations = get_valid_reservations_for_admin(self.request.user, logement_id, selected_year, selected_month)
 
         brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")

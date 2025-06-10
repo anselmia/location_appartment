@@ -79,7 +79,8 @@ def payment_cancel(request, code):
             {
                 "start": reservation.start.isoformat(),
                 "end": reservation.end.isoformat(),
-                "guest": reservation.guest,
+                "adults": reservation.guest_adult,
+                "minors": reservation.guest_minor,
                 "code": reservation.code,
             }
         )

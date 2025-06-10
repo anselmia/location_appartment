@@ -62,10 +62,6 @@ document.querySelectorAll(".room-select").forEach((select) => {
       .catch((error) => {
         logToServer("error", "Erreur lors du changement de pièce : " + error, {
           logementId: logementId,
-          start: selectedStart,
-          end: selectedEnd || selectedStart,
-          guests: guestCount,
-          base_price: updatedBasePrice,
         });
       });
   });
@@ -117,12 +113,8 @@ document.querySelectorAll(".move-photo").forEach((button) => {
         }
       })
       .catch((error) => {
-        logToServer("error", "Erreur lors du calcul du prix : " + error, {
+        logToServer("error", "Error moving picture : " + error, {
           logementId: logementId,
-          start: selectedStart,
-          end: selectedEnd || selectedStart,
-          guests: guestCount,
-          base_price: updatedBasePrice,
         });
       });
   });
@@ -155,12 +147,8 @@ document.querySelectorAll(".delete-photo").forEach((button) => {
           }
         })
         .catch((error) => {
-          logToServer("error", "Erreur lors du calcul du prix : " + error, {
+          logToServer("error", "Error deleting picture: " + error, {
             logementId: logementId,
-            start: selectedStart,
-            end: selectedEnd || selectedStart,
-            guests: guestCount,
-            base_price: updatedBasePrice,
           });
         });
     }

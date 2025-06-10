@@ -93,8 +93,10 @@
                         {% endif %}
                         <h4 class="mb-4 text-center">Informations sur le séjour</h4>
                         <div class="mb-3 row align-items-center justify-content-center">
-                            <label for="id_guest" class="form-label me-2">Voyageurs :</label>
-                            <div class="guest-input-wrapper">{{ form.guest|add_class:"form-control guest-input" }}</div>
+                            <label for="id_guest_adult" class="form-label me-2">Adulte(s) :</label>
+                            <div class="guest-input-wrapper">{{ form.guest_adult|add_class:"form-control guest-input" }}</div>
+                            <label for="id_guest_minor" class="form-label me-2">Enfant(s):</label>
+                            <div class="guest-input-wrapper">{{ form.guest_minor|add_class:"form-control guest-input" }}</div>
                         </div>
                         <div class="calendar-box mt-4">
                             <div id="calendar_inline"></div>
@@ -178,8 +180,12 @@
                                 <span class="fw-semibold" id="end-date">{{ form.end.value }}</span>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <span class="text-muted">Voyageurs :</span>
-                                <span class="fw-semibold" id="guest-count">{{ form.guest.value }}</span>
+                                <span class="text-muted">Adulte(s) :</span>
+                                <span class="fw-semibold" id="guest-adult-count">{{ form.guest_adult.value }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Enfant(s) :</span>
+                                <span class="fw-semibold" id="guest-minor-count">{{ form.guest_minor.value }}</span>
                             </div>
                         </div>
                         <div class="pricing-summary my-3">

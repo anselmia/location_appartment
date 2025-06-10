@@ -17,7 +17,7 @@
               </div>
               <!-- MIDDLE: Quick info -->
               <div class="reservation-meta text-muted small mt-2 mt-md-0">
-                👤 {{ r.guest }} voyageur{{ r.guest|pluralize }}
+                👤 {{ r.total_guest }} voyageur{{ r.total_guest|pluralize }}
                 <br>
                 💶 {{ r.price|floatformat:2 }} €
                 <br>

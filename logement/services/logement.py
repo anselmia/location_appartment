@@ -37,11 +37,21 @@ def get_logements(user):
 
 
 def filter_logements(
-    destination, start_date, end_date, guests, equipment_ids, bedrooms, bathrooms, smoking, animals, type
+    destination,
+    start_date,
+    end_date,
+    guest_adult,
+    guest_minor,
+    equipment_ids,
+    bedrooms,
+    bathrooms,
+    smoking,
+    animals,
+    type,
 ):
     from reservation.services.reservation_service import get_available_logement_in_period
 
-    key_input = f"{destination}-{start_date}-{end_date}-{guests}-{equipment_ids}-{bedrooms}-{bathrooms}-{smoking}-{animals}-{type}"
+    key_input = f"{destination}-{start_date}-{end_date}-{guest_adult}-{guest_minor}-{equipment_ids}-{bedrooms}-{bathrooms}-{smoking}-{animals}-{type}"
     cache_key = f"filtered_logements_{hashlib.md5(key_input.encode()).hexdigest()}"
     cached = cache.get(cache_key)
     if cached:
@@ -52,8 +62,9 @@ def filter_logements(
     if destination:
         logements = logements.filter(ville__name__icontains=destination)
 
-    if guests:
-        logements = logements.filter(max_traveler__gte=int(guests))
+    if guest_adult is not None and guest_minor is not None:
+        total_guests = int(guest_adult) + int(guest_minor)
+        logements = logements.filter(max_traveler__gte=total_guests)
 
     if start_date and end_date:
         start = parse_date(start_date)
@@ -163,9 +174,9 @@ def apply_discounts(base_price, current_day, discounts_by_type):
         raise
 
 
-def set_price(logement, start, end, guestCount, base_price=None):
+def set_price(logement, start, end, guest_adult, guest_minor, base_price=None):
     try:
-        key = f"logement_{logement.id}_price_{start}_{end}_{guestCount}_{base_price}"
+        key = f"logement_{logement.id}_price_{start}_{end}_{guest_adult}_{guest_minor}_{base_price}"
         cached_result = cache.get(key)
         if cached_result:
             return cached_result
@@ -196,13 +207,14 @@ def set_price(logement, start, end, guestCount, base_price=None):
 
         total_price = total_base - total_discount_amount
 
-        extra_guests = max(guestCount - logement.nominal_traveler, 0)
+        total_guests = guest_adult + guest_minor
+        extra_guests = max(total_guests - logement.nominal_traveler, 0)
         extra_fee = Decimal(str(logement.fee_per_extra_traveler)) * extra_guests * nights
         total_price += extra_fee
 
         per_night = total_price / nights
         tax_cap = Decimal(str(logement.tax_max))
-        guest_decimal = Decimal(str(guestCount))
+        guest_decimal = Decimal(str(guest_adult))
         tax_rate = min((Decimal(str(logement.tax)) / 100) * (per_night / guest_decimal), tax_cap)
         taxAmount = tax_rate * guest_decimal * nights
 

@@ -136,7 +136,7 @@
                                 <td data-label="Arrivée">{{ r.start|date:"d M Y" }}</td>
                                 <td data-label="Départ">{{ r.end|date:"d M Y" }}</td>
                                 <td data-label="Réservée le">{{ r.date_reservation|date:"d M Y H:i" }}</td>
-                                <td data-label="Invités">{{ r.guest }}</td>
+                                <td data-label="Invités">{{ r.total_guest }}</td>
                                 <td data-label="Prix">{{ r.price|floatformat:2 }} €</td>
                                 <td data-label="Taxes">{{ r.tax|floatformat:2 }} €</td>
                                 <td data-label="Voir">

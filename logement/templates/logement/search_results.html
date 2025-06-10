@@ -60,12 +60,20 @@
                value="{{ request.GET.flexibility|default:0 }}">
       </div>
       <div class="search-input guests">
-        <label>Voyageurs</label>
+        <label>Adulte(s)</label>
         <input type="number"
-               name="guests"
-               placeholder="Nombre de voyageurs"
-               value="{{ request.GET.guests|default:1 }}"
+               name="guest_adult"
+               placeholder="Nombre d'adultes"
+               value="{{ request.GET.guest_adult|default:1 }}"
                min="1">
+      </div>
+      <div class="search-input guests">
+        <label>Enfant(s)</label>
+        <input type="number"
+               name="guest_minor"
+               placeholder="Nombre de mineurs"
+               value="{{ request.GET.guest_minor|default:0 }}"
+               min="0">
       </div>
       <!-- ✅ Optional: keep filters if this bar is reused while filters are active -->
       {% for eq in selected_equipment_ids %}<input type="hidden" name="equipments" value="{{ eq }}">{% endfor %}
@@ -167,7 +175,8 @@
                  value="{{ request.GET.destination }}">
           <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
           <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
-          <input type="hidden" name="guests" value="{{ request.GET.guests }}">
+          <input type="hidden" name="guest_adult" value="{{ request.GET.guest_adult }}">
+          <input type="hidden" name="guest_minor" value="{{ request.GET.guest_minor }}">
           <input type="hidden"
                  name="flexibility"
                  value="{{ request.GET.flexibility }}">
@@ -200,7 +209,7 @@
             <ul class="pagination-list">
               {% if page_obj.has_previous %}
                 <li>
-                  <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.previous_page_number }}">«</a>
+                  <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}&page={{ page_obj.previous_page_number }}">«</a>
                 </li>
               {% else %}
                 <li class="disabled">«</li>
@@ -210,13 +219,13 @@
                   <li class="active">{{ i }}</li>
                 {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
                   <li>
-                    <a href="?destination={{ destination }}&guests={{ guests }}&page={{ i }}">{{ i }}</a>
+                    <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}}&page={{ i }}">{{ i }}</a>
                   </li>
                 {% endif %}
               {% endfor %}
               {% if page_obj.has_next %}
                 <li>
-                  <a href="?destination={{ destination }}&guests={{ guests }}&page={{ page_obj.next_page_number }}">»</a>
+                  <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}&page={{ page_obj.next_page_number }}">»</a>
                 </li>
               {% else %}
                 <li class="disabled">»</li>

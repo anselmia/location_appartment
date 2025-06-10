@@ -54,7 +54,7 @@
               <div class="card-actions">
                 <a href="{% url 'logement:view_logement' logement.id %}"
                    class="btn-card btn-view btn-secondary">Voir</a>
-                <a href="{% url 'reservation:book' logement.id %}?start={{ request.GET.start_date }}&end={{ request.GET.end_date }}&guest={{ request.GET.guests|default:1 }}"
+                <a href="{% url 'reservation:book' logement.id %}?start={{ request.GET.start_date }}&end={{ request.GET.end_date }}&guest_adult={{ request.GET.guest_adult|default:1 }}&guest_minor={{ request.GET.guest_minor|default:0 }}"
                    class="btn-card btn-book">Réserver</a>
               </div>
             </div>

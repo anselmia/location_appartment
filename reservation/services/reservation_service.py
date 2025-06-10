@@ -371,7 +371,7 @@ def is_period_booked(start, end, logement_id, user):
         return True
 
 
-def create_or_update_reservation(logement, user, start, end, guest, price, tax):
+def create_or_update_reservation(logement, user, start, end, guest_adult, guest_minor, price, tax):
     try:
         logger.info(
             f"Creating or updating reservation for logement {logement.id}, user {user}, dates {start} to {end}."
@@ -382,7 +382,8 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
         if reservation:
             reservation.start = start
             reservation.end = end
-            reservation.guest = guest
+            reservation.guest_adult = guest_adult
+            reservation.guest_minor = guest_minor
             reservation.price = price
             reservation.tax = tax
             reservation.save()
@@ -391,7 +392,8 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
             reservation = Reservation.objects.create(
                 logement=logement,
                 user=user,
-                guest=guest,
+                guest_adult=guest_adult,
+                guest_minor=guest_minor,
                 start=start,
                 end=end,
                 price=price,
@@ -405,14 +407,22 @@ def create_or_update_reservation(logement, user, start, end, guest, price, tax):
         raise
 
 
-def validate_reservation_inputs(logement, user, start, end, guest, expected_price=None, expected_tax=None):
+def validate_reservation_inputs(
+    logement, user, start, end, guest_adult, guest_minor, expected_price=None, expected_tax=None
+):
     try:
         logger.info(
             f"Validating reservation inputs for logement {logement.id}, user {user.id}, dates {start} to {end}."
         )
 
-        if guest <= 0 or guest > logement.max_traveler:
-            raise ValueError("Nombre de voyageurs invalide.")
+        if guest_adult <= 0:
+            raise ValueError("Nombre de voyageurs adultes invalide.")
+
+        if guest_minor < 0:
+            raise ValueError("Nombre de voyageurs mineurs invalide.")
+
+        if guest_adult + guest_minor > logement.max_traveler:
+            raise ValueError(f"Nombre de voyageurs total invalide. (max {logement.max_traveler}) personnes")
 
         if start < logement.booking_limit:
             raise ValueError("Ces dates ne sont plus disponible.")
@@ -436,7 +446,7 @@ def validate_reservation_inputs(logement, user, start, end, guest, expected_pric
         if is_period_booked(start, end, logement.id, user):
             raise ValueError("Les dates sélectionnées sont déjà réservées.")
 
-        price_data = set_price(logement, start, end, guest)
+        price_data = set_price(logement, start, end, guest_adult, guest_minor)
         real_price = price_data["total_price"]
         real_tax = price_data["taxAmount"]
 

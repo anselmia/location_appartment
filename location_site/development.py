@@ -64,7 +64,7 @@ LOGGING = {
         "file": {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "django1.log"),
+            "filename": os.path.join(LOG_DIR, "django.log"),
             "when": "W0",  # Rotate weekly
             "backupCount": 365,
             "formatter": "verbose",

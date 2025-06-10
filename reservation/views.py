@@ -71,14 +71,17 @@ def book(request, logement_id):
                 reservation_tax = request.POST.get("reservation_tax")
                 start = form.cleaned_data["start"]
                 end = form.cleaned_data["end"]
-                guest = form.cleaned_data["guest"]
+                guest_adult = form.cleaned_data["guest_adult"]
+                guest_minor = form.cleaned_data["guest_minor"]
 
-                if reservation_price and reservation_tax and start and end and guest:
+                if reservation_price and reservation_tax and start and end and guest_adult and guest_minor:
                     price = float(reservation_price)
                     tax = float(reservation_tax)
 
-                    if validate_reservation_inputs(logement, user, start, end, guest, price, tax):
-                        reservation = create_or_update_reservation(logement, user, start, end, guest, price, tax)
+                    if validate_reservation_inputs(logement, user, start, end, guest_adult, guest_minor, price, tax):
+                        reservation = create_or_update_reservation(
+                            logement, user, start, end, guest_adult, guest_minor, price, tax
+                        )
                         session = create_stripe_checkout_session_with_deposit(reservation, request)
                         logger.info(f"Reservation created and Stripe session initialized for user {user}")
                         return redirect(session["checkout_session_url"])
@@ -87,12 +90,14 @@ def book(request, logement_id):
         else:
             start_date = request.GET.get("start")
             end_date = request.GET.get("end")
-            guest = request.GET.get("guest", 1)
+            guest_adult = request.GET.get("guest_adult", 1)
+            guest_minor = request.GET.get("guest_minor", 0)
             form = ReservationForm(
                 start_date=start_date,
                 end_date=end_date,
                 max_guests=logement.max_traveler,
-                guest=guest,
+                guest_adult=guest_adult,
+                guest_minor=guest_minor,
             )
 
         return render(
@@ -136,14 +141,15 @@ def check_booking_input(request, logement_id):
     try:
         start = parse_date(request.GET.get("start"))
         end = parse_date(request.GET.get("end"))
-        guest = int(request.GET.get("guest"))
+        guest_adult = int(request.GET.get("guest_adult"))
+        guest_minor = int(request.GET.get("guest_minor"))
         logement = Logement.objects.get(id=logement_id)
         user = request.user
 
-        if not start or not end or guest <= 0:
+        if not start or not end or guest_adult + guest_minor <= 0:
             return JsonResponse({"correct": False})
 
-        validate_reservation_inputs(logement, user, start, end, guest)
+        validate_reservation_inputs(logement, user, start, end, guest_adult, guest_minor)
         return JsonResponse({"correct": True})
     except ValueError as e:
         return JsonResponse({"correct": False, "error": str(e)})
