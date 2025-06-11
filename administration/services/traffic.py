@@ -1,3 +1,4 @@
+from datetime import datetime
 from datetime import timedelta
 from django.core.cache import cache
 from django.utils import timezone
@@ -19,7 +20,8 @@ def get_traffic_dashboard_data(period="day"):
 
     logs = get_recent_logs(limit=20)
     for log in logs:
-        log.timestamp = log.timestamp.isoformat()
+        if "timestamp" in log and isinstance(log["timestamp"], datetime):
+            log["timestamp"] = log["timestamp"].isoformat()
 
     return {
         "labels": labels,
@@ -46,10 +48,17 @@ def get_online_users():
 
 def get_connected_users():
     """
-    Returns the number of authenticated users currently logged in.
+    Return the number of authenticated users with active sessions.
     """
-    from accounts.models import CustomUser
-    return CustomUser.objects.filter(is_authenticated=True).count()
+    count = 0
+    for session in Session.objects.all():
+        try:
+            data = session.get_decoded()
+            if '_auth_user_id' in data:
+                count += 1
+        except Exception:
+            continue
+    return count
 
 
 def get_online_visitors():
@@ -130,7 +139,7 @@ def get_recent_logs(limit=20):
     """
     Returns the most recent logs.
     """
-    return SiteVisit.objects.order_by("-timestamp")[:limit]
+    return list(SiteVisit.objects.order_by("-timestamp")[:limit].values())
 
 
 def clear_user_cache(user_id):

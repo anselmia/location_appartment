@@ -4,7 +4,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -16,7 +16,7 @@ from django_ratelimit.decorators import ratelimit
 from django.contrib.sites.shortcuts import get_current_site
 
 
-from accounts.models import Message, Conversation
+from accounts.models import Message, Conversation, CustomUser
 from accounts.forms import (
     CustomUserCreationForm,
     CustomUserChangeForm,
@@ -181,17 +181,17 @@ def client_dashboard(request):
 
 
 @login_required
+@require_POST
 def update_profile(request):
-    if request.method == "POST":
-        form = CustomUserChangeForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "✅ Profil mis à jour avec succès.")
-            return redirect("accounts:dashboard")
-        else:
-            logger.warning(f"Échec de mise à jour du profil pour {request.user.username} : {form.errors}")
-            messages.error(request, "❌ Une erreur est survenue lors de la mise à jour du profil.")
-            return redirect("accounts:dashboard")
+    form = CustomUserChangeForm(request.POST, instance=request.user)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "✅ Profil mis à jour avec succès.")
+        return redirect("accounts:dashboard")
+    else:
+        logger.warning(f"Échec de mise à jour du profil pour {request.user.username} : {form.errors}")
+        messages.error(request, "❌ Une erreur est survenue lors de la mise à jour du profil.")
+        return redirect("accounts:dashboard")
 
 
 @login_required
@@ -267,15 +267,6 @@ def messages_view(request, conversation_id=None):
         return redirect("accounts:dashboard")
 
 
-def conversation_view(request, reservation_code):
-    conv = get_object_or_404(Conversation, reservation_code=reservation_code)
-
-    if is_ajax(request):
-        return render(request, "account/partials/_conversation.html", {"conversation": conv})
-
-    return render(request, "messages/conversation_full.html", {"conversation": conv})
-
-
 @login_required
 def start_conversation(request):
     if request.method == "POST":
@@ -328,6 +319,7 @@ def contact_view(request):
     return render(request, "accounts/contact.html", {"form": form})
 
 
+@require_POST
 @login_required
 def delete_account(request):
     user = request.user
@@ -503,23 +495,27 @@ def activate(request, uid, token):
 
 
 def resend_activation_email(request):
-    from accounts.models import CustomUser
-
     if request.method == "POST":
         email = request.POST.get("email")
+        if not email:
+            messages.error(request, "Veuillez fournir une adresse email.")
+            return redirect("accounts:resend_activation_email")
+
         try:
             user = CustomUser.objects.get(email=email)
             if user.is_active:
                 messages.info(request, "Ce compte est déjà activé.")
                 return redirect("accounts:login")
+
             current_site = get_current_site(request)
             resend_confirmation_email(user, current_site)
-
             messages.success(request, "Un nouvel email de confirmation a été envoyé.")
             return redirect("accounts:login")
 
         except CustomUser.DoesNotExist:
             messages.error(request, "Aucun compte associé à cet email.")
+            return redirect("accounts:resend_activation_email")  # redirect here too
+
     return render(request, "accounts/resend_confirmation.html")
 
 
@@ -531,6 +527,7 @@ class CustomPasswordResetView(PasswordResetView):
 
     def get_context_data(self, **kwargs):
         from common.services.helper_fct import get_entreprise
+
         context = super().get_context_data(**kwargs)
         entreprise = get_entreprise()
         context["entreprise"] = entreprise
