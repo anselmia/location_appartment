@@ -100,6 +100,8 @@ class Reservation(models.Model):
             return False
         if self.refundable_period_passed:
             return False
+        if self.transferred or self.admin_transferred:
+            return False
         return True
 
     @property
