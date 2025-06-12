@@ -67,14 +67,21 @@ def book(request, logement_id):
         if request.method == "POST":
             form = ReservationForm(request.POST)
             if form.is_valid():
-                reservation_price = request.POST.get("reservation_price")
-                reservation_tax = request.POST.get("reservation_tax")
+                reservation_price = request.POST.get("reservation_price", None)
+                reservation_tax = request.POST.get("reservation_tax", None)
                 start = form.cleaned_data["start"]
                 end = form.cleaned_data["end"]
                 guest_adult = form.cleaned_data["guest_adult"]
                 guest_minor = form.cleaned_data["guest_minor"]
 
-                if reservation_price and reservation_tax and start and end and guest_adult and guest_minor:
+                if (
+                    reservation_price is not None
+                    and reservation_tax is not None
+                    and start
+                    and end
+                    and guest_adult
+                    and guest_minor >= 0
+                ):
                     price = float(reservation_price)
                     tax = float(reservation_tax)
 

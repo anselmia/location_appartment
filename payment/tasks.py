@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from django.db import transaction
 from reservation.models import Reservation
-from payment.services.payment_service import get_refund, get_transfer
+from payment.services.payment_service import get_refund, get_transfer, get_payment_intent
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
 from django.core.mail import mail_admins
@@ -20,7 +20,7 @@ def transfert_funds():
             charge_reservation(reservation)
 
 
-@periodic_task(crontab(hour=3, minute=30))  # toutes les jours à 3h30
+@periodic_task(crontab(hour=4, minute=0))  # toutes les jours à 4h
 def check_stripe_integrity():
     from reservation.models import Reservation
 
@@ -46,10 +46,9 @@ def check_stripe_integrity():
                         continue
 
                     refunded_amount = Decimal(amount) / 100
-                    current_refund = Decimal(resa.refund_amount or 0)
 
                     # Update reservation
-                    resa.refund_amount = current_refund + refunded_amount
+                    resa.refund_amount = refunded_amount
                     if refund.metadata and refund.metadata.get("refund") == "full":
                         resa.platform_fee = Decimal("0.00")
                         resa.tax = Decimal("0.00")
@@ -129,5 +128,114 @@ def check_stripe_integrity():
                 message=f"Error checking transfer for reservation {resa.code}: {e}",
             )
             continue
+
+    ##### DEPOSIT #####
+    problematic = Reservation.objects.filter(caution_charged=True).filter(
+        amount_charged__isnull=True
+    ) | Reservation.objects.filter(caution_charged=True, amount_charged=0)
+
+    for resa in problematic:
+        try:
+            if resa.stripe_deposit_payment_intent_id:
+                deposit = get_payment_intent(resa.stripe_deposit_payment_intent_id)
+                if deposit:
+                    with transaction.atomic():
+                        amount = deposit.amount
+                        if not amount or amount <= 0:
+                            logger.warning(f"⚠️ Invalid or missing deposit amount for event {deposit.id}")
+                            mail_admins(
+                                subject=f"[Deposit Integrity] Invalid deposit amount for reservation {resa.code}",
+                                message=f"Deposit {deposit.id} for reservation {resa.code} has invalid amount: {amount}",
+                            )
+                            continue
+
+                        deposited_amount = Decimal(amount) / 100
+
+                        # Update reservation
+                        resa.amount_charged = deposited_amount
+                        resa.save(update_fields=["amount_charged"])
+                        logger.info(
+                            f"Reservation {resa.code}: deposit info updated from Stripe (amount={deposited_amount}, id={deposit.id})"
+                        )
+                else:
+                    logger.warning(
+                        f"Reservation {resa.code}: No deposit found on Stripe for deposit_id {resa.stripe_deposit_payment_intent_id}"
+                    )
+                    mail_admins(
+                        subject=f"[Deposit Integrity] No deposit found for reservation {resa.code}",
+                        message=f"No deposit found on Stripe for reservation {resa.code} (deposit_id={resa.stripe_deposit_payment_intent_id}).",
+                    )
+            else:
+                logger.warning(f"Reservation {resa.code}: No stripe_deposit_payment_intent_id found.")
+        except Exception as e:
+            logger.error(f"Error checking deposit for reservation {resa.code}: {e}")
+            mail_admins(
+                subject=f"[Deposit Integrity] Error for reservation {resa.code}",
+                message=f"Error checking deposit for reservation {resa.code}: {e}",
+            )
+
+    ##### BOOKING #####
+    problematic = Reservation.objects.filter(status="confirmee").filter(
+        checkout_amount__isnull=True
+    ) | Reservation.objects.filter(status="confirmee", checkout_amount=0)
+
+    for resa in problematic:
+        try:
+            if resa.stripe_payment_intent_id:
+                payment_intent = get_payment_intent(resa.stripe_payment_intent_id)
+                if payment_intent:
+                    with transaction.atomic():
+                        amount = payment_intent.amount_received
+                        if not amount or amount <= 0:
+                            logger.warning(f"⚠️ Invalid or missing payment amount for event {payment_intent.id}")
+                            mail_admins(
+                                subject=f"[Payment Integrity] Invalid payment amount for reservation {resa.code}",
+                                message=f"Payment {payment_intent.id} for reservation {resa.code} has invalid amount: {amount}",
+                            )
+                            continue
+
+                        if payment_intent.status != "succeeded":
+                            logger.warning(
+                                f"⚠️ PaymentIntent {payment_intent.id} status '{payment_intent.status}' is not 'succeeded'. Skipping confirmation."
+                            )
+                            mail_admins(
+                                subject=f"[Payment Integrity] Invalid payment Intent for reservation {resa.code}",
+                                message=f"Payment {payment_intent.id} for reservation {resa.code} has invalid status: {payment_intent.status}",
+                            )
+                            continue
+
+                        payment_method = payment_intent.payment_method
+                        if not payment_method or not getattr(payment_method, "id", None):
+                            mail_admins(
+                                subject=f"[Payment Integrity] Invalid payment Method for reservation {resa.code}",
+                                message=f"Payment {payment_intent.id} for reservation {resa.code} has invalid Payment method: {payment_method.id if payment_method else 'None'}",
+                            )
+                            continue
+
+                        charged_amount = Decimal(amount) / 100
+
+                        # Update reservation
+                        resa.checkout_amount = charged_amount
+                        resa.save(update_fields=["checkout_amount"])
+                        logger.info(
+                            f"Reservation {resa.code}: payment info updated from Stripe (amount={charged_amount}, id={payment_intent.id})"
+                        )
+                else:
+                    logger.warning(
+                        f"Reservation {resa.code}: No payment found on Stripe for payment_intent_id {resa.stripe_payment_intent_id}"
+                    )
+                    mail_admins(
+                        subject=f"[Payment Integrity] No payment found for reservation {resa.code}",
+                        message=f"No payment found on Stripe for reservation {resa.code} (payment_intent_id={resa.stripe_payment_intent_id}).",
+                    )
+            else:
+                logger.warning(f"Reservation {resa.code}: No stripe_payment_intent_id found.")
+        except Exception as e:
+            logger.error(f"Error checking payment for reservation {resa.code}: {e}")
+            mail_admins(
+                subject=f"[Payment Integrity] Error for reservation {resa.code}",
+                message=f"Error checking payment for reservation {resa.code}: {e}",
+            )
+
     logger.info("Transfer and refund integrity check completed.")
     return "Transfer and refund integrity check completed."

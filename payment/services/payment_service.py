@@ -87,6 +87,40 @@ def get_transfer(transfer_id):
         return None
 
 
+def get_payment_intent(payment_intent_id):
+    try:
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
+        if not intent or not getattr(intent, "id", None):
+            logger.error(f"❌ No valid PaymentIntent object returned for ID {payment_intent_id}")
+            return None
+        if intent.status != "succeeded":
+            logger.warning(f"⚠️ PaymentIntent {payment_intent_id} status is not 'succeeded': {intent.status}")
+            return None
+
+        return intent
+
+    except Exception as e:
+        logger.error(f"❌ Error retrieving PaymentIntent {payment_intent_id}: {e}")
+        return None
+
+
+def get_session(session_id):
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if not session or not getattr(session, "id", None):
+            logger.error(f"❌ No valid session object returned for ID {session_id}")
+            return None
+        if session.status != "complete":
+            logger.warning(f"⚠️ Session {session_id} status is not 'complete': {session.status}")
+            return None
+
+        return session
+
+    except Exception as e:
+        logger.error(f"❌ Error retrieving session {session_id}: {e}")
+        return None
+
+
 def create_stripe_checkout_session_with_deposit(reservation, request):
     from common.services.network import get_client_ip
 
@@ -114,7 +148,10 @@ def create_stripe_checkout_session_with_deposit(reservation, request):
         amount = int(reservation.price * 100)
 
         # Build full URLs
-        success_url = request.build_absolute_uri(reverse("payment:payment_success", args=[reservation.code]))
+        success_url = (
+            request.build_absolute_uri(reverse("payment:payment_success", args=[reservation.code]))
+            + "?session_id={CHECKOUT_SESSION_ID}"
+        )
         cancel_url = request.build_absolute_uri(reverse("payment:payment_cancel", args=[reservation.code]))
 
         session_args = {
@@ -288,6 +325,17 @@ def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservati
             idempotency_key=f"deposit_{reservation.code}",
         )
 
+        with transaction.atomic():
+            # Update reservation with payment intent details
+            reservation.caution_charged = True
+            reservation.stripe_deposit_payment_intent_id = intent.id
+            reservation.save(
+                update_fields=[
+                    "caution_charged",
+                    "stripe_deposit_payment_intent_id",
+                ]
+            )
+
         task.mark_success(intent.id)
 
         logger.info(f"✅ Deposit Charged successful for reservation {reservation.code}, intent ID: {intent.id}")
@@ -442,7 +490,7 @@ def charge_reservation(reservation):
                 reservation.transferred = True
                 reservation.stripe_transfer_id = transfer.id
                 reservation.save(update_fields=["transferred", "stripe_transfer_id"])
-                
+
             task.mark_success(transfer.id)
             logger.info(f"✅ Owner payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
 
@@ -557,10 +605,9 @@ def handle_charge_refunded(data: StripeChargeEventData):
                     return
 
                 refunded_amount = Decimal(amount) / 100
-                current_refund = Decimal(reservation.refund_amount or 0)
 
                 # Update reservation
-                reservation.refund_amount = current_refund + refunded_amount
+                reservation.refund_amount = refunded_amount
                 reservation.stripe_refund_id = refund_id
                 if refund_type == "full":
                     reservation.platform_fee = Decimal("0.00")
@@ -632,22 +679,8 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
                 logger.info(f"ℹ️ Reservation {reservation.code} already marked as deposit charged.")
                 return
 
-            try:
-                existing_amount = Decimal(reservation.amount_charged or 0)
-            except Exception:
-                logger.warning(f"⚠️ Failed to parse existing amount_charged for {reservation.code}, defaulting to 0.")
-                existing_amount = Decimal("0.00")
-
-            reservation.amount_charged = existing_amount + amount
-            reservation.caution_charged = True
-            reservation.stripe_deposit_payment_intent_id = payment_intent_id
-            reservation.save(
-                update_fields=[
-                    "amount_charged",
-                    "caution_charged",
-                    "stripe_deposit_payment_intent_id",
-                ]
-            )
+            reservation.amount_charged = amount
+            reservation.save(update_fields=["amount_charged"])
 
         logger.info(f"🏠 Deposit successfully recorded for reservation {reservation.code}, amount: {amount:.2f} €")
 
@@ -692,7 +725,8 @@ def handle_payment_failed(data: StripePaymentIntentEventData):
         # Optional: update reservation status or alert staff
         try:
             reservation = Reservation.objects.get(code=reservation_code)
-            if reservation.statut != "confirmee":
+            with transaction.atomic():
+                # Mark reservation as payment failed
                 reservation.statut = "echec_paiement"
                 reservation.save(update_fields=["statut"])
                 logger.info(f"🚫 Reservation {reservation.code} marked as payment failed.")
@@ -733,10 +767,6 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 logger.warning(f"⚠️ Reservation {reservation_code} not found.")
                 return
 
-            if reservation.statut == "confirmee":
-                logger.info(f"ℹ️ Reservation {reservation.code} already confirmed.")
-                return
-
             task, _ = PaymentTask.objects.get_or_create(
                 reservation=reservation,
                 type="checkout",
@@ -765,13 +795,11 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
                 reservation.stripe_saved_payment_method_id = payment_method.id
                 logger.info(f"💾 Saved payment method {payment_method.id} for reservation {reservation.code}")
 
-            reservation.stripe_payment_intent_id = payment_intent_id
-            reservation.statut = "confirmee"
+            reservation.checkout_amount = Decimal(intent.amount_received) / 100  # Convert cents to euros
             reservation.save(
                 update_fields=[
-                    "stripe_payment_intent_id",
                     "stripe_saved_payment_method_id",
-                    "statut",
+                    "checkout_amount",
                 ]
             )
 

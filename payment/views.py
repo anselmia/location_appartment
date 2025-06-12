@@ -29,6 +29,7 @@ from payment.services.payment_service import (
     send_stripe_payment_link,
     charge_payment,
     charge_reservation,
+    get_session,
 )
 from payment.models import PaymentTask
 
@@ -40,29 +41,31 @@ logger = logging.getLogger(__name__)
 @user_has_reservation
 def payment_success(request, code):
     try:
+        session_id = request.GET.get("session_id")
+        if not session_id:
+            messages.error(request, "Session ID manquant.")
+            return redirect("reservation:book", logement_id=1)
+
         reservation = Reservation.objects.get(code=code)
+        session = get_session(session_id)
+        if not session:
+            messages.error(request, "Session invalide.")
+            return redirect("reservation:book", logement_id=1)
 
-        # Wait up to 3 seconds for the reservation to be confirmed
-        max_wait = 3  # seconds
-        interval = 0.5  # seconds
-        waited = 0
+        payment_intent_id = session.payment_intent
 
-        while reservation.statut != "confirmee" and waited < max_wait:
-            time.sleep(interval)
-            waited += interval
-            reservation.refresh_from_db()
+        reservation.statut = "confirmee"
+        reservation.stripe_payment_intent_id = payment_intent_id
+        reservation.save(update_fields=["statut", "stripe_payment_intent_id"])
 
-        if reservation.statut != "confirmee":
-            messages.warning(
-                request,
-                "Votre paiement semble incomplet ou non encore confirmé. Veuillez vérifier plus tard ou contacter l’assistance.",
-            )
         return render(request, "payment/payment_success.html", {"reservation": reservation})
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
         return redirect("reservation:book", logement_id=1)
     except Exception as e:
         logger.exception(f"Error handling payment success: {e}")
+        messages.error(request, "Erreur lors du traitement du paiement.")
+        return redirect("reservation:book", logement_id=1)
 
 
 @login_required
