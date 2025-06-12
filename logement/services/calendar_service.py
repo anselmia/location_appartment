@@ -50,9 +50,9 @@ def sync_external_ical(logement, url, source):
             logger.error(f"Empty iCal data received from {source}")
             raise ValueError("Empty iCal data received")
 
-        # Process the iCal data
-        process_calendar(logement, ical_data, source)
-
+        cal = Calendar.from_ical(ical_data)
+        added, updated, deleted = process_calendar(logement, cal, source)
+        return added, updated, deleted
     except Exception as e:
         logger.error(f"Error syncing iCal for {logement}: {str(e)}")
         raise ValueError(f"Error syncing iCal for {logement}: {str(e)}")
