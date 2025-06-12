@@ -69,8 +69,9 @@ def filter_logements(
     if start_date and end_date:
         start = parse_date(start_date)
         end = parse_date(end_date)
-        if start and end:
-            logements = get_available_logement_in_period(start, end, logements)
+        if not start or not end:
+            raise ValueError("Invalid start_date or end_date format")
+        logements = get_available_logement_in_period(start, end, logements)
 
     if equipment_ids:
         equipment_ids = [int(eid) for eid in equipment_ids]
@@ -114,7 +115,7 @@ def get_best_discounts(discounts, start_date, end_date):
                 if not best_min_nights or d.min_nights > best_min_nights.min_nights:
                     best_min_nights = d
 
-            if d.days_before_min or d.days_before_max:
+            elif d.days_before_min or d.days_before_max:
                 is_valid = True
                 if d.days_before_min and days_before < d.days_before_min:
                     is_valid = False
@@ -124,8 +125,10 @@ def get_best_discounts(discounts, start_date, end_date):
                     if not best_days_before or ((d.days_before_min or 0) > (best_days_before.days_before_min or 0)):
                         best_days_before = d
 
-            if d.start_date and d.end_date:
-                best_date_range_discounts.append(d)
+            elif d.start_date and d.end_date:
+                # Only include if the discount period overlaps with the requested period
+                if d.start_date <= end_date and d.end_date >= start_date:
+                    best_date_range_discounts.append(d)
 
         logger.debug("Best discounts retrieved.")
         return {
@@ -181,7 +184,23 @@ def set_price(logement, start, end, guest_adult, guest_minor, base_price=None):
         if cached_result:
             return cached_result
 
-        nights = (end - start).days or 1
+        nights = (end - start).days
+        total_guests = guest_adult + guest_minor
+
+        # Handle zero or negative nights or guests
+        if nights <= 0 or total_guests <= 0:
+            result = {
+                "number_of_nights": nights if nights > 0 else 0,
+                "total_base_price": Decimal("0.00"),
+                "TotalextraGuestFee": Decimal("0.00"),
+                "discount_totals": {},
+                "taxAmount": Decimal("0.00"),
+                "payment_fee": Decimal("0.00"),
+                "total_price": Decimal("0.00"),
+            }
+            cache.set(key, result, 300)
+            return result
+
         default_price = Decimal(str(logement.price))
         base_price = Decimal(str(base_price)) if base_price else None
 
@@ -207,7 +226,6 @@ def set_price(logement, start, end, guest_adult, guest_minor, base_price=None):
 
         total_price = total_base - total_discount_amount
 
-        total_guests = guest_adult + guest_minor
         extra_guests = max(total_guests - logement.nominal_traveler, 0)
         extra_fee = Decimal(str(logement.fee_per_extra_traveler)) * extra_guests * nights
         total_price += extra_fee

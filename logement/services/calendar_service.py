@@ -43,89 +43,93 @@ def generate_ical(code):
         raise e
 
 
-def process_calendar(logement, url, source):
+def sync_external_ical(logement, url, source):
+    try:
+        ical_data = requests.get(url).text
+        if not ical_data:
+            logger.error(f"Empty iCal data received from {source}")
+            raise ValueError("Empty iCal data received")
+
+        # Process the iCal data
+        process_calendar(logement, ical_data, source)
+
+    except Exception as e:
+        logger.error(f"Error syncing iCal for {logement}: {str(e)}")
+        raise ValueError(f"Error syncing iCal for {logement}: {str(e)}")
+
+
+def process_calendar(logement, calendar, source):
     added = 0
     updated = 0
     try:
-        response = requests.get(url)
-        if response.status_code != 200:
-            logger.error(f"Failed to fetch calendar from {source}. Status code: {response.status_code}")
-            raise ValueError(f"Failed to fetch calendar. Status code: {response.status_code}")
+        # Gather all the events' start and end dates
+        event_dates = []
+        for component in calendar.walk():
+            if component.name == "VEVENT":
+                dtstart = component.get("DTSTART")
+                dtend = component.get("DTEND")
+                if dtstart is None or dtend is None:
+                    logger.warning("Event missing DTSTART or DTEND, skipping.")
+                    continue
+                start = dtstart.dt
+                end = dtend.dt
 
-        # Check for valid iCal content
-        if response.headers.get("Content-Type", "").startswith("text/calendar"):
-            calendar = Calendar.from_ical(response.text)
+                logger.info(f"{source} - {start} to {end}")
 
-            # Gather all the events' start and end dates
-            event_dates = []
-            for component in calendar.walk():
-                if component.name == "VEVENT":
-                    start = component.get("DTSTART").dt
-                    end = component.get("DTEND").dt
+                # Ensure the start and end dates are in correct format (handle timezone or UTC)
+                if isinstance(start, datetime):
+                    start = start.replace(tzinfo=None)  # Remove timezone if any
+                elif isinstance(start, date):
+                    start = datetime.combine(start, time.min)
 
-                    logger.info(f"{source} - {start} to {end}")
+                if isinstance(end, datetime):
+                    end = end.replace(tzinfo=None)  # Remove timezone if any
+                elif isinstance(end, date):
+                    end = datetime.combine(end, time.min)
 
-                    # Ensure the start and end dates are in correct format (handle timezone or UTC)
-                    if isinstance(start, datetime):
-                        start = start.replace(tzinfo=None)  # Remove timezone if any
-                    elif isinstance(start, date):
-                        start = datetime.combine(start, time.min)
+                if not isinstance(start, datetime):
+                    logger.warning(f"Invalid start date: {start}")
+                    continue  # Skip this event if the start date is not valid
 
-                    if isinstance(end, datetime):
-                        end = end.replace(tzinfo=None)  # Remove timezone if any
-                    elif isinstance(end, date):
-                        end = datetime.combine(end, time.min)
+                if not isinstance(end, datetime):
+                    logger.warning(f"Invalid end date: {end}")
+                    continue  # Skip this event if the end date is not valid
 
-                    if not isinstance(start, datetime):
-                        logger.warning(f"Invalid start date: {start}")
-                        continue  # Skip this event if the start date is not valid
+                # Add the event's date range to the list
+                event_dates.append((start, end))
 
-                    if not isinstance(end, datetime):
-                        logger.warning(f"Invalid end date: {end}")
-                        continue  # Skip this event if the end date is not valid
-
-                    # Add the event's date range to the list
-                    event_dates.append((start, end))
-
+                # Create or update the reservation for Airbnb or Booking
+                if source == "airbnb":
                     # Process the reservation based on the event's summary
                     if component.get("SUMMARY", "") == "Reserved":
-
-                        # Create or update the reservation for Airbnb or Booking
-                        if source == "airbnb":
-                            reservation, created = airbnb_booking.objects.update_or_create(
-                                logement=logement,
-                                start=start,
-                                end=end,
-                            )
-                            if created:
-                                logger.info(f"Airbnb reservation created: {reservation}")
-                                added += 1
-                            else:
-                                logger.info(f"Airbnb reservation updated: {reservation}")
-                                updated += 1
-
-                    elif source == "booking":
-                        reservation, created = booking_booking.objects.update_or_create(
+                        reservation, created = airbnb_booking.objects.update_or_create(
                             logement=logement,
                             start=start,
                             end=end,
                         )
                         if created:
-                            logger.info(f"Booking reservation created: {reservation}")
+                            logger.info(f"Airbnb reservation created: {reservation}")
                             added += 1
                         else:
-                            logger.info(f"Booking reservation updated: {reservation}")
+                            logger.info(f"Airbnb reservation updated: {reservation}")
                             updated += 1
+                elif source == "booking":
+                    reservation, created = booking_booking.objects.update_or_create(
+                        logement=logement,
+                        start=start,
+                        end=end,
+                    )
+                    if created:
+                        logger.info(f"Booking reservation created: {reservation}")
+                        added += 1
+                    else:
+                        logger.info(f"Booking reservation updated: {reservation}")
+                        updated += 1
 
-            # After processing the calendar, delete any future reservations not in the calendar
-            deleted = delete_old_reservations(event_dates, source)
+        # After processing the calendar, delete any future reservations not in the calendar
+        deleted = delete_old_reservations(event_dates, source)
 
-            return added, updated, deleted
-
-        else:
-            logger.error(f"Received non-icalendar response from {source}")
-            raise ValueError("Received non-icalendar response")
-
+        return added, updated, deleted
     except Exception as e:
         logger.error(f"Error processing calendar from {source}: {str(e)}")
         raise ValueError(f"Error processing calendar from {source}: {str(e)}")

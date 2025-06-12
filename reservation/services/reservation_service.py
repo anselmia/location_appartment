@@ -482,7 +482,11 @@ def cancel_and_refund_reservation(reservation):
                 None,
                 "❌ Vous ne pouvez pas annuler une réservation déjà commencée ou passée.",
             )
-        mark_reservation_cancelled(reservation)
+        if reservation.statut != "annulee":
+            mark_reservation_cancelled(reservation)
+        else:
+            logger.info(f"Reservation {reservation.code} is already cancelled.")
+            return ("✅ Réservation déjà annulée.", None)
         if reservation.refundable:
             if reservation.stripe_payment_intent_id:
                 try:

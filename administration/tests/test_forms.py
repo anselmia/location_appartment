@@ -40,7 +40,6 @@ def test_homepage_config_form_valid(valid_image_file):
         },
         files={"banner_image": valid_image_file},
     )
-    print(form.errors)
     assert form.is_valid()
 
 
