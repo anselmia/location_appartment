@@ -675,10 +675,6 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
                 logger.warning(f"⚠️ Reservation {reservation_code} not found.")
                 return
 
-            if reservation.caution_charged:
-                logger.info(f"ℹ️ Reservation {reservation.code} already marked as deposit charged.")
-                return
-
             reservation.amount_charged = amount
             reservation.save(update_fields=["amount_charged"])
 
