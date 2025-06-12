@@ -53,6 +53,40 @@ def get_platform_fee(price):
     return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
 
 
+def get_refund(refund_id):
+    try:
+        refund = stripe.Refund.retrieve(refund_id)
+        if not refund or not getattr(refund, "id", None):
+            logger.error(f"❌ No valid refund object returned for ID {refund_id}")
+            return None
+        if refund.status != "succeeded":
+            logger.warning(f"⚠️ Refund {refund_id} status is not 'succeeded': {refund.status}")
+            return None
+
+        return refund
+
+    except Exception as e:
+        logger.error(f"❌ Error retrieving refund {refund_id}: {e}")
+        return None
+
+
+def get_transfer(transfer_id):
+    try:
+        transfer = stripe.Transfer.retrieve(transfer_id)
+        if not transfer or not getattr(transfer, "id", None):
+            logger.error(f"❌ No valid transfer object returned for ID {transfer_id}")
+            return None
+        if transfer.status != "succeeded":
+            logger.warning(f"⚠️ Transfer {transfer_id} status is not 'succeeded': {transfer.status}")
+            return None
+
+        return transfer
+
+    except Exception as e:
+        logger.error(f"❌ Error retrieving transfer {transfer_id}: {e}")
+        return None
+
+
 def create_stripe_checkout_session_with_deposit(reservation, request):
     from common.services.network import get_client_ip
 
@@ -330,6 +364,12 @@ def charge_reservation(reservation):
                     idempotency_key=f"transfer_{reservation.code}",
                 )
 
+                with transaction.atomic():
+                    # Update transfer status
+                    reservation.admin_transferred = True
+                    reservation.admin_stripe_transfer_id = transfer.id
+                    reservation.save(update_fields=["admin_transferred", "admin_stripe_transfer_id"])
+
                 logger.info(
                     f"✅ Payout transferred to {admin} for reservation {reservation.code} (transfer ID: {transfer.id})"
                 )
@@ -396,6 +436,13 @@ def charge_reservation(reservation):
                 metadata={"code": reservation.code, "logement": reservation.logement.code, "transfer": "owner"},
                 idempotency_key=f"transfer_{reservation.code}",
             )
+
+            with transaction.atomic():
+                # Update transfer status
+                reservation.transferred = True
+                reservation.stripe_transfer_id = transfer.id
+                reservation.save(update_fields=["transferred", "stripe_transfer_id"])
+                
             task.mark_success(transfer.id)
             logger.info(f"✅ Owner payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
 
@@ -454,8 +501,17 @@ def refund_payment(reservation, refund="full", amount_cents=None):
             params["amount"] = int(amount_cents)
 
         refund = stripe.Refund.create(**params)
+
+        with transaction.atomic():
+            # Update refund status
+            reservation.refunded = True
+            reservation.stripe_refund_id = refund.id
+            reservation.save(update_fields=["refunded", "stripe_refund_id"])
+
         task.mark_success(refund.id)
-        logger.info(f"✅ Refund processed: {refund.id}, Amount: {params.get('amount', 'full')} cents")
+        logger.info(
+            f"✅ Refund processed for Reservation {reservation.code}: {refund.id}, Amount: {params.get('amount', 'full')} cents"
+        )
 
         return refund
 
@@ -500,16 +556,10 @@ def handle_charge_refunded(data: StripeChargeEventData):
                     logger.warning(f"⚠️ Invalid or missing refund amount for event {refund_id}")
                     return
 
-                # Prevent duplicate based on refund ID
-                if reservation.stripe_refund_id == refund_id:
-                    logger.info(f"ℹ️ Refund {refund_id} already recorded for reservation {reservation.code}.")
-                    return
-
                 refunded_amount = Decimal(amount) / 100
                 current_refund = Decimal(reservation.refund_amount or 0)
 
                 # Update reservation
-                reservation.refunded = True
                 reservation.refund_amount = current_refund + refunded_amount
                 reservation.stripe_refund_id = refund_id
                 if refund_type == "full":
@@ -763,27 +813,28 @@ def handle_transfer_created(data: StripeTransferEventData):
         logger.info(f"✅ Transfer succeeded: {transfer_id} | {amount:.2f} {currency} to {destination}")
 
         try:
-            if transfer_user == "owner":
-                reservation = Reservation.objects.get(code=reservation_code)
-                reservation.transferred = True
-                reservation.stripe_transfer_id = transfer_id
-                reservation.transferred_amount = amount
-                reservation.save(update_fields=["transferred", "stripe_transfer_id", "transferred_amount"])
-                logger.info(f"📦 Transfer recorded to owner for reservation {reservation_code}")
-            elif transfer_user == "admin":
-                reservation = Reservation.objects.get(code=reservation_code)
-                reservation.admin_transferred = True
-                reservation.admin_transferred_amount = amount
-                reservation.admin_stripe_transfer_id = transfer_id
-                reservation.save(
-                    update_fields=["admin_transferred", "admin_stripe_transfer_id", "admin_transferred_amount"]
-                )
-                logger.info(f"📦 Transfer recorded to admin for reservation {reservation_code}")
-            else:
-                logger.error(
-                    f"📦 Incorrect user {transfer_user} defined for Transfer for reservation {reservation_code}"
-                )
-                return
+            with transaction.atomic():
+                if transfer_user == "owner":
+                    reservation = Reservation.objects.get(code=reservation_code)
+                    reservation.transferred = True
+                    reservation.stripe_transfer_id = transfer_id
+                    reservation.transferred_amount = amount
+                    reservation.save(update_fields=["transferred", "stripe_transfer_id", "transferred_amount"])
+                    logger.info(f"📦 Transfer recorded to owner for reservation {reservation_code}")
+                elif transfer_user == "admin":
+                    reservation = Reservation.objects.get(code=reservation_code)
+                    reservation.admin_transferred = True
+                    reservation.admin_transferred_amount = amount
+                    reservation.admin_stripe_transfer_id = transfer_id
+                    reservation.save(
+                        update_fields=["admin_transferred", "admin_stripe_transfer_id", "admin_transferred_amount"]
+                    )
+                    logger.info(f"📦 Transfer recorded to admin for reservation {reservation_code}")
+                else:
+                    logger.error(
+                        f"📦 Incorrect user {transfer_user} defined for Transfer for reservation {reservation_code}"
+                    )
+                    return
             # Try sending the confirmation email (non-blocking)
             try:
                 send_mail_on_new_transfer(reservation.logement, reservation, transfer_user)
