@@ -285,7 +285,7 @@ def send_mail_on_payment_failure(logement, reservation, user):
 
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
-        # ===== ADMIN EMAIL =====
+        # ===== OWNER & ADMIN EMAIL =====
         admin_message = render_to_string("email/payment_failure_admin.txt", email_context)
 
         send_mail(
@@ -296,7 +296,7 @@ def send_mail_on_payment_failure(logement, reservation, user):
             fail_silently=False,
         )
 
-        logger.info(f"✅ Refund email sent to admins for reservation {reservation.code}.")
+        logger.info(f"✅ Payment failure email sent to admins for reservation {reservation.code}.")
 
         # ===== Customer EMAIL =====
         message = render_to_string("email/payment_failure.txt", email_context)

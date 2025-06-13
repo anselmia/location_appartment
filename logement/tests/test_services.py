@@ -7,7 +7,8 @@ from icalendar import Calendar, Event
 from django.core.cache import cache
 
 from logement.services import calendar_service
-from logement.services import logement as logement_service
+from logement.services import logement_service as logement_service
+from logement.services import price_service as price_service
 from logement.models import Logement
 from logement.tests.factories import (
     LogementFactory,
@@ -259,7 +260,7 @@ def test_filter_logements_cache(mock_cache):
 
 
 def test_get_best_discounts_empty():
-    result = logement_service.get_best_discounts([], date.today(), date.today() + timedelta(days=3))
+    result = price_service.get_best_discounts([], date.today(), date.today() + timedelta(days=3))
     assert result == {"min_nights": None, "days_before": None, "date_range": []}
 
 
@@ -268,7 +269,7 @@ def test_get_best_discounts_exception(monkeypatch):
         raise Exception("fail")
 
     monkeypatch.setattr("logement.services.logement.logger", mock.Mock())
-    assert logement_service.get_best_discounts([mock.Mock()], date.today(), date.today()) == {
+    assert price_service.get_best_discounts([mock.Mock()], date.today(), date.today()) == {
         "min_nights": None,
         "days_before": None,
         "date_range": [],
@@ -284,7 +285,7 @@ def test_apply_discounts_min_nights_and_days_before():
             self.end_date = end_date
 
     discounts = {"min_nights": D("min_nights", 10), "days_before": D("days_before", 5), "date_range": []}
-    price, applied = logement_service.apply_discounts(Decimal("100.00"), date.today(), discounts)
+    price, applied = price_service.apply_discounts(Decimal("100.00"), date.today(), discounts)
     assert price < Decimal("100.00")
     assert any("min_nights" in a[0] or "days_before" in a[0] for a in applied)
 
@@ -303,7 +304,7 @@ def test_apply_discounts_date_range():
         "days_before": None,
         "date_range": [D("date_range", 10, today, today + timedelta(days=1))],
     }
-    price, applied = logement_service.apply_discounts(Decimal("100.00"), today, discounts)
+    price, applied = price_service.apply_discounts(Decimal("100.00"), today, discounts)
     assert price < Decimal("100.00")
     assert any("date_range" in a[0] for a in applied)
 
@@ -317,7 +318,7 @@ def test_apply_discounts_invalid(monkeypatch):
             self.end_date = end_date
 
     discounts = {"min_nights": D("min_nights", "not-a-number"), "days_before": None, "date_range": []}
-    price, applied = logement_service.apply_discounts(Decimal("100.00"), date.today(), discounts)
+    price, applied = price_service.apply_discounts(Decimal("100.00"), date.today(), discounts)
     assert price == Decimal("100.00")
 
 
@@ -335,7 +336,7 @@ def test_set_price_basic(mock_payment_fee, mock_cache):
     mock_payment_fee.return_value = Decimal("5.00")
     PriceFactory(logement=logement, date=start, value=90)
     DiscountFactory(logement=logement, is_active=True, min_nights=1, value=10)
-    result = logement_service.set_price(logement, start, end, 2, 0)
+    result = price_service.set_price(logement, start, end, 2, 0)
     assert "total_price" in result
     assert result["total_price"] > 0
 
@@ -348,7 +349,7 @@ def test_set_price_cache(mock_payment_fee, mock_cache):
     start = date.today()
     end = start + timedelta(days=1)
     mock_cache.get.return_value = {"total_price": 123}
-    result = logement_service.set_price(logement, start, end, 1, 0)
+    result = price_service.set_price(logement, start, end, 1, 0)
     assert result["total_price"] == 123
 
 
@@ -361,7 +362,7 @@ def test_set_price_exception(mock_payment_fee, mock_cache):
     end = start + timedelta(days=1)
     mock_cache.get.side_effect = Exception("fail")
     with pytest.raises(Exception):
-        logement_service.set_price(logement, start, end, 1, 0)
+        price_service.set_price(logement, start, end, 1, 0)
 
 
 @pytest.mark.django_db
@@ -452,7 +453,7 @@ def test_get_best_discounts_selects_best_per_type():
     booking_end = booking_start + timedelta(days=6)
 
     discounts = [d1, d2, d3, d4, d5, d6]
-    result = logement_service.get_best_discounts(discounts, booking_start, booking_end)
+    result = price_service.get_best_discounts(discounts, booking_start, booking_end)
     # Should select the best (highest value) for each type
     assert result["min_nights"] == d2
     assert result["days_before"] == d3  # d3 has higher days_before_min (10 vs 5)
@@ -526,7 +527,7 @@ def test_get_best_discounts_overlap_and_ties():
         value=15,
     )
     discounts = [d1, d2]
-    result = logement_service.get_best_discounts(discounts, today + timedelta(days=3), today + timedelta(days=4))
+    result = price_service.get_best_discounts(discounts, today + timedelta(days=3), today + timedelta(days=4))
     assert d1 in result["date_range"]
     assert d2 in result["date_range"]
 
@@ -539,7 +540,7 @@ def test_get_best_discounts_tie_min_nights():
         min_nights=4, value=20, days_before_min=None, days_before_max=None, start_date=None, end_date=None
     )
     discounts = [d1, d2]
-    result = logement_service.get_best_discounts(discounts, date.today(), date.today() + timedelta(days=5))
+    result = price_service.get_best_discounts(discounts, date.today(), date.today() + timedelta(days=5))
     # Should pick the last one if tie (as per current logic)
     assert result["min_nights"] == d2
 
@@ -551,7 +552,7 @@ def test_set_price_zero_nights():
     )
     start = date.today()
     end = start  # zero nights
-    result = logement_service.set_price(logement, start, end, 2, 0)
+    result = price_service.set_price(logement, start, end, 2, 0)
     assert result["total_price"] == 0
 
 
@@ -562,7 +563,7 @@ def test_set_price_zero_guests():
     )
     start = date.today()
     end = start + timedelta(days=2)
-    result = logement_service.set_price(logement, start, end, 0, 0)
+    result = price_service.set_price(logement, start, end, 0, 0)
     assert result["total_price"] >= 0
 
 
@@ -573,7 +574,7 @@ def test_set_price_no_discounts_or_custom_prices():
     )
     start = date.today()
     end = start + timedelta(days=2)
-    result = logement_service.set_price(logement, start, end, 2, 0)
+    result = price_service.set_price(logement, start, end, 2, 0)
     assert result["total_price"] > 0
 
 
@@ -590,7 +591,7 @@ def test_set_price_with_one_discount_exact():
     DiscountFactory(logement=logement, is_active=True, min_nights=1, value=10)
 
     # Call the service
-    result = logement_service.set_price(logement, start, end, 2, 0)
+    result = price_service.set_price(logement, start, end, 2, 0)
 
     # Manual calculation:
     nights = 2
@@ -601,16 +602,16 @@ def test_set_price_with_one_discount_exact():
     per_night = after_discount / nights  # 90
     guest_decimal = Decimal("2")
     tax_rate = min((Decimal(str(logement.tax)) / 100) * (per_night / guest_decimal), Decimal(str(logement.tax_max)))
-    taxAmount = tax_rate * guest_decimal * nights
+    tax_amount = tax_rate * guest_decimal * nights
     cleaning_fee = 20
-    subtotal = after_discount + extra_guest_fee + cleaning_fee + taxAmount  # 180 + 0 + 20 + 18 = 218
+    subtotal = after_discount + extra_guest_fee + cleaning_fee + tax_amount  # 180 + 0 + 20 + 18 = 218
     payment_fee = logement_service.get_payment_fee(subtotal)
     expected_total = subtotal + payment_fee
 
     assert result["number_of_nights"] == nights
     assert result["total_base_price"] == base_price
     assert sum(result["discount_totals"].values()) == discount
-    assert result["TotalextraGuestFee"] == 0
-    assert result["taxAmount"] == Decimal("12.06")  # 6.7% of 180
+    assert result["total_extra_guest_fee"] == 0
+    assert result["tax_amount"] == Decimal("12.06")  # 6.7% of 180
     assert result["payment_fee"] == payment_fee
     assert result["total_price"] == expected_total

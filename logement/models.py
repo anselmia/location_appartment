@@ -74,7 +74,7 @@ class Logement(models.Model):
     rules = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     adresse = models.CharField(max_length=255)
-    ville = models.ForeignKey(City, related_name="city", on_delete=models.SET_NULL, null=True, blank=True)
+    ville = models.ForeignKey(City, related_name="city", on_delete=models.PROTECT)
     statut = models.CharField(
         max_length=20,
         choices=[

@@ -11,6 +11,7 @@ from logement.tests.factories import (
     UserFactory,
 )
 from reservation.services import reservation_service
+from logement.services import price_service
 
 pytestmark = pytest.mark.django_db
 
@@ -211,16 +212,16 @@ def test_reservation_with_discount_and_custom_price():
     end = start + timedelta(days=1)
     DiscountFactory(logement=logement, is_active=True, min_nights=1, value=20)
     PriceFactory(logement=logement, date=start, value=80)
-    price_data = reservation_service.set_price(logement, start, end, 2, 0)
+    price_data = price_service.set_price(logement, start, end, 2, 0)
     resa = reservation_service.create_or_update_reservation(
-        logement, user, start, end, 2, 0, price_data["total_price"], price_data["taxAmount"]
+        logement, user, start, end, 2, 0, price_data["total_price"], price_data["tax_amount"]
     )
 
     price = (
         Decimal("80")
         - Decimal(str(16))  # Discount applied
         + Decimal(str(2 * logement.fee_per_extra_traveler))
-        + Decimal(str(price_data["taxAmount"]))
+        + Decimal(str(price_data["tax_amount"]))
         + Decimal(str(price_data["payment_fee"]))
         + Decimal(str(logement.cleaning_fee))
     )
@@ -233,15 +234,15 @@ def test_reservation_with_extra_guests_fee():
     user = UserFactory()
     start = date.today() + timedelta(days=2)
     end = start + timedelta(days=1)
-    price_data = reservation_service.set_price(logement, start, end, 4, 0)
+    price_data = price_service.set_price(logement, start, end, 4, 0)
     resa = reservation_service.create_or_update_reservation(
-        logement, user, start, end, 4, 0, price_data["total_price"], price_data["taxAmount"]
+        logement, user, start, end, 4, 0, price_data["total_price"], price_data["tax_amount"]
     )
 
     price = (
         Decimal(str(logement.price))
         + Decimal(str(2 * logement.fee_per_extra_traveler))
-        + Decimal(str(price_data["taxAmount"]))
+        + Decimal(str(price_data["tax_amount"]))
         + Decimal(str(price_data["payment_fee"]))
         + Decimal(str(logement.cleaning_fee))
     )
@@ -310,9 +311,9 @@ def test_booking_on_booking_limit():
     start = date.today() + timedelta(days=7)
     end = start + timedelta(days=7)
     # Should succeed
-    price_data = reservation_service.set_price(logement, start, start + timedelta(days=3), 2, 0)
+    price_data = price_service.set_price(logement, start, start + timedelta(days=3), 2, 0)
     reservation_service.validate_reservation_inputs(
-        logement, user, start, end, 2, 0, price_data["total_price"], price_data["taxAmount"]
+        logement, user, start, end, 2, 0, price_data["total_price"], price_data["tax_amount"]
     )
     # Should fail if before booking_limit
     with pytest.raises(ValueError):
@@ -329,9 +330,9 @@ def test_min_max_booking_days():
     with pytest.raises(ValueError):
         reservation_service.validate_reservation_inputs(logement, user, start, start + timedelta(days=2), 2, 0, 100, 10)
     # Valid: use the real calculated price/tax
-    price_data = reservation_service.set_price(logement, start, start + timedelta(days=3), 2, 0)
+    price_data = price_service.set_price(logement, start, start + timedelta(days=3), 2, 0)
     reservation_service.validate_reservation_inputs(
-        logement, user, start, start + timedelta(days=3), 2, 0, price_data["total_price"], price_data["taxAmount"]
+        logement, user, start, start + timedelta(days=3), 2, 0, price_data["total_price"], price_data["tax_amount"]
     )
 
 
@@ -372,9 +373,9 @@ def test_booking_with_all_fees():
     user = UserFactory()
     start = date.today() + timedelta(days=2)
     end = start + timedelta(days=2)
-    price_data = reservation_service.set_price(logement, start, end, 4, 0)
+    price_data = price_service.set_price(logement, start, end, 4, 0)
     resa = reservation_service.create_or_update_reservation(
-        logement, user, start, end, 4, 0, price_data["total_price"], price_data["taxAmount"]
+        logement, user, start, end, 4, 0, price_data["total_price"], price_data["tax_amount"]
     )
     assert resa.price > 0
     assert resa.tax <= Decimal("56")  # 2 nights * 7 max tax per night * 4 adults

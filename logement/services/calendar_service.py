@@ -1,22 +1,32 @@
 import requests
-
 from icalendar import Calendar, Event
 from datetime import datetime, date, time
-
 from django.conf import settings
 from django.utils.timezone import make_aware
 from django.shortcuts import get_object_or_404
-
 from reservation.models import airbnb_booking, booking_booking
 from reservation.services.reservation_service import delete_old_reservations
 from reservation.models import Reservation, Logement
-
+from logement.services.logement_service import get_logements
 import logging
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
 
 def generate_ical(code):
+    """
+    Generate an iCal file for a given logement code.
+
+    Args:
+        code (str): The unique code of the logement.
+
+    Returns:
+        bytes: The iCal file content in bytes.
+
+    Raises:
+        Exception: If logement is not found or iCal generation fails.
+    """
     try:
         logement = get_object_or_404(Logement, code=code)
 
@@ -44,6 +54,20 @@ def generate_ical(code):
 
 
 def sync_external_ical(logement, url, source):
+    """
+    Synchronize external iCal data for a logement from a given URL and source.
+
+    Args:
+        logement (Logement): The logement instance to sync for.
+        url (str): The iCal feed URL.
+        source (str): The source identifier (e.g., 'airbnb', 'booking').
+
+    Returns:
+        tuple: (added, updated, deleted) counts of reservations.
+
+    Raises:
+        ValueError: If iCal data is empty or sync fails.
+    """
     try:
         ical_data = requests.get(url).text
         if not ical_data:
@@ -59,6 +83,20 @@ def sync_external_ical(logement, url, source):
 
 
 def process_calendar(logement, calendar, source):
+    """
+    Process an iCal calendar object and update reservations for a logement.
+
+    Args:
+        logement (Logement): The logement instance.
+        calendar (Calendar): The parsed iCal Calendar object.
+        source (str): The source identifier (e.g., 'airbnb', 'booking').
+
+    Returns:
+        tuple: (added, updated, deleted) counts of reservations.
+
+    Raises:
+        ValueError: If processing fails.
+    """
     added = 0
     updated = 0
     try:
@@ -133,3 +171,28 @@ def process_calendar(logement, calendar, source):
     except Exception as e:
         logger.error(f"Error processing calendar from {source}: {str(e)}")
         raise ValueError(f"Error processing calendar from {source}: {str(e)}")
+
+
+def get_calendar_context(user):
+    logements = get_logements(user)
+    if not logements.exists():
+        return {"redirect": True}
+    return {
+        "logements": logements,
+        "logements_json": [{"id": l.id, "name": l.name, "calendar_link": l.calendar_link} for l in logements],
+    }
+
+
+def export_ical_service(code: str):
+    logger = logging.getLogger(__name__)
+    try:
+        ics_content = generate_ical(code)
+        if ics_content:
+            response = HttpResponse(ics_content, content_type="text/calendar")
+            response["Content-Disposition"] = f"attachment; filename={code}_calendar.ics"
+            return {"success": True, "response": response}
+        else:
+            return {"success": False, "error": "Aucune donnée à exporter", "status": 204}
+    except Exception as e:
+        logger.exception(f"Error exporting iCal:  {e}")
+        return {"success": False, "error": "Erreur interne serveur", "status": 500}

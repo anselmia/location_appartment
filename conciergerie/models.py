@@ -16,7 +16,7 @@ class Conciergerie(models.Model):
     # Informations de contact
     adresse = models.TextField("Adresse postale")
     code_postal = models.CharField("Code postal", max_length=10)
-    ville = models.ForeignKey(City, related_name="conciergeries", on_delete=models.SET_NULL, null=True, blank=True)
+    ville = models.ForeignKey(City, related_name="conciergeries", on_delete=models.PROTECT)
     pays = models.CharField("Pays", max_length=100, default="France")
     telephone = models.CharField("Téléphone", max_length=20)
     email = models.EmailField("Email", unique=True)

@@ -3,6 +3,8 @@ import logging
 from django.urls import reverse
 from django.conf import settings
 from django.db import transaction
+from django.core.mail import mail_admins
+from typing import Any
 
 from common.services.email_service import (
     send_mail_on_new_reservation,
@@ -53,7 +55,14 @@ def get_platform_fee(price):
     return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
 
 
-def get_refund(refund_id):
+def get_refund(refund_id: str) -> Any:
+    """
+    Retrieve a Stripe refund object by its ID.
+    Args:
+        refund_id (str): The Stripe refund ID.
+    Returns:
+        Refund object if found and succeeded, else None.
+    """
     try:
         refund = stripe.Refund.retrieve(refund_id)
         if not refund or not getattr(refund, "id", None):
@@ -70,7 +79,14 @@ def get_refund(refund_id):
         return None
 
 
-def get_transfer(transfer_id):
+def get_transfer(transfer_id: str) -> Any:
+    """
+    Retrieve a Stripe transfer object by its ID.
+    Args:
+        transfer_id (str): The Stripe transfer ID.
+    Returns:
+        Transfer object if found and succeeded, else None.
+    """
     try:
         transfer = stripe.Transfer.retrieve(transfer_id)
         if not transfer or not getattr(transfer, "id", None):
@@ -87,7 +103,14 @@ def get_transfer(transfer_id):
         return None
 
 
-def get_payment_intent(payment_intent_id):
+def get_payment_intent(payment_intent_id: str) -> Any:
+    """
+    Retrieve a Stripe PaymentIntent object by its ID.
+    Args:
+        payment_intent_id (str): The Stripe PaymentIntent ID.
+    Returns:
+        PaymentIntent object if found and succeeded, else None.
+    """
     try:
         intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
         if not intent or not getattr(intent, "id", None):
@@ -104,7 +127,14 @@ def get_payment_intent(payment_intent_id):
         return None
 
 
-def get_session(session_id):
+def get_session(session_id: str) -> Any:
+    """
+    Retrieve a Stripe Checkout Session by its ID.
+    Args:
+        session_id (str): The Stripe session ID.
+    Returns:
+        Session object if found and complete, else None.
+    """
     try:
         session = stripe.checkout.Session.retrieve(session_id)
         if not session or not getattr(session, "id", None):
@@ -121,7 +151,17 @@ def get_session(session_id):
         return None
 
 
-def create_stripe_checkout_session_with_deposit(reservation, request):
+def create_stripe_checkout_session_with_deposit(reservation: Any, request: Any) -> dict:
+    """
+    Create a Stripe Checkout Session for a reservation deposit.
+    Args:
+        reservation: The reservation object.
+        request: The Django request object.
+    Returns:
+        dict: Contains checkout_session_url and session_id.
+    Raises:
+        Exception: If session creation fails.
+    """
     from common.services.network import get_client_ip
 
     ip = get_client_ip(request)
@@ -204,7 +244,17 @@ def create_stripe_checkout_session_with_deposit(reservation, request):
         raise
 
 
-def send_stripe_payment_link(reservation, request):
+def send_stripe_payment_link(reservation: Any, request: Any) -> str:
+    """
+    Send a Stripe payment link to the user for a reservation.
+    Args:
+        reservation: The reservation object.
+        request: The Django request object.
+    Returns:
+        str: The Stripe Checkout session URL.
+    Raises:
+        Exception: If link creation or email sending fails.
+    """
     if not reservation.user.email:
         raise ValueError(f"L'utilisateur n'a pas d'e-mail lié à la réservation {reservation.code}")
 
@@ -230,7 +280,14 @@ def send_stripe_payment_link(reservation, request):
         raise
 
 
-def is_valid_stripe_customer(customer_id):
+def is_valid_stripe_customer(customer_id: str) -> bool:
+    """
+    Check if a Stripe customer ID is valid and not deleted.
+    Args:
+        customer_id (str): The Stripe customer ID.
+    Returns:
+        bool: True if valid, False otherwise.
+    """
     try:
         customer = stripe.Customer.retrieve(customer_id)
         # Optional: check if customer is not deleted
@@ -246,7 +303,17 @@ def is_valid_stripe_customer(customer_id):
         return False
 
 
-def create_stripe_customer_if_not_exists(user, request):
+def create_stripe_customer_if_not_exists(user: Any, request: Any) -> str:
+    """
+    Create a Stripe customer for the user if one does not exist.
+    Args:
+        user: The user object.
+        request: The Django request object.
+    Returns:
+        str: The Stripe customer ID.
+    Raises:
+        Exception: If customer creation fails.
+    """
     try:
         from common.services.network import get_client_ip
 
@@ -285,7 +352,26 @@ def create_stripe_customer_if_not_exists(user, request):
         raise
 
 
-def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservation, currency="eur"):
+def charge_payment(
+    saved_payment_method_id: str,
+    amount_cents: int,
+    customer_id: str,
+    reservation: Any,
+    currency: str = "eur",
+) -> Any:
+    """
+    Charge a saved payment method for a reservation deposit.
+    Args:
+        saved_payment_method_id (str): The Stripe PaymentMethod ID.
+        amount_cents (int): Amount to charge in cents.
+        customer_id (str): The Stripe customer ID.
+        reservation: The reservation object.
+        currency (str): Currency code (default 'eur').
+    Returns:
+        PaymentIntent object if successful.
+    Raises:
+        Exception: If payment fails.
+    """
     task, _ = PaymentTask.objects.get_or_create(
         reservation=reservation,
         type="charge_deposit",
@@ -377,7 +463,14 @@ def charge_payment(saved_payment_method_id, amount_cents, customer_id, reservati
         raise
 
 
-def charge_reservation(reservation):
+def charge_reservation(reservation: Any) -> None:
+    """
+    Transfer funds to admin and owner for a reservation, if eligible.
+    Args:
+        reservation: The reservation object.
+    Raises:
+        Exception: If transfer fails.
+    """
     try:
         logger.info(f"💼 Preparing transfer for reservation {reservation.code}")
 
@@ -528,7 +621,18 @@ def charge_reservation(reservation):
         raise
 
 
-def refund_payment(reservation, refund="full", amount_cents=None):
+def refund_payment(reservation: Any, refund: str = "full", amount_cents: Any = None) -> Any:
+    """
+    Refund a payment for a reservation.
+    Args:
+        reservation: The reservation object.
+        refund (str): Refund type ('full' or custom).
+        amount_cents (int, optional): Amount to refund in cents.
+    Returns:
+        Refund object if successful.
+    Raises:
+        Exception: If refund fails.
+    """
     task, _ = PaymentTask.objects.get_or_create(
         reservation=reservation,
         type="refund",
@@ -575,6 +679,11 @@ def refund_payment(reservation, refund="full", amount_cents=None):
 
 
 def handle_charge_refunded(data: StripeChargeEventData):
+    """
+    Handle a Stripe charge.refunded webhook event.
+    Args:
+        data (StripeChargeEventData): The event data.
+    """
     from reservation.models import Reservation
 
     reservation_code = None
@@ -638,7 +747,12 @@ def handle_charge_refunded(data: StripeChargeEventData):
         )
 
 
-def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
+def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
+    """
+    Handle a Stripe payment_intent.succeeded webhook event for deposit.
+    Args:
+        data (StripePaymentIntentEventData): The event data.
+    """
     from reservation.models import Reservation
 
     reservation_code = None
@@ -687,7 +801,12 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData):
         )
 
 
-def handle_payment_failed(data: StripePaymentIntentEventData):
+def handle_payment_failed(data: StripePaymentIntentEventData) -> None:
+    """
+    Handle a Stripe payment_intent.payment_failed webhook event.
+    Args:
+        data (StripePaymentIntentEventData): The event data.
+    """
     from reservation.models import Reservation
 
     try:
@@ -741,7 +860,12 @@ def handle_payment_failed(data: StripePaymentIntentEventData):
         logger.exception(f"❌ Unexpected error handling payment_intent.payment_failed event: {str(e)}")
 
 
-def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
+def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> None:
+    """
+    Handle a Stripe checkout.session.completed webhook event.
+    Args:
+        data (StripeCheckoutSessionEventData): The event data.
+    """
     from reservation.models import Reservation
 
     reservation_code = None
@@ -816,7 +940,12 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData):
         task.mark_failure(e, payment_intent_id)
 
 
-def handle_transfer_created(data: StripeTransferEventData):
+def handle_transfer_created(data: StripeTransferEventData) -> None:
+    """
+    Handle a Stripe transfer.paid webhook event.
+    Args:
+        data (StripeTransferEventData): The event data.
+    """
     from reservation.models import Reservation
 
     try:
@@ -827,11 +956,11 @@ def handle_transfer_created(data: StripeTransferEventData):
         metadata = data.object.metadata or {}
         reservation_code = metadata.get("code")
         if not reservation_code:
-            logger.warning("⚠️ No reservation code found in the refund event metadata.")
+            logger.warning("⚠️ No reservation code found in the transfer event metadata.")
             return
         transfer_user = metadata.get("transfer")
         if not transfer_user:
-            logger.warning("⚠️ No reservation user found in the refund event metadata.")
+            logger.warning("⚠️ No reservation user found in the transfer event metadata.")
             return
 
         logger.info(f"✅ Transfer succeeded: {transfer_id} | {amount:.2f} {currency} to {destination}")
@@ -872,8 +1001,12 @@ def handle_transfer_created(data: StripeTransferEventData):
         logger.exception(f"❌ Error handling transfer.paid: {e}")
 
 
-def handle_transfer_failed(data: StripeTransferEventData):
-    from reservation.models import Reservation
+def handle_transfer_failed(data: StripeTransferEventData) -> None:
+    """
+    Handle a Stripe transfer.failed webhook event.
+    Args:
+        data (StripeTransferEventData): The event data.
+    """
 
     try:
         transfer_id = data.object.id
@@ -881,28 +1014,35 @@ def handle_transfer_failed(data: StripeTransferEventData):
         currency = data.object.currency.upper()
         destination = data.object.destination
         failure_message = getattr(data.object, "failure_message", "Unknown error")
-        transfer_group = data.object.transfer_group
+
+        metadata = data.object.metadata or {}
+        reservation_code = metadata.get("code")
+        if not reservation_code:
+            logger.warning("⚠️ No reservation code found in the transfer event metadata.")
+            return
+
+        transfer_user = metadata.get("transfer")
+        if not transfer_user:
+            logger.warning("⚠️ No reservation user found in the transfer event metadata.")
+            return
 
         logger.warning(
             f"❌ Transfer FAILED: {transfer_id} | {amount:.2f} {currency} to {destination} | Reason: {failure_message}"
         )
 
-        if transfer_group and transfer_group.startswith("group_"):
-            reservation_code = transfer_group.replace("group_", "")
-            try:
-                reservation = Reservation.objects.get(code=reservation_code)
-                reservation.transfer_status = "failed"
-                reservation.save(update_fields=["transfer_status"])
-                logger.warning(f"🔁 Transfer marked as failed on reservation {reservation_code}")
-                # Optional: notify admin via email or dashboard
-            except Reservation.DoesNotExist:
-                logger.warning(f"⚠️ Reservation {reservation_code} not found for failed transfer {transfer_id}")
-        else:
-            logger.warning(f"⚠️ No valid transfer group in failed transfer {transfer_id}")
+        mail_admins(
+            subject=f"[Transfer Integrity] Transfer to {transfer_user} failed for reservation {reservation_code}",
+            message=f"Transfer failed on Stripe for reservation {reservation_code} (transfer_id={transfer_id}).",
+        )
 
     except Exception as e:
         logger.exception(f"❌ Error handling transfer.failed: {e}")
 
 
-def retrieve_balance():
+def retrieve_balance() -> Any:
+    """
+    Retrieve the current Stripe account balance.
+    Returns:
+        The Stripe balance object.
+    """
     return stripe.Balance.retrieve()

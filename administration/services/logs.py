@@ -4,17 +4,20 @@ import os
 LOG_LINE_PATTERN = re.compile(r"\[(.*?)\] (\w+) ([^\s]+) \((.*?)\) (.*)")
 
 
-def parse_log_file(path, level=None, logger_filter=None, query=None):
+def parse_log_file(path=None, level=None, logger_filter=None, query=None, lines=None):
     logs = []
     all_loggers = set()
 
-    if not os.path.exists(path):
+    if lines is not None:
+        # Accepts a list of lines (already in correct order for pagination)
+        lines_iter = reversed(lines)
+    elif path and os.path.exists(path):
+        with open(path, encoding="utf-8", errors="replace") as f:
+            lines_iter = reversed(f.readlines())
+    else:
         return logs, all_loggers
 
-    with open(path, encoding="utf-8", errors="replace") as f:
-        lines = reversed(f.readlines())
-
-    for line in lines:
+    for line in lines_iter:
         match = LOG_LINE_PATTERN.match(line)
         if not match:
             continue

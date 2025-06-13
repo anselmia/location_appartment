@@ -4,6 +4,7 @@ from django.core.cache import cache
 from decimal import Decimal
 from datetime import timedelta, date, datetime
 from dateutil.relativedelta import relativedelta
+from typing import Any, List, Tuple, Optional
 
 from django.utils import timezone
 from django.db.models.functions import ExtractYear, ExtractMonth
@@ -11,7 +12,7 @@ from django.db.models import Q, Sum, F, ExpressionWrapper, DurationField
 
 from reservation.models import Reservation, airbnb_booking, booking_booking, Logement
 from logement.models import CloseDate
-from logement.services.logement import set_price
+from logement.services.price_service import set_price
 from payment.services.payment_service import refund_payment
 
 
@@ -20,7 +21,18 @@ CACHE_TIMEOUT_SHORT = 60 * 5  # 5 minutes
 CACHE_TIMEOUT_LONG = 60 * 60 * 24  # 24 hours
 
 
-def get_reservations(user, logement_id=None):
+def get_reservations(user: Any, logement_id: Optional[int] = None) -> Any:
+    """
+    Retrieve reservations for a user, optionally filtered by logement.
+    Uses caching for efficiency.
+    Args:
+        user: The user object.
+        logement_id: Optional logement ID to filter by.
+    Returns:
+        QuerySet of Reservation objects.
+    Raises:
+        Exception: If retrieval fails.
+    """
     cache_key = f"reservations_{user.id}_{logement_id or 'all'}"
     result = cache.get(cache_key)
     if result is not None:
@@ -46,7 +58,22 @@ def get_reservations(user, logement_id=None):
         raise
 
 
-def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=None):
+def get_valid_reservations_for_admin(
+    user: Any, logement_id: Optional[int] = None, year: Optional[int] = None, month: Optional[int] = None
+) -> Any:
+    """
+    Retrieve valid (non-pending) reservations for an admin, optionally filtered by logement, year, and month.
+    Uses caching for efficiency.
+    Args:
+        user: The admin user object.
+        logement_id: Optional logement ID to filter by.
+        year: Optional year to filter by.
+        month: Optional month to filter by.
+    Returns:
+        QuerySet of Reservation objects.
+    Raises:
+        Exception: If retrieval fails.
+    """
     cache_key = f"valid_resa_admin_{user.id}_{logement_id or 'all'}_{year or 'all'}_{month or 'all'}"
     result = cache.get(cache_key)
     if result is not None:
@@ -73,7 +100,16 @@ def get_valid_reservations_for_admin(user, logement_id=None, year=None, month=No
         raise
 
 
-def get_valid_reservations_in_period(logement_id, start, end):
+def get_valid_reservations_in_period(logement_id: int, start: date, end: date) -> Any:
+    """
+    Get all valid (confirmed or finished) reservations for a logement in a given period.
+    Args:
+        logement_id: The logement ID.
+        start: Start date.
+        end: End date.
+    Returns:
+        QuerySet of Reservation objects.
+    """
     return Reservation.objects.filter(
         logement_id=logement_id,
         start__lte=end,
@@ -81,7 +117,18 @@ def get_valid_reservations_in_period(logement_id, start, end):
     ).filter(Q(statut="confirmee") | Q(statut="terminee"))
 
 
-def get_night_booked_in_period(logements, logement_id, start, end):
+def get_night_booked_in_period(logements: Any, logement_id: Optional[int], start: date, end: date) -> int:
+    """
+    Calculate the total number of nights booked for a logement or list of logements in a period.
+    Uses cache for efficiency.
+    Args:
+        logements: QuerySet or list of logements.
+        logement_id: Optional logement ID.
+        start: Start date.
+        end: End date.
+    Returns:
+        int: Total nights booked.
+    """
     cache_key = f"nights_booked_{logement_id or 'all'}_{start}_{end}"
     result = cache.get(cache_key)
     if result is not None:
@@ -123,13 +170,26 @@ def get_night_booked_in_period(logements, logement_id, start, end):
     return total_nights
 
 
-def get_user_reservation(user):
+def get_user_reservation(user: Any) -> Any:
+    """
+    Get all reservations for a user, ordered by start date (descending).
+    Args:
+        user: The user object.
+    Returns:
+        QuerySet of Reservation objects.
+    """
     return Reservation.objects.filter(
         user=user, statut__in=["confirmee", "annulee", "terminee", "echec_paiement"]
     ).order_by("-start")
 
 
-def get_reservation_years_and_months():
+def get_reservation_years_and_months() -> Tuple[List[int], List[int]]:
+    """
+    Get all years and months with at least one reservation.
+    Uses cache for efficiency.
+    Returns:
+        Tuple of (years, months) lists.
+    """
     cache_key = "reservation_years_months"
     result = cache.get(cache_key)
     if result:
@@ -149,16 +209,15 @@ def get_reservation_years_and_months():
         return [], []
 
 
-def get_available_logement_in_period(start, end, logements):
+def get_available_logement_in_period(start: date, end: date, logements: Any) -> Any:
     """
-    Retourne les logements disponibles dans une période donnée,
-    en excluant les conflits de réservation, les fermetures, et en respectant la limite
-    annuelle de 120 jours pour les résidences principales.
-
-    :param start: date de début
-    :param end: date de fin
-    :param logements: queryset de Logement à filtrer
-    :return: queryset de Logement disponibles, triés par nom
+    Return logements available in a given period, excluding conflicts and respecting annual limits.
+    Args:
+        start: Start date.
+        end: End date.
+        logements: QuerySet of Logement to filter.
+    Returns:
+        QuerySet of available Logement objects, ordered by name.
     """
     try:
         if not start or not end:
@@ -239,7 +298,16 @@ def get_available_logement_in_period(start, end, logements):
         return Logement.objects.none()
 
 
-def get_booked_dates(logement, user=None):
+def get_booked_dates(logement: Any, user: Optional[Any] = None) -> Tuple[List[str], List[str]]:
+    """
+    Get all booked start and end dates for a logement, optionally for a user.
+    Uses cache for efficiency.
+    Args:
+        logement: The logement object.
+        user: Optional user object.
+    Returns:
+        Tuple of (reserved_start, reserved_end) lists as ISO date strings.
+    """
     try:
         cache_key = f"booked_dates_{logement.id}_{user.id if user else 'anon'}"
         result = cache.get(cache_key)
@@ -336,7 +404,17 @@ def get_booked_dates(logement, user=None):
         return [], []
 
 
-def is_period_booked(start, end, logement_id, user):
+def is_period_booked(start: date, end: date, logement_id: int, user: Any) -> bool:
+    """
+    Check if a period is already booked for a logement, considering all sources.
+    Args:
+        start: Start date.
+        end: End date.
+        logement_id: The logement ID.
+        user: The user object.
+    Returns:
+        bool: True if booked, False otherwise.
+    """
     try:
         logger.info(f"Checking if period {start} to {end} is booked for logement {logement_id}.")
 
@@ -371,7 +449,32 @@ def is_period_booked(start, end, logement_id, user):
         return True
 
 
-def create_or_update_reservation(logement, user, start, end, guest_adult, guest_minor, price, tax):
+def create_or_update_reservation(
+    logement: Any,
+    user: Any,
+    start: date,
+    end: date,
+    guest_adult: int,
+    guest_minor: int,
+    price: Decimal,
+    tax: Decimal,
+) -> Any:
+    """
+    Create or update a reservation for a user and logement.
+    Args:
+        logement: The logement object.
+        user: The user object.
+        start: Start date.
+        end: End date.
+        guest_adult: Number of adult guests.
+        guest_minor: Number of minor guests.
+        price: Reservation price.
+        tax: Reservation tax.
+    Returns:
+        Reservation object.
+    Raises:
+        Exception: If creation or update fails.
+    """
     try:
         logger.info(
             f"Creating or updating reservation for logement {logement.id}, user {user}, dates {start} to {end}."
@@ -408,8 +511,31 @@ def create_or_update_reservation(logement, user, start, end, guest_adult, guest_
 
 
 def validate_reservation_inputs(
-    logement, user, start, end, guest_adult, guest_minor, expected_price=None, expected_tax=None
-):
+    logement: Any,
+    user: Any,
+    start: date,
+    end: date,
+    guest_adult: int,
+    guest_minor: int,
+    expected_price: Optional[Decimal] = None,
+    expected_tax: Optional[Decimal] = None,
+) -> bool:
+    """
+    Validate reservation input data and raise ValueError if invalid.
+    Args:
+        logement: The logement object.
+        user: The user object.
+        start: Start date.
+        end: End date.
+        guest_adult: Number of adult guests.
+        guest_minor: Number of minor guests.
+        expected_price: Expected price (optional).
+        expected_tax: Expected tax (optional).
+    Returns:
+        bool: True if valid, raises otherwise.
+    Raises:
+        ValueError: If any validation fails.
+    """
     try:
         logger.info(
             f"Validating reservation inputs for logement {logement.id}, user {user.id}, dates {start} to {end}."
@@ -448,7 +574,7 @@ def validate_reservation_inputs(
 
         price_data = set_price(logement, start, end, guest_adult, guest_minor)
         real_price = price_data["total_price"]
-        real_tax = price_data["taxAmount"]
+        real_tax = price_data["tax_amount"]
 
         if expected_price and expected_tax:
             if abs(Decimal(expected_price) - real_price) > Decimal("0.01") or abs(
@@ -462,7 +588,14 @@ def validate_reservation_inputs(
         raise
 
 
-def mark_reservation_cancelled(reservation):
+def mark_reservation_cancelled(reservation: Any) -> None:
+    """
+    Mark a reservation as cancelled and save it.
+    Args:
+        reservation: The reservation object.
+    Raises:
+        Exception: If update fails.
+    """
     try:
         logger.info(f"Marking reservation {reservation.code} as cancelled.")
         reservation.statut = "annulee"
@@ -473,7 +606,16 @@ def mark_reservation_cancelled(reservation):
         raise
 
 
-def cancel_and_refund_reservation(reservation):
+def cancel_and_refund_reservation(reservation: Any) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Cancel a reservation and process a refund if eligible.
+    Args:
+        reservation: The reservation object.
+    Returns:
+        Tuple of (success_message, error_message).
+    Raises:
+        Exception: If cancellation or refund fails.
+    """
     try:
         today = timezone.now().date()
         logger.info(f"Attempting to cancel and refund reservation {reservation.code}")
@@ -512,9 +654,16 @@ def cancel_and_refund_reservation(reservation):
         raise
 
 
-def delete_old_reservations(event_dates, source):
+def delete_old_reservations(event_dates: List[Tuple[Any, Any]], source: str) -> int:
     """
     Deletes future reservations that are no longer present in the calendar.
+    Args:
+        event_dates: List of (start, end) tuples from the calendar.
+        source: Source string ('airbnb' or 'booking').
+    Returns:
+        int: Number of deleted reservations.
+    Raises:
+        ValueError: If deletion fails.
     """
     try:
         deleted = 0

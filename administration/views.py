@@ -80,22 +80,62 @@ def traffic_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def log_viewer(request):
+    import itertools
+
     log_file_path = os.path.join(settings.LOG_DIR, "django.log")
     selected_level = request.GET.get("level")
     selected_logger = request.GET.get("logger")
     query = request.GET.get("query", "").strip().lower()
 
+    # Pagination params
     try:
+        page = int(request.GET.get("page", 1))
+        page_size = int(request.GET.get("page_size", 500))
+    except ValueError:
+        page = 1
+        page_size = 500
+
+    def tail_lines(file_path, n):
+        """Read last n lines of a file efficiently."""
+        with open(file_path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            end = f.tell()
+            lines = []
+            size = 1024
+            block = -1
+            data = b""
+            while len(lines) <= n and abs(block * size) < end:
+                f.seek(block * size, os.SEEK_END)
+                data = f.read(size) + data
+                lines = data.splitlines()
+                block -= 1
+            return [l.decode(errors="replace") for l in lines[-n:]]
+
+    try:
+        # Read enough lines for pagination
+        total_lines_to_read = page * page_size
+        raw_lines = tail_lines(log_file_path, total_lines_to_read)
+        # Reverse to get newest first
+        raw_lines = raw_lines[::-1]
+        # Paginate
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_lines = raw_lines[start:end]
+        # Use parse_log_file on just these lines
         logs, all_loggers = parse_log_file(
-            path=log_file_path,
+            lines=page_lines,  # You need to update parse_log_file to accept 'lines' param
             level=selected_level,
             logger_filter=selected_logger,
             query=query,
         )
+        has_next = end < len(raw_lines)
+        has_prev = page > 1
     except Exception as e:
         logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
         logs = []
         all_loggers = []
+        has_next = False
+        has_prev = False
 
     return render(
         request,
@@ -106,6 +146,10 @@ def log_viewer(request):
             "levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
             "selected_level": selected_level,
             "query": query,
+            "page": page,
+            "page_size": page_size,
+            "has_next": has_next,
+            "has_prev": has_prev,
         },
     )
 
