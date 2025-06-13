@@ -34,7 +34,7 @@
               <div class="me-2 fs-4">💰</div>
               <h5 class="mb-0 fw-semibold text-dark">Solde Stripe actuel</h5>
             </div>
-            {% if stripe_balance_available or stripe_balance_pending %}
+            {% if stripe_balance_available is not None or stripe_balance_pending is not None %}
               <ul class="list-unstyled ms-1 mb-0">
                 <li class="mb-1">
                   ✅ <strong>Disponible :</strong>
