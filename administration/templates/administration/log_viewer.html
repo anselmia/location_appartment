@@ -79,34 +79,64 @@
             </table>
         </div>
         <div class="d-flex justify-content-between align-items-center mt-3">
-            <form method="get" class="mb-0">
-                <!-- Keep filters when paginating -->
-                <input type="hidden" name="level" value="{{ selected_level }}">
-                <input type="hidden" name="logger" value="{{ selected_logger }}">
-                <input type="hidden" name="query" value="{{ query }}">
-                {% if has_prev %}
-                    <button type="submit"
-                            name="page"
-                            value="{{ page|add:'-1' }}"
-                            class="btn btn-primary btn-sm">« Précédent</button>
-                {% else %}
-                    <button type="button" class="btn btn-secondary btn-sm" disabled>« Précédent</button>
-                {% endif %}
-            </form>
-            <span>Page {{ page }}</span>
-            <form method="get" class="mb-0">
-                <input type="hidden" name="level" value="{{ selected_level }}">
-                <input type="hidden" name="logger" value="{{ selected_logger }}">
-                <input type="hidden" name="query" value="{{ query }}">
-                {% if has_next %}
-                    <button type="submit"
-                            name="page"
-                            value="{{ page|add:'1' }}"
-                            class="btn btn-primary btn-sm">Suivant »</button>
-                {% else %}
-                    <button type="button" class="btn btn-secondary btn-sm" disabled>Suivant »</button>
-                {% endif %}
-            </form>
+            {% if paginator and page_obj %}
+                <nav aria-label="Pagination">
+                    <ul class="pagination-list mb-0">
+                        {# First page #}
+                        {% if page_obj.number > 1 %}
+                            <li class="page-item">
+                                <a href="?page=1&level={{ selected_level|default:'None' }}&logger={% if selected_logger and selected_logger != '' and selected_logger != 'Tous' %}{{ selected_logger }}{% else %}None{% endif %}&query={{ query }}">««</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span>««</span>
+                            </li>
+                        {% endif %}
+                        {# Previous page #}
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{ page_obj.previous_page_number }}&level={{ selected_level|default:'None' }}&logger={% if selected_logger and selected_logger != '' and selected_logger != 'Tous' %}{{ selected_logger }}{% else %}None{% endif %}&query={{ query }}">«</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span>«</span>
+                            </li>
+                        {% endif %}
+                        {# Page numbers #}
+                        {% for num in paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span>{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a href="?page={{ num }}&level={{ selected_level|default:'None' }}&logger={% if selected_logger and selected_logger != '' and selected_logger != 'Tous' %}{{ selected_logger }}{% else %}None{% endif %}&query={{ query }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {# Next page #}
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{ page_obj.next_page_number }}&level={{ selected_level|default:'None' }}&logger={% if selected_logger and selected_logger != '' and selected_logger != 'Tous' %}{{ selected_logger }}{% else %}None{% endif %}&query={{ query }}">»</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span>»</span>
+                            </li>
+                        {% endif %}
+                        {# Last page #}
+                        {% if page_obj.number < paginator.num_pages %}
+                            <li class="page-item">
+                                <a href="?page={{ paginator.num_pages }}&level={{ selected_level|default:'None' }}&logger={% if selected_logger and selected_logger != '' and selected_logger != 'Tous' %}{{ selected_logger }}{% else %}None{% endif %}&query={{ query }}">»»</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span>»»</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django.core.paginator import Paginator
 from django.db.models import Sum, Q
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncDate
 from django.http import JsonResponse
@@ -28,7 +29,7 @@ from payment.services.payment_service import retrieve_balance
 
 from reservation.models import Reservation
 
-from administration.services.logs import parse_log_file
+from administration.services.logs import parse_log_file, count_lines
 
 from administration.services.traffic import get_traffic_dashboard_data
 from administration.forms import (
@@ -80,14 +81,15 @@ def traffic_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def log_viewer(request):
-    import itertools
-
     log_file_path = os.path.join(settings.LOG_DIR, "django.log")
-    selected_level = request.GET.get("level")
-    selected_logger = request.GET.get("logger")
-    query = request.GET.get("query", "").strip().lower()
+    selected_level = request.GET.get("level") if request.GET.get("level") != "None" else None
+    selected_logger = request.GET.get("logger") if request.GET.get("logger") != "None" else None
+    query = (
+        request.GET.get("query", "").strip().lower()
+        if request.GET.get("query") and request.GET.get("query").strip().lower() != ""
+        else None
+    )
 
-    # Pagination params
     try:
         page = int(request.GET.get("page", 1))
         page_size = int(request.GET.get("page_size", 500))
@@ -95,61 +97,63 @@ def log_viewer(request):
         page = 1
         page_size = 500
 
-    def tail_lines(file_path, n):
-        """Read last n lines of a file efficiently."""
-        with open(file_path, "rb") as f:
-            f.seek(0, os.SEEK_END)
-            end = f.tell()
-            lines = []
-            size = 1024
-            block = -1
-            data = b""
-            while len(lines) <= n and abs(block * size) < end:
-                f.seek(block * size, os.SEEK_END)
-                data = f.read(size) + data
-                lines = data.splitlines()
-                block -= 1
-            return [l.decode(errors="replace") for l in lines[-n:]]
+    def read_all_lines(file_path):
+        """Read all lines of a file."""
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            return f.readlines()
 
     try:
-        # Read enough lines for pagination
-        total_lines_to_read = page * page_size
-        raw_lines = tail_lines(log_file_path, total_lines_to_read)
-        # Reverse to get newest first
-        raw_lines = raw_lines[::-1]
-        # Paginate
-        start = (page - 1) * page_size
-        end = start + page_size
-        page_lines = raw_lines[start:end]
-        # Use parse_log_file on just these lines
+        total_lines = count_lines(log_file_path)
+        if total_lines == 0:
+            messages.error(request, "Le fichier de log est vide.")
+            return render(
+                request,
+                "administration/log_viewer.html",
+                {
+                    "logs": [],
+                    "loggers": [],
+                    "levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                    "selected_level": selected_level,
+                    "query": query,
+                    "page": page,
+                    "page_size": page_size,
+                    "has_next": False,
+                    "has_prev": False,
+                    "paginator": None,
+                },
+            )
+
+        # Read all lines from the log file
+        raw_lines = read_all_lines(log_file_path)
+        raw_lines = raw_lines[::-1]  # Newest first
+        # Parse all lines into log entries (multi-line aware)
         logs, all_loggers = parse_log_file(
-            lines=page_lines,  # You need to update parse_log_file to accept 'lines' param
-            level=selected_level,
-            logger_filter=selected_logger,
-            query=query,
+            lines=raw_lines, level=selected_level, logger_filter=selected_logger, query=query
         )
-        has_next = end < len(raw_lines)
-        has_prev = page > 1
+        # Use Django's Paginator
+        paginator = Paginator(logs, page_size)
+        page_obj = paginator.get_page(page)
     except Exception as e:
         logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
-        logs = []
+        page_obj = None
         all_loggers = []
-        has_next = False
-        has_prev = False
+        paginator = None
 
     return render(
         request,
         "administration/log_viewer.html",
         {
-            "logs": logs,
+            "logs": page_obj.object_list if page_obj else [],
             "loggers": sorted(all_loggers),
             "levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
             "selected_level": selected_level,
             "query": query,
             "page": page,
             "page_size": page_size,
-            "has_next": has_next,
-            "has_prev": has_prev,
+            "has_next": page_obj.has_next() if page_obj else False,
+            "has_prev": page_obj.has_previous() if page_obj else False,
+            "paginator": paginator,
+            "page_obj": page_obj,
         },
     )
 

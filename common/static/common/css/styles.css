@@ -664,38 +664,69 @@ ul.list-unstyled li .ml-3 {
 .pagination {
   text-align: center;
   margin-top: 2rem;
+  margin:auto;
+}
+
+.d-flex.justify-content-between.align-items-center.mt-3 {
+    justify-content: center !important;
 }
 
 .pagination-list {
-  list-style: none;
-  padding: 0;
-  display: inline-flex;
-  gap: 8px;
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    gap: 0.25rem;
+    justify-content: center !important; /* Center the whole pagination */
+    align-items: center;
+    width: 100%;
+}
+
+.page-item {
+    border-radius: 4px;
+    margin: 0 2px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center content inside each li */
+    min-width: 2.2em;
+    min-height: 2.2em;
+}
+
+.page-item a,
+.page-item span {
+  display: flex;
+  align-items: center;
   justify-content: center;
-}
-
-.pagination-list li {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 0.35em 0.85em;
+  text-decoration: none;
+  color: var(--primary-color);
   background: #fff;
-  cursor: pointer;
-  font-weight: 500;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
 }
 
-.pagination-list a {
-  color: white;
-}
-
-.pagination-list li.active {
-  background-color: var(--primary-color, #bfa66b);
-  color: white;
+.page-item.active span,
+.page-item.active a {
+  background: var(--primary-color);
+  color: #fff !important;
+  border-color: var(--primary-light);
   font-weight: bold;
 }
 
-.pagination-list li.disabled {
-  color: #999;
+.page-item.disabled span {
+  color: #aaa;
+  background: #f8f9fa;
+  border-color: #dee2e6;
   cursor: not-allowed;
+}
+
+.page-item:not(.active):not(.disabled) a:hover {
+  background: #e9ecef;
+  color: var(--primary-light);
+  text-decoration: underline;
 }
 
 /* ==== RESPONSIVE === */
