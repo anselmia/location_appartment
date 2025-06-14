@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, date
 from decimal import Decimal, InvalidOperation
 
 from django.core.cache import cache
-
 from payment.services.payment_service import get_payment_fee
 
 from logement.models import Price, CloseDate, Logement, Discount
@@ -53,7 +52,7 @@ def calculate_price_service(
     for key, value in price_data["discount_totals"].items():
         details[f"Réduction {key}"] = f"- {round(value, 2)} €"
     details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
-    details["Taxe de séjour"] = f"+ {round(price_data['tax'], 2)} €"
+    details["Taxe de séjour"] = f"+ {round(price_data['tax_amount'], 2)} €"
     details["Frais de transaction"] = f"+ {round(price_data['payment_fee'], 2)} €"
     return {
         "final_price": round(price_data["total_price"], 2),

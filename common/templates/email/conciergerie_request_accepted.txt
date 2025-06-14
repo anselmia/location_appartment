@@ -1,0 +1,8 @@
+Bonjour {{ owner.get_full_name }},
+
+La conciergerie "{{ conciergerie.name }}" a accepté de gérer votre logement "{{ logement.name }}".
+
+Vous pouvez désormais collaborer avec la conciergerie pour la gestion de votre bien.
+
+Cordialement,
+L'équipe {{ entreprise.name }}

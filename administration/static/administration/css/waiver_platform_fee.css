@@ -1,0 +1,141 @@
+waiver-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.waiver-container h2 {
+  font-family: var(--font-title);
+  color: var(--primary-color);
+  font-size: 2.1rem;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.waiver-form .form-label {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.waiver-form .form-control {
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 1rem;
+  background: var(--light-bg);
+  transition: border-color 0.2s;
+}
+.waiver-form .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.waiver-form .btn-primary {
+  background: var(--primary-color);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  padding: 0.5em 2em;
+  transition: background 0.2s;
+}
+.waiver-form .btn-primary:hover {
+  background: var(--accent-color);
+}
+
+.waiver-table {
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+.waiver-table table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.waiver-table th,
+.waiver-table td {
+  padding: 0.75em 1em;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.waiver-table th {
+  background: var(--light-bg);
+  color: var(--accent-color);
+  font-weight: 700;
+}
+.waiver-table tr:last-child td {
+  border-bottom: none;
+}
+
+.waiver-table .badge {
+  font-size: 0.95em;
+  padding: 0.4em 1em;
+  border-radius: 999px;
+}
+.waiver-table .badge.bg-success {
+  background: var(--success-color);
+  color: #fff;
+}
+.waiver-table .badge.bg-secondary {
+  background: var(--secondary-color);
+  color: #fff;
+}
+
+.waiver-table .btn {
+  font-size: 0.95em;
+  padding: 0.3em 1em;
+  border-radius: 6px;
+  margin-left: 0.2em;
+}
+.waiver-table .btn-outline-primary {
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  background: transparent;
+}
+.waiver-table .btn-outline-primary:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+.waiver-table .btn-outline-danger {
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  background: transparent;
+}
+.waiver-table .btn-outline-danger:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .waiver-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+  .waiver-table table {
+    min-width: 500px;
+  }
+}
+@media (max-width: 600px) {
+  .waiver-container {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+  .waiver-table table {
+    min-width: 350px;
+    font-size: 0.95em;
+  }
+  .waiver-form .btn-primary {
+    width: 100%;
+    padding: 0.7em 0;
+  }
+}
+
+/* Extra polish for empty state */
+.waiver-table td.text-center {
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--light-bg);
+}

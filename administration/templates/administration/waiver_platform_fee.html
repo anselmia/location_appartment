@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'administration/css/waiver_platform_fee.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">🎁 Gestion des exemptions de frais de plateforme</h2>
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="col-md-4">
+                        <label for="id_logement" class="form-label">Logement (optionnel)</label>
+                        {{ form.logement }}
+                        {% if form.logement.errors %}<div class="text-danger small">{{ form.logement.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_owner" class="form-label">Propriétaire (optionnel)</label>
+                        {{ form.owner }}
+                        {% if form.owner.errors %}<div class="text-danger small">{{ form.owner.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="id_max_amount" class="form-label">Plafond (€)</label>
+                        {{ form.max_amount }}
+                        {% if form.max_amount.errors %}<div class="text-danger small">{{ form.max_amount.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="id_end_date" class="form-label">Date de fin</label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}<div class="text-danger small">{{ form.end_date.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}
+                                Modifier
+                            {% else %}
+                                Ajouter
+                            {% endif %}
+                        </button>
+                        {% if form.instance.pk %}
+                            <a href="{% url 'administration:waiver_platform_fee' %}"
+                               class="btn btn-secondary ms-2">Annuler</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label for="filter_status" class="form-label">Statut</label>
+                        <select name="status" id="filter_status" class="form-select">
+                            <option value="">Tous</option>
+                            <option value="active"
+                                    {% if request.GET.status == "active" %}selected{% endif %}>Actives</option>
+                            <option value="expired"
+                                    {% if request.GET.status == "expired" %}selected{% endif %}>Expirées</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_owner" class="form-label">Propriétaire</label>
+                        <input type="text"
+                               name="owner_name"
+                               id="filter_owner"
+                               class="form-control"
+                               value="{{ request.GET.owner_name|default:'' }}"
+                               placeholder="Nom du propriétaire">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+                        <a href="{% url 'administration:waiver_platform_fee' %}"
+                           class="btn btn-link">Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Liste des exemptions</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Logement</th>
+                            <th>Propriétaire</th>
+                            <th>Plafond (€)</th>
+                            <th>Date de fin</th>
+                            <th>Montant utilisé (€)</th>
+                            <th>Statut</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for waiver in waivers %}
+                            <tr>
+                                <td>{{ waiver.logement }}</td>
+                                <td>{{ waiver.owner }}</td>
+                                <td>{{ waiver.max_amount|default:'—' }}</td>
+                                <td>{{ waiver.end_date|date:'d/m/Y'|default:'—' }}</td>
+                                <td>{{ waiver.total_used|floatformat:2 }}</td>
+                                <td>
+                                    {% if waiver.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Expirée</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'administration:edit_waiver_platform_fee' waiver.id %}"
+                                       class="btn btn-sm btn-outline-primary me-1">Modifier</a>
+                                    <form method="post"
+                                          action="{% url 'administration:delete_waiver_platform_fee' waiver.id %}"
+                                          class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Supprimer cette exemption ?');">
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">Aucune exemption enregistrée.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -406,3 +406,19 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     if instance.image:
         if os.path.isfile(instance.image.path):
             os.remove(instance.image.path)
+
+
+class PlatformFeeWaiver(models.Model):
+    logement = models.ForeignKey('Logement', on_delete=models.CASCADE, null=True, blank=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    max_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Plafond en €
+    end_date = models.DateField(null=True, blank=True)  # Date de fin de l'offre
+    total_used = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Montant déjà offert
+
+    def is_active(self):
+        from django.utils import timezone
+        if self.end_date and timezone.now().date() > self.end_date:
+            return False
+        if self.max_amount and self.total_used >= self.max_amount:
+            return False
+        return True

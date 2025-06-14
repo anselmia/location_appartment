@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
-from conciergerie.models import Conciergerie
+from conciergerie.models import Conciergerie, ConciergerieRequest
 from conciergerie.forms import ConciergerieForm
 from conciergerie.tasks import send_conciergerie_validation_email
 from conciergerie.decorators import user_is_owner_admin
@@ -11,6 +13,10 @@ from conciergerie.decorators import user_is_owner_admin
 from logement.models import City
 
 from common.decorators import is_admin
+from common.services.email_service import (
+    send_mail_conciergerie_request_accepted,
+    send_mail_conciergerie_request_refused,
+)
 
 
 @login_required
@@ -158,3 +164,37 @@ def customer_conciergerie_list(request):
 def customer_conciergerie_detail(request, pk):
     conciergerie = get_object_or_404(Conciergerie, pk=pk, actif=True, validated=True)
     return render(request, "conciergerie/conciergerie_presentation.html", {"conciergerie": conciergerie})
+
+
+@login_required
+@require_POST
+def handle_conciergerie_request(request):
+    request_id = request.POST.get("request_id")
+    action = request.POST.get("action")
+    user = request.user
+    if not request_id or not action:
+        return JsonResponse({"error": "Missing parameters"}, status=400)
+    try:
+        req = ConciergerieRequest.objects.get(id=request_id, conciergerie__user=user)
+    except ConciergerieRequest.DoesNotExist:
+        return JsonResponse({"error": "Demande non trouvée ou non autorisée."}, status=403)
+    if req.status != "pending":
+        return JsonResponse({"error": "Cette demande a déjà été traitée."}, status=400)
+    if action == "accept":
+        req.status = "accepted"
+        req.logement.admin = user
+        req.logement.save()
+        req.save()
+        # Send email to the logement owner using the new service and template
+        if hasattr(req.logement, "owner") and req.logement.owner and hasattr(req.logement.owner, "email"):
+            send_mail_conciergerie_request_accepted(req.logement.owner, req.conciergerie, req.logement)
+        return JsonResponse({"success": True, "status": "accepted"})
+    elif action == "refuse":
+        req.status = "rejected"
+        req.save()
+        # Send email to the logement owner using the new service and template
+        if hasattr(req.logement, "owner") and req.logement.owner and hasattr(req.logement.owner, "email"):
+            send_mail_conciergerie_request_refused(req.logement.owner, req.conciergerie, req.logement)
+        return JsonResponse({"success": True, "status": "rejected"})
+    else:
+        return JsonResponse({"error": "Action non reconnue."}, status=400)

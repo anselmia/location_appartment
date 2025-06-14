@@ -54,6 +54,103 @@
                 <a href="{% url 'conciergerie:update_conciergerie' %}"
                    class="btn btn-primary">✏️ Modifier ma conciergerie</a>
             </div>
+            {# --- Administered Logements List --- #}
+            <hr class="my-4">
+            <h6 class="fw-semibold mb-3">🏡 Logements administrés</h6>
+            {% if logement_administrated and logement_administrated|length > 0 %}
+                <div class="row g-3">
+                    {% for logement in logement_administrated %}
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1">{{ logement.name }}</h6>
+                                    <div class="text-muted small mb-2">{{ logement.adresse }}, {{ logement.ville.name }}</div>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                        <span class="badge bg-info text-dark">#{{ logement.code }}</span>
+                                        <a href="{% url 'logement:view_logement' logement.id %}"
+                                           class="btn btn-outline-primary btn-sm">👁️ Voir</a>
+                                        <button class="btn btn-outline-danger btn-sm stop-managing-btn"
+                                                data-logement-id="{{ logement.id }}">🚫 Arrêter la gestion</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Aucun logement administré actuellement.</p>
+            {% endif %}
+            {# --- Pending Conciergerie Requests --- #}
+            <hr class="my-4">
+            <h6 class="fw-semibold mb-3">⏳ Demandes d'administration en attente</h6>
+            {% if pending_requests and pending_requests|length > 0 %}
+                <div class="list-group mb-2">
+                    {% for req in pending_requests %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="fw-semibold">{{ req.logement.name }}</span>
+                                <span class="text-muted small ms-2">({{ req.logement.adresse }}, {{ req.logement.ville.name }})</span>
+                                <span class="badge bg-warning text-dark ms-2">En attente</span>
+                                <a href="{% url 'logement:view_logement' req.logement.id %}"
+                                   class="btn btn-outline-primary btn-sm ms-2">👁️ Voir</a>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success btn-sm accept-request-btn"
+                                        data-request-id="{{ req.id }}">✅ Accepter</button>
+                                <button class="btn btn-outline-danger btn-sm refuse-request-btn"
+                                        data-request-id="{{ req.id }}">❌ Refuser</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Aucune demande en attente.</p>
+            {% endif %}
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+            <script>
+            $(function() {
+                // Stop managing logement
+                $('.stop-managing-btn').on('click', function() {
+                    const logementId = $(this).data('logement-id');
+                    if (confirm('Confirmez-vous l\'arrêt de gestion de ce logement ?')) {
+                        $.ajax({
+                            url: '{% url "logement:stop_managing_logement" %}',
+                            method: 'POST',
+                            data: {
+                                logement_id: logementId,
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            success: function(data) {
+                                location.reload();
+                            },
+                            error: function(xhr) {
+                                alert('Erreur lors de l\'arrêt de gestion.');
+                            }
+                        });
+                    }
+                });
+                // Accept/Refuse conciergerie request
+                $('.accept-request-btn, .refuse-request-btn').on('click', function() {
+                    const requestId = $(this).data('request-id');
+                    const action = $(this).hasClass('accept-request-btn') ? 'accept' : 'refuse';
+                    $.ajax({
+                        url: '{% url "conciergerie:handle_request" %}',
+                        method: 'POST',
+                        data: {
+                            request_id: requestId,
+                            action: action,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(data) {
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            alert('Erreur lors du traitement de la demande.');
+                        }
+                    });
+                });
+            });
+            </script>
         {% endif %}
     </div>
 </div>

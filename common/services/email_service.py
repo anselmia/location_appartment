@@ -363,3 +363,95 @@ def send_email_new_message(msg):
 
     except Exception as e:
         logger.exception(f"❌ Failed to send new message email for message {msg.id}: {e}")
+
+
+def send_mail_conciergerie_request_accepted(owner, conciergerie, logement):
+    try:
+        entreprise = get_entreprise()
+        subject = f"Votre demande de conciergerie a été acceptée pour {logement.name}"
+        context = {
+            "owner": owner,
+            "conciergerie": conciergerie,
+            "logement": logement,
+            "entreprise": entreprise,
+        }
+        message = render_to_string("email/conciergerie_request_accepted.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [owner.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Mail conciergerie accepted sent to {owner.email} for logement {logement.name}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send conciergerie accepted mail to {owner.email}: {e}")
+
+
+def send_mail_conciergerie_request_refused(owner, conciergerie, logement):
+    try:
+        entreprise = get_entreprise()
+        subject = f"Votre demande de conciergerie a été refusée pour {logement.name}"
+        context = {
+            "owner": owner,
+            "conciergerie": conciergerie,
+            "logement": logement,
+            "entreprise": entreprise,
+        }
+        message = render_to_string("email/conciergerie_request_refused.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [owner.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Mail conciergerie refused sent to {owner.email} for logement {logement.name}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send conciergerie refused mail to {owner.email}: {e}")
+
+
+def send_mail_conciergerie_request_new(conciergerie_user, logement, owner):
+    try:
+        entreprise = get_entreprise()
+        subject = f"Nouvelle demande de gestion pour {logement.name}"
+        context = {
+            "conciergerie_user": conciergerie_user,
+            "logement": logement,
+            "owner": owner,
+            "entreprise": entreprise,
+        }
+        message = render_to_string("email/conciergerie_request_new.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [conciergerie_user.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Mail new conciergerie request sent to {conciergerie_user.email} for logement {logement.name}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send new conciergerie request mail to {conciergerie_user.email}: {e}")
+
+
+def send_mail_conciergerie_stop_management(owner, conciergerie, logement):
+    try:
+        entreprise = get_entreprise()
+        subject = f"Fin de gestion de votre logement {logement.name} par la conciergerie"
+        context = {
+            "owner": owner,
+            "conciergerie": conciergerie,
+            "logement": logement,
+            "entreprise": entreprise,
+        }
+        message = render_to_string("email/conciergerie_stop_management.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [owner.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Mail stop management sent to {owner.email} for logement {logement.name}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send stop management mail to {owner.email}: {e}")

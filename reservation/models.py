@@ -2,8 +2,9 @@ from django.db import models
 from accounts.models import CustomUser
 from datetime import timedelta
 from django.utils import timezone
+
 from decimal import Decimal, ROUND_HALF_UP
-from payment.services.payment_service import get_payment_fee, get_platform_fee
+from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
 from logement.models import Logement
 from common.services.helper_fct import generate_unique_code
 
@@ -75,7 +76,9 @@ class Reservation(models.Model):
             self.payment_fee = get_payment_fee(self.price)
 
         if not self.platform_fee and self.platform_fee != 0:
-            self.platform_fee = get_platform_fee(self.price)
+
+            platform_fee = get_platform_fee(self.price)
+            self.platform_fee = get_fee_waiver(platform_fee, self.logement, self.logement.owner)
 
         if not self.admin_fee_rate:
             self.admin_fee_rate = self.logement.admin_fee
@@ -186,11 +189,13 @@ class Reservation(models.Model):
         transferable = price - platform_fee - refund_amount
         """
         try:
+
             platform_fee = Decimal(self.platform_fee or 0)
             payment_fee = Decimal(self.payment_fee or 0)
             refund = Decimal(self.refund_amount or 0)
             price = Decimal(self.price or 0)
 
+            # Check if logement or owner has offered fees
             amount = price - platform_fee - refund - payment_fee
             amount = max(Decimal("0"), amount)
 

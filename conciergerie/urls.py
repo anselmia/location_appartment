@@ -6,7 +6,8 @@ from .views import (
     bulk_action,
     conciergerie_detail,
     customer_conciergerie_list,
-    customer_conciergerie_detail
+    customer_conciergerie_detail,
+    handle_conciergerie_request,
 )
 
 app_name = "conciergerie"
@@ -20,4 +21,5 @@ urlpatterns = [
     path("detail/<int:pk>/", conciergerie_detail, name="detail"),
     path("trouver/", customer_conciergerie_list, name="customer_list"),
     path("detail-view/<int:pk>/", customer_conciergerie_detail, name="conciergerie_detail"),
+    path("api/handle-request/", handle_conciergerie_request, name="handle_request"),
 ]

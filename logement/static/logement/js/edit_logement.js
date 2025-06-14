@@ -25,6 +25,22 @@ document.addEventListener("DOMContentLoaded", function () {
       showLoader();
     });
   }
+
+  // Manage Conciergerie
+  var showBtn = document.getElementById("show-conciergerie-select");
+  var form = document.getElementById("conciergerie-select-form");
+  var cancelBtn = document.getElementById("cancel-conciergerie-select");
+  if (showBtn && form && cancelBtn) {
+    showBtn.addEventListener("click", function () {
+      form.style.display = "";
+      showBtn.style.display = "none";
+    });
+    cancelBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      form.style.display = "none";
+      showBtn.style.display = "";
+    });
+  }
 });
 
 function showLoader() {
@@ -208,13 +224,18 @@ document.querySelectorAll(".rotate-photo").forEach((button) => {
   });
 });
 
-document
-  .getElementById("delete-all-photos")
-  .addEventListener("click", function () {
+const deleteAllPhotosBtn = document.getElementById("delete-all-photos");
+if (deleteAllPhotosBtn) {
+  deleteAllPhotosBtn.addEventListener("click", function () {
     if (!confirm("⚠️ Êtes-vous sûr de vouloir supprimer TOUTES les photos ?"))
       return;
 
-    const url = document.getElementById("delete-all-photos-url").dataset.url;
+    const urlElem = document.getElementById("delete-all-photos-url");
+    if (!urlElem || !urlElem.dataset.url) {
+      alert("URL de suppression introuvable.");
+      return;
+    }
+    const url = urlElem.dataset.url;
 
     fetchWithLoader(url, {
       method: "POST",
@@ -238,45 +259,55 @@ document
         );
       });
   });
+}
 
-document.getElementById("photos").addEventListener("change", function (event) {
-  const maxSize = 2 * 1024 * 1024; // 2MB
-  const files = event.target.files;
-  for (let file of files) {
-    if (file.size > maxSize) {
-      alert(`Le fichier "${file.name}" dépasse 2 Mo.`);
-      event.target.value = ""; // Clear input
-      break;
-    }
-  }
-});
+const loadPhotosbtn = document.getElementById("photos");
+if (loadPhotosbtn) {
+  document
+    .getElementById("photos")
+    .addEventListener("change", function (event) {
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      const files = event.target.files;
+      for (let file of files) {
+        if (file.size > maxSize) {
+          alert(`Le fichier "${file.name}" dépasse 2 Mo.`);
+          event.target.value = ""; // Clear input
+          break;
+        }
+      }
+    });
+}
 
 $(document).ready(function () {
-    $('.sync-calendar').on('click', function () {
-        const url = $(this).data('url');
-        const source = $(this).data('source');
-        const button = $(this);
-        const statusDiv = $('#sync-status');
+  $(".sync-calendar").on("click", function () {
+    const url = $(this).data("url");
+    const source = $(this).data("source");
+    const button = $(this);
+    const statusDiv = $("#sync-status");
 
-        button.prop('disabled', true).text('🔄…');
+    button.prop("disabled", true).text("🔄…");
 
-        $.ajax({
-            url: url,
-            method: 'POST',
-            headers: {'X-CSRFToken': csrfToken},
-            success: function (data) {
-                statusDiv.html(
-                    `<div class="alert alert-success">${source.toUpperCase()} : ${data.message}</div>`
-                );
-            },
-            error: function (xhr) {
-                statusDiv.html(
-                    `<div class="alert alert-danger">${source.toUpperCase()} : ${xhr.responseJSON?.error || 'Erreur lors de la synchronisation'}</div>`
-                );
-            },
-            complete: function () {
-                button.prop('disabled', false).text('🔄');
-            }
-        });
+    $.ajax({
+      url: url,
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken },
+      success: function (data) {
+        statusDiv.html(
+          `<div class="alert alert-success">${source.toUpperCase()} : ${
+            data.message
+          }</div>`
+        );
+      },
+      error: function (xhr) {
+        statusDiv.html(
+          `<div class="alert alert-danger">${source.toUpperCase()} : ${
+            xhr.responseJSON?.error || "Erreur lors de la synchronisation"
+          }</div>`
+        );
+      },
+      complete: function () {
+        button.prop("disabled", false).text("🔄");
+      },
     });
+  });
 });

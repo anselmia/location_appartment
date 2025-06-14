@@ -1,8 +1,10 @@
 import stripe
 import logging
+from datetime import datetime
 from django.urls import reverse
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.core.mail import mail_admins
 from typing import Any
 
@@ -19,9 +21,11 @@ from common.services.stripe.stripe_event import (
     StripePaymentIntentEventData,
     StripeTransferEventData,
 )
+
+from logement.models import Logement, PlatformFeeWaiver
 from payment.models import PaymentTask
 from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
-
+from accounts.models import CustomUser
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_PRIVATE_KEY
@@ -53,6 +57,33 @@ def get_platform_fee(price):
     platform_rate = Decimal(str(PLATFORM_FEE))
     fee = platform_rate * price
     return fee.quantize(Decimal("0.01"), rounding=ROUND_UP)
+
+
+def get_fee_waiver(platform_fee: Decimal, logement: Logement, owner: CustomUser) -> Decimal:
+    """
+    Calcule le montant de frais de plateforme restant à payer après application de l'exemption.
+
+    Args:
+        platform_fee (Decimal): Les frais de plateforme initiaux.
+        logement (Logement): L'instance du logement.
+        owner (CustomUser): Le propriétaire du logement.
+    Returns:
+        Decimal: Le montant de frais restant à payer (après réduction).
+    """
+    waivers = PlatformFeeWaiver.objects.filter(Q(logement=logement) | Q(owner=owner))
+    for waiver in waivers:
+        if waiver.is_active():
+            # Si plafond, on applique la réduction dans la limite du montant restant
+            if waiver.max_amount:
+                remaining = waiver.max_amount - waiver.total_used
+                fee_waived = min(platform_fee, remaining)
+                # Met à jour le montant utilisé
+                waiver.total_used += fee_waived
+                waiver.save(update_fields=["total_used"])
+                return platform_fee - fee_waived  # Montant restant à payer
+            elif waiver.end_date and waiver.end_date > datetime.now().date():
+                return Decimal("0.00")
+    return platform_fee  # Aucun waiver actif, le client paie tout
 
 
 def get_refund(refund_id: str) -> Any:

@@ -1,0 +1,8 @@
+Bonjour {{ owner.get_full_name }},
+
+La conciergerie "{{ conciergerie.name }}" a refusé la gestion de votre logement "{{ logement.name }}".
+
+Vous pouvez faire une nouvelle demande ou contacter une autre conciergerie si besoin.
+
+Cordialement,
+L'équipe {{ entreprise.name }}

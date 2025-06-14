@@ -14,7 +14,6 @@ from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.cache import cache_page
-from django.core.paginator import Paginator
 
 from django.core.cache import cache
 
@@ -27,7 +26,7 @@ from logement.models import (
     Discount,
     DiscountType,
 )
-from logement.services.calendar_service import (    
+from logement.services.calendar_service import (
     sync_external_ical,
     get_calendar_context,
     export_ical_service,
@@ -62,9 +61,14 @@ from logement.services.logement_service import (
     get_logement_detail_context,
     update_logement_equipment,
     autocomplete_cities_service,
-    get_logements
+    get_logements,
 )
 from logement.services.revenue_service import get_revenue_context
+from conciergerie.models import Conciergerie, ConciergerieRequest
+from common.services.email_service import (
+    send_mail_conciergerie_request_new,
+    send_mail_conciergerie_stop_management,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -137,8 +141,44 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
     """
     logement = None
     is_editing = logement_id is not None
+    pending_request = None
+
     if is_editing:
         logement = get_object_or_404(Logement.objects.prefetch_related("rooms", "photos", "equipment"), id=logement_id)
+        admin_user = None
+        if logement and logement.admin:
+            admin_user = logement.admin
+        if logement:
+            pending_request = ConciergerieRequest.objects.filter(logement=logement, status="pending").first()
+
+    # Remove admin if requested
+    if request.method == "POST" and request.POST.get("remove_admin") and logement:
+        logement.admin = None
+        logement.save()
+        messages.success(request, "L'administrateur du logement a été supprimé.")
+        return redirect("logement:edit_logement", logement.id)
+
+    if request.method == "POST" and request.POST.get("conciergerie_id") and logement:
+        conciergerie_id = request.POST.get("conciergerie_id")
+        conciergerie = Conciergerie.objects.filter(id=conciergerie_id, actif=True).first()
+        if conciergerie:
+            # Vérifier qu'il n'y a pas déjà une demande en attente pour ce logement/conciergerie
+            exists = ConciergerieRequest.objects.filter(
+                logement=logement, conciergerie=conciergerie, status="pending"
+            ).exists()
+            if not exists:
+                ConciergerieRequest.objects.create(logement=logement, conciergerie=conciergerie)
+                # Send email to the conciergerie user
+                if conciergerie.user and conciergerie.user.email:
+                    send_mail_conciergerie_request_new(conciergerie.user, logement, logement.owner)
+                messages.success(request, "Demande envoyée à la conciergerie. Elle doit valider la demande.")
+            else:
+                messages.info(request, "Une demande en attente existe déjà pour cette conciergerie.")
+        else:
+            messages.error(request, "Conciergerie introuvable ou inactive.")
+        return redirect("logement:edit_logement", logement.id)
+
+    # Create or update logement
     form = LogementForm(request.POST or None, instance=logement, user=request.user)
     if request.method == "POST" and form.is_valid():
         logement = form.save()
@@ -147,7 +187,10 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
         else:
             logger.info(f"Logement created with ID {logement.id}")
         return redirect("logement:edit_logement", logement.id)
-    # Use service to get all form data and context
+
+    # 2. Ajouter la liste des conciergeries actives au contexte
+    active_conciergeries = Conciergerie.objects.filter(actif=True).order_by("name")
+
     context = get_logement_form_data(logement, request.user)
     context.update(
         {
@@ -155,6 +198,9 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
             "logement": logement,
             "is_editing": is_editing,
             "equipment_type_choices": EquipmentType.choices,
+            "admin_user": admin_user if is_editing else None,
+            "active_conciergeries": active_conciergeries,
+            "pending_request": pending_request,
         }
     )
     return render(request, "logement/edit_logement.html", context)
@@ -511,3 +557,24 @@ def sync_booking_calendar_view(request, logement_id):
         return JsonResponse({"message": f"{added} ajoutés, {updated} mis à jour, {deleted} supprimés"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+
+@login_required
+@require_POST
+def stop_managing_logement(request):
+    logement_id = request.POST.get("logement_id")
+    user = request.user
+    if not logement_id:
+        return JsonResponse({"error": "Missing logement_id"}, status=400)
+    logement = get_object_or_404(Logement, id=logement_id)
+    if logement.admin != user:
+        return JsonResponse({"error": "Vous n'êtes pas l'administrateur de ce logement."}, status=403)
+    # Save conciergerie before removing admin
+    conciergerie = getattr(user, "conciergeries", None).first() if hasattr(user, "conciergeries") else None
+    owner = logement.owner
+    logement.admin = None
+    logement.save()
+    # Send email to owner
+    if owner and conciergerie:
+        send_mail_conciergerie_stop_management(owner, conciergerie, logement)
+    return JsonResponse({"success": True})

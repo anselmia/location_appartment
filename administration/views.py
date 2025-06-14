@@ -28,6 +28,7 @@ from common.services.helper_fct import date_to_timestamp, get_entreprise
 from payment.services.payment_service import retrieve_balance
 
 from reservation.models import Reservation
+from logement.models import PlatformFeeWaiver
 
 from administration.services.logs import parse_log_file, count_lines
 
@@ -39,6 +40,7 @@ from administration.forms import (
     ServiceForm,
     TestimonialForm,
     SiteConfigForm,
+    PlatformFeeWaiverForm,
 )
 from administration.models import HomePageConfig, SiteConfig
 
@@ -322,3 +324,67 @@ class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateVie
             context["stripe_balance_pending"] = None
 
         return context
+
+
+@login_required
+@user_passes_test(is_admin)
+def waiver_platform_fee_view(request, waiver_id=None):
+    # If waiver_id is provided, we're editing an existing waiver
+    if waiver_id:
+        waiver_instance = PlatformFeeWaiver.objects.filter(pk=waiver_id).first()
+    else:
+        waiver_instance = None
+
+    # Filtering logic
+    waivers = PlatformFeeWaiver.objects.select_related("logement", "owner").all().order_by("-id")
+    status = request.GET.get("status")
+    owner_name = request.GET.get("owner_name", "").strip()
+    if status == "active":
+        waivers = [w for w in waivers if (w.is_active() if callable(w.is_active) else w.is_active)]
+    elif status == "expired":
+        waivers = [w for w in waivers if not (w.is_active() if callable(w.is_active) else w.is_active)]
+    if owner_name:
+        waivers = [
+            w
+            for w in waivers
+            if w.owner and owner_name.lower() in (w.owner.name.lower() + " " + w.owner.last_name.lower())
+        ]
+
+    if request.method == "POST":
+        # Handle delete
+        if "delete_waiver" in request.POST and waiver_instance:
+            waiver_instance.delete()
+            messages.success(request, "Exemption supprimée.")
+            return redirect("administration:waiver_platform_fee")
+        # Handle add/edit
+        form = PlatformFeeWaiverForm(request.POST, instance=waiver_instance)
+        if form.is_valid():
+            form.save()
+            if waiver_instance:
+                messages.success(request, "Exemption modifiée.")
+            else:
+                messages.success(request, "Exemption ajoutée.")
+            return redirect("administration:waiver_platform_fee")
+    else:
+        form = PlatformFeeWaiverForm(instance=waiver_instance)
+
+    # Annotate each waiver with is_active and total_used for template
+    for w in waivers:
+        w.is_active = w.is_active() if callable(w.is_active) else w.is_active
+        w.total_used = w.total_used or 0
+
+    context = {
+        "form": form,
+        "waivers": waivers,
+    }
+    return render(request, "administration/waiver_platform_fee.html", context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def delete_waiver_platform_fee(request, waiver_id):
+    waiver = PlatformFeeWaiver.objects.filter(pk=waiver_id).first()
+    if request.method == "POST" and waiver:
+        waiver.delete()
+        messages.success(request, "Exemption supprimée.")
+    return redirect("administration:waiver_platform_fee")

@@ -1,6 +1,7 @@
 from django import forms
 from logement.models import Discount, Logement, City
 from decimal import Decimal
+from django.db.models import Q
 
 
 class LogementForm(forms.ModelForm):
@@ -129,13 +130,18 @@ class LogementForm(forms.ModelForm):
         user = kwargs.pop("user", None)
         self.user = user
         super().__init__(*args, **kwargs)
-        all_users = CustomUser.objects.all().order_by("name")
 
         # Si l'utilisateur est admin ou superuser, on autorise la sélection
         if user and (user.is_admin or user.is_superuser):
             if "owner" in self.fields:
+                # Only show owners/admins in the owner field
+                owner_qs = (
+                    CustomUser.objects.filter(is_active=True)
+                    .filter(Q(is_owner=True) | Q(is_admin=True))
+                    .order_by("name", "last_name")
+                )
                 self.fields["owner"] = forms.ModelChoiceField(
-                    queryset=all_users,
+                    queryset=owner_qs,
                     label=self.fields["owner"].label,
                     required=False,
                     widget=forms.Select(attrs={"class": "form-control"}),
@@ -143,8 +149,13 @@ class LogementForm(forms.ModelForm):
                 self.fields["owner"].initial = getattr(self.instance, "owner", None)
 
             if "admin" in self.fields:
+                admin_qs = (
+                    CustomUser.objects.filter(is_active=True)
+                    .filter(Q(is_owner=True) | Q(is_admin=True))
+                    .order_by("name", "last_name")
+                )
                 self.fields["admin"] = forms.ModelChoiceField(
-                    queryset=all_users,
+                    queryset=admin_qs,
                     label=self.fields["admin"].label,
                     required=False,
                     widget=forms.Select(attrs={"class": "form-control"}),
@@ -288,7 +299,7 @@ class DiscountForm(forms.ModelForm):
 
     def __init__(self, *args, logement=None, **kwargs):
         update_id = kwargs.pop("update_id", None)
-        self.logement = logement or (kwargs.get('instance').logement if kwargs.get('instance') else None)
+        self.logement = logement or (kwargs.get("instance").logement if kwargs.get("instance") else None)
         super().__init__(*args, **kwargs)
         if update_id:
             try:

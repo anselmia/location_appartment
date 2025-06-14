@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-{% for field, unit in timing_fields %}
+{% for field, unit in timing_bound_fields %}
     <div class="form-field">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
         <div class="input-symbol with-symbol">

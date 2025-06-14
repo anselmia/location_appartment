@@ -66,8 +66,9 @@ urlpatterns = [
     path("revenu/", RevenueView.as_view(), name="revenu"),
     path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
     path("logement-dashboard/", views.logement_dashboard, name="dashboard"),
-    path('logement/<int:logement_id>/sync/airbnb/', views.sync_airbnb_calendar_view, name='sync_airbnb_calendar'),
-    path('logement/<int:logement_id>/sync/booking/', views.sync_booking_calendar_view, name='sync_booking_calendar'),
+    path("logement/<int:logement_id>/sync/airbnb/", views.sync_airbnb_calendar_view, name="sync_airbnb_calendar"),
+    path("logement/<int:logement_id>/sync/booking/", views.sync_booking_calendar_view, name="sync_booking_calendar"),
+    path("api/stop-managing-logement/", views.stop_managing_logement, name="stop_managing_logement"),
 ]
 
 urlpatterns += router.urls

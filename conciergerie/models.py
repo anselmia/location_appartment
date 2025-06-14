@@ -1,6 +1,7 @@
 from django.db import models
 from logement.models import City
 from accounts.models import CustomUser
+from logement.models import Logement
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -46,3 +47,15 @@ class Conciergerie(models.Model):
     def clean(self):
         if self.siret and (not self.siret.isdigit() or len(self.siret) != 14):
             raise ValidationError({"siret": "Le numéro SIRET doit contenir exactement 14 chiffres."})
+
+
+class ConciergerieRequest(models.Model):
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE, related_name="conciergerie_requests")
+    conciergerie = models.ForeignKey(Conciergerie, on_delete=models.CASCADE, related_name="requests")
+    status = models.CharField(
+        max_length=20,
+        choices=[("pending", "En attente"), ("accepted", "Acceptée"), ("rejected", "Refusée")],
+        default="pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

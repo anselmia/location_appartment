@@ -12,7 +12,6 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordResetView
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
-
 from django.contrib.sites.shortcuts import get_current_site
 
 
@@ -43,6 +42,7 @@ from common.services.helper_fct import is_ajax
 from conciergerie.models import Conciergerie
 
 from payment.services.payment_service import is_stripe_admin
+from logement.models import Logement
 
 
 logger = logging.getLogger(__name__)
@@ -154,9 +154,16 @@ def client_dashboard(request):
                     request,
                     "Une erreur est survenue lors du chargement de vos données Stripe.",
                 )
-
+        pending_requests = None
+        logement_administrated = None
+        # Check if user is admin or owner of a conciergerie
         if user.is_owner_admin or user.is_admin or user.is_superuser:
             conciergerie = Conciergerie.objects.filter(user=request.user).first()
+            # Vérifier s'il y a une demande en attente pour cette conciergerie
+            from conciergerie.models import ConciergerieRequest
+
+            pending_requests = ConciergerieRequest.objects.filter(conciergerie=conciergerie, status="pending")
+            logement_administrated = [logement for logement in Logement.objects.filter(admin=request.user)]
 
         return render(
             request,
@@ -171,6 +178,8 @@ def client_dashboard(request):
                 "dashboard_link": dashboard_link,
                 "code_filter": code_filter,
                 "user_conciergerie": conciergerie,
+                "pending_requests": pending_requests,
+                "logement_administrated": logement_administrated,
             },
         )
 

@@ -9,9 +9,45 @@
 {% block content %}
     <div class="admin-logement-edit container-fluid">
         <div class="mb-3">
-            <a href="{% url 'logement:dashboard' %}"
-               class="btn btn-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
+            <a href="{% url 'logement:dashboard' %}" class="btn btn-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
         </div>
+        {% if form.admin.value %}
+            <div class="mb-3 d-flex align-items-center gap-3">
+                <span class="fw-bold">Conciergerie :</span>
+                <span>{{ admin_user }}</span>
+                <form method="post" action="" class="d-inline-block ms-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="remove_admin" value="1">
+                    <button type="submit" class="btn btn-danger btn-sm">Supprimer la conciergerie</button>
+                </form>
+            </div>
+        {% else %}
+            {% if pending_request %}
+                <div class="alert alert-info">
+                    Demande en attente de validation par la conciergerie : <strong>{{ pending_request.conciergerie.name }}</strong>
+                </div>
+            {% else %}
+                <div class="mb-3 d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-success" id="show-conciergerie-select">➕ Ajouter une conciergerie</button>
+                    <form method="post"
+                        action=""
+                        id="conciergerie-select-form"
+                        style="display:none">
+                        {% csrf_token %}
+                        <select name="conciergerie_id" class="form-select d-inline-block w-auto">
+                            <option value="">-- Choisir une conciergerie --</option>
+                            {% for conciergerie in active_conciergeries %}
+                                <option value="{{ conciergerie.id }}">{{ conciergerie.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary ms-2">Valider</button>
+                        <button type="button"
+                                class="btn btn-secondary ms-2"
+                                id="cancel-conciergerie-select">Annuler</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% endif %}
         <div class="form-box">
             {% if is_editing %}
                 <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
