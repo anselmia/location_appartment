@@ -12,39 +12,52 @@
             <a href="{% url 'logement:dashboard' %}" class="btn btn-secondary">⬅️ {% trans "Retour au tableau de bord" %}</a>
         </div>
         {% if form.admin.value %}
-            <div class="mb-3 d-flex align-items-center gap-3">
-                <span class="fw-bold">Conciergerie :</span>
-                <span>{{ admin_user }}</span>
-                <form method="post" action="" class="d-inline-block ms-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="remove_admin" value="1">
-                    <button type="submit" class="btn btn-danger btn-sm">Supprimer la conciergerie</button>
-                </form>
+            <div class="conciergerie-block mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="fw-bold conciergerie-title">Conciergerie :</span>
+                    <span class="conciergerie-info">{{ admin_user }}</span>
+                    <form method="post"
+                          action=""
+                          class="d-inline-block ms-2 conciergerie-actions">
+                        {% csrf_token %}
+                        <input type="hidden" name="remove_admin" value="1">
+                        <button type="submit"
+                                class="btn btn-conciergerie btn-conciergerie-danger btn-sm">
+                            Supprimer la conciergerie
+                        </button>
+                    </form>
+                </div>
             </div>
         {% else %}
             {% if pending_request %}
-                <div class="alert alert-info">
+                <div class="conciergerie-block alert alert-info">
                     Demande en attente de validation par la conciergerie : <strong>{{ pending_request.conciergerie.name }}</strong>
                 </div>
             {% else %}
-                <div class="mb-3 d-flex align-items-center gap-3">
-                    <button type="button" class="btn btn-success" id="show-conciergerie-select">➕ Ajouter une conciergerie</button>
-                    <form method="post"
-                        action=""
-                        id="conciergerie-select-form"
-                        style="display:none">
-                        {% csrf_token %}
-                        <select name="conciergerie_id" class="form-select d-inline-block w-auto">
-                            <option value="">-- Choisir une conciergerie --</option>
-                            {% for conciergerie in active_conciergeries %}
-                                <option value="{{ conciergerie.id }}">{{ conciergerie.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-primary ms-2">Valider</button>
+                <div class="conciergerie-block mb-3">
+                    <div class="d-flex align-items-center gap-3 conciergerie-actions">
                         <button type="button"
-                                class="btn btn-secondary ms-2"
-                                id="cancel-conciergerie-select">Annuler</button>
-                    </form>
+                                class="btn btn-conciergerie btn-conciergerie-primary"
+                                id="show-conciergerie-select">➕ Ajouter une conciergerie</button>
+                        <form method="post"
+                              action=""
+                              id="conciergerie-select-form"
+                              style="display:none">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="conciergerie_request">
+                            <select name="conciergerie_id" class="form-select d-inline-block w-auto">
+                                <option value="">-- Choisir une conciergerie --</option>
+                                {% for conciergerie in active_conciergeries %}
+                                    <option value="{{ conciergerie.id }}">{{ conciergerie.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit"
+                                    class="btn btn-conciergerie btn-conciergerie-primary ms-2">Valider</button>
+                            <button type="button"
+                                    class="btn btn-conciergerie btn-secondary ms-2"
+                                    id="cancel-conciergerie-select">Annuler</button>
+                        </form>
+                    </div>
                 </div>
             {% endif %}
         {% endif %}
@@ -126,6 +139,7 @@
             <!-- Start of shared form -->
             <form method="post" class="logement-form">
                 {% csrf_token %}
+                <input type="hidden" name="action" value="edit_logement">
                 {% if form.errors %}
                     <div class="alert alert-danger mt-3">
                         <ul class="mb-0">

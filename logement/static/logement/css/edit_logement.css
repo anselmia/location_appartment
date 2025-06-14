@@ -153,6 +153,78 @@
   padding-bottom: var(--spacing-xs);
 }
 
+/* Conciergerie management block styles */
+.conciergerie-block {
+  background: #f8fafc;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 2rem 1.5rem;
+  margin-bottom: 2rem;
+}
+.conciergerie-block .conciergerie-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+.conciergerie-block .conciergerie-info {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+.conciergerie-block .conciergerie-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.conciergerie-block .btn-conciergerie {
+  border-radius: 2rem;
+  font-size: 0.95rem;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+.conciergerie-block .btn-conciergerie-primary {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+}
+.conciergerie-block .btn-conciergerie-primary:hover {
+  background: var(--primary-light);
+}
+.conciergerie-block .btn-conciergerie-danger {
+  background: #fff0f0;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+.conciergerie-block .btn-conciergerie-danger:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+.conciergerie-block .conciergerie-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  padding: 1.2rem 1rem;
+  margin-bottom: 1rem;
+}
+.conciergerie-block .conciergerie-card .conciergerie-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+.conciergerie-block .conciergerie-card .conciergerie-card-meta {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+.conciergerie-block .conciergerie-card .conciergerie-card-actions {
+  margin-top: 0.7rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* Case à cocher personnalisée */
 .equip-card {
   display: flex;
@@ -213,7 +285,7 @@
 }
 
 @media (max-width: 768px) {
-    .equipment-grid {
+  .equipment-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 
@@ -221,7 +293,7 @@
     font-size: 0.9rem;
     padding: 8px 10px;
   }
-  
+
   .admin-logement-edit .form-box {
     padding: var(--spacing-md);
   }

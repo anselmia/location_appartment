@@ -146,10 +146,18 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
     if is_editing:
         logement = get_object_or_404(Logement.objects.prefetch_related("rooms", "photos", "equipment"), id=logement_id)
         admin_user = None
+        admin_user_name = None
         if logement and logement.admin:
             admin_user = logement.admin
+            conciergerie = Conciergerie.objects.filter(user=admin_user).first()
+            if conciergerie:
+                admin_user_name = conciergerie.name
+            else:
+                admin_user_name = str(admin_user)
         if logement:
             pending_request = ConciergerieRequest.objects.filter(logement=logement, status="pending").first()
+
+    action = request.POST.get("action") if request.method == "POST" else None
 
     # Remove admin if requested
     if request.method == "POST" and request.POST.get("remove_admin") and logement:
@@ -158,17 +166,19 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
         messages.success(request, "L'administrateur du logement a été supprimé.")
         return redirect("logement:edit_logement", logement.id)
 
-    if request.method == "POST" and request.POST.get("conciergerie_id") and logement:
+    # Handle conciergerie request form
+    if request.method == "POST" and action == "conciergerie_request" and logement:
         conciergerie_id = request.POST.get("conciergerie_id")
+        if not conciergerie_id:
+            messages.error(request, "Veuillez sélectionner une conciergerie.")
+            return redirect("logement:edit_logement", logement.id)
         conciergerie = Conciergerie.objects.filter(id=conciergerie_id, actif=True).first()
         if conciergerie:
-            # Vérifier qu'il n'y a pas déjà une demande en attente pour ce logement/conciergerie
             exists = ConciergerieRequest.objects.filter(
                 logement=logement, conciergerie=conciergerie, status="pending"
             ).exists()
             if not exists:
                 ConciergerieRequest.objects.create(logement=logement, conciergerie=conciergerie)
-                # Send email to the conciergerie user
                 if conciergerie.user and conciergerie.user.email:
                     send_mail_conciergerie_request_new(conciergerie.user, logement, logement.owner)
                 messages.success(request, "Demande envoyée à la conciergerie. Elle doit valider la demande.")
@@ -178,15 +188,18 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
             messages.error(request, "Conciergerie introuvable ou inactive.")
         return redirect("logement:edit_logement", logement.id)
 
-    # Create or update logement
-    form = LogementForm(request.POST or None, instance=logement, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        logement = form.save()
-        if is_editing:
-            logger.info(f"Logement {logement.id} updated")
-        else:
-            logger.info(f"Logement created with ID {logement.id}")
-        return redirect("logement:edit_logement", logement.id)
+    # Handle logement edit form
+    if request.method == "POST" and (action == "edit_logement" or not action):
+        form = LogementForm(request.POST, instance=logement, user=request.user)
+        if form.is_valid():
+            logement = form.save()
+            if is_editing:
+                logger.info(f"Logement {logement.id} updated")
+            else:
+                logger.info(f"Logement created with ID {logement.id}")
+            return redirect("logement:edit_logement", logement.id)
+    else:
+        form = LogementForm(request.POST or None, instance=logement, user=request.user)
 
     # 2. Ajouter la liste des conciergeries actives au contexte
     active_conciergeries = Conciergerie.objects.filter(actif=True).order_by("name")
@@ -198,7 +211,7 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
             "logement": logement,
             "is_editing": is_editing,
             "equipment_type_choices": EquipmentType.choices,
-            "admin_user": admin_user if is_editing else None,
+            "admin_user": admin_user_name if is_editing else None,
             "active_conciergeries": active_conciergeries,
             "pending_request": pending_request,
         }
