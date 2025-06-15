@@ -664,32 +664,32 @@ ul.list-unstyled li .ml-3 {
 .pagination {
   text-align: center;
   margin-top: 2rem;
-  margin:auto;
+  margin: auto;
 }
 
 .d-flex.justify-content-between.align-items-center.mt-3 {
-    justify-content: center !important;
+  justify-content: center !important;
 }
 
 .pagination-list {
-    display: flex;
-    list-style: none;
-    padding-left: 0;
-    gap: 0.25rem;
-    justify-content: center !important; /* Center the whole pagination */
-    align-items: center;
-    width: 100%;
+  display: flex;
+  list-style: none;
+  padding-left: 0;
+  gap: 0.25rem;
+  justify-content: center !important; /* Center the whole pagination */
+  align-items: center;
+  width: 100%;
 }
 
 .page-item {
-    border-radius: 4px;
-    margin: 0 2px;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center content inside each li */
-    min-width: 2.2em;
-    min-height: 2.2em;
+  border-radius: 4px;
+  margin: 0 2px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center content inside each li */
+  min-width: 2.2em;
+  min-height: 2.2em;
 }
 
 .page-item a,
@@ -730,7 +730,8 @@ ul.list-unstyled li .ml-3 {
 }
 
 /* ==== Django message tags compatibility */
-.alert-error, .alert-danger {
+.alert-error,
+.alert-danger {
   background-color: #f8d7da !important;
   color: #842029 !important;
   border-color: #f5c2c7 !important;

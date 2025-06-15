@@ -119,6 +119,7 @@ def filter_logements(
 
 # Logement form data
 
+
 def get_logement_form_data(logement: Optional[Logement], user) -> Dict[str, Any]:
     """
     Prepare data for the logement form, including rooms, photos, equipment, and form fields.
@@ -269,18 +270,18 @@ def get_logement_search_context(request) -> Dict:
     types = [(val, type_display_map.get(val, val)) for val in raw_types]
 
     # Query parameters
-    page_number = request.GET.get("page", 1)
-    destination = request.GET.get("destination", "").strip()
-    start_date = request.GET.get("start_date")
-    end_date = request.GET.get("end_date")
-    guest_adult = request.GET.get("guest_adult")
-    guest_minor = request.GET.get("guest_minor")
-    equipment_ids = request.GET.getlist("equipments")
-    bedrooms = request.GET.get("bedrooms")
-    bathrooms = request.GET.get("bathrooms")
+    page_number = int(request.GET.get("page", 1) or 1)
+    destination = request.GET.get("destination") or None
+    start_date = request.GET.get("start_date") or None
+    end_date = request.GET.get("end_date") or None
+    guest_adult = int(request.GET.get("guest_adult") or 0)
+    guest_minor = int(request.GET.get("guest_minor") or 0)
+    equipment_ids = request.GET.getlist("equipments") or []
+    bedrooms = int(request.GET.get("bedrooms") or 0)
+    bathrooms = int(request.GET.get("bathrooms") or 0)
     smoking = request.GET.get("is_smoking_allowed") == "1"
     animals = request.GET.get("is_pets_allowed") == "1"
-    type = request.GET.get("type")
+    type = request.GET.get("type") or None
 
     # Filtering
     logements = filter_logements(
