@@ -1,8 +1,8 @@
 /* ==== GLOBAL === */
 :root {
   --primary-color: #bfa66b;
-  --secondary-color: #3b2f2f;
-  --accent-color: #2b3d55;
+  --secondary-color: #2b3d55;
+  --accent-color: #3b2f2f;
   --bg-color: #f9f9f9;
   --text-color: #333;
   --light-bg: #f8f5f2;
@@ -15,8 +15,8 @@
   --color-title: #111;
   --color-border: #ddd;
   --primary-light: #d8c18b;
-  --secondary-light: #584a43;
-  --accent-light: #3d5779;
+  --secondary-light: #3d5779;
+  --accent-light: #584a43;
 
   --font-serif: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
@@ -44,6 +44,8 @@
   --light-gray: #f9fafb;
   --background-highlight: #f3f4f6;
 
+  --text-primary: #bfa66b;
+  --text-secondary: #2b3d55;
   --text-dark: #2c2c2c;
   --text-muted: #7f8c8d;
 
@@ -167,7 +169,7 @@ input,
   color: #fff;
 }
 
-.badge-status.en_attente {
+.badge-status.en-attente {
   background-color: var(--warning-color);
   color: #000;
 }
@@ -391,6 +393,7 @@ button,
 .btn-primary {
   background-color: var(--primary-color) !important;
   color: #fff !important;
+  border-color: var(--primary-light) !important;
 }
 
 .btn-primary:hover {
@@ -398,12 +401,12 @@ button,
 }
 
 .btn-secondary {
-  background-color: var(--accent-color) !important;
+  background-color: var(--secondary-color) !important;
   color: #fff !important;
 }
 
 .btn-secondary:hover {
-  background-color: var(--accent-light) !important;
+  background-color: var(--secondary-light) !important;
 }
 
 .btn-danger {

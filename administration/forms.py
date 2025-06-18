@@ -1,7 +1,7 @@
 from django import forms
 from .models import HomePageConfig, Service, Testimonial, Commitment, Entreprise, SiteConfig
 
-from logement.models import PlatformFeeWaiver, Logement
+from logement.models import PlatformFeeWaiver
 from accounts.models import CustomUser
 from django.db.models import Q
 
@@ -90,9 +90,8 @@ class EntrepriseForm(forms.ModelForm, BootstrapFormMixin):
 class PlatformFeeWaiverForm(forms.ModelForm, BootstrapFormMixin):
     class Meta:
         model = PlatformFeeWaiver
-        fields = ["logement", "owner", "max_amount", "end_date"]
+        fields = ["owner", "max_amount", "end_date"]
         widgets = {
-            "logement": forms.Select(attrs={"class": "form-select"}),
             "owner": forms.Select(attrs={"class": "form-select"}),
             "max_amount": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
             "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
@@ -100,11 +99,9 @@ class PlatformFeeWaiverForm(forms.ModelForm, BootstrapFormMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["logement"].required = False
         self.fields["owner"].required = False
         self.fields["max_amount"].required = False
         self.fields["end_date"].required = False
-        self.fields["logement"].queryset = Logement.objects.all().order_by("name")
         self.fields["owner"].queryset = (
             CustomUser.objects.filter(is_active=True)
             .filter(Q(is_owner=True) | Q(is_admin=True))
@@ -115,12 +112,11 @@ class PlatformFeeWaiverForm(forms.ModelForm, BootstrapFormMixin):
 
     def clean(self):
         cleaned_data = super().clean()
-        logement = cleaned_data.get("logement")
         owner = cleaned_data.get("owner")
         max_amount = cleaned_data.get("max_amount")
         end_date = cleaned_data.get("end_date")
-        if not logement and not owner:
-            raise forms.ValidationError("Veuillez sélectionner au moins un logement ou un propriétaire.")
+        if not owner:
+            raise forms.ValidationError("Veuillez sélectionner un propriétaire.")
         if not max_amount and not end_date:
             raise forms.ValidationError("Veuillez renseigner un plafond ou une date de fin.")
 
@@ -128,11 +124,9 @@ class PlatformFeeWaiverForm(forms.ModelForm, BootstrapFormMixin):
         qs = PlatformFeeWaiver.objects.all()
         if self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
-        if logement:
-            qs = qs.filter(logement=logement)
         if owner:
             qs = qs.filter(owner=owner)
         for waiver in qs:
             if waiver.is_active() if callable(waiver.is_active) else waiver.is_active:
-                raise forms.ValidationError("Une exemption active existe déjà pour ce logement ou ce propriétaire.")
+                raise forms.ValidationError("Une exemption active existe déjà pour ce propriétaire.")
         return cleaned_data

@@ -252,7 +252,7 @@ def reservation_dashboard(request: HttpRequest, logement_id: Optional[int] = Non
         if not (request.user.is_admin or request.user.is_superuser):
             logements = get_logements(request.user)
             if not logements.exists():
-                messages.info(request, "Vous devez ajouter un logement avant d’accéder au tableau de revenus.")
+                messages.info(request, "Vous devez ajouter un logement avant d’accéder au tableau des réservations")
                 return redirect("logement:dashboard")
         year = request.GET.get("year")
         month = request.GET.get("month")
@@ -283,7 +283,7 @@ def reservation_dashboard(request: HttpRequest, logement_id: Optional[int] = Non
                 "available_months": months,
                 "current_year": year,
                 "current_month": month,
-                "search_query": search_query,
+                "search": search_query,
                 "status": status,
                 "page_obj": page_obj,
             },

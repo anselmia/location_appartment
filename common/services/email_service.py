@@ -106,6 +106,51 @@ def send_mail_on_new_reservation(logement, reservation, user):
         logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
 
 
+def send_mail_on_new_activity_reservation(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        # Build context for the email
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+
+        # Render email content
+        admin_message = render_to_string("email/new_activity_reservation.txt", email_context)
+
+        # Send email to admins
+        send_mail(
+            subject=f"🆕 Nouvelle Réservation {reservation.code} pour {activity.name}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[activity.owner.email],
+            fail_silently=False,  # Raise in dev, log in prod
+        )
+
+        logger.info(f"✅ Mail sent for reservation {reservation.code} to admins.")
+
+        # ========== CUSTOMER CONFIRMATION ==========
+        if user.email:
+            subject = f"Confirmation de votre Réservation {reservation.code} - {activity.name}"
+            user_message = render_to_string("email/new_activity_reservation_customer.txt", email_context)
+
+            send_mail(
+                subject=subject,
+                message=user_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+            logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
+
+
 def send_pre_checkin_reminders():
     try:
         from reservation.models import Reservation
@@ -114,7 +159,7 @@ def send_pre_checkin_reminders():
         for delta in [1, 2, 3]:
             target_day = today + timedelta(days=delta)
             reservations = Reservation.objects.filter(
-                checkin_date=target_day,
+                start=target_day,
                 status="confirmee",
                 pre_checkin_email_sent=False,
             )
@@ -148,7 +193,49 @@ def send_pre_checkin_reminders():
         logger.exception(f"❌ Error during pre-checkin reminders: {e}")
 
 
-def send_mail_on_refund(logement, reservation, user):
+def send_pre_checkin_activity_reminders():
+    try:
+        from activity.models import ActivityReservation
+
+        today = date.today()
+        for delta in [1, 2, 3]:
+            target_day = today + timedelta(days=delta)
+            reservations = ActivityReservation.objects.filter(
+                start__date=target_day,
+                status="confirmee",
+                pre_checkin_email_sent=False,
+            )
+
+            for res in reservations:
+                entreprise = get_entreprise()
+                if not entreprise:
+                    return
+
+                context = {
+                    "reservation": res,
+                    "activity": res.activity,
+                    "user_contact": res.activity.owner,
+                    "entreprise": entreprise,
+                }
+                subject = f"Votre activité approche - {res.activity.name}"
+                message = render_to_string("email/pre_checkin_activity_reminder.txt", context)
+
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [res.user.email],
+                    fail_silently=False,
+                )
+
+                res.pre_checkin_email_sent = True
+                res.save()
+                logger.info(f"📧 Pre-checkin reminder sent for reservation {res.code}")
+    except Exception as e:
+        logger.exception(f"❌ Error during pre-checkin reminders: {e}")
+
+
+def send_mail_on_logement_refund(logement, reservation, user):
     try:
         if not user or not getattr(user, "email", None):
             logger.warning(f"No valid user email for reservation {reservation.code}")
@@ -161,8 +248,8 @@ def send_mail_on_refund(logement, reservation, user):
         # Context for email templates
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
 
-        # ===== ADMIN EMAIL =====
-        admin_message = render_to_string("email/refund_admin.txt", email_context)
+        # ===== OWNER AND ADMIN EMAIL =====
+        admin_message = render_to_string("email/refund_logement_admin.txt", email_context)
 
         send_mail(
             subject=f"💸 Remboursement effectué - {logement.name} - Réservation {reservation.code}",
@@ -176,10 +263,54 @@ def send_mail_on_refund(logement, reservation, user):
 
         # ===== USER EMAIL =====
         if user.email:
-            user_message = render_to_string("email/refund_customer.txt", email_context)
+            user_message = render_to_string("email/refund_logement_customer.txt", email_context)
 
             send_mail(
                 subject=f"Remboursement de votre Réservation {reservation.code} - {logement.name}",
+                message=user_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            logger.info(f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
+
+
+def send_mail_on_activity_refund(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        # Context for email templates
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+
+        # ===== OWNER EMAIL =====
+        admin_message = render_to_string("email/refund_activity_admin.txt", email_context)
+
+        send_mail(
+            subject=f"💸 Remboursement effectué - {activity.name} - Réservation {reservation.code}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[activity.owner.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Refund email sent to owners for reservation {reservation.code}.")
+
+        # ===== USER EMAIL =====
+        if user.email:
+            user_message = render_to_string("email/refund_activity_customer.txt", email_context)
+
+            send_mail(
+                subject=f"Remboursement de votre Réservation {reservation.code} - {activity.name}",
                 message=user_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
@@ -229,6 +360,55 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
 
             send_mail(
                 subject=f"Transfert des fonds de la Réservation {reservation.code} - {logement.name}",
+                message=user_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            logger.info(f"✅ Transfer confirmation sent to user {user.email} for reservation {reservation.code}")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
+def send_mail_on_new_activity_transfer(activity, reservation, user_type):
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        # Context for email templates
+        user = activity.owner
+        amount = reservation.transferred_amount
+
+        email_context = {
+            "reservation": reservation,
+            "activity": activity,
+            "user": user,
+            "amount": amount,
+            "entreprise": entreprise,
+        }
+
+        # ===== ADMIN EMAIL =====
+        admin_message = render_to_string("email/transfer_activity_admin.txt", email_context)
+
+        send_mail(
+            subject=f"💸 Transfert effectué à {user} - {activity.name} - Réservation {reservation.code}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[activity.owner.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Transfer email sent to admins for reservation {reservation.code}.")
+
+        # ===== USER EMAIL =====
+        if user.email:
+            user_message = render_to_string("email/transfer_activity_user.txt", email_context)
+
+            send_mail(
+                subject=f"Transfert des fonds de la Réservation {reservation.code} - {activity.name}",
                 message=user_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
@@ -318,6 +498,51 @@ def send_mail_on_payment_failure(logement, reservation, user):
         logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
 
+def send_mail_on_activity_payment_failure(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+
+        # ===== OWNER & ADMIN EMAIL =====
+        admin_message = render_to_string("email/activity_payment_failure_admin.txt", email_context)
+
+        send_mail(
+            subject=f"💸 Échec de paiement - {activity.name} - Réservation {reservation.code}",
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[activity.owner.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Payment failure email sent to admins for reservation {reservation.code}.")
+
+        # ===== Customer EMAIL =====
+        message = render_to_string("email/activity_payment_failure.txt", email_context)
+
+        # Subject line
+        subject = f"❌ Échec de paiement pour votre réservation {reservation.code} - {activity.name}"
+
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"📧 Payment failure email sent to {user.email} for reservation {reservation.code}.")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
+
+
 def send_mail_contact(cd):
     try:
         logger.info(f"📨 Tentative d'envoi de message de contact: nom={cd['name']}, email={cd['email']}")
@@ -343,7 +568,7 @@ def send_email_new_message(msg):
             return
 
         reservation = msg.conversation.reservation
-        for user in msg.recipients:
+        for user in msg.recipients.all():  # Correction ici
             email_context = {"user": user, "reservation": reservation, "entreprise": entreprise}
 
             # ===== EMAIL =====
@@ -359,7 +584,7 @@ def send_email_new_message(msg):
                 fail_silently=False,
             )
 
-            logger.info(f"✅ new message email sent to {user.get_full_name()} for reservation {reservation.code}.")
+            logger.info(f"✅ new message email sent to {user.full_name} for reservation {reservation.code}.")
 
     except Exception as e:
         logger.exception(f"❌ Failed to send new message email for message {msg.id}: {e}")
@@ -455,3 +680,46 @@ def send_mail_conciergerie_stop_management(owner, conciergerie, logement):
         logger.info(f"✅ Mail stop management sent to {owner.email} for logement {logement.name}")
     except Exception as e:
         logger.exception(f"❌ Failed to send stop management mail to {owner.email}: {e}")
+
+
+def send_partner_validation_email(partner):
+    try:
+        entreprise = get_entreprise()
+        subject = f"Validation de votre partenariat avec {entreprise.name}"
+        context = {
+            "partner": partner,
+            "entreprise": entreprise,
+        }
+        message = render_to_string("email/partner_validation.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [partner.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Partner validation email sent to {partner.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send partner validation email to {partner.email}: {e}")
+
+
+def notify_vendor_new_reservation(reservation):
+    try:
+        entreprise = get_entreprise()
+        context = {
+            "reservation": reservation,
+            "entreprise": entreprise,
+        }
+        vendor_email = reservation.activity.owner.email
+        subject = "Nouvelle demande de réservation d'activité"
+        message = render_to_string("emails/activity_new_reservation.txt", context)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [vendor_email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ New reservation email sent to {vendor_email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to notify vendor for new reservation {reservation.id}: {e}")

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/partenaire_list.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container py-5 partenaire-list-wrapper">
+        <h2 class="mb-4 text-center">📋 Gestion des Partenaires</h2>
+        <!-- Filtres -->
+        <form method="get" class="mb-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label for="ville" class="form-label">Ville</label>
+                    <select name="ville" id="ville" class="form-select">
+                        <option value="">Toutes les villes</option>
+                        {% for ville in villes %}
+                            <option value="{{ ville.id }}"
+                                    {% if ville.id|stringformat:'s' == request.GET.ville %}selected{% endif %}>
+                                {{ ville.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="validated"
+                               id="validated"
+                               {% if request.GET.validated %}checked{% endif %}>
+                        <label class="form-check-label" for="validated">Seulement les partenaires validés</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">🔍 Filtrer</button>
+                </div>
+            </div>
+        </form>
+        <!-- Liste des partenaires avec formulaire de suppression -->
+        <form method="post" action="{% url 'activity:bulk_action' %}">
+            {% csrf_token %}
+            <div class="row g-4">
+                {% for c in partners %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm rounded-4 position-relative">
+                            <!-- Checkbox -->
+                            <div class="position-absolute top-0 start-0 p-2 z-1">
+                                <input type="checkbox"
+                                       name="selected_ids"
+                                       value="{{ c.id }}"
+                                       class="form-check-input">
+                            </div>
+                            <!-- Image -->
+                            {% if c.logo %}
+                                <img src="{{ c.logo.url }}"
+                                     class="card-img-top rounded-top-4"
+                                     style="object-fit: cover;
+                                            height: 180px">
+                            {% endif %}
+                            <!-- Body -->
+                            <div class="card-body position-relative">
+                                <!-- Lien invisible étendu -->
+                                <a href="{% url 'activity:partner_detail' c.id %}" class="stretched-link"></a>
+                                <h5 class="card-title">{{ c.name }}</h5>
+                                <p class="text-muted small mb-1">📍 {{ c.ville.name }} – {{ c.code_postal }}</p>
+                                <p class="mb-1">
+                                    <strong>Email :</strong> {{ c.email }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Tél. :</strong> {{ c.telephone }}
+                                </p>
+                                <p>
+                                    <strong>Statut :</strong>
+                                    {% if c.validated %}
+                                        <span class="badge-status validee">Validée</span>
+                                    {% else %}
+                                        <span class="badge-status annulee">Non validée</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-warning text-center">Aucun partenaire ne correspond aux filtres.</div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if partners %}
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="submit"
+                            name="action"
+                            value="validate"
+                            class="btn btn-success"
+                            onclick="return confirm('Valider les partenaires sélectionnés ?')">
+                        ✅ Valider la sélection
+                    </button>
+                    <button type="submit"
+                            name="action"
+                            value="delete"
+                            class="btn btn-danger"
+                            onclick="return confirm('Supprimer les partenaires sélectionnés ?')">
+                        🗑️ Supprimer la sélection
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Pagination">
+                <ul class="pagination-list">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %} {% if request.GET.validated %}validated={{ request.GET.validated }}&{% endif %} page={{ page_obj.previous_page_number }}"
+                               aria-label="Précédent">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span>&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %} {% if request.GET.validated %}validated={{ request.GET.validated }}&{% endif %} page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a href="?{% if request.GET.ville %}ville={{ request.GET.ville }}&{% endif %} {% if request.GET.validated %}validated={{ request.GET.validated }}&{% endif %} page={{ page_obj.next_page_number }}"
+                               aria-label="Suivant">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span>&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endblock %}

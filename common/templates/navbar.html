@@ -22,7 +22,18 @@
                       onclick="document.getElementById('navLinks').classList.remove('show')">✕</span>
             </div>
             <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
-            <a href="{% url 'logement:logement_search' %}">{% trans "Réserver" %}</a>
+            
+            <div class="dropdown">
+                <a href="#"
+                   class="dropdown-toggle"
+                   role="button"
+                   aria-expanded="false"
+                   aria-haspopup="true">{% trans "Réserver" %}</a>
+                <div class="dropdown-menu">
+                    <a href="{% url 'logement:logement_search' %}">{% trans "Un logement" %}</a>
+                    <a href="{% url 'activity:search' %}">{% trans "Une activité" %}</a>
+                </div>
+            </div>
             <!-- Nous choisir -->
             <div class="dropdown">
                 <a href="#"
@@ -33,7 +44,8 @@
                 <div class="dropdown-menu">
                     <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
                     <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
-                    <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos partenaires" %}</a>
+                    <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
+                    <a href="{% url 'activity:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
                 </div>
             </div>
             {% if user.is_authenticated %}
@@ -53,6 +65,22 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if user.is_superuser or user.is_admin or user.is_partner %}
+                    <div class="dropdown">
+                        <a href="#"
+                           class="dropdown-toggle"
+                           role="button"
+                           aria-expanded="false"
+                           aria-haspopup="true">{% trans "Activités" %}</a>
+                        <div class="dropdown-menu">
+                            <a href="{% url 'activity:activity_dashboard' %}">{% trans "Tableau de bord" %}</a>
+                            <a href="{% url 'activity:activity_calendar' %}">{% trans "Calendrier" %}</a>
+                            <a href="{% url 'activity:reservation_dashboard' %}">{% trans "Réservations" %}</a>
+                            <a href="{% url 'activity:manage_discounts' %}">{% trans "Réductions" %}</a>
+                            <a href="{% url 'activity:revenu' %}">{% trans "Revenus" %}</a>
+                        </div>
+                    </div>
+                {% endif %}
                 {% if user.is_superuser or user.is_admin %}
                     <div class="dropdown">
                         <a href="#"
@@ -69,6 +97,8 @@
                             <a href="{% url 'administration:offers' %}">{% trans "Offres" %}</a>
                             <a href="{% url 'payment:payment_tasks' %}">{% trans "Transactions" %}</a>
                             <a href="{% url 'conciergerie:list_conciergeries' %}">{% trans "Conciergeries" %}</a>
+                            <a href="{% url 'activity:list_partners' %}">{% trans "Partenaires" %}</a>
+                            <a href="{% url 'administration:huey_tasks_status' %}">{% trans "Tasks" %}</a>
                             <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
                             <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>
                         </div>

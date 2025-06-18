@@ -1,6 +1,5 @@
 # account/tests/test_models.py
 import pytest
-from accounts.models import CustomUser, Message
 from accounts.tests.factories import UserFactory, ConversationFactory, MessageFactory
 
 pytestmark = pytest.mark.django_db

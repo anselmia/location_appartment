@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/customer_reservation_detail.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'accounts:dashboard' %}"
+               class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour à mes réservations
+            </a>
+            <h2 class="fw-bold mb-0">Réservation {{ reservation.code }}</h2>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row gy-4">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Informations générales</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Activité</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.activity.name }}
+                            </dd>
+                            <dt class="col-sm-5">Date</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.start|date:"d M Y" }} à {{ reservation.start|date:"H:i" }}
+                            </dd>
+                            <dt class="col-sm-5">Nombre de participants</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.guest }}
+                            </dd>
+                            <dt class="col-sm-5">Réservé le</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.date_reservation|date:"d M Y H:i" }}
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- Voir l'activité -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Activité</h5>
+                        <p class="mb-3">Retrouvez plus d'informations ou réservez à nouveau via la fiche activité.</p>
+                        <a href="{% url 'activity:detail' reservation.activity.id %}"
+                           class="btn btn-primary">
+                            <i class="bi bi-calendar-event"></i> Voir l'activité
+                        </a>
+                    </div>
+                    <!-- Partenaire -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Partenaire</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Nom</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.activity.owner.full_name|default:reservation.activity.owner.username }}
+                            </dd>
+                            <dt class="col-sm-5">Téléphone</dt>
+                            <dd class="col-sm-7">
+                                {% if reservation.activity.owner.phone %}
+                                    <a href="tel:{{ reservation.activity.owner.phone }}"
+                                       class="text-decoration-none">{{ reservation.activity.owner.phone }}</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- État de la réservation -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Statut</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Statut</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge-status {{ reservation.statut|default:'inconnu' }}">{{ reservation.get_statut_display }}</span>
+                            </dd>
+                            <dt class="col-sm-5">État actuel</dt>
+                            <dd class="col-sm-7">
+                                {% if reservation.ongoing %}
+                                    <span class="badge-status en-cours">En cours</span>
+                                {% elif reservation.ended %}
+                                    <span class="badge-status terminee">Terminée</span>
+                                {% elif reservation.coming %}
+                                    <span class="badge-status a-venir">À venir</span>
+                                {% elif reservation.pending %}
+                                    <span class="badge-status en-attente">En attente</span>
+                                {% else %}
+                                    <span class="badge-status inconnu">Inconnu</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- Paiement simplifié -->
+                    <div class="col-md-6">
+                        <h5 class="text-muted border-bottom pb-2">Détails du paiement</h5>
+                        <dl class="row">
+                            <dt class="col-sm-5">Montant total</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.price|floatformat:2 }} €
+                            </dd>
+                            {% if reservation.refunded %}
+                                <dt class="col-sm-5 text-danger">Remboursé</dt>
+                                <dd class="col-sm-7 text-danger">
+                                    Oui
+                                    {% if reservation.refund_amount %}({{ reservation.refund_amount|floatformat:2 }} €){% endif %}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

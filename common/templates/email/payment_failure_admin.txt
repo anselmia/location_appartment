@@ -3,7 +3,7 @@
 La réservation suivante a rencontré une erreur lors du processus de paiement :
 
 🔹 Code réservation : {{ reservation.code }}
-🔹 Client : {{ user.get_full_name|default:user.email }}
+🔹 Client : {{ user.get_ffull_nameull_name|default:user.email }}
 🔹 Logement : {{ logement.name }}
 🔹 Dates : du {{ reservation.start|date:"d M Y" }} au {{ reservation.end|date:"d M Y" }}
 🔹 Montant : {{ reservation.price|floatformat:2 }} €

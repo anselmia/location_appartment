@@ -1,0 +1,81 @@
+{% load static %}
+<div class="card shadow rounded-4 border-0 mb-4">
+    <div class="card-header text-white rounded-top-4">
+        <h5 class="mb-0">🤝 Partenaire</h5>
+    </div>
+    <div class="card-body">
+        {% if not partner %}
+            <p class="text-muted mb-3">Aucun partenaire n’est enregistré pour le moment.</p>
+            <a href="{% url 'activity:create_partner' %}" class="btn btn-primary">➕ Devenir partenaire</a>
+        {% else %}
+            <div class="mb-3">
+                <div class="row gy-3">
+                    <div class="col-md-6">
+                        <strong>Nom :</strong>
+                        <div class="text-muted small">{{ partner.name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Email :</strong>
+                        <div class="text-muted small">{{ partner.email }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Téléphone :</strong>
+                        <div class="text-muted small">{{ partner.telephone }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Adresse :</strong>
+                        <div class="text-muted small">{{ partner.adresse }}, {{ partner.code_postal }} {{ partner.ville.name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Forme juridique :</strong>
+                        <div class="text-muted small">{{ partner.forme_juridique|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>SIRET :</strong>
+                        <div class="text-muted small">{{ partner.siret|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted">Créé le {{ partner.date_creation|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Validé :</strong>
+                        {% if partner.validated %}
+                            <span class="badge-status validee">✅ Validé</span>
+                        {% else %}
+                            <span class="badge-status en-attente">⏳ En attente</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="{% url 'activity:update_partner' partner.id %}"
+                   class="btn btn-primary">✏️ Modifier mon profil partenaire</a>
+                <a href="{% url 'activity:create_activity' %}" class="btn btn-success">➕ Ajouter une activité</a>
+            </div>
+            {# --- Activités proposées par le partenaire --- #}
+            <hr class="my-4">
+            <h6 class="fw-semibold mb-3">🎯 Activités proposées</h6>
+            {% if partner_activities and partner_activities|length > 0 %}
+                <div class="row g-3">
+                    {% for activity in partner_activities %}
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1">{{ activity.name }}</h6>
+                                    <div class="text-muted small mb-2">{{ activity.location.name }}</div>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                        <span class="badge bg-info text-dark">{{ activity.category.name }}</span>
+                                        <a href="{% url 'activity:detail' activity.id %}"
+                                           class="btn btn-outline-primary btn-sm">👁️ Voir</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Aucune activité proposée actuellement.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

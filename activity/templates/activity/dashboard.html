@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/activity_dashboard.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="admin-activity-container">
+        <div class="admin-header">
+            <div class="admin-header-title">
+                <h2>Gestion des activités</h2>
+                <p class="admin-subtitle">Gérez vos activités, ajoutez ou modifiez les activités proposées</p>
+            </div>
+            <a href="{% url 'activity:create_activity' %}" class="btn btn-primary">➕ Nouvelle activité</a>
+        </div>
+        {% if activities %}
+            <div class="activity-grid">
+                {% for activity in activities %}
+                    <div class="activity-card">
+                        <a href="{% url 'activity:update_activity' activity.id %}"
+                           class="activity-card-link">
+                            {% if activity.photos.first %}
+                                <img src="{{ activity.photos.first.image.url }}"
+                                     alt="{{ activity.name }}"
+                                     class="activity-thumb"
+                                     width="100%"
+                                     height="180">
+                            {% else %}
+                                <div class="activity-thumb placeholder">📷</div>
+                            {% endif %}
+                            <div class="activity-card-body">
+                                <h3 class="activity-title">{{ activity.name }}</h3>
+                                <p class="activity-city">
+                                    {% if activity.location %}
+                                        {{ activity.location.name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </p>
+                                <div class="activity-details">
+                                    <span>💰 {{ activity.price }} €</span>
+                                    <span>⏱ {{ activity.duration }} min</span>
+                                    <span>👤 {{ activity.max_participants }} pers.</span>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="tag type">{{ activity.category.name }}</span>
+                                    <span class="tag status {% if not activity.is_active %}inactif{% endif %}">
+                                        {% if activity.is_active %}
+                                            Active
+                                        {% else %}
+                                            Inactif
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Pagination">
+                    <ul class="pagination-list">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{ page_obj.previous_page_number }}"
+                                   aria-label="Précédent">«</a>
+                            </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{ page_obj.next_page_number }}" aria-label="Suivant">»</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-4">Aucune activité enregistrée pour le moment.</div>
+        {% endif %}
+    </div>
+{% endblock content %}

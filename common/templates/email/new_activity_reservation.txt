@@ -1,0 +1,11 @@
+Nouvelle réservation confirmée 🔒
+
+🧑‍💼 Client : {{ user.full_name }} ({{ user.email }})
+🏡 Activité : {{ activity.name }}
+📅 Du {{ reservation.start }} au {{ reservation.end }}
+👥 Nombre de voyageurs : {{ reservation.participants }}
+Reservation code :  {reservation.code}
+💶 Prix total : {{ reservation.price }} € (taxes : {{ reservation.tax }} €)
+📆 Réservé le : {{ reservation.date_reservation }}
+
+---

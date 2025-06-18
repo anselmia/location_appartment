@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False)
     is_owner = models.BooleanField(default=False)
     is_owner_admin = models.BooleanField(default=False)
+    is_partner = models.BooleanField(default=False)
     phone = models.CharField(
         max_length=15,
         validators=[phone_validator],

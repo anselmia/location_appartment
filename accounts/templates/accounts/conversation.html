@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'accounts/css/message.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="container-fluid py-4 d-flex flex-column align-items-center justify-content-center"
+         style="min-height: 80vh">
+        <div class="w-100 mb-3" style="max-width: 900px;">
+            <a href="{% url 'accounts:messages' %}"
+               class="btn btn-secondary mb-3">&larr; Retour à la messagerie</a>
+        </div>
+        {% if active_conversation %}
+            <div class="card w-100 shadow" style="max-width: 900px;">
+                <div class="card-header">
+                    <strong>Conversation pour : {{ active_conversation.reservation }} - {{ active_conversation.reservation.logement.name }}</strong>
+                </div>
+                <div class="card-body overflow-auto"
+                     style="max-height: 60vh"
+                     id="message-list">
+                    {% for message in active_conversation.messages.all %}
+                        {% if message.sender == user %}
+                            <div class="text-end mb-2">
+                                <div class="d-inline-block rounded p-2 bg-primary-subtle text-dark border">
+                                    <small><strong>Moi</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
+                                    <br>
+                                    {{ message.content|linebreaksbr }}
+                                    {% if message.read_by.count > 1 %}
+                                        <div class="mt-1">
+                                            <small class="text-muted">✅ Lu</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-start mb-2">
+                                <div class="d-inline-block border rounded p-2">
+                                    <small><strong>{{ message.sender }}</strong> – {{ message.timestamp|date:"d/m/Y H:i" }}</small>
+                                    <br>
+                                    {{ message.content|linebreaksbr }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-muted">Aucun message pour cette conversation.</p>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <form method="post"
+                          action="{% url 'accounts:messages_conversation' active_conversation.id %}">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
+{% block extra_js %}
+{% endblock extra_js %}

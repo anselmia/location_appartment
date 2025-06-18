@@ -1,0 +1,15 @@
+⚠️ Échec de paiement détecté
+
+La réservation suivante a rencontré une erreur lors du processus de paiement :
+
+🔹 Code réservation : {{ reservation.code }}
+🔹 Client : {{ user.full_name|default:user.email }}
+🔹 Activité : {{ activity.name }}
+🔹 Dates : du {{ reservation.start|date:"d M Y" }} au {{ reservation.end|date:"d M Y" }}
+🔹 Montant : {{ reservation.price|floatformat:2 }} €
+
+Le statut de la réservation est toujours : "{{ reservation.get_statut_display }}".
+
+Vous pouvez accéder à cette réservation dans le tableau de bord d'administration pour plus d’informations.
+
+— Notification automatique

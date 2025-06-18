@@ -1,0 +1,137 @@
+/* Huey Tasks Status Table Styles */
+.huey-tasks-table,
+.huey-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.huey-tasks-table th,
+.huey-tasks-table td,
+.huey-history-table th,
+.huey-history-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+.huey-tasks-table th,
+.huey-history-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #333;
+}
+.huey-tasks-table tr:last-child td,
+.huey-history-table tr:last-child td {
+  border-bottom: none;
+}
+.huey-status {
+  padding: 0.25em 0.75em;
+  border-radius: 12px;
+  font-size: 0.95em;
+  font-weight: 500;
+  display: inline-block;
+}
+.huey-status.started {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.huey-status.finished {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+.huey-status.error {
+  background: #ffebee;
+  color: #d32f2f;
+}
+.huey-status.queued {
+  background: #fffde7;
+  color: #fbc02d;
+}
+
+.huey-tasks-status-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  max-width: 100vw;
+}
+
+.huey-table-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+}
+
+.huey-tasks-table,
+.huey-history-table {
+  min-width: 900px;
+}
+
+@media (max-width: 900px) {
+  .huey-tasks-table,
+  .huey-history-table {
+    min-width: 600px;
+  }
+  .huey-table-scroll {
+    max-height: 220px;
+  }
+  .huey-tasks-table,
+  .huey-history-table,
+  .huey-tasks-table thead,
+  .huey-history-table thead,
+  .huey-tasks-table tbody,
+  .huey-history-table tbody,
+  .huey-tasks-table th,
+  .huey-history-table th,
+  .huey-tasks-table td,
+  .huey-history-table td,
+  .huey-tasks-table tr,
+  .huey-history-table tr {
+    display: block;
+  }
+  .huey-tasks-table tr,
+  .huey-history-table tr {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    background: #fff;
+    padding: 0.5rem 0.25rem;
+  }
+  .huey-tasks-table td,
+  .huey-history-table td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+    min-height: 2.5em;
+  }
+  .huey-tasks-table td:before,
+  .huey-history-table td:before {
+    position: absolute;
+    left: 1rem;
+    top: 0.75rem;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #888;
+    content: attr(data-label);
+  }
+  .huey-tasks-table th,
+  .huey-history-table th {
+    display: none;
+  }
+}
+
+.huey-section-title {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1976d2;
+  letter-spacing: 0.02em;
+}

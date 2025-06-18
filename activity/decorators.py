@@ -1,0 +1,91 @@
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from activity.models import Activity, ActivityReservation
+
+
+# Decorator to check if the user is a partner
+def user_is_partner(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Allow admins to bypass the check
+        if request.user.is_admin or request.user.is_superuser or request.user.is_partner:
+            return view_func(request, *args, **kwargs)
+
+        # If the user is neither the owner nor an admin, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
+def user_is_activity_admin(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Get the activity instance
+        activity_id = kwargs.get("activity_id")
+        if not activity_id:
+            return view_func(request, *args, **kwargs)
+
+        activity = get_object_or_404(Activity, id=activity_id)
+
+        # Check if the user is an admin or the owner of the activity
+        if request.user == activity.owner or request.user.is_admin or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+
+        # If the user is neither the owner nor an admin, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
+def user_has_activity(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Allow admins to bypass the check
+        if request.user.is_admin:
+            return view_func(request, *args, **kwargs)
+
+        # Check if the user is either the owner or an admin of any Activity
+        has_activity = (
+            Activity.objects.filter(owner=request.user).exists()
+            or request.user.is_partner
+            or request.user.is_superuser
+            or request.user.is_admin
+        )
+
+        if has_activity:
+            return view_func(request, *args, **kwargs)
+
+        # If the user is neither the owner nor an admin, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
+def user_is_reservation_admin(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Get the reservation instance from the URL parameter
+        reservation = get_object_or_404(ActivityReservation, code=kwargs["code"])
+
+        # Get the associated activity
+        activity = reservation.activity
+
+        # Check if the user is the owner of the activity
+        if request.user == activity.owner or request.user.is_admin or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+
+        # If the user is not authorized, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
+
+    return _wrapped_view
+
+
+def user_is_reservation_customer(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        # Get the reservation instance from the URL parameter
+        reservation = get_object_or_404(ActivityReservation, code=kwargs["code"])
+
+        # Check if the user is the admin or the owner of the logement
+        if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+
+        # If the user is not authorized, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
+
+    return _wrapped_view

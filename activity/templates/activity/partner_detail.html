@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extrahead %}
+  <link rel="stylesheet"
+        href="{% static 'activity/css/partner_detail.css' %}">
+{% endblock %}
+{% block content %}
+  <div class="partner-detail-wrapper py-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+      <div class="row g-0">
+        {% if partner.logo %}
+          <div class="col-md-5 d-none d-md-block">
+            <img src="{{ partner.logo.url }}"
+                 alt="{{ partner.name }}"
+                 class="img-fluid h-100 object-fit-cover">
+          </div>
+        {% endif %}
+        <div class="{% if partner.logo %}col-md-7{% else %}col-12{% endif %}">
+          <div class="card-body p-4">
+            <h2 class="card-title mb-2">{{ partner.name }}</h2>
+            {% if partner.description %}<p class="text-muted">{{ partner.description }}</p>{% endif %}
+            <hr>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <h6 class="mb-1">📍 Adresse</h6>
+                <p class="mb-0 small text-muted">
+                  {{ partner.adresse }}
+                  <br>
+                  {{ partner.code_postal }} {{ partner.ville.name }}, {{ partner.pays }}
+                </p>
+              </div>
+              <div class="col-sm-6">
+                <h6 class="mb-1">📞 Contact</h6>
+                <p class="mb-0 small text-muted">
+                  {{ partner.telephone }}
+                  <br>
+                  {{ partner.email }}
+                </p>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <h6 class="mb-1">📄 Informations légales</h6>
+                <p class="mb-0 small text-muted">
+                  {{ partner.forme_juridique|default:"—" }}
+                  <br>
+                  SIRET : {{ partner.siret|default:"—" }}
+                </p>
+              </div>
+              <div class="col-sm-6">
+                <h6 class="mb-1">👤 Représentant</h6>
+                <p class="mb-0 small text-muted">
+                  {{ partner.nom_representant|default:"—" }}
+                  <br>
+                  {{ partner.email_representant|default:"—" }}
+                  <br>
+                  {{ partner.telephone_representant|default:"—" }}
+                </p>
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <span class="text-muted small">📅 Créée le</span>
+                <br>
+                <strong>{{ partner.date_creation|date:"d M Y" }}</strong>
+              </div>
+              <div class="col-md-4">
+                <span class="text-muted small">✅ Validation</span>
+                <br>
+                {% if partner.validated %}
+                  <span class="badge-status validee">Validée</span>
+                {% else %}
+                  <span class="badge-status en-attente">En attente</span>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <span class="text-muted small">🔄 Active</span>
+                <br>
+                {% if partner.actif %}
+                  <span class="badge-status confirmee">Oui</span>
+                {% else %}
+                  <span class="badge-status anulee">Non</span>
+                {% endif %}
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'activity:update_partner' partner.id %}"
+                   class="btn btn-primary">✏️ Modifier</a>
+                <a href="{% url 'activity:list_partners' %}"
+                   class="btn btn-secondary">⬅️ Retour à la liste</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- row -->
+      </div>
+    </div>
+  {% endblock %}

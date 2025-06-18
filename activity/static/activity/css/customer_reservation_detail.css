@@ -1,0 +1,59 @@
+/* Customer Activity Reservation Detail - Professional, Responsive, and Customer-Oriented */
+
+.card {
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow, 0 8px 24px rgba(0, 0, 0, 0.08));
+  border: none;
+  background: var(--bg-white, #fff);
+}
+.card-body {
+  padding: var(--spacing-lg, 2.4rem) var(--spacing-md, 1.6rem);
+}
+
+h5.text-muted {
+  color: var(--primary-color, #7f8c8d) !important;
+  font-family: var(--font-title, "Playfair Display", serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Definition list styling */
+dl.row {
+  margin-bottom: 0.5rem;
+}
+dl.row dt {
+  color: var(--text-muted, #7f8c8d);
+  font-weight: 500;
+  font-size: 1rem;
+}
+dl.row dd {
+  color: var(--text-dark, #2c2c2c);
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.3em;
+}
+
+@media (max-width: 991px) {
+  .card-body {
+    padding: var(--spacing-md, 1.6rem) var(--spacing-sm, 0.8rem);
+  }
+  h2.fw-bold {
+    font-size: 1.3rem;
+  }
+  h5.text-muted {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .container.py-4 {
+    padding-left: var(--spacing-xs, 0.4rem);
+    padding-right: var(--spacing-xs, 0.4rem);
+  }
+  .card-body {
+    padding: var(--spacing-sm, 0.8rem);
+  }
+  h2.fw-bold {
+    font-size: 1.05rem;
+  }
+}

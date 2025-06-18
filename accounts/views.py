@@ -37,12 +37,13 @@ from common.services.email_service import (
     resend_confirmation_email,
     send_email_new_message,
 )
-from common.services.helper_fct import is_ajax
 
 from conciergerie.models import Conciergerie
 
 from payment.services.payment_service import is_stripe_admin
 from logement.models import Logement
+from activity.models import Partners, Activity
+from activity.services.reservation import get_user_activity_reservation
 
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,9 @@ def client_dashboard(request):
         dashboard_link = None
         stripe_account = None
         conciergerie = None
+        partner = None
         reservations = []
+        activity_reservations = []
         code_filter = request.GET.get("code", None)
 
         try:
@@ -111,6 +114,12 @@ def client_dashboard(request):
         except Exception as e:
             logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations.")
+
+        try:
+            activity_reservations = get_user_activity_reservation(user)
+        except Exception as e:
+            logger.exception(f"❌ Failed to load activity reservations for user {user.id}: {e}")
+            messages.error(request, "Impossible de charger vos réservations d'activité.")
 
         formUser = CustomUserChangeForm(instance=user)
 
@@ -154,6 +163,7 @@ def client_dashboard(request):
                     request,
                     "Une erreur est survenue lors du chargement de vos données Stripe.",
                 )
+
         pending_requests = None
         logement_administrated = None
         # Check if user is admin or owner of a conciergerie
@@ -165,12 +175,19 @@ def client_dashboard(request):
             pending_requests = ConciergerieRequest.objects.filter(conciergerie=conciergerie, status="pending")
             logement_administrated = [logement for logement in Logement.objects.filter(admin=request.user)]
 
+        user_activities = None
+        # Check if user is admin or owner of a conciergerie
+        if user.is_partner or user.is_admin or user.is_superuser:
+            partner = Partners.objects.filter(user=request.user).first()
+            user_activities = [activity for activity in Activity.objects.filter(owner=request.user)]
+
         return render(
             request,
             "accounts/dashboard.html",
             {
                 "user": user,
                 "reservations": reservations,
+                "activity_reservations": activity_reservations,
                 "formUser": formUser,
                 "password_form": password_form,
                 "stripe_account": stripe_account,
@@ -180,6 +197,8 @@ def client_dashboard(request):
                 "user_conciergerie": conciergerie,
                 "pending_requests": pending_requests,
                 "logement_administrated": logement_administrated,
+                "partner": partner,
+                "partner_activities": user_activities,
             },
         )
 
@@ -206,14 +225,9 @@ def update_profile(request):
 @login_required
 def messages_view(request, conversation_id=None):
     user = request.user
-
     try:
         conversations = get_conversations(user)
         reservations_without_conversation = get_reservations_for_conversations_to_start(user)
-
-        active_conversation = None
-        messages_qs = Message.objects.none()
-        form = MessageForm()
 
         if conversation_id:
             try:
@@ -229,12 +243,12 @@ def messages_view(request, conversation_id=None):
                 return redirect("accounts:messages")
 
             messages_qs = active_conversation.messages.select_related("sender").prefetch_related("read_by")
-
-            # Mark unread messages as read
+            # Marquer comme lu
             for msg in messages_qs:
                 if user in msg.recipients.all() and user not in msg.read_by.all():
                     msg.read_by.add(user)
 
+            form = MessageForm()
             if request.method == "POST":
                 form = MessageForm(request.POST)
                 if form.is_valid():
@@ -245,7 +259,6 @@ def messages_view(request, conversation_id=None):
                         msg.save()
                         msg.recipients.set(active_conversation.participants.exclude(id=user.id))
                         msg.save()
-
                         send_email_new_message(msg)
                         logger.info(f"[User:{user.id}] sent message {msg.id} in conversation {conversation_id}")
                         return redirect("accounts:messages_conversation", conversation_id=active_conversation.id)
@@ -258,18 +271,19 @@ def messages_view(request, conversation_id=None):
                 else:
                     logger.warning(f"[User:{user.id}] Invalid message form: {form.errors.as_json()}")
 
-        context = {
-            "conversations": conversations,
-            "active_conversation": active_conversation,
-            "form": form,
-            "reservations_to_start": reservations_without_conversation,
-        }
-
-        if is_ajax(request):
-            return render(request, "accounts/partials/_conversation.html", context)
-
-        return render(request, "accounts/messages.html", context)
-
+            context = {
+                "active_conversation": active_conversation,
+                "form": form,
+                "user": user,
+            }
+            return render(request, "accounts/conversation.html", context)
+        else:
+            # Page liste des conversations
+            context = {
+                "conversations": conversations,
+                "reservations_to_start": reservations_without_conversation,
+            }
+            return render(request, "accounts/messages.html", context)
     except Exception as e:
         logger.exception(f"[User:{user.id}] Error in messages_view: {e}")
         messages.error(request, "Une erreur est survenue lors du chargement des messages.")
@@ -453,7 +467,7 @@ def user_update_view(request, user_id=None):
 
         if form.is_valid():
             instance = form.save()
-            logger.info(f"User {instance.get_full_name()} updated")
+            logger.info(f"User {instance.full_name} updated")
             messages.success(request, "Utilisateur mis à jour avec succès.")
             return redirect("accounts:user_update_view_with_id", user_id=instance.id)
     else:

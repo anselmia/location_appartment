@@ -13,11 +13,6 @@
                     {% csrf_token %}
                     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
                     <div class="col-md-4">
-                        <label for="id_logement" class="form-label">Logement (optionnel)</label>
-                        {{ form.logement }}
-                        {% if form.logement.errors %}<div class="text-danger small">{{ form.logement.errors }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-4">
                         <label for="id_owner" class="form-label">Propriétaire (optionnel)</label>
                         {{ form.owner }}
                         {% if form.owner.errors %}<div class="text-danger small">{{ form.owner.errors }}</div>{% endif %}
@@ -86,7 +81,6 @@
                 <table class="table table-striped table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Logement</th>
                             <th>Propriétaire</th>
                             <th>Plafond (€)</th>
                             <th>Date de fin</th>
@@ -98,7 +92,6 @@
                     <tbody>
                         {% for waiver in waivers %}
                             <tr>
-                                <td>{{ waiver.logement }}</td>
                                 <td>{{ waiver.owner }}</td>
                                 <td>{{ waiver.max_amount|default:'—' }}</td>
                                 <td>{{ waiver.end_date|date:'d/m/Y'|default:'—' }}</td>

@@ -176,6 +176,7 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
     is_admin = forms.BooleanField(required=False)
     is_owner = forms.BooleanField(required=False)
     is_owner_admin = forms.BooleanField(required=False)
+    is_partner = forms.BooleanField(required=False)
 
     class Meta:
         model = CustomUser
@@ -188,6 +189,7 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
             "is_admin",
             "is_owner",
             "is_owner_admin",
+            "is_partner",
             "stripe_customer_id",
             "stripe_account_id",
         ]
@@ -199,6 +201,7 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
             "is_owner_admin": "Administrateur de conciergerie",
             "email": "E-mail",
             "is_owner": "Propriétaire",
+            "is_partner": "Partenaire",
             "stripe_customer_id": "Compte client Stripe",
             "stripe_account_id": "Compte stripe Connect",
         }
@@ -223,6 +226,6 @@ class UserAdminUpdateForm(forms.ModelForm, BootstrapFormMixin):
 
     def clean(self):
         cleaned_data = super().clean()
-        for field in ["is_admin", "is_owner", "is_owner_admin"]:
+        for field in ["is_admin", "is_owner", "is_owner_admin", "is_partner"]:
             cleaned_data[field] = bool(self.data.get(field))
         return cleaned_data

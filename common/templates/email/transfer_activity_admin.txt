@@ -1,0 +1,6 @@
+💸 Un Transfert a été effectué.
+
+Activité: {{ activity.name }}
+Réservation Code: {{ reservation.code }}
+Bénéficiaire: {{ user.name }} {{ user.last_name }}
+Montant Transféré: {{ amount|floatformat:2 }} €

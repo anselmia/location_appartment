@@ -1,0 +1,228 @@
+import re
+
+from django import forms
+from activity.models import Partners, Activity
+from django.utils.translation import gettext_lazy as _
+
+
+class PartnerForm(forms.ModelForm):
+    class Meta:
+        model = Partners
+        exclude = ["user", "validated", "date_creation"]  # ← important ici
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nom du partenaire"}),
+            "logo": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4, "placeholder": "Description du partenaire"}
+            ),
+            "adresse": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Adresse postale"}),
+            "code_postal": forms.TextInput(attrs={"class": "form-control", "placeholder": "Code postal"}),
+            "ville": forms.Select(attrs={"class": "form-select"}),
+            "pays": forms.TextInput(attrs={"class": "form-control", "placeholder": "France"}),
+            "telephone": forms.TextInput(attrs={"class": "form-control", "placeholder": "Numéro de téléphone"}),
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email"}),
+            "forme_juridique": forms.TextInput(attrs={"class": "form-control", "placeholder": "SASU, SARL, etc."}),
+            "siret": forms.TextInput(attrs={"class": "form-control", "placeholder": "Numéro SIRET"}),
+            "nom_representant": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nom du représentant légal"}
+            ),
+            "email_representant": forms.EmailInput(
+                attrs={"class": "form-control", "placeholder": "Email du représentant"}
+            ),
+            "telephone_representant": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Téléphone du représentant"}
+            ),
+            "actif": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class ActivityForm(forms.ModelForm):
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._owner = owner
+
+    class Meta:
+        model = Activity
+        exclude = ["owner", "created_at", "updated_at"]
+        labels = {
+            "name": "Nom de l'activité",
+            "description": "Description de l'activité",
+            "duration": "Durée (minutes)",
+            "location": "Ville",
+            "category": "Catégorie",
+            "start": "Heure de début",
+            "end": "Heure de fin",
+            "day_of_week": "Jour de la semaine",
+            "ready_period": "Délai entre deux activités (minutes)",
+            "nominal_guests": "Nombre de participants par défaut",
+            "fee_per_extra_guest": "Frais par participant supplémentaire (€)",
+            "max_participants": "Nombre maximum de participants",
+            "cancelation_period": "Délai d'annulation (jours)",
+            "availability_period": "Préavis (jours)",
+            "price": "Prix (€)",
+            "is_active": "Activité active ?",
+            "fixed_slots": "Horraires Fixes ?",
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nom de l'activité"}),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Décrivez l'activité, le déroulement, les points forts...",
+                }
+            ),
+            "duration": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Durée totale en minutes"}),
+            "location": forms.Select(attrs={"class": "form-select", "placeholder": "Choisissez la ville"}),
+            "category": forms.Select(attrs={"class": "form-select", "placeholder": "Choisissez la catégorie"}),
+            "start": forms.TimeInput(attrs={"class": "form-control", "type": "time", "placeholder": "Heure de début"}),
+            "end": forms.TimeInput(attrs={"class": "form-control", "type": "time", "placeholder": "Heure de fin"}),
+            "days_of_week": forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
+            "ready_period": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Délai entre deux activités (minutes)"}
+            ),
+            "nominal_guests": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Nombre de participants par défaut"}
+            ),
+            "fee_per_extra_guest": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Frais par participant supplémentaire (€)",
+                    "step": "0.01",
+                }
+            ),
+            "max_participants": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Nombre maximum de participants autorisés"}
+            ),
+            "cancelation_period": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Délai d'annulation en jours"}
+            ),
+            "availability_period": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Nombre de jours nécessaires à la préparation"}
+            ),
+            "price": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Prix par participant (€)", "step": "0.01"}
+            ),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "fixed_slots": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "manual_time_slots": forms.Textarea(
+                attrs={"class": "form-control", "rows": 3, "placeholder": "Exemple :\n09:00\n11:00\n14:30"}
+            ),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        is_active = cleaned_data.get("is_active")
+        owner = self._owner
+
+        fixed_slots = cleaned_data.get("fixed_slots")
+        manual_time_slots = cleaned_data.get("manual_time_slots", "")
+        ready_period = cleaned_data.get("ready_period")
+
+        # Validation: only one mode must be filled
+        if fixed_slots:
+            # Manual slots required
+            if not manual_time_slots.strip():
+                self.add_error("manual_time_slots", "Veuillez renseigner au moins un créneau horaire.")
+            else:
+                # Validate each line is HH:MM
+                for line in manual_time_slots.strip().splitlines():
+                    if not re.match(r"^([01]\d|2[0-3]):[0-5]\d$", line.strip()):
+                        self.add_error(
+                            "manual_time_slots", f"Format invalide pour le créneau : {line.strip()} (attendu HH:MM)"
+                        )
+            cleaned_data["ready_period"] = None
+        else:
+            # ready_period required
+            if not ready_period:
+                self.add_error("ready_period", "Veuillez renseigner un délai entre deux activités.")
+            cleaned_data["manual_time_slots"] = None
+
+        if is_active and not self.instance.pk:  # Seulement à la création
+            if not owner:
+                self.add_error(None, "L'activité ne peut pas être ouverte sans propriétaire.")
+            else:
+                if not getattr(owner, "stripe_account_id", None):
+                    self.add_error(None, "Le propriétaire doit avoir un compte Stripe connecté.")
+        return cleaned_data
+
+
+class ReservationForm(forms.Form):
+    guest = forms.IntegerField(
+        label="Nombre de participants",
+        initial=1,
+        min_value=1,
+        required=True,
+        widget=forms.NumberInput(
+            attrs={
+                "id": "id_guest",
+                "class": "form-control",
+                "type": "number",
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+                "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
+            }
+        ),
+        help_text="Nombre total de participants (adultes et enfants).",
+    )
+    start = forms.DateField(
+        label="Date de l'activité",
+        widget=forms.DateInput(attrs={"id": "id_start", "class": "form-control", "type": "date"}),
+        required=True,
+        help_text="Choisissez la date souhaitée.",
+    )
+    slot_time = forms.CharField(
+        label="Créneau horaire choisi",
+        required=True,
+        widget=forms.HiddenInput(),
+        help_text="Sélectionnez un créneau horaire disponible.",
+    )
+
+    cgv = forms.BooleanField(
+        label="Conditions générales de vente et d'utilisations",
+        required=True,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input", "id": "cgv-check"}),
+        error_messages={"required": "Vous devez accepter les conditions générales de venteet d'utilisation pour réserver."},
+    )
+
+    class Meta:
+        widgets = {
+            "start": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }  # Ensures date input widget
+            )
+        }
+
+    def __init__(self, *args, **kwargs):
+        start_date = kwargs.pop("start_date", None)  # The start date from the view
+        guest = kwargs.pop("guest", None)
+        max_guests = kwargs.pop("max_guests", 8)  # Default to 8 if not provided
+
+        super().__init__(*args, **kwargs)
+
+        # Validators
+        self.fields["guest"].max_value = max_guests
+        self.fields["guest"].min_value = 1
+
+        # Initialize start and end date fields if values are provided
+        self.fields["start"].initial = start_date or ""
+        self.fields["guest"].initial = guest or 1
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Pull the numbers (fallback to 0 if the field is empty / missing)
+        guest = cleaned_data.get("guest") or 0
+
+        # Same cap you injected in __init__
+        max_guests = self.fields["guest"].max_value
+
+        if guest > max_guests:
+            raise forms.ValidationError(
+                _("Le nombre total de voyageurs ne peut pas dépasser %(max)s."),
+                params={"max": max_guests},
+            )
+
+        return cleaned_data

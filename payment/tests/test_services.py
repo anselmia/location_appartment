@@ -174,27 +174,27 @@ def test_create_stripe_customer_no_email(mock_valid, mock_create, user):
 def test_charge_payment(mock_task, mock_intent, mock_attach, mock_retrieve, reservation):
     mock_retrieve.return_value = MagicMock(customer="cus_123")
     mock_intent.return_value = MagicMock(id="pi_123")
-    result = payment_service.charge_payment("pm_123", 10000, "cus_123", reservation)
+    result = payment_service.charge_deposit("pm_123", 10000, "cus_123", reservation)
     assert result.id == "pi_123"
 
 
 @patch("payment.services.payment_service.PaymentTask.objects.get_or_create", return_value=(MagicMock(), True))
 def test_charge_payment_missing_payment_method(mock_task, reservation):
     with pytest.raises(Exception):
-        payment_service.charge_payment(None, 10000, "cus_123", reservation)
+        payment_service.charge_deposit(None, 10000, "cus_123", reservation)
 
 
 @patch("payment.services.payment_service.PaymentTask.objects.get_or_create", return_value=(MagicMock(), True))
 def test_charge_payment_missing_customer(mock_task, reservation):
     with pytest.raises(Exception):
-        payment_service.charge_payment("pm_123", 10000, None, reservation)
+        payment_service.charge_deposit("pm_123", 10000, None, reservation)
 
 
 @patch("payment.services.payment_service.PaymentTask.objects.get_or_create", return_value=(MagicMock(), True))
 def test_charge_payment_already_charged(mock_task, reservation):
     reservation.caution_charged = True
     with pytest.raises(Exception):
-        payment_service.charge_payment("pm_123", 10000, "cus_123", reservation)
+        payment_service.charge_deposit("pm_123", 10000, "cus_123", reservation)
 
 
 @patch("payment.services.payment_service.stripe.Transfer.create")
@@ -206,7 +206,7 @@ def test_charge_reservation_owner_and_admin(mock_task, mock_transfer, reservatio
     reservation.logement.owner = owner
     reservation.admin_transferred = False
     reservation.transferred = False
-    payment_service.charge_reservation(reservation)
+    payment_service.transfer_funds(reservation)
     assert mock_transfer.called
 
 
@@ -215,14 +215,14 @@ def test_charge_reservation_missing_admin_account(mock_task, reservation):
     reservation.logement.admin = UserFactory(stripe_account_id=None)
     reservation.admin_transferred = False
     reservation.transferred = False
-    payment_service.charge_reservation(reservation)  # Should log error, not raise
+    payment_service.transfer_funds(reservation)  # Should log error, not raise
 
 
 @patch("payment.services.payment_service.PaymentTask.objects.get_or_create", return_value=(MagicMock(), True))
 def test_charge_reservation_missing_owner_account(mock_task, reservation):
     reservation.logement.owner = UserFactory(stripe_account_id=None)
     reservation.transferred = False
-    payment_service.charge_reservation(reservation)  # Should log error, not raise
+    payment_service.transfer_funds(reservation)  # Should log error, not raise
 
 
 @patch("payment.services.payment_service.stripe.Refund.create")

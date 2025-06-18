@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}
+    {% trans "Détails de l'activité" %}
+{% endblock %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/activity_detail.css' %}">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+          rel="stylesheet" />
+{% endblock extrahead %}
+{% block content %}
+    <div class="activity-detail-container">
+        <div class="activity-gallery">
+            {% if activity.photos.count > 0 %}
+                <div class="activity-gallery-main">
+                    <img src="{{ activity.photos.first.image.url }}"
+                         alt="Photo principale"
+                         class="activity-main-photo"
+                         width="100%"
+                         height="270">
+                </div>
+                <div class="activity-gallery-thumbs">
+                    {% for photo in activity.photos.all|slice:'1:5' %}
+                        <img src="{{ photo.image.url }}"
+                             alt="Photo activité"
+                             class="activity-thumb-photo"
+                             width="70"
+                             height="60">
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="activity-gallery-main">
+                    <img src="{% static 'img/no-photo.jpg' %}"
+                         alt="Aucune photo"
+                         class="activity-main-photo"
+                         width="100%"
+                         height="270">
+                </div>
+            {% endif %}
+
+            <form class="booking-form"
+                  action="{% url 'activity:book' activity.id %}"
+                  method="get">
+                <input type="hidden" id="id_start" name="start">
+                <input type="hidden" id="id_end" name="end">
+                <div class="calendar-box mt-4">
+                    <div id="calendar_inline"></div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="dot booked"></span> Réservé
+                        </div>
+                        <div class="legend-item">
+                            <span class="dot today"></span> Aujourd’hui
+                        </div>
+                        <div class="legend-item">
+                            <span class="dot free"></span> Disponible
+                        </div>
+                    </div>
+                </div>
+                <div id="slots-container" class="mt-3"></div>
+                <div class="activity-actions mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Réserver cette activité</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="activity-detail-content">
+            <h1 class="activity-title">{{ activity.name }}</h1>
+            <div class="activity-meta mb-3">
+                <span class="activity-category"><i class="fas fa-tag"></i> {{ activity.category.name }}</span>
+                <span class="activity-location"><i class="fas fa-map-marker-alt"></i> {{ activity.location }}</span>
+                <span class="activity-duration"><i class="fas fa-clock"></i> {{ activity.duration }} min</span>
+                <span class="activity-participants"><i class="fas fa-users"></i> {{ activity.max_participants }} pers. max</span>
+            </div>
+            <div class="activity-partner mb-3">
+                <span class="fw-semibold">Proposé par :</span>
+                <span class="activity-partner-name">{{ activity.partner_obj.name }}</span>
+                {% if activity.partner_obj.logo %}
+                    <img src="{{ activity.partner_obj.logo.url }}"
+                         alt="Logo partenaire"
+                         class="activity-partner-logo ms-2"
+                         width="38"
+                         height="38">
+                {% endif %}
+            </div>
+            <div class="activity-price mb-3">
+                <span class="price-label">À partir de</span>
+                <span class="activity-price-amount">{{ activity.price }} €</span>
+            </div>
+            <div class="activity-description mb-4">
+                <h4>Description</h4>
+                <p>{{ activity.description }}</p>
+            </div>
+            
+        </div>
+    </div>
+
+{% endblock content %}
+{% block extra_js %}
+    <script>
+            // Defining all required JS variables before script loading
+            const today = new Date().toISOString().slice(0, 10);
+            const activityId = {{ activity.id }};
+    </script>
+    <script src="{% static 'activity/js/calendar.js' %}"></script>
+{% endblock extra_js %}

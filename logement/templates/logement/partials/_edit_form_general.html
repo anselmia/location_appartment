@@ -30,7 +30,7 @@
             <input type="text"
                    id="id_admin_display"
                    class="form-control disabled"
-                   value="{{ form.instance.admin.get_full_name }} ({{ form.instance.admin.username }})"
+                   value="{{ form.instance.admin.full_name }} ({{ form.instance.admin.username }})"
                    readonly
                    disabled>
             {{ form.admin.as_hidden }}

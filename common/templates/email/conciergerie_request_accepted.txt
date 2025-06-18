@@ -1,4 +1,4 @@
-Bonjour {{ owner.get_full_name }},
+Bonjour {{ owner.full_name }},
 
 La conciergerie "{{ conciergerie.name }}" a accepté de gérer votre logement "{{ logement.name }}".
 

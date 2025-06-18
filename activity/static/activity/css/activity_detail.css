@@ -1,0 +1,250 @@
+/* ACTIVITÉ DÉTAIL - Expérience client premium, responsive, 100% variables :root */
+:root {
+  /* Assurez-vous que ces variables sont définies dans common/styles.css ou ici en fallback */
+  --primary: var(--primary-color, #bfa66b);
+  --accent: var(--accent-color, #2b3d55);
+  --secondary: var(--secondary-color, #f7f7f7);
+  --text: var(--text-color, #222);
+  --muted: var(--text-muted, #7a7a7a);
+  --card-bg: var(--bg-white, #fff);
+  --card-shadow: var(--shadow, 0 8px 32px rgba(0, 0, 0, 0.08));
+  --border-radius: var(--radius, 1.2rem);
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --font-title: "Playfair Display", serif;
+  --font-body: "Inter", Arial, sans-serif;
+}
+
+.activity-detail-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  background: var(--bg-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: var(--spacing-lg) var(--spacing-md);
+  margin: 2rem auto;
+  max-width: 1100px;
+  align-items: flex-start;
+  flex-direction: row;
+}
+
+.activity-gallery {
+  flex: 1 1 340px;
+  min-width: 320px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: center;
+  order: 0;
+}
+.activity-gallery-main {
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(42, 122, 226, 0.07);
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.activity-main-photo {
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 1rem;
+  display: block;
+  transition: transform 0.2s;
+}
+.activity-main-photo:hover {
+  transform: scale(1.03);
+}
+.activity-gallery-thumbs {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: flex-start;
+}
+.activity-thumb-photo {
+  width: 70px;
+  height: 60px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(42, 122, 226, 0.1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border 0.2s, transform 0.2s;
+}
+.activity-thumb-photo:hover {
+  border: 2px solid var(--primary);
+  transform: scale(1.07);
+}
+
+.booking-form {
+  width: 100%;
+  max-width: 420px;
+  align-self: center;
+  order: 1;
+  background: var(--background-highlight);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+#slots-container {
+  margin-top: var(--spacing-xs);
+  font-size: 1.05rem;
+}
+
+.activity-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+.activity-actions .btn-primary {
+  background: var(--primary);
+  border: none;
+  border-radius: 0.7rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.7rem 2.2rem;
+  transition: background 0.2s, color 0.2s;
+  color: #fff;
+  box-shadow: 0 2px 8px 0 rgba(191, 166, 107, 0.08);
+}
+.activity-actions .btn-primary:hover {
+  background: var(--accent);
+  color: var(--primary);
+}
+
+.activity-detail-content {
+  flex: 2 1 400px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  order: 1;
+}
+.activity-title {
+  font-size: 2.2rem;
+  font-family: var(--font-title);
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+.activity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2rem;
+  font-size: 1.08rem;
+  color: var(--muted);
+}
+.activity-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.activity-partner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.08rem;
+}
+.activity-partner-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+.activity-price {
+  font-size: 1.3rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.activity-price-amount {
+  font-size: 1.7rem;
+  color: var(--accent);
+  font-weight: 800;
+  margin-left: 0.5rem;
+}
+.activity-description {
+  background: var(--light-bg);
+  border-radius: 0.7rem;
+  padding: 1.2rem 1rem;
+  color: var(--text);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+.activity-description h4 {
+  font-family: var(--font-title);
+  color: var(--primary);
+  font-size: 1.15rem;
+  margin-bottom: 0.5em;
+}
+
+/* Hide mobile calendar by default, show on mobile only */
+.activity-calendar-mobile {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .activity-detail-container {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-xs);
+    align-items: center;
+  }
+  .activity-gallery {
+    order: 0;
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
+  }
+  .activity-detail-content {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+  }
+  .booking-form {
+    max-width: 420px;
+    width: 100%;
+    align-self: center;
+    order: 2;
+  }
+}
+@media (max-width: 600px) {
+  .activity-detail-container {
+    padding: var(--spacing-xs);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  .activity-title {
+    font-size: 1.3rem;
+  }
+  .activity-main-photo {
+    height: 180px;
+  }
+  .activity-gallery-main {
+    aspect-ratio: 1.5/1;
+  }
+  .activity-description {
+    font-size: 0.98rem;
+    padding: 0.7rem 0.5rem;
+  }
+  .booking-form {
+    padding: var(--spacing-xs);
+  }
+}

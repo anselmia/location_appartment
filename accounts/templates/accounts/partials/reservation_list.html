@@ -68,3 +68,70 @@
     {% endif %}
   </div>
 </div>
+<div class="card shadow rounded-4 border-0 mt-2">
+  <div class="card-header text-white rounded-top-4">
+    <h5 class="mb-0">Mes Activité</h5>
+  </div>
+  <div class="card-body">
+    {% if activity_reservations %}
+      <ul class="list-group list-group-flush">
+        {% for r in activity_reservations %}
+          <li class="list-group-item reservation-card">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+              <!-- LEFT: Logement name + stay dates -->
+              <div class="reservation-main">
+                <div class="fw-bold logement-title">{{ r.activity.name }}</div>
+                <div class="text-muted small">{{ r.start|date:"d/m/Y" }} → {{ r.end|date:"d/m/Y" }}</div>
+              </div>
+              <!-- MIDDLE: Quick info -->
+              <div class="reservation-meta text-muted small mt-2 mt-md-0">
+                👤 {{ r.participants }} voyageur{{ r.participants|pluralize }}
+                <br>
+                💶 {{ r.price|floatformat:2 }} €
+                <br>
+                📅 Réservé le {{ r.date_reservation|date:"d/m/Y" }}
+              </div>
+              <!-- RIGHT: Badges + Buttons -->
+              <div class="reservation-actions text-end mt-3 mt-md-0">
+                <div class="badges mb-2">
+                  {% if r.ended %}
+                    <span class="badge-status terminee">Terminée</span>
+                  {% elif r.ongoing %}
+                    <span class="badge-status en-cours">En cours</span>
+                  {% elif r.coming %}
+                    <span class="badge-status a-venir">À venir</span>
+                  {% elif r.pending %}
+                    <span class="badge-status en-attente">En attente</span>
+                  {% elif r.statut == "annulee" %}
+                    <span class="badge-status annulee">Annulée</span>
+                  {% endif %}
+                  {% if r.refundable %}
+                    <span class="badge-status remboursable">Remboursable: {{ r.refundable_amount|floatformat:2 }} €</span>
+                  {% elif r.refunded %}
+                    <span class="badge-status rembourse">Remboursé: {{ r.refund_amount|floatformat:2 }} €</span>
+                  {% endif %}
+                </div>
+                <div class="d-flex gap-2 justify-content-end">
+                  <a href="{% url 'activity:customer_reservation_detail' r.code %}"
+                     class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye"></i> Voir
+                  </a>
+                  {% if r.coming and r.can_cancel %}
+                    <form method="post"
+                          action="{% url 'activity:cancel_booking' r.code %}"
+                          onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted text-center">Aucune réservation enregistrée.</p>
+    {% endif %}
+  </div>
+</div>

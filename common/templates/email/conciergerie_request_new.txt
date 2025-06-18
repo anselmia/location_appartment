@@ -1,6 +1,6 @@
-Bonjour {{ conciergerie_user.get_full_name }},
+Bonjour {{ conciergerie_user.full_name }},
 
-Vous avez reçu une nouvelle demande pour gérer le logement "{{ logement.name }}" de la part de {{ owner.get_full_name }}.
+Vous avez reçu une nouvelle demande pour gérer le logement "{{ logement.name }}" de la part de {{ owner.full_name }}.
 
 Merci de vous connecter à votre espace pour accepter ou refuser cette demande.
 

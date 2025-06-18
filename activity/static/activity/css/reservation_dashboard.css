@@ -1,0 +1,82 @@
+/* Reservation Dashboard for Activity App */
+
+.reservation-table th,
+.reservation-table td {
+    vertical-align: middle;
+    font-size: 0.98rem;
+}
+.reservation-table img.img-thumbnail,
+.activity-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: var(--radius, 12px);
+    background: var(--light-bg, #f8f5f2);
+}
+.badge-status {
+    padding: 0.35em 0.7em;
+    border-radius: 0.7em;
+    font-size: 0.92em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.badge-status.confirmee {
+    background: var(--success-color, #198754);
+    color: #fff;
+}
+.badge-status.terminee {
+    background: var(--primary-color, #bfa66b);
+    color: #fff;
+}
+.badge-status.annulee {
+    background: var(--danger-color, #dc3545);
+    color: #fff;
+}
+.badge-status.en_attente {
+    background: var(--warning-color, #ffc107);
+    color: #222;
+}
+.pagination-list {
+    display: flex;
+    gap: 0.3em;
+    list-style: none;
+    padding: 0;
+}
+.page-item {
+    display: inline-block;
+}
+.page-item a, .page-item span {
+    display: inline-block;
+    padding: 0.4em 0.9em;
+    border-radius: 0.4em;
+    color: var(--primary-color, #bfa66b);
+    background: #fff;
+    border: 1px solid var(--color-border, #ddd);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+.page-item.active a, .page-item.active span {
+    background: var(--primary-color, #bfa66b);
+    color: #fff;
+    border-color: var(--primary-color, #bfa66b);
+}
+.page-item.disabled span {
+    color: #bbb;
+    background: #f5f5f5;
+    border-color: #eee;
+}
+
+@media (max-width: 767px) {
+    .activity-thumbnail {
+        width: 48px;
+        height: 48px;
+    }
+    .reservation-table th, .reservation-table td {
+        font-size: 0.95rem;
+    }
+}
+
+<button type="button"
+        class="btn btn-outline-warning btn-sm {% if status == 'en_attente' %}active{% endif %}"
+        onclick="setStatusAndSubmit('en_attente')">En attente</button>

@@ -14,4 +14,5 @@ urlpatterns = [
     path("waivers/", views.waiver_platform_fee_view, name="waiver_platform_fee"),
     path("waivers/<int:waiver_id>/", views.waiver_platform_fee_view, name="edit_waiver_platform_fee"),
     path("waivers/delete/<int:waiver_id>/", views.delete_waiver_platform_fee, name="delete_waiver_platform_fee"),
+    path("huey-tasks/", views.huey_tasks_status, name="huey_tasks_status"),
 ]

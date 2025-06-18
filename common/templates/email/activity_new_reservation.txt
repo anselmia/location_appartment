@@ -1,0 +1,13 @@
+Bonjour {{ reservation.activity.owner.full_name|default:reservation.activity.owner.username }},
+
+Vous avez reçu une nouvelle demande de réservation pour votre activité "{{ reservation.activity.name }}".
+
+Détails de la demande :
+- Client : {{ reservation.user.full_name|default:reservation.user.username }}
+- Date : {{ reservation.start|date:"d/m/Y H:i" }}
+- Nombre de participants : {{ reservation.guest }}
+
+Merci de vous connecter à votre espace partenaire pour valider ou refuser cette demande.
+
+Cordialement,
+L’équipe {{ entreprise.name }}

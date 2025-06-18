@@ -263,6 +263,10 @@
     display: flex;
     align-items: center;
     gap: 20px;
+    max-height: 90vh; /* or 100vh minus header height */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .navbar .nav-links a {

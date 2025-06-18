@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load i18n %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{% static 'activity/css/book.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
+    <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+          rel="stylesheet" />
+{% endblock %}
+{% block content %}
+    <div class="container reservation-container py-5">
+        <div class="image-gallery enhanced-gallery">
+            {% if activity.photos.count > 0 %}
+                <!-- Main photo -->
+                <div class="gallery-left position-relative">
+                    <picture>
+                        <source srcset="{{ activity.photos.all.0.image.url }}" type="image/webp">
+                        <img src="{{ activity.photos.all.0.image.url }}"
+                             alt="Photo principale"
+                             loading="lazy">
+                    </picture>
+                    <div class="gallery-top-right-details">
+                        <span title="Participants"><i class="fas fa-users"></i> {{ activity.max_participants }} participants</span>
+                        <span title="Catégorie"><i class="fas fa-tag"></i> {{ activity.category }}</span>
+                    </div>
+                    <!-- Top-left info badge -->
+                    <div class="gallery-badge-top">
+                        <span><i class="fas fa-calendar"></i> {{ activity.duration }} min</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ activity.location }}</span>
+                    </div>
+                </div>
+                <!-- Small thumbnails -->
+                <div class="gallery-right">
+                    {% for photo in activity.photos.all|slice:"1:5" %}
+                        <div class="small-photo">
+                            <picture>
+                                <source srcset="{{ photo.image.url }}" type="image/webp">
+                                <img src="{{ photo.image.url }}"
+                                     alt="Photo {{ forloop.counter }}"
+                                     loading="lazy">
+                            </picture>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Aucune photo disponible.</p>
+            {% endif %}
+        </div>
+        <div class="row justify-content-center mt-3">
+            <!-- Left: Booking Form -->
+            <div class="col-lg-7 col-md-10">
+                <div class="booking-box">
+                    <h1 class="section-title">{{ activity.name }}</h1>
+                    <form id="booking-form" method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.guest.id_for_label }}" class="form-label">{{ form.guest.label }}</label>
+                            {{ form.guest }}
+                            {% if form.guest.help_text %}<div class="form-text">{{ form.guest.help_text }}</div>{% endif %}
+                            {% for error in form.guest.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <input type="hidden"
+                               name="{{ form.start.name }}"
+                               id="{{ form.start.id_for_label }}">
+                        <input type="hidden"
+                               id="reservation-price"
+                               name="reservation_price"
+                               value="0">
+                        <div class="calendar-box mt-4">
+                            <div id="calendar_inline"></div>
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <span class="dot booked"></span> Réservé
+                                </div>
+                                <div class="legend-item">
+                                    <span class="dot today"></span> Aujourd’hui
+                                </div>
+                                <div class="legend-item">
+                                    <span class="dot free"></span> Disponible
+                                </div>
+                            </div>
+                        </div>
+                        <div id="slots-section" class="mt-4 mb-2"></div>
+                        {{ form.slot_time }} {# hidden input, no label needed #}
+                        <div class="form-check mb-3">
+                            {{ form.cgv }}
+                            <label class="form-check-label" for="{{ form.cgv.id_for_label }}">
+                                J'accepte les <a href="{% url 'common:cgv' %}" target="_blank">conditions générales de vente</a> et les <a href="{% url 'common:cgu' %}" target="_blank">conditions générales d'utilisation</a>
+                            </label>
+                            {% for error in form.cgv.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg"
+                                    id="submit-booking"
+                                    disabled>Réserver</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Right: Summary -->
+            <div class="col-lg-5 col-md-10 mt-4 mt-lg-0">
+                <div class="summary-box shadow-lg p-4 rounded">
+                    <h4 class="section-title">Récapitulatif</h4>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Activité :</span>
+                            <span class="fw-semibold">{{ activity.name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-mutedl">Catégorie :</span>
+                            <span class="fw-semibold">{{ activity.category }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Lieu :</span>
+                            <span class="fw-semibold">{{ activity.location }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Durée :</span>
+                            <span class="fw-semibold">{{ activity.duration }} min</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Date :</span>
+                            <span class="fw-semibold" id="start-date">{{ form.start.value }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Créneau :</span>
+                            <span class="fw-semibold" id="slot-time">{{ form.slot_time.value }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Participant(s) :</span>
+                            <span class="fw-semibold" id="guest-count">{{ form.guest.value }}</span>
+                        </div>
+                    </div>
+                    <div class="pricing-summary my-3">
+                        <div id="details"></div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-muted">Prix Total :</span>
+                            <h5 class="fw-bold mb-0 ml-2">
+                                <strong id="final-price">0</strong> €
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="imageModal" class="image-modal">
+        <span id="closeModal" class="close-btn">&times;</span>
+        <span id="modalPrev" class="modal-arrow modal-arrow-left">&#10094;</span>
+        <div class="modal-image-wrapper">
+            <img id="modalImage" class="modal-content" src="">
+        </div>
+        <span id="modalNext" class="modal-arrow modal-arrow-right">&#10095;</span>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        var allPhotoUrls =  {{ photo_urls|safe }};
+        const csrfToken = "{{ csrf_token }}";
+        const stripe_public_key = "{{ STRIPE_PUBLIC_KEY|escapejs }}";
+        const activityId = {{ activity.id }};  
+        const activity_js = {{ activity_data|safe }};
+        const today = new Date().toISOString().slice(0, 10);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{% static 'activity/js/booking.js' %}"></script>
+    <script src="{% static 'logement/js/image-galery.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/activity_dashboard.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="container my-5">
+        <h2 class="mb-4">Trouver une activité à réserver</h2>
+        <form method="get" class="row g-3 mb-4 align-items-end">
+            <div class="col-md-3">
+                <label for="category" class="form-label">Catégorie</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">Toutes</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}"
+                                {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="city" class="form-label">Ville</label>
+                <select name="city" id="city" class="form-select">
+                    <option value="">Toutes</option>
+                    {% for city in cities %}
+                        <option value="{{ city }}"
+                                {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date"
+                       name="date"
+                       id="date"
+                       class="form-control"
+                       value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+            </div>
+        </form>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% if activities %}
+                {% for activity in activities %}
+                    <div class="col">
+                        <div class="card activity-card h-100 shadow-sm border-0">
+                            <div class="activity-card-img-wrapper position-relative">
+                                <a href="{% url 'activity:detail' activity.id %}">
+                                    {% if activity.photos.all %}
+                                        <img src="{{ activity.photos.all.0.image.url }}"
+                                             class="card-img-top activity-card-img"
+                                             alt="{{ activity.name }}">
+                                    {% else %}
+                                        <div class="activity-card-img-placeholder d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-image fs-1 text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span class="activity-card-category-discrete position-absolute top-0 end-0 m-2">{{ activity.category }}</span>
+                                </a>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2"
+                                    style="color: var(--primary-color);
+                                           font-family: var(--font-title)">
+                                    <a href="{% url 'activity:detail' activity.id %}"
+                                       class="text-decoration-none text-reset">{{ activity.name }}</a>
+                                </h5>
+                                <div class="mb-2 text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ activity.location }}
+                                </div>
+                                <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.95em;">
+                                        <i class="bi bi-clock"></i> {{ activity.duration }} min
+                                    </span>
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.95em;">
+                                        <i class="bi bi-people"></i> {{ activity.max_participants }} pers.
+                                    </span>
+                                </div>
+                                <div class="mt-1 d-flex justify-content-between align-items-end">
+                                    <div>
+                                        <span class="text-muted small">A partir de</span>
+                                        <span class="fw-bold activity-card-price"
+                                              style="color: var(--primary-color);
+                                                     font-size: 1em">{{ activity.price|floatformat:2 }} €</span>
+                                        <span class="text-muted small">/pers.</span>
+                                    </div>                                    
+                                </div>
+                                <div class="mt-3 d-flex justify-content-between align-items-end">
+                                    <a href="{% url 'activity:detail' activity.id %}"
+                                        class="btn btn-primary btn-sm px-3">Voir l’activité</a>
+
+                                    <a href="{% url 'activity:book' activity.id %}"
+                                        class="btn btn-secondary btn-sm px-3">Réserver</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">Aucune activité trouvée pour ces critères.</div>
+                </div>
+            {% endif %}
+        </div>
+        {% if activities.has_other_pages %}
+            <nav aria-label="Pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if activities.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&amp;{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&amp;{% endif %}page={{ activities.previous_page_number }}">&laquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for num in activities.paginator.page_range %}
+                        {% if activities.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > activities.number|add:'-3' and num < activities.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&amp;{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&amp;{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if activities.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?{% if request.GET.category %}category={{ request.GET.category }}&amp;{% endif %}{% if request.GET.city %}city={{ request.GET.city }}&amp;{% endif %}{% if request.GET.date %}date={{ request.GET.date }}&amp;{% endif %}page={{ activities.next_page_number }}">&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock content %}

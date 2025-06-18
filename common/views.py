@@ -44,7 +44,7 @@ def home(request):
                     messages.error(request, "❌ Une erreur est survenue lors de l'envoi du message.")
         else:
             initial_data = {
-                "name": request.user.get_full_name() or request.user.username if request.user.is_authenticated else "",
+                "name": request.user.full_name or request.user.username if request.user.is_authenticated else "",
                 "email": request.user.email if request.user.is_authenticated else "",
             }
 

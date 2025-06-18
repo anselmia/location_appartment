@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/activity_detail.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'activity/css/update_activity.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow border-0 activity-detail">
+                    <div class="card-header">
+                        <h2 class="mb-0 fs-4">Créer une nouvelle activité</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" novalidate>
+                            {% csrf_token %}
+                            <div class="form-check mb-3">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                                {% for error in form.is_active.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                                {% render_field form.name class="form-control" %}
+                                {% if form.name.help_text %}<div class="form-text">{{ form.name.help_text }}</div>{% endif %}
+                                {% for error in form.name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                                {% render_field form.description class="form-control" %}
+                                {% if form.description.help_text %}<div class="form-text">{{ form.description.help_text }}</div>{% endif %}
+                                {% for error in form.description.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">{{ form.price.label }}</label>
+                                {% render_field form.price class="form-control" %}
+                                {% if form.price.help_text %}<div class="form-text">{{ form.price.help_text }}</div>{% endif %}
+                                {% for error in form.price.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label">{{ form.duration.label }}</label>
+                                {% render_field form.duration class="form-control" %}
+                                {% if form.duration.help_text %}<div class="form-text">{{ form.duration.help_text }}</div>{% endif %}
+                                {% for error in form.duration.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
+                                {% render_field form.location class="form-select" %}
+                                {% if form.location.help_text %}<div class="form-text">{{ form.location.help_text }}</div>{% endif %}
+                                {% for error in form.location.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                                {% render_field form.category class="form-select" %}
+                                {% if form.category.help_text %}<div class="form-text">{{ form.category.help_text }}</div>{% endif %}
+                                {% for error in form.category.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.nominal_guests.id_for_label }}" class="form-label">{{ form.nominal_guests.label }}</label>
+                                {% render_field form.nominal_guests class="form-control" %}
+                                {% if form.nominal_guests.help_text %}<div class="form-text">{{ form.nominal_guests.help_text }}</div>{% endif %}
+                                {% for error in form.nominal_guests.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.fee_per_extra_guest.id_for_label }}" class="form-label">
+                                    {{ form.fee_per_extra_guest.label }}
+                                </label>
+                                {% render_field form.fee_per_extra_guest class="form-control" %}
+                                {% if form.fee_per_extra_guest.help_text %}
+                                    <div class="form-text">{{ form.fee_per_extra_guest.help_text }}</div>
+                                {% endif %}
+                                {% for error in form.fee_per_extra_guest.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.max_participants.id_for_label }}" class="form-label">{{ form.max_participants.label }}</label>
+                                {% render_field form.max_participants class="form-control" %}
+                                {% if form.max_participants.help_text %}<div class="form-text">{{ form.max_participants.help_text }}</div>{% endif %}
+                                {% for error in form.max_participants.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.start.id_for_label }}" class="form-label">{{ form.start.label }}</label>
+                                {% render_field form.start class="form-control" %}
+                                {% if form.start.help_text %}<div class="form-text">{{ form.start.help_text }}</div>{% endif %}
+                                {% for error in form.start.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.end.id_for_label }}" class="form-label">{{ form.end.label }}</label>
+                                {% render_field form.end class="form-control" %}
+                                {% if form.end.help_text %}<div class="form-text">{{ form.end.help_text }}</div>{% endif %}
+                                {% for error in form.end.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.days_of_week.label }}</label>
+                                <div class="form-check-group">
+                                    {% for checkbox in form.days_of_week %}
+                                        <div class="form-check">
+                                            {{ checkbox.tag }}
+                                            <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.days_of_week.help_text %}<div class="form-text">{{ form.days_of_week.help_text }}</div>{% endif %}
+                                {% for error in form.days_of_week.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.fixed_slots }}
+                                <label class="form-check-label" for="{{ form.fixed_slots.id_for_label }}">{{ form.fixed_slots.label }}</label>
+                                {% for error in form.fixed_slots.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3" id="ready-period-div">
+                                <label for="{{ form.ready_period.id_for_label }}" class="form-label">{{ form.ready_period.label }}</label>
+                                {% render_field form.ready_period class="form-control" %}
+                                {% if form.ready_period.help_text %}<div class="form-text">{{ form.ready_period.help_text }}</div>{% endif %}
+                                {% for error in form.ready_period.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3" id="manual-slots-div">
+                                <label for="{{ form.manual_time_slots.id_for_label }}" class="form-label">{{ form.manual_time_slots.label }}</label>
+                                {% render_field form.manual_time_slots class="form-control" %}
+                                {% if form.manual_time_slots.help_text %}
+                                    <div class="form-text">{{ form.manual_time_slots.help_text }}</div>
+                                {% endif %}
+                                {% for error in form.manual_time_slots.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.cancelation_period.id_for_label }}" class="form-label">{{ form.cancelation_period.label }}</label>
+                                {% render_field form.cancelation_period class="form-control" %}
+                                {% if form.cancelation_period.help_text %}
+                                    <div class="form-text">{{ form.cancelation_period.help_text }}</div>
+                                {% endif %}
+                                {% for error in form.cancelation_period.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.availability_period.id_for_label }}" class="form-label">
+                                    {{ form.availability_period.label }}
+                                </label>
+                                {% render_field form.availability_period class="form-control" %}
+                                {% if form.availability_period.help_text %}
+                                    <div class="form-text">{{ form.availability_period.help_text }}</div>
+                                {% endif %}
+                                {% for error in form.availability_period.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Photos existantes</label>
+                                <div class="activity-photos-preview">
+                                    {% for photo in activity.photos.all %}
+                                        <span class="activity-photo-thumb-wrapper">
+                                            <img src="{{ photo.image.url }}"
+                                                 class="activity-photo-thumb"
+                                                 alt="Photo activité"
+                                                 width="110"
+                                                 height="80">
+                                            <button type="submit"
+                                                    name="delete_photo"
+                                                    value="{{ photo.id }}"
+                                                    class="delete-photo-btn"
+                                                    title="Supprimer cette photo">×</button>
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-muted">Aucune photo enregistrée.</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_photos" class="form-label">Ajouter de nouvelles photos</label>
+                                <input type="file"
+                                       name="photos"
+                                       id="id_photos"
+                                       class="form-control"
+                                       multiple>
+                                <div class="form-text">Vous pouvez sélectionner plusieurs fichiers.</div>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="{% url 'activity:activity_dashboard' %}"
+                                   class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-primary">Créer l'activité</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'activity/js/edit_activity.js' %}"></script>
+{% endblock extra_js %}

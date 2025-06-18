@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from django.core.cache import cache
 from django.core.paginator import Paginator
 
+from activity.models import ActivityReservation, Activity
 from reservation.models import Reservation
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
 
@@ -22,13 +23,14 @@ from logement.models import Logement
 from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
 from common.decorators import is_admin
 from common.services.network import get_client_ip
+from common.services.email_service import notify_vendor_new_reservation
 
 from payment.decorators import is_stripe_admin
 from payment.services.payment_service import (
     refund_payment,
     send_stripe_payment_link,
-    charge_payment,
-    charge_reservation,
+    charge_deposit,
+    transfer_funds,
     get_session,
 )
 from payment.models import PaymentTask
@@ -36,17 +38,15 @@ from payment.models import PaymentTask
 logger = logging.getLogger(__name__)
 
 
-# Create your views here.
 @login_required
 @user_has_reservation
-def payment_success(request, code):
+def payment_success(request, type, code):
     try:
         session_id = request.GET.get("session_id")
         if not session_id:
             messages.error(request, "Session ID manquant.")
             return redirect("reservation:book", logement_id=1)
 
-        reservation = Reservation.objects.get(code=code)
         session = get_session(session_id)
         if not session:
             messages.error(request, "Session invalide.")
@@ -54,11 +54,20 @@ def payment_success(request, code):
 
         payment_intent_id = session.payment_intent
 
-        reservation.statut = "confirmee"
+        if type == "logement":
+            reservation = Reservation.objects.get(code=code)
+            reservation.statut = "confirmee"
+        elif type == "activity":
+            reservation = ActivityReservation.objects.get(code=code)
+
         reservation.stripe_payment_intent_id = payment_intent_id
         reservation.save(update_fields=["statut", "stripe_payment_intent_id"])
 
-        return render(request, "payment/payment_success.html", {"reservation": reservation})
+        if type == "logement":
+            return render(request, "payment/payment_logement_success.html", {"reservation": reservation})
+        elif type == "activity":
+            notify_vendor_new_reservation(reservation)
+            return render(request, "payment/payment_activity_success.html", {"reservation": reservation})
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
         return redirect("reservation:book", logement_id=1)
@@ -70,24 +79,39 @@ def payment_success(request, code):
 
 @login_required
 @user_has_reservation
-def payment_cancel(request, code):
+def payment_cancel(request, type, code):
     try:
-        reservation = get_object_or_404(Reservation, code=code)
-        logement = Logement.objects.prefetch_related("photos").first()
         messages.info(
             request,
             "Votre paiement a été annulé. Vous pouvez modifier ou reprogrammer votre réservation.",
         )
-        query_params = urlencode(
-            {
-                "start": reservation.start.isoformat(),
-                "end": reservation.end.isoformat(),
-                "adults": reservation.guest_adult,
-                "minors": reservation.guest_minor,
-                "code": reservation.code,
-            }
-        )
-        return redirect(f"{reverse('logement:book', args=[logement.id])}?{query_params}")
+        if type == "logement":
+            reservation = get_object_or_404(Reservation, code=code)
+            logement = get_object_or_404(Logement, id=reservation.logement.id)
+
+            query_params = urlencode(
+                {
+                    "start": reservation.start.isoformat(),
+                    "end": reservation.end.isoformat(),
+                    "adults": reservation.guest_adult,
+                    "minors": reservation.guest_minor,
+                    "code": reservation.code,
+                }
+            )
+            return redirect(f"{reverse('logement:book', args=[logement.id])}?{query_params}")
+        elif type == "activity":
+            reservation = get_object_or_404(ActivityReservation, code=code)
+            activity = get_object_or_404(Activity, id=reservation.activity.id)
+            query_params = urlencode(
+                {
+                    "start": reservation.start.isoformat(),
+                    "guest": reservation.participants,
+                    "code": reservation.code,
+                }
+            )
+
+            return redirect(f"{reverse('activity:book', args=[activity.id])}?{query_params}")
+
     except Exception as e:
         logger.exception(f"Error handling payment cancellation: {e}")
         messages.error(request, "Une erreur est survenue.")
@@ -120,7 +144,7 @@ def transfer_reservation_payment(request, code):
     reservation = get_object_or_404(Reservation, code=code, transferred=False)
 
     try:
-        charge_reservation(reservation)
+        transfer_funds(reservation)
 
         messages.success(request, f"Transfert effectué pour {reservation.code}.")
     except Exception as e:
@@ -256,7 +280,7 @@ def charge_deposit(request, code):
 
         amount_in_cents = int(amount * 100)
 
-        charge_result = charge_payment(
+        charge_result = charge_deposit(
             reservation.stripe_saved_payment_method_id,
             amount_in_cents,
             reservation.user.stripe_customer_id,

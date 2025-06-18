@@ -1,0 +1,90 @@
+{% extends "administration/base_site.html" %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet"
+          href="{% static 'administration/css/huey_tasks_status.css' %}">
+    <div class="huey-tasks-status-wrapper">
+        <div class="huey-section-title">Huey Tasks Status</div>
+        <div class="huey-table-scroll">
+            <table class="huey-tasks-table">
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Type</th>
+                        <th>Last Run</th>
+                        <th>Status</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr>
+                            <td data-label="Task Name">{{ task.name }}</td>
+                            <td data-label="Type">{{ task.type }}</td>
+                            <td data-label="Last Run">{{ task.last_run|default:"-" }}</td>
+                            <td data-label="Status">
+                                <span class="huey-status {{ task.status|default:'queued'|lower }}">{{ task.status|default:"Queued" }}</span>
+                            </td>
+                            <td data-label="Result">
+                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ task.result|truncatechars:100 }}</pre>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">No tasks found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="huey-section-title">Task Execution History</div>
+        <div class="huey-table-scroll">
+            <table class="huey-history-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Task ID</th>
+                        <th>Status</th>
+                        <th>Started At</th>
+                        <th>Finished At</th>
+                        <th>Duration (s)</th>
+                        <th>Args</th>
+                        <th>Kwargs</th>
+                        <th>Result</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                        <tr>
+                            <td data-label="Name">{{ entry.name }}</td>
+                            <td data-label="Task ID">{{ entry.task_id }}</td>
+                            <td data-label="Status">
+                                <span class="huey-status {{ entry.status|lower }}">{{ entry.status }}</span>
+                            </td>
+                            <td data-label="Started At">{{ entry.started_at|date:"Y-m-d H:i:s" }}</td>
+                            <td data-label="Finished At">{{ entry.finished_at|date:"Y-m-d H:i:s" }}</td>
+                            <td data-label="Duration (s)">{{ entry.duration|floatformat:2 }}</td>
+                            <td data-label="Args">
+                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.args|truncatechars:100 }}</pre>
+                            </td>
+                            <td data-label="Kwargs">
+                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.kwargs|truncatechars:100 }}</pre>
+                            </td>
+                            <td data-label="Result">
+                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.result|truncatechars:100 }}</pre>
+                            </td>
+                            <td data-label="Error">
+                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.error|truncatechars:100 }}</pre>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="10">No history found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

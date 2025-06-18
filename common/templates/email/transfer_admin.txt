@@ -1,4 +1,4 @@
-💸 Un remboTransferursement a été effectué.
+💸 Un Transfert a été effectué.
 
 Logement: {{ logement.name }}
 Réservation Code: {{ reservation.code }}

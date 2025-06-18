@@ -75,10 +75,9 @@ class Reservation(models.Model):
         if not self.payment_fee:
             self.payment_fee = get_payment_fee(self.price)
 
-        if not self.platform_fee and self.platform_fee != 0:
-
+        if self.platform_fee is None:
             platform_fee = get_platform_fee(self.price)
-            self.platform_fee = get_fee_waiver(platform_fee, self.logement, self.logement.owner)
+            self.platform_fee = get_fee_waiver(platform_fee, self.logement.owner)
 
         if not self.admin_fee_rate:
             self.admin_fee_rate = self.logement.admin_fee

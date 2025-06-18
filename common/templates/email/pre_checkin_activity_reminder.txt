@@ -1,0 +1,12 @@
+Bonjour {{ reservation.user.full_name|default:reservation.user.username }},
+
+Votre activité **{{ activity.name }}** commence bientôt !
+
+📍 Lieu : {{ activity.ville }} 
+🕐 Heures de début : {{ reservation.start }}h 
+📞 Contact : {{ user_contact.full_name|default:user_contact.username}} - {{ user_contact.phone }}
+
+
+Nous vous souhaitons un excellent séjour !
+
+L’équipe {{ entreprise.name }}

@@ -1,0 +1,20 @@
+Bonjour {{ partner.name }},
+
+Votre demande pour devenir partenaire sur {{ entreprise.name }} a bien été reçue.
+
+{% if partner.validated %}
+Félicitations ! Votre profil partenaire a été validé par notre équipe.
+Vous pouvez dès à présent accéder à votre espace partenaire, proposer vos activités et gérer vos réservations.
+
+Accédez à votre espace : {{ dashboard_url }}
+
+{% else %}
+Votre demande est en cours de validation par notre équipe.
+Vous recevrez un email dès que votre profil sera activé.
+
+Pour toute question, contactez-nous à {{ support_email }}.
+{% endif %}
+
+Merci de votre confiance et bienvenue dans notre réseau !
+
+L’équipe {{ entreprise.name }}

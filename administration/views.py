@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 from common.mixins import AdminRequiredMixin
 from common.views import is_admin
 from common.services.helper_fct import date_to_timestamp, get_entreprise
+from common.models import TaskHistory
 
 from payment.services.payment_service import retrieve_balance
 
@@ -388,3 +389,27 @@ def delete_waiver_platform_fee(request, waiver_id):
         waiver.delete()
         messages.success(request, "Exemption supprimée.")
     return redirect("administration:waiver_platform_fee")
+
+
+@login_required
+@user_passes_test(is_admin)
+def huey_tasks_status(request):
+    # Get all periodic tasks from the registry (for current status)
+    from huey.contrib.djhuey import HUEY
+
+    tasks = []
+    for task in HUEY._registry.periodic_tasks:
+        tasks.append(
+            {
+                "name": getattr(task, "name", str(task)),
+                "type": "Periodic",
+                "last_run": getattr(task, "last_run", None),
+                "status": getattr(task, "status", None),
+                "result": getattr(task, "result", None),
+            }
+        )
+    tasks = sorted(tasks, key=lambda t: t["name"])
+
+    # Get task history from the database
+    history = TaskHistory.objects.order_by("-started_at")[:100]
+    return render(request, "administration/huey_tasks_status.html", {"tasks": tasks, "history": history})

@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 
 from reservation.models import Reservation
+from activity.models import ActivityReservation, Activity
 from payment.models import PaymentTask
 
 
@@ -13,6 +14,8 @@ class Command(BaseCommand):
         models_to_clear = [
             Reservation,
             PaymentTask,
+            ActivityReservation,
+            Activity
         ]
 
         for model in models_to_clear:

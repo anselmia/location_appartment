@@ -61,6 +61,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("conciergerie/", include("conciergerie.urls", namespace="conciergerie")),
+    path("activity/", include("activity.urls", namespace="activity")),
     path("", include("logement.urls", namespace="logement")),
     path("payment/", include("payment.urls", namespace="payment")),
     path("reservation/", include("reservation.urls", namespace="reservation")),

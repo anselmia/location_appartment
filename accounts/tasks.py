@@ -18,7 +18,7 @@ def send_message_notification(message_id, recipient_id):
             return
 
         subject = f"Nouveau message de {message.sender}"
-        body = f"""Bonjour {recipient.get_full_name() or recipient.username},
+        body = f"""Bonjour {recipient.full_name or recipient.username},
 
 Vous avez reçu un nouveau message concernant la réservation : {message.conversation.reservation.code}
 

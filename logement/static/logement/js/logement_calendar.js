@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
       events: function (fetchInfo, successCallback, failureCallback) {
         const params = new URLSearchParams({
           logement_id: logementId,
-          start: fetchInfo.startStr,
-          end: fetchInfo.endStr,
+          start: fetchInfo.startStr.split("T")[0],
+          end: fetchInfo.endStr.split("T")[0],
         });
 
         reservedDates.clear();

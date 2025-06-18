@@ -5,12 +5,12 @@ app_name = "payment"
 
 urlpatterns = [
     path(
-        "success/<str:code>/",
+        "success/<str:type>/<str:code>/",
         views.payment_success,
         name="payment_success",
     ),
     path(
-        "cancel/<str:code>/",
+        "cancel/<str:type>/<str:code>/",
         views.payment_cancel,
         name="payment_cancel",
     ),

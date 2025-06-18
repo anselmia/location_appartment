@@ -251,6 +251,7 @@ class LogementForm(forms.ModelForm):
             if ville and getattr(ville, "registration", False):
                 if not registered_number:
                     self.add_error("registered_number", "Le logement doit avoir un numéro d'enregistrement en mairie.")
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
