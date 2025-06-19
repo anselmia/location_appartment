@@ -43,7 +43,7 @@
                  role="tab">Compte Conciergerie</a>
             </li>
           {% endif %}
-          {% if is_partner or user.is_admin or user.is_superuser %}
+          {% if user.is_partner or user.is_admin or user.is_superuser %}
             <li class="nav-item mb-2">
               <a class="nav-link w-100"
                  id="partner-tab-link"
@@ -84,7 +84,7 @@
                  role="tabpanel"
                  aria-labelledby="admin-tab-link">{% include "accounts/partials/conciergerie_dashboard.html" with conciergerie=user_conciergerie %}</div>
           {% endif %}
-          {% if is_partner or user.is_admin or user.is_superuser %}
+          {% if user.is_partner or user.is_admin or user.is_superuser %}
             <div class="tab-pane fade"
                  id="partner-tab"
                  role="tabpanel"

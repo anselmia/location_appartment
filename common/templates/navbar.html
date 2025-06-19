@@ -49,7 +49,7 @@
                 </div>
             </div>
             {% if user.is_authenticated %}
-                {% if user.is_superuser or user.is_admin or user.is_owner or user.is_owner_admin %}
+                {% if user.is_superuser or user.is_admin or user.is_owner or user.has_conciergerie %}
                     <div class="dropdown">
                         <a href="#"
                            class="dropdown-toggle"
@@ -65,7 +65,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if user.is_superuser or user.is_admin or user.is_partner %}
+                {% if user.is_superuser or user.is_admin or user.has_partners %}
                     <div class="dropdown">
                         <a href="#"
                            class="dropdown-toggle"

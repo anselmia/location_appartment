@@ -39,6 +39,18 @@ class CustomUser(AbstractUser):
     def full_name(self):
         return f"{self.name} {self.last_name}"
 
+    @property
+    def has_conciergerie(self):
+        from conciergerie.models import Conciergerie
+
+        return Conciergerie.objects.filter(user=self).exists()
+
+    @property
+    def has_partners(self):
+        from activity.models import Partners
+
+        return Partners.objects.filter(user=self).exists()
+
 
 class Conversation(models.Model):
     reservation = models.OneToOneField(
