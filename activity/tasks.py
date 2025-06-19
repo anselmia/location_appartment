@@ -14,11 +14,13 @@ logger = logging.getLogger(__name__)
 @periodic_task(crontab(hour=3, minute=0))  # tous les jours à 3h
 def delete_expired_pending_reservations():
     try:
-        expiry_time = timezone.now() - timedelta(weeks=1)
+        expiry_time = timezone.now() - timedelta(minutes=30)  # 30 minutes
         count, _ = ActivityReservation.objects.filter(statut="en_attente", date_reservation__lt=expiry_time).delete()
 
         expiry_time = timezone.now() - timedelta(weeks=1)
-        count2, _ = ActivityReservation.objects.filter(statut="echec_paiement", date_reservation__lt=expiry_time).delete()
+        count2, _ = ActivityReservation.objects.filter(
+            statut="echec_paiement", date_reservation__lt=expiry_time
+        ).delete()
 
         logger.info(f"Deleted {count} expired pending reservations")
         logger.info(f"Deleted {count2} expired reservations in failed payment")

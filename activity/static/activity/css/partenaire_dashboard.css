@@ -23,7 +23,7 @@
   border-radius: 0.5em;
   padding: 0.2em 0.7em;
 }
-.partenaire-dashboard .badge-status.en-attente {
+.partenaire-dashboard .badge-status.en_attente {
   background-color: var(--warning-color);
   color: #fff;
   font-size: 0.95em;

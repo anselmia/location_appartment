@@ -23,7 +23,6 @@ from logement.models import Logement
 from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
 from common.decorators import is_admin
 from common.services.network import get_client_ip
-from common.services.email_service import notify_vendor_new_reservation
 
 from payment.decorators import is_stripe_admin
 from payment.services.payment_service import (
@@ -32,6 +31,7 @@ from payment.services.payment_service import (
     charge_deposit,
     transfer_funds,
     get_session,
+    verify_payment,
 )
 from payment.models import PaymentTask
 
@@ -66,7 +66,6 @@ def payment_success(request, type, code):
         if type == "logement":
             return render(request, "payment/payment_logement_success.html", {"reservation": reservation})
         elif type == "activity":
-            notify_vendor_new_reservation(reservation)
             return render(request, "payment/payment_activity_success.html", {"reservation": reservation})
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
@@ -98,10 +97,15 @@ def payment_cancel(request, type, code):
                     "code": reservation.code,
                 }
             )
+
+            # Delete the reservation
+            reservation.delete()
+
             return redirect(f"{reverse('logement:book', args=[logement.id])}?{query_params}")
         elif type == "activity":
             reservation = get_object_or_404(ActivityReservation, code=code)
             activity = get_object_or_404(Activity, id=reservation.activity.id)
+
             query_params = urlencode(
                 {
                     "start": reservation.start.isoformat(),
@@ -109,6 +113,9 @@ def payment_cancel(request, type, code):
                     "code": reservation.code,
                 }
             )
+
+            # Delete the reservation
+            reservation.delete()
 
             return redirect(f"{reverse('activity:book', args=[activity.id])}?{query_params}")
 
@@ -154,7 +161,7 @@ def transfer_reservation_payment(request, code):
 
 
 def payment_task_list(request):
-    tasks = PaymentTask.objects.select_related("reservation", "reservation__logement").order_by("-updated_at")
+    tasks = PaymentTask.objects.select_related().order_by("-updated_at")
 
     # Filter logic
     task_type = request.GET.get("type")
@@ -166,7 +173,10 @@ def payment_task_list(request):
     if status:
         tasks = tasks.filter(status=status)
     if code:
-        tasks = tasks.filter(reservation__code__icontains=code)
+        tasks = tasks.filter(
+            object_id__in=[r.id for r in Reservation.objects.filter(code__icontains=code)]
+            + [ar.id for ar in ActivityReservation.objects.filter(code__icontains=code)]
+        )
 
     # Pagination
     paginator = Paginator(tasks, 20)  # 20 tâches par page
@@ -260,7 +270,7 @@ def refund_partially_reservation(request, code):
 @login_required
 @user_is_reservation_admin
 @require_POST
-def charge_deposit(request, code):
+def charge_deposit_view(request, code):
     reservation = get_object_or_404(Reservation, code=code)
 
     try:
@@ -299,3 +309,28 @@ def charge_deposit(request, code):
         logger.exception("Stripe deposit charge failed")
 
     return redirect("reservation:reservation_detail", code=code)
+
+
+@login_required
+@user_is_reservation_admin
+@require_POST
+def verify_payment_view(request, code):
+    """
+    View to verify the Stripe PaymentIntent status for a reservation (logement or activity).
+    """
+
+    reservation = Reservation.objects.filter(code=code).first()
+    if not reservation:
+        reservation = ActivityReservation.objects.filter(code=code).first()
+    if not reservation:
+        messages.error(request, "Réservation introuvable.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    paid, message = verify_payment(reservation)
+
+    if paid:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))

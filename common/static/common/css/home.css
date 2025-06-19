@@ -526,6 +526,56 @@ section a:hover {
   animation-delay: 0.8s;
 }
 
+.engagement-tooltip {
+  min-width: 220px;
+  max-width: 320px;
+  padding: 1rem 1.2rem;
+  background: var(--card-bg, #fff);
+  color: var(--text, #222);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  font-size: 1.08rem;
+}
+.tooltip-inner {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+.tooltip-title {
+  color: var(--text-primary);
+}
+
+.engagement-tooltip {
+  min-width: 260px;
+  max-width: 340px;
+  font-size: 1.08rem;
+  line-height: 1.5;
+  background: var(--card-bg, #fff);
+  color: var(--text, #222);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 1rem 1.2rem;
+  text-align: left;
+}
+.engagement-tooltip ul {
+  margin: 0 0 0 1em;
+  padding: 0 0 0 1em;
+  list-style: disc;
+}
+.engagement-tooltip li {
+  margin-bottom: 0.2em;
+}
+.engagement-tooltip b {
+  font-size: 1.12em;
+  color: var(--text-primary, #bfa66b);
+}
+.engagement-tooltip em {
+  color: #555;
+}
+
+
 @keyframes fadeIn {
   to {
     opacity: 1;

@@ -3,40 +3,7 @@
 {% block content %}
     <link rel="stylesheet"
           href="{% static 'administration/css/huey_tasks_status.css' %}">
-    <div class="huey-tasks-status-wrapper">
-        <div class="huey-section-title">Huey Tasks Status</div>
-        <div class="huey-table-scroll">
-            <table class="huey-tasks-table">
-                <thead>
-                    <tr>
-                        <th>Task Name</th>
-                        <th>Type</th>
-                        <th>Last Run</th>
-                        <th>Status</th>
-                        <th>Result</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for task in tasks %}
-                        <tr>
-                            <td data-label="Task Name">{{ task.name }}</td>
-                            <td data-label="Type">{{ task.type }}</td>
-                            <td data-label="Last Run">{{ task.last_run|default:"-" }}</td>
-                            <td data-label="Status">
-                                <span class="huey-status {{ task.status|default:'queued'|lower }}">{{ task.status|default:"Queued" }}</span>
-                            </td>
-                            <td data-label="Result">
-                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ task.result|truncatechars:100 }}</pre>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="5">No tasks found.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="huey-tasks-status-wrapper">        
         <div class="huey-section-title">Task Execution History</div>
         <div class="huey-table-scroll">
             <table class="huey-history-table">

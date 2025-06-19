@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
       Swal.fire({
         icon: "error",
         title: "Capacité dépassée",
-        text: `❌ Le nombre total de voyageurs dépasse la capacité maximale (${logement_js.max_traveler}).`,
+        text: `❌ Le nombre total de voyageurs dépasse la capacité maximale (${activity_js.max_traveler}).`,
         toast: true,
         position: "top-end",
         timer: 4000,

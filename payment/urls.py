@@ -27,7 +27,7 @@ urlpatterns = [
     ),
     path(
         "reservations/<str:code>/charge-deposit/",
-        views.charge_deposit,
+        views.charge_deposit_view,
         name="charge_deposit",
     ),
     path(
@@ -36,4 +36,9 @@ urlpatterns = [
         name="transfer_reservation",
     ),
     path("admin/payment-tasks/", views.payment_task_list, name="payment_tasks"),
+    path(
+        "verify-checkout/<str:code>/",
+        views.verify_payment_view,
+        name="verify_payment",
+    ),
 ]

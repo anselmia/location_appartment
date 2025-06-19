@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load extra_tags %}
+{% load i18n %}
+{% load humanize %}
+{% block title %}Détail de la réservation - {{ reservation.code }}{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -31,7 +35,11 @@
                             </dd>
                             <dt class="col-sm-5">Nombre de participants</dt>
                             <dd class="col-sm-7">
-                                {{ reservation.guest }}
+                                {{ reservation.participants }}
+                            </dd>
+                            <dt class="col-sm-5">Durée</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.activity.duration|duration_hm }}
                             </dd>
                             <dt class="col-sm-5">Réservé le</dt>
                             <dd class="col-sm-7">
@@ -52,7 +60,11 @@
                     <div class="col-md-6">
                         <h5 class="text-muted border-bottom pb-2">Partenaire</h5>
                         <dl class="row">
-                            <dt class="col-sm-5">Nom</dt>
+                            <dt class="col-sm-5">Société</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.activity.partner.name }}
+                            </dd>
+                            <dt class="col-sm-5">Contact</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.activity.owner.full_name|default:reservation.activity.owner.username }}
                             </dd>
@@ -84,7 +96,7 @@
                                 {% elif reservation.coming %}
                                     <span class="badge-status a-venir">À venir</span>
                                 {% elif reservation.pending %}
-                                    <span class="badge-status en-attente">En attente</span>
+                                    <span class="badge-status en_attente">En attente</span>
                                 {% else %}
                                     <span class="badge-status inconnu">Inconnu</span>
                                 {% endif %}
@@ -98,6 +110,11 @@
                             <dt class="col-sm-5">Montant total</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.price|floatformat:2 }} €
+                                {% if reservation.paid %}
+                                    <span class="badge bg-success ms-2">Confirmé</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                                {% endif %}
                             </dd>
                             {% if reservation.refunded %}
                                 <dt class="col-sm-5 text-danger">Remboursé</dt>

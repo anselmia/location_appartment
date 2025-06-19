@@ -18,7 +18,7 @@
         <div class="{% if partner.logo %}col-md-7{% else %}col-12{% endif %}">
           <div class="card-body p-4">
             <h2 class="card-title mb-2">{{ partner.name }}</h2>
-            {% if partner.description %}<p class="text-muted">{{ partner.description }}</p>{% endif %}
+            {% if partner.description %}<p class="text-muted">{{ partner.description|safe }}</p>{% endif %}
             <hr>
             <div class="row g-3 mb-3">
               <div class="col-sm-6">
@@ -70,7 +70,7 @@
                 {% if partner.validated %}
                   <span class="badge-status validee">Validée</span>
                 {% else %}
-                  <span class="badge-status en-attente">En attente</span>
+                  <span class="badge-status en_attente">En attente</span>
                 {% endif %}
               </div>
               <div class="col-md-4">
@@ -85,8 +85,7 @@
               <div class="d-flex flex-wrap gap-2">
                 <a href="{% url 'activity:update_partner' partner.id %}"
                    class="btn btn-primary">✏️ Modifier</a>
-                <a href="{% url 'activity:list_partners' %}"
-                   class="btn btn-secondary">⬅️ Retour à la liste</a>
+                <a href="{% url 'activity:list_partners' %}" class="btn btn-secondary">⬅️ Retour à la liste</a>
               </div>
             </div>
           </div>

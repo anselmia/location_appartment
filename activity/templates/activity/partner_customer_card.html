@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/partner_customer_card.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card partner-customer-card shadow-lg border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            {% if partner.logo %}
+                                <img src="{{ partner.logo.url }}"
+                                     alt="{{ partner.name }} Logo"
+                                     class="partner-logo me-3 rounded-circle shadow-sm"
+                                     width="72"
+                                     height="72">
+                            {% else %}
+                                <div class="partner-logo me-3 rounded-circle shadow-sm d-flex align-items-center justify-content-center bg-light text-secondary"
+                                     style="width:72px;
+                                            height:72px;
+                                            font-size:2rem">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h2 class="card-title mb-1">{{ partner.name }}</h2>
+                                <p class="text-muted mb-0">{{ partner.category }}</p>
+                            </div>
+                        </div>
+                        <p class="lead mb-4">{{ partner.short_description }}</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            {% if partner.address %}
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i>{{ partner.address }}
+                                </li>
+                            {% endif %}
+                            {% if partner.phone %}
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="bi bi-telephone-fill me-2 text-primary"></i>{{ partner.phone }}
+                                </li>
+                            {% endif %}
+                            {% if partner.email %}
+                                <li class="list-group-item bg-transparent px-0">
+                                    <i class="bi bi-envelope-fill me-2 text-primary"></i>{{ partner.email }}
+                                </li>
+                            {% endif %}
+                        </ul>
+                        {% if partner.description %}
+                            <div class="mb-4">
+                                <h5 class="fw-bold">À propos</h5>
+                                <p class="mb-0">{{ partner.description|safe }}</p>
+                            </div>
+                        {% endif %}
+                        <div class="text-center">
+                            <a href="{% url 'activity:partner_list_customer' %}"
+                               class="btn btn-primary btn-lg px-5">Voir tous les partenaires</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

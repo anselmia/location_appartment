@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+
 # Create your models here.
 class PaymentTask(models.Model):
     TASK_TYPES = [
@@ -17,7 +18,7 @@ class PaymentTask(models.Model):
     # Generic relation to Reservation or ActivityReservation
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    reservation = GenericForeignKey('content_type', 'object_id')
+    reservation = GenericForeignKey("content_type", "object_id")
 
     type = models.CharField(max_length=20, choices=TASK_TYPES)
     status = models.CharField(max_length=20, choices=[("success", "Success"), ("failed", "Failed")], default="failed")
@@ -40,7 +41,15 @@ class PaymentTask(models.Model):
         self.task_id = id
         self.save(update_fields=["status", "error", "updated_at"])
 
+    @property
+    def reservation_type(self):
+        if self.reservation:
+            return self.reservation.__class__.__name__
+        return ""
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["content_type", "object_id", "type"], name="unique_task_type_per_reservation")
+            models.UniqueConstraint(
+                fields=["content_type", "object_id", "type"], name="unique_task_type_per_reservation"
+            )
         ]

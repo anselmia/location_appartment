@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from .models import SiteVisit
 from django.utils import timezone
 from datetime import timedelta
@@ -64,6 +65,7 @@ class SessionTimeoutMiddleware:
                 logout(request)
                 # Optionally, clear cache related to the user
                 clear_user_cache(request.user.id)
+                return redirect('accounts:login')
 
         # Update session activity time to track user interaction
         if request.user.is_authenticated:

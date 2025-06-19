@@ -64,6 +64,10 @@
               <dd class="col-sm-7">
                 Enfant(s){{ reservation.guest_minor }}
               </dd>
+              <dt class="col-sm-5">Prix</dt>
+              <dd class="col-sm-7">
+                {{ reservation.price|floatformat:2 }} €
+              </dd>
             </dl>
           </div>
           <!-- État -->
@@ -92,9 +96,22 @@
           <div class="col-md-6">
             <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
             <dl class="row">
-              <dt class="col-sm-5">Prix</dt>
+              <dt class="col-sm-5">Paiement</dt>
               <dd class="col-sm-7">
-                {{ reservation.price|floatformat:2 }} €
+                {{ reservation.checkout_amount|floatformat:2 }} €
+                {% if reservation.paid %}
+                  <span class="badge bg-success ms-2">Confirmé</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                  {% if reservation.stripe_payment_intent_id %}
+                    <form method="post"
+                          action="{% url 'payment:verify_payment' reservation.code %}"
+                          class="d-inline ms-2">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
               </dd>
               <dt class="col-sm-5">Taxes</dt>
               <dd class="col-sm-7">
@@ -143,7 +160,7 @@
                 <dd class="col-sm-7">
                   {{ reservation.platform_fee|floatformat:2|default:"—" }} €
                 </dd>
-                {% if not reservation.refunded %}
+                {% if reservation.paid and reservation.refundable %}
                   <dt class="col-sm-5">Montant Remboursable</dt>
                   <dd class="col-sm-7">
                     {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
@@ -177,7 +194,7 @@
                       <button type="submit" class="btn btn-outline-warning">Rembourser</button>
                     </form>
                   </dd>
-                {% else %}
+                {% elif reservation.refunded %}
                   <dt class="col-sm-5">Montant remboursé</dt>
                   <dd class="col-sm-7">
                     {{ reservation.refund_amount|floatformat:2 }} €
@@ -186,6 +203,8 @@
                   <dd class="col-sm-7">
                     {{ reservation.stripe_refund_id|default:"—" }}
                   </dd>
+                {% else %}
+                  <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                 {% endif %}
               {% endif %}
             </dl>
@@ -219,7 +238,7 @@
                 <dd class="col-sm-7">
                   {{ reservation.stripe_deposit_payment_intent_id|default:"—" }}
                 </dd>
-              {% else %}
+              {% elif reservation.paid %}
                 <dt class="col-sm-5">Charger une caution</dt>
                 <dd class="col-sm-7">
                   <form method="post"
@@ -239,6 +258,8 @@
                     <button type="submit" class="btn btn-sm btn-primary">Charger</button>
                   </form>
                 </dd>
+              {% else %}
+                <p class="text-muted fst-italic mb-0">Aucune caution n'est disponible pour cette réservation.</p>
               {% endif %}
             </dl>
           </div>

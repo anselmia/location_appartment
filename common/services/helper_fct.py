@@ -3,6 +3,8 @@ import string
 import time
 import logging
 
+from django.core.paginator import Paginator, Page
+from django.db.models import QuerySet
 from django.core.cache import cache
 from administration.models import Entreprise
 
@@ -58,3 +60,12 @@ def get_entreprise(force_refresh=False):
         logger.warning("⚠️ Aucune configuration Entreprise trouvée.")
 
     return entreprise
+
+
+def paginate_queryset(queryset: QuerySet, request: HttpRequest, per_page: int = 20) -> Page:
+    """
+    Paginate a queryset for the given request.
+    """
+    paginator = Paginator(queryset, per_page)
+    page_number = request.GET.get("page")
+    return paginator.get_page(page_number)

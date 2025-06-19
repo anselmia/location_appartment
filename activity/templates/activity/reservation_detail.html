@@ -57,6 +57,10 @@
                             <dd class="col-sm-7">
                                 {{ reservation.participants }}
                             </dd>
+                            <dt class="col-sm-5">Prix</dt>
+                            <dd class="col-sm-7">
+                                {{ reservation.price|floatformat:2 }} €
+                            </dd>
                         </dl>
                     </div>
                     <!-- État -->
@@ -72,7 +76,7 @@
                                 {% if reservation.ongoing %}
                                     <span class="badge-status en-cours">En cours</span>
                                 {% elif reservation.pending %}
-                                    <span class="badge-status en-attente">En attente</span>
+                                    <span class="badge-status en_attente">En attente</span>
                                 {% elif reservation.ended %}
                                     <span class="badge-status terminee">Terminée</span>
                                 {% elif reservation.coming %}
@@ -100,7 +104,20 @@
                         <dl class="row">
                             <dt class="col-sm-5">Prix</dt>
                             <dd class="col-sm-7">
-                                {{ reservation.price|floatformat:2 }} €
+                                {{ reservation.checkout_amount|floatformat:2 }} €
+                                {% if reservation.paid %}
+                                    <span class="badge bg-success ms-2">Confirmé</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                                    {% if reservation.stripe_payment_intent_id %}
+                                        <form method="post"
+                                              action="{% url 'payment:verify_payment' reservation.code %}"
+                                              class="d-inline ms-2">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
                             </dd>
                             <dt class="col-sm-5">Méthode Stripe</dt>
                             <dd class="col-sm-7">
@@ -110,24 +127,36 @@
                             <dd class="col-sm-7">
                                 {{ reservation.stripe_payment_intent_id|default:"—" }}
                             </dd>
-                            <dt class="col-sm-5">Remboursée ?</dt>
+                            <dt class="col-sm-5">Remboursement</dt>
                             <dd class="col-sm-7">
-                                {% if reservation.refunded %}
-                                    <span class="badge bg-success">Oui</span>
+                                {% if r.paid and r.refundable %}
+                                    <form method="post"
+                                          action="{% url 'payment:refund_reservation' r.code %}"
+                                          class="d-flex gap-2 align-items-center"
+                                          onsubmit="return confirm('Confirmer le remboursement ?');">
+                                        {% csrf_token %}
+                                        <input type="number"
+                                               name="amount"
+                                               class="form-control form-control-sm"
+                                               min="0"
+                                               max="{{ r.refundable_amount|stringformat:'f' }}"
+                                               step="0.01"
+                                               placeholder="Montant">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
+                                    </form>
+                                {% elif reservation.refunded %}
+                                    <dt class="col-sm-5">Montant remboursé</dt>
+                                    <dd class="col-sm-7">
+                                        {{ reservation.refund_amount|floatformat:2 }} €
+                                    </dd>
+                                    <dt class="col-sm-5">Remboursement Stripe</dt>
+                                    <dd class="col-sm-7">
+                                        {{ reservation.stripe_refund_id|default:"—" }}
+                                    </dd>
                                 {% else %}
-                                    <span class="badge bg-secondary">Non</span>
+                                    <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                                 {% endif %}
                             </dd>
-                            {% if reservation.refunded %}
-                                <dt class="col-sm-5">Montant remboursé</dt>
-                                <dd class="col-sm-7">
-                                    {{ reservation.refund_amount|floatformat:2 }} €
-                                </dd>
-                                <dt class="col-sm-5">Remboursement Stripe</dt>
-                                <dd class="col-sm-7">
-                                    {{ reservation.stripe_refund_id|default:"—" }}
-                                </dd>
-                            {% endif %}
                         </dl>
                     </div>
                 </div>

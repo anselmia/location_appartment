@@ -169,7 +169,7 @@ input,
   color: #fff;
 }
 
-.badge-status.en-attente {
+.badge-status.en_attente {
   background-color: var(--warning-color);
   color: #000;
 }

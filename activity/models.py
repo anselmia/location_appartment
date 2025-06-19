@@ -1,6 +1,7 @@
 import logging
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from multiselectfield import MultiSelectField
 from accounts.models import CustomUser
 from datetime import timedelta
@@ -105,6 +106,7 @@ class Activity(models.Model):
         help_text="Entrez chaque créneau horaire sur une ligne séparée, au format HH:MM (ex: 09:00).",
     )
     description = models.TextField("Description de l'activité")
+    detail = models.TextField("Détails de l'activité")
     duration = models.PositiveIntegerField("Durée (minutes)", help_text="Durée totale de l'activité en minutes.")
     location = models.ForeignKey(City, on_delete=models.PROTECT, related_name="activities", verbose_name="Ville")
     category = models.ForeignKey(
@@ -159,6 +161,10 @@ class Activity(models.Model):
     def booking_limit(self):
         return timezone.now().date() + timedelta(days=self.availability_period)
 
+    @property
+    def partner(self):
+        return get_object_or_404(Partners, user=self.owner)
+
 
 class CloseDate(models.Model):
     activity = models.ForeignKey(Activity, related_name="close_dates", on_delete=models.CASCADE)
@@ -200,7 +206,9 @@ class ActivityReservation(models.Model):
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     platform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    paid = models.BooleanField(default=False)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_saved_payment_method_id = models.CharField(max_length=255, blank=True, null=True)
     checkout_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     refunded = models.BooleanField(default=False)
     refund_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)

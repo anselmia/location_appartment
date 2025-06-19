@@ -176,6 +176,7 @@ def client_dashboard(request):
             logement_administrated = [logement for logement in Logement.objects.filter(admin=request.user)]
 
         user_activities = None
+
         # Check if user is admin or owner of a conciergerie
         if user.is_partner or user.is_admin or user.is_superuser:
             partner = Partners.objects.filter(user=request.user).first()

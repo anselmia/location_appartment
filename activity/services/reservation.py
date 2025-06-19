@@ -99,7 +99,7 @@ def get_available_slots(activity: Any, day: date, as_time: bool = False) -> list
 
     # Filter only reservations for the given day
     reservations = ActivityReservation.objects.annotate(start_date=Cast("start", DateField())).filter(
-        activity=activity, start_date=day, statut__in=["en_attente", "confirmee"]
+        activity=activity, start_date=day, statut__in=["en_attente", "confirmee", "echec_paiement"]
     )
 
     # If day is closed return empty list
@@ -253,7 +253,7 @@ def create_reservation(
     try:
         logger.info(f"Creating  reservation for activity {activity.id}, user {user}, date {start}.")
         start_datetime = datetime.combine(start, slot)
-        end_datetime = start + timedelta(minutes=activity.duration)
+        end_datetime = start_datetime + timedelta(minutes=activity.duration)
         reservation = ActivityReservation.objects.create(
             activity=activity,
             user=user,

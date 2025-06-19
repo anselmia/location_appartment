@@ -56,6 +56,15 @@
             <div class="col-lg-7 col-md-10">
                 <div class="booking-box">
                     <h1 class="section-title">{{ activity.name }}</h1>
+                    <div class="alert-info d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-info-circle-fill fs-4 text-primary">
+                        </i>
+                        <div>
+                            <strong>Le paiement ne sera débité qu'après acceptation de la réservation par le vendeur.</strong>
+                            <br>
+                            Vous recevrez un e-mail de confirmation dès que votre demande sera validée.
+                        </div>
+                    </div>
                     <form id="booking-form" method="post" novalidate>
                         {% csrf_token %}
                         <div class="mb-3">

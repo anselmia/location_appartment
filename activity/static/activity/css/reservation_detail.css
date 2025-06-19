@@ -27,7 +27,7 @@
   background: var(--danger-color, #dc3545);
   color: #fff;
 }
-.badge-status.en-attente {
+.badge-status.en_attente {
   background: var(--warning-color, #ffc107);
   color: #222;
 }

@@ -13,7 +13,7 @@
               <!-- LEFT: Logement name + stay dates -->
               <div class="reservation-main">
                 <div class="fw-bold logement-title">{{ r.logement.name }}</div>
-                <div class="text-muted small">{{ r.start|date:"d/m/Y" }} → {{ r.end|date:"d/m/Y" }}</div>
+                <div class="text-muted small">{{ r.start|date:"d/m/Y H:i" }} → {{ r.end|date:"d/m/Y H:i" }}</div>
               </div>
               <!-- MIDDLE: Quick info -->
               <div class="reservation-meta text-muted small mt-2 mt-md-0">
@@ -46,15 +46,17 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <a href="{% url 'reservation:customer_reservation_detail' r.code %}"
-                     class="btn btn-primary btn-sm">
-                    <i class="bi bi-eye"></i> Voir
+                     class="btn btn-primary btn-sm shadow-sm px-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-eye"></i> <span>Voir</span>
                   </a>
                   {% if r.coming and r.can_cancel %}
                     <form method="post"
                           action="{% url 'reservation:cancel_booking' r.code %}"
                           onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
                       {% csrf_token %}
-                      <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                      <button class="btn btn-sm btn-danger shadow-sm px-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-x-circle"></i> <span>Annuler</span>
+                      </button>
                     </form>
                   {% endif %}
                 </div>
@@ -81,7 +83,7 @@
               <!-- LEFT: Logement name + stay dates -->
               <div class="reservation-main">
                 <div class="fw-bold logement-title">{{ r.activity.name }}</div>
-                <div class="text-muted small">{{ r.start|date:"d/m/Y" }} → {{ r.end|date:"d/m/Y" }}</div>
+                <div class="text-muted small">{{ r.start|date:"d/m/Y H:i" }} → {{ r.end|date:"d/m/Y H:i" }}</div>
               </div>
               <!-- MIDDLE: Quick info -->
               <div class="reservation-meta text-muted small mt-2 mt-md-0">
@@ -101,7 +103,7 @@
                   {% elif r.coming %}
                     <span class="badge-status a-venir">À venir</span>
                   {% elif r.pending %}
-                    <span class="badge-status en-attente">En attente</span>
+                    <span class="badge-status en_attente">En attente</span>
                   {% elif r.statut == "annulee" %}
                     <span class="badge-status annulee">Annulée</span>
                   {% endif %}
@@ -113,15 +115,17 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <a href="{% url 'activity:customer_reservation_detail' r.code %}"
-                     class="btn btn-primary btn-sm">
-                    <i class="bi bi-eye"></i> Voir
+                     class="btn btn-primary btn-sm shadow-sm px-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-eye"></i> <span>Voir</span>
                   </a>
                   {% if r.coming and r.can_cancel %}
                     <form method="post"
                           action="{% url 'activity:cancel_booking' r.code %}"
                           onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
                       {% csrf_token %}
-                      <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                      <button class="btn btn-sm btn-danger shadow-sm px-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-x-circle"></i> <span>Annuler</span>
+                      </button>
                     </form>
                   {% endif %}
                 </div>

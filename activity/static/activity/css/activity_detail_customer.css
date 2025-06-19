@@ -1,0 +1,131 @@
+/* activity_detail_customer.css - Modern, customer-oriented, responsive detail page using root variables */
+:root {
+  --primary: var(--primary-color, #bfa66b);
+  --accent: var(--accent-color, #2b3d55);
+  --secondary: var(--secondary-color, #f7f7f7);
+  --text: var(--text-color, #222);
+  --muted: var(--text-muted, #7a7a7a);
+  --card-bg: var(--bg-white, #fff);
+  --card-shadow: var(--shadow, 0 8px 32px rgba(0, 0, 0, 0.08));
+  --border-radius: var(--radius, 1.2rem);
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --font-title: "Playfair Display", serif;
+  --font-body: "Inter", Arial, sans-serif;
+}
+
+.activity-detail-container {
+  max-width: 1000px;
+  margin: 2.5rem auto;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: var(--spacing-lg) var(--spacing-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+.activity-detail-gallery {
+  flex: 1 1 340px;
+  min-width: 320px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.activity-detail-main {
+  flex: 2 1 400px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+.activity-detail-title {
+  font-family: var(--font-title);
+  color: var(--primary);
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.activity-detail-category {
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-xs);
+}
+.activity-detail-desc {
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  margin-bottom: var(--spacing-md);
+}
+.activity-detail-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-md) 0;
+}
+.activity-detail-info-list li {
+  margin-bottom: var(--spacing-xs);
+  color: var(--text);
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+}
+.activity-detail-info-list i {
+  color: var(--primary);
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+.activity-detail-book-btn {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 2rem;
+  padding: 0.7rem 2.5rem;
+  font-weight: 600;
+  font-size: 1.15rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  border: none;
+  margin-top: var(--spacing-md);
+}
+.activity-detail-book-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+.activity-detail-gallery img {
+  width: 100%;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  margin-bottom: var(--spacing-xs);
+}
+@media (max-width: 900px) {
+  .activity-detail-container {
+    flex-direction: column;
+    padding: var(--spacing-md);
+  }
+  .activity-detail-gallery,
+  .activity-detail-main {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+@media (max-width: 576px) {
+  .activity-detail-container {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+  .activity-detail-title {
+    font-size: 1.3rem;
+  }
+  .activity-detail-desc {
+    font-size: 1rem;
+  }
+  .activity-detail-book-btn {
+    width: 100%;
+    padding: 0.7rem 0;
+    font-size: 1rem;
+  }
+}

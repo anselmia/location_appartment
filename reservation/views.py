@@ -34,17 +34,10 @@ from logement.models import Logement
 from logement.decorators import user_has_logement
 from logement.services.logement_service import get_logements
 from common.decorators import is_admin
-
+from common.services.helper_fct import paginate_queryset
 logger = logging.getLogger(__name__)
 
 
-def paginate_queryset(queryset: QuerySet, request: HttpRequest, per_page: int = 20) -> Page:
-    """
-    Paginate a queryset for the given request.
-    """
-    paginator = Paginator(queryset, per_page)
-    page_number = request.GET.get("page")
-    return paginator.get_page(page_number)
 
 
 @login_required

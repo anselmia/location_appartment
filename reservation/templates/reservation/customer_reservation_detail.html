@@ -100,6 +100,11 @@
                             <dt class="col-sm-5">Montant total</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.price|floatformat:2 }} €
+                                {% if reservation.paid %}
+                                    <span class="badge bg-success ms-2">Confirmé</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                                {% endif %}
                             </dd>
                             {% if reservation.refunded %}
                                 <dt class="col-sm-5 text-danger">Remboursé</dt>

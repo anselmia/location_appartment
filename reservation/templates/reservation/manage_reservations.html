@@ -71,6 +71,19 @@
                     <ul class="list-unstyled">
                       <li>
                         <strong>Prix :</strong> {{ r.price }} €
+                        {% if r.paid %}
+                          <span class="badge bg-success ms-2">Confirmé</span>
+                        {% else %}
+                          <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                          {% if r.stripe_payment_intent_id %}
+                            <form method="post"
+                                  action="{% url 'payment:verify_payment' r.code %}"
+                                  class="d-inline ms-2">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                            </form>
+                          {% endif %}
+                        {% endif %}
                       </li>
                       <li>
                         <strong>Taxes :</strong> {{ r.tax|floatformat:2 }} €
@@ -99,7 +112,7 @@
                         <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
                       </li>
                     </ul>
-                    {% if r.refundable %}
+                    {% if r.paid and r.refunded %}
                       <form method="post"
                             action="{% url 'payment:refund_reservation' r.code %}"
                             class="d-flex gap-2 align-items-center"
@@ -133,7 +146,7 @@
                         <strong>Restante :</strong> {{ r.chargeable_deposit|floatformat:2 }} €
                       </li>
                     </ul>
-                    {% if r.stripe_payment_intent_id and r.chargeable_deposit > 0 %}
+                    {% if r.stripe_payment_intent_id and not r.caution_charged > 0 %}
                       <form method="post"
                             action="{% url 'payment:charge_deposit' r.code %}"
                             class="d-flex gap-2 align-items-center"
@@ -158,7 +171,7 @@
                         <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
                         <br>
                         <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
-                      {% else %}
+                      {% elif r.paid %}
                         {{ r.transferable_amount|floatformat:2 }} €
                         <form method="post"
                               action="{% url 'payment:transfer_reservation' r.code %}"
@@ -167,6 +180,8 @@
                           {% csrf_token %}
                           <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
                         </form>
+                      {% else %}
+                        <p class="text-muted">Aucun transfert possible.</p>
                       {% endif %}
                     </p>
                     {% if r.logement.admin %}

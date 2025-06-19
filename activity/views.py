@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.utils.dateparse import parse_date, parse_time
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from payment.services.payment_service import PAYMENT_FEE_VARIABLE, PAYMENT_FEE_FIX
+from payment.services.payment_service import PAYMENT_FEE_VARIABLE
 from activity.forms import PartnerForm, ReservationForm, ActivityForm
 
 from django.contrib.auth.decorators import login_required
@@ -26,6 +26,7 @@ from activity.decorators import (
 from activity.models import Price
 from common.decorators import is_admin
 from common.services.email_service import send_partner_validation_email
+from common.services.helper_fct import paginate_queryset
 from activity.models import Activity, Category, Partners, ActivityPhoto
 from activity.services.reservation import (
     validate_reservation_inputs,
@@ -34,7 +35,7 @@ from activity.services.reservation import (
     get_valid_reservations_for_user,
     get_reservation_years_and_months,
     mark_reservation_cancelled,
-    cancel_and_refund_reservation
+    cancel_and_refund_reservation,
 )
 from activity.services.activity import get_activity, get_calendar_context
 from activity.services.price import get_price_context, get_daily_price_data, bulk_update_prices
@@ -150,6 +151,7 @@ def update_partner(request, pk=None):
     return render(request, "activity/create_partner.html", {"form": form, "is_edit": True})
 
 
+@login_required
 @is_admin
 def list_partners(request):
     partners = Partners.objects.all()
@@ -193,7 +195,7 @@ def partner_list_customer(request):
     page_obj = paginator.get_page(page_number)
 
     # Liste des villes ayant au moins un partenaire
-    villes = City.objects.filter(conciergies__isnull=False).distinct()
+    villes = City.objects.filter(activity_partners__isnull=False).distinct()
 
     context = {
         "partners": page_obj.object_list,
@@ -203,9 +205,16 @@ def partner_list_customer(request):
     return render(request, "activity/partner_list_customer.html", context)
 
 
+@login_required
+@is_admin
 def partner_detail(request, pk):
     partner = get_object_or_404(Partners, pk=pk)
     return render(request, "activity/partner_detail.html", {"partner": partner})
+
+
+def partner_customer_detail(request, pk):
+    partner = get_object_or_404(Partners, pk=pk)
+    return render(request, "activity/partner_customer_card.html", {"partner": partner})
 
 
 @is_admin
@@ -612,18 +621,19 @@ def cancel_booking(request: HttpRequest, code: str) -> HttpResponse:
         messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
     return redirect("accounts:dashboard")
 
+
 @login_required
+@user_has_activity
 def validate_reservation(request, code):
     reservation = get_object_or_404(ActivityReservation, code=code)
     if request.method == "POST":
         if reservation.statut == "en_attente":
-            reservation.statut = "confirmee"
-            reservation.save(update_fields=["statut"])
             charge_result = capture_reservation_payment(reservation)
             if charge_result.get("success"):
                 messages.success(request, "Le paiement a été prélevé avec succès.")
             else:
-                messages.success(request, "Une erreur est survenue lors du prélèvement du paiement.")
+                error_msg = charge_result.get("error") or "Une erreur est survenue lors du prélèvement du paiement."
+                messages.error(request, error_msg)
         else:
             messages.warning(request, "La réservation n'est pas en attente ou a déjà été traitée.")
     return redirect("activity:reservation_detail", code=reservation.code)
@@ -637,3 +647,23 @@ def customer_reservation_detail(request: HttpRequest, code: str) -> HttpResponse
     """
     reservation = get_object_or_404(ActivityReservation, code=code)
     return render(request, "activity/customer_reservation_detail.html", {"reservation": reservation})
+
+
+@login_required
+@is_admin
+def manage_reservations(request: HttpRequest) -> HttpResponse:
+    """
+    Admin view to manage all reservations with search and pagination.
+    """
+    query = request.GET.get("q")
+    reservations = ActivityReservation.objects.select_related("activity", "user")
+    if query:
+        reservations = reservations.filter(code__icontains=query)
+    reservations = reservations.order_by("-date_reservation")
+    page_obj = paginate_queryset(reservations, request)
+    context = {
+        "reservations": page_obj,
+        "query": query,
+        "page_obj": page_obj,
+    }
+    return render(request, "activity/manage_reservations.html", context)

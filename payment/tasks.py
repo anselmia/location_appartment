@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 def transfert_funds():
     from payment.services.payment_service import transfer_funds
 
-    reservations = Reservation.objects.filter(statut="confirmee")
+    reservations = Reservation.objects.filter(statut="terminee")
     for reservation in reservations:
-        if reservation.refundable_period_passed:
+        if reservation.refundable_period_passed and reservation.paid:
             transfer_funds(reservation)
 
-    reservations = ActivityReservation.objects.filter(statut="confirmee")
+    reservations = ActivityReservation.objects.filter(statut="terminee")
     for reservation in reservations:
-        if reservation.refundable_period_passed:
+        if reservation.refundable_period_passed and reservation.paid:
             transfer_funds(reservation)
 
 
@@ -223,7 +223,8 @@ def check_stripe_integrity():
 
                         # Update reservation
                         resa.checkout_amount = charged_amount
-                        resa.save(update_fields=["checkout_amount"])
+                        resa.paid = True
+                        resa.save(update_fields=["checkout_amount", "paid"])
                         logger.info(
                             f"Reservation {resa.code}: payment info updated from Stripe (amount={charged_amount}, id={payment_intent.id})"
                         )
@@ -244,7 +245,7 @@ def check_stripe_integrity():
                 message=f"Error checking payment for reservation {resa.code}: {e}",
             )
 
-    ##### RESERVATIONS #####
+    ##### ACTIVITY RESERVATIONS #####
     from activity.models import ActivityReservation
 
     ##### REFUNDS #####
@@ -387,7 +388,8 @@ def check_stripe_integrity():
 
                             # Update reservation
                             resa.checkout_amount = charged_amount
-                            resa.save(update_fields=["checkout_amount"])
+                            resa.paid = True
+                            resa.save(update_fields=["checkout_amount", "paid"])
                             logger.info(
                                 f"Reservation {resa.code}: payment info updated from Stripe (amount={charged_amount}, id={payment_intent.id})"
                             )

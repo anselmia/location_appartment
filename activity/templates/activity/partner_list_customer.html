@@ -2,7 +2,7 @@
 {% load static %}
 {% block extrahead %}
   <link rel="stylesheet"
-        href="{% static 'activity/css/partner_customer.css' %}">
+        href="{% static 'activity/css/partner_list_customer.css' %}">
 {% endblock %}
 {% block content %}
   <div class="container py-5 partner-list-wrapper">
@@ -32,7 +32,7 @@
       {% for p in partners %}
         <div class="col-sm-12 col-md-6 col-lg-4">
           <div class="card h-100 shadow rounded-4 border-0 position-relative">
-            <a href="{% url 'activity:partner_detail' p.id %}"
+            <a href="{% url 'activity:partner_customer_detail' p.id %}"
                class="stretched-link"></a>
             {% if p.logo %}
               <img src="{{ p.logo.url }}"
@@ -45,7 +45,7 @@
               {% if p.description %}<p class="mb-2">{{ p.description|truncatewords_html:25|safe }}</p>{% endif %}
             </div>
             <div class="card-footer bg-white border-0 text-end">
-              <a href="{% url 'activity:partner_detail' p.id %}"
+              <a href="{% url 'activity:partner_customer_detail' p.id %}"
                  class="btn btn-primary btn-sm">En savoir plus</a>
             </div>
           </div>

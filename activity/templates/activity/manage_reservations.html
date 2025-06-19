@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    <link rel="stylesheet"
+          href="{% static 'activity/css/manage_reservations.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="container py-4">
+        <h2 class="mb-4 fw-bold">📋 Gestion des Réservations d'Activité</h2>
+        <!-- Search Bar -->
+        <form method="get" class="mb-4">
+            <input type="text"
+                   name="q"
+                   class="form-control form-control-lg rounded-pill"
+                   placeholder="🔍 Rechercher par numéro de réservation ou activité"
+                   value="{{ query|default:'' }}">
+        </form>
+        <div class="accordion" id="activityReservationAccordion">
+            {% for r in reservations %}
+                {% with collapse_id="collapse"|add:r.code %}
+                    <div class="accordion-item mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="heading{{ r.code }}">
+                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#{{ collapse_id }}"
+                                    aria-expanded="false"
+                                    aria-controls="{{ collapse_id }}">
+                                <div class="me-3">
+                                    <strong>{{ r.code }}</strong> - {{ r.activity.name }}
+                                    <br>
+                                    <span class="text-muted small">{{ r.user }}</span>
+                                </div>
+                                <span class="badge-status {{ r.statut|default:'inconnu' }}">{{ r.get_statut_display }}</span>
+                            </button>
+                        </h2>
+                        <div id="{{ collapse_id }}"
+                             class="accordion-collapse collapse"
+                             aria-labelledby="heading{{ r.code }}"
+                             data-bs-parent="#activityReservationAccordion">
+                            <div class="accordion-body">
+                                <div class="row mb-3 small">
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <strong>Client :</strong> {{ r.user }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Activité :</strong> {{ r.activity.name }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Date :</strong> du {{ r.start|date:"d M Y H:i" }} au {{ r.end|date:"d M Y H:i" }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Participants :</strong> {{ r.participants }}
+                                        </p>
+                                        <p class="mb-1 text-muted">Réservé le {{ r.date_reservation|date:"d M Y H:i" }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <strong>Statut actuel :</strong>
+                                            {% if r.ongoing %}
+                                                <span class="badge-status en-cours">En cours</span>
+                                            {% elif r.ended %}
+                                                <span class="badge-status terminee">Terminée</span>
+                                            {% elif r.coming %}
+                                                <span class="badge-status a-venir">A venir</span>
+                                            {% elif r.pending or r.statut == 'en_attente' %}
+                                                <span class="badge-status en_attente">En attente</span>
+                                                <form method="post"
+                                                      action="{% url 'activity:validate_reservation' r.code %}"
+                                                      class="d-inline ms-2">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                                                </form>
+                                            {% else %}
+                                                <span class="badge-status inconnu">Inconnu</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row small">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted fw-bold">Paiement</h6>
+                                        <ul class="list-unstyled">
+                                            <li>
+                                                <strong>Prix :</strong> {{ r.price }} €
+                                                {% if r.paid %}
+                                                    <span class="badge bg-success ms-2">Confirmé</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                                                    {% if r.stripe_payment_intent_id %}
+                                                        <form method="post"
+                                                              action="{% url 'payment:verify_payment' r.code %}"
+                                                              class="d-inline ms-2">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </li>
+                                            <li>
+                                                <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
+                                            </li>
+                                            <li>
+                                                <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
+                                            </li>
+                                            <li>
+                                                <strong>Méthode :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
+                                            </li>
+                                            <li>
+                                                <strong>Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted fw-bold">Remboursement</h6>
+                                        <ul class="list-unstyled">
+                                            <li>
+                                                <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
+                                            </li>
+                                            <li>
+                                                <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
+                                            </li>
+                                        </ul>
+                                        {% if r.paid and not r.refunded %}
+                                            <form method="post"
+                                                  action="{% url 'payment:refund_reservation' r.code %}"
+                                                  class="d-flex gap-2 align-items-center"
+                                                  onsubmit="return confirm('Confirmer le remboursement ?');">
+                                                {% csrf_token %}
+                                                <input type="number"
+                                                       name="amount"
+                                                       class="form-control form-control-sm"
+                                                       min="0"
+                                                       max="{{ r.refundable_amount|stringformat:'f' }}"
+                                                       step="0.01"
+                                                       placeholder="Montant">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
+                                            </form>
+                                        {% else %}
+                                            <p class="text-muted">Aucun remboursement possible.</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted fw-bold">Transferts</h6>
+                                        <p class="mb-1">
+                                            {% if r.transferred %}
+                                                <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
+                                                <br>
+                                                <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                                            {% elif r.paid %}
+                                                {{ r.transferable_amount|floatformat:2 }} €
+                                                <form method="post"
+                                                      action="{% url 'payment:transfer_reservation' r.code %}"
+                                                      class="d-inline-block ms-2"
+                                                      onsubmit="return confirm('Effectuer le transfert ?');">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
+                                                </form>
+                                            {% else %}
+                                                <p class="text-muted">Aucun transfert possible.</p>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
+            {% empty %}
+                <div class="alert alert-info">Aucune réservation d'activité trouvée.</div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}

@@ -95,9 +95,12 @@
             </div>
             <div class="activity-description mb-4">
                 <h4>Description</h4>
-                <p>{{ activity.description }}</p>
+                <p>{{ activity.description|safe }}</p>
             </div>
-            
+            <div class="activity-detail mb-4">
+                <h4>Détails de l'activité</h4>
+                <p>{{ activity.detail|safe }}</p>
+            </div>
         </div>
     </div>
 

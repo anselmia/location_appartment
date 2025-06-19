@@ -51,3 +51,16 @@ def get(dict_obj, key):
 def replace(value, args):
     old, new = args.split(",")
     return value.replace(old, new)
+
+
+@register.filter
+def duration_hm(minutes):
+    minutes = int(minutes or 0)
+    hours = minutes // 60
+    mins = minutes % 60
+    if hours and mins:
+        return f"{hours}h {mins}min"
+    elif hours:
+        return f"{hours}h"
+    else:
+        return f"{mins}min"

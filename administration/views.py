@@ -337,7 +337,7 @@ def waiver_platform_fee_view(request, waiver_id=None):
         waiver_instance = None
 
     # Filtering logic
-    waivers = PlatformFeeWaiver.objects.select_related("logement", "owner").all().order_by("-id")
+    waivers = PlatformFeeWaiver.objects.select_related( "owner").all().order_by("-id")
     status = request.GET.get("status")
     owner_name = request.GET.get("owner_name", "").strip()
     if status == "active":
@@ -394,22 +394,6 @@ def delete_waiver_platform_fee(request, waiver_id):
 @login_required
 @user_passes_test(is_admin)
 def huey_tasks_status(request):
-    # Get all periodic tasks from the registry (for current status)
-    from huey.contrib.djhuey import HUEY
-
-    tasks = []
-    for task in HUEY._registry.periodic_tasks:
-        tasks.append(
-            {
-                "name": getattr(task, "name", str(task)),
-                "type": "Periodic",
-                "last_run": getattr(task, "last_run", None),
-                "status": getattr(task, "status", None),
-                "result": getattr(task, "result", None),
-            }
-        )
-    tasks = sorted(tasks, key=lambda t: t["name"])
-
     # Get task history from the database
     history = TaskHistory.objects.order_by("-started_at")[:100]
-    return render(request, "administration/huey_tasks_status.html", {"tasks": tasks, "history": history})
+    return render(request, "administration/huey_tasks_status.html", {"history": history})

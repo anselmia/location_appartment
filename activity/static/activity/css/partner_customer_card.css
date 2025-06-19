@@ -1,0 +1,60 @@
+.partner-customer-card {
+  border-radius: var(--border-radius);
+  background: var(--card-bg);
+  transition: box-shadow 0.2s;
+}
+.partner-customer-card:hover {
+  box-shadow: var(--card-shadow);
+}
+.partner-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 3px solid var(--secondary);
+  background: var(--secondary);
+}
+.partner-customer-card .card-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-title);
+}
+.partner-customer-card .lead {
+  font-size: 1.15rem;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+.partner-customer-card .list-group-item {
+  font-size: 1rem;
+  border: none;
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+  color: var(--text);
+}
+.partner-customer-card .fw-bold {
+  color: var(--primary);
+}
+.partner-customer-card .btn-outline-primary {
+  border-radius: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.partner-customer-card .btn-outline-primary:hover {
+  background: var(--primary);
+  color: #fff;
+}
+@media (max-width: 576px) {
+  .partner-customer-card {
+    padding: var(--spacing-xs);
+  }
+  .partner-logo {
+    width: 56px;
+    height: 56px;
+  }
+  .partner-customer-card .card-title {
+    font-size: 1.3rem;
+  }
+}

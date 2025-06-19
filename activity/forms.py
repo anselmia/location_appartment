@@ -47,6 +47,7 @@ class ActivityForm(forms.ModelForm):
         labels = {
             "name": "Nom de l'activité",
             "description": "Description de l'activité",
+            "detail": "Détails de l'activité",
             "duration": "Durée (minutes)",
             "location": "Ville",
             "category": "Catégorie",
@@ -70,6 +71,13 @@ class ActivityForm(forms.ModelForm):
                     "class": "form-control",
                     "rows": 4,
                     "placeholder": "Décrivez l'activité, le déroulement, les points forts...",
+                }
+            ),
+            "detail": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Détails supplémentaires sur l'activité, les conditions particulières, etc.",
                 }
             ),
             "duration": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Durée totale en minutes"}),

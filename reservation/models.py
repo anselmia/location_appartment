@@ -39,6 +39,7 @@ class Reservation(models.Model):
     payment_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     platform_fee = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     admin_fee_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    paid = models.BooleanField(default=False)
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_saved_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     checkout_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
