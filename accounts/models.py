@@ -43,13 +43,13 @@ class CustomUser(AbstractUser):
     def has_conciergerie(self):
         from conciergerie.models import Conciergerie
 
-        return Conciergerie.objects.filter(user=self).exists()
+        return Conciergerie.objects.filter(user=self, validated=True).exists()
 
     @property
     def has_partners(self):
         from activity.models import Partners
 
-        return Partners.objects.filter(user=self).exists()
+        return Partners.objects.filter(user=self, validated=True).exists()
 
 
 class Conversation(models.Model):
