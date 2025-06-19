@@ -1099,7 +1099,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
             return
 
         amount = Decimal(amount_cents) / 100  # cents to euros
-        logger.info(f"✅ Deposit received: {amount:.2f} € via PaymentIntent {payment_intent_id}")
+        logger.info(f"✅ Amount received: {amount:.2f} € via PaymentIntent {payment_intent_id}")
 
         with transaction.atomic():
             try:

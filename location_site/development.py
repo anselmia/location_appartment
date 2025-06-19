@@ -68,6 +68,7 @@ LOGGING = {
             "when": "W0",  # Rotate weekly
             "backupCount": 365,
             "formatter": "verbose",
+            "encoding": "utf-8",
         },
         "mail_admins": {
             "level": "ERROR",

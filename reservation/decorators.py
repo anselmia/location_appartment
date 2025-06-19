@@ -23,7 +23,7 @@ def user_is_reservation_admin(view_func):
         # Check if the user is the admin or the owner of the logement/activity
         if (
             (logement and (request.user == logement.owner or request.user == logement.admin))
-            or (activity and (request.user == activity.owner or request.user == activity.admin))
+            or (activity and (request.user == activity.owner))
             or request.user.is_admin
             or request.user.is_superuser
         ):
