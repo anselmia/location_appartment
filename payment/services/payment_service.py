@@ -42,7 +42,11 @@ PAYMENT_FEE_FIX = 0.25
 
 def is_stripe_admin(user):
     return user.is_authenticated and (
-        getattr(user, "is_admin", False) or user.is_superuser or user.is_owner or user.has_conciergerie or user.has_partners
+        getattr(user, "is_admin", False)
+        or user.is_superuser
+        or user.is_owner
+        or user.has_conciergerie
+        or user.has_partners
     )
 
 
@@ -560,6 +564,7 @@ def charge_deposit(
                 "type": "deposit",
                 "code": str(reservation.code),
                 "logement_id": reservation.logement.id,
+                "product": "logement",
             },
             idempotency_key=f"deposit_{reservation.code}",
         )
@@ -913,12 +918,15 @@ def capture_reservation_payment(reservation):
             task.mark_success(intent.id)
             return {"success": True, "error": None}  # Already paid
 
-        # Use a Stripe idempotency key for capture
         idempotency_key = f"capture-{reservation.stripe_payment_intent_id}-{reservation.id}"
+        capture_metadata = {
+            "reservation_code": reservation.code,
+            "product": "activity",
+            "type": "payment_capture",
+        }
         captured_intent = stripe.PaymentIntent.capture(
-            reservation.stripe_payment_intent_id, idempotency_key=idempotency_key
+            reservation.stripe_payment_intent_id, idempotency_key=idempotency_key, metadata=capture_metadata
         )
-
         # Try to update the saved payment method from the captured intent
         payment_method_id = None
         if hasattr(captured_intent, "payment_method") and captured_intent.payment_method:
