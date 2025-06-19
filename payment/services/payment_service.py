@@ -42,7 +42,7 @@ PAYMENT_FEE_FIX = 0.25
 
 def is_stripe_admin(user):
     return user.is_authenticated and (
-        getattr(user, "is_admin", False) or user.is_superuser or user.is_owner or user.is_owner_admin
+        getattr(user, "is_admin", False) or user.is_superuser or user.is_owner or user.has_conciergerie or user.has_partners
     )
 
 
