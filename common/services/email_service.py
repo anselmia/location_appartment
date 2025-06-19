@@ -712,7 +712,7 @@ def notify_vendor_new_reservation(reservation):
         }
         vendor_email = reservation.activity.owner.email
         subject = "Nouvelle demande de réservation d'activité"
-        message = render_to_string("emails/activity_new_reservation.txt", context)
+        message = render_to_string("email/activity_new_reservation.txt", context)
         send_mail(
             subject,
             message,
