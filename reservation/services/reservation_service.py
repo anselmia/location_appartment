@@ -58,6 +58,26 @@ def get_reservations(user: Any, logement_id: Optional[int] = None) -> Any:
         raise
 
 
+def get_reservation_by_code(code: str):
+    """
+    Retrieve a reservation (logement or activity) by its unique code.
+    Args:
+        code: The unique code of the reservation.
+    Returns:
+        Reservation or ActivityReservation object if found, None otherwise.
+    """
+    from activity.models import ActivityReservation
+
+    try:
+        return Reservation.objects.get(code=code)
+    except Reservation.DoesNotExist:
+        try:
+            return ActivityReservation.objects.get(code=code)
+        except ActivityReservation.DoesNotExist:
+            logger.warning(f"Reservation or ActivityReservation with code {code} not found.")
+            return None
+
+
 def get_valid_reservations_for_admin(
     user: Any, logement_id: Optional[int] = None, year: Optional[int] = None, month: Optional[int] = None
 ) -> Any:

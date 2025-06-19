@@ -17,6 +17,7 @@ from django.core.paginator import Paginator
 from activity.models import ActivityReservation, Activity
 from reservation.models import Reservation
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
+from reservation.services.reservation_service import get_reservation_by_code
 
 from logement.models import Logement
 
@@ -136,7 +137,7 @@ def stripe_webhook(request):
 @is_stripe_admin
 def send_payment_link(request, code):
     try:
-        reservation = Reservation.objects.get(code=code)
+        reservation = get_reservation_by_code(code)
         send_stripe_payment_link(reservation, request)  # Your helper function
         messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
     except Exception as e:
@@ -148,7 +149,7 @@ def send_payment_link(request, code):
 @login_required
 @is_admin
 def transfer_reservation_payment(request, code):
-    reservation = get_object_or_404(Reservation, code=code, transferred=False)
+    reservation = get_reservation_by_code(code)
 
     try:
         transfer_funds(reservation)
@@ -197,7 +198,7 @@ def payment_task_list(request):
 @require_POST
 def refund_reservation(request, code):
     user = request.user
-    reservation = get_object_or_404(Reservation, code=code)
+    reservation = get_reservation_by_code(code)
 
     key = f"refund_attempts_{code}:{user.id}"
     attempts = cache.get(key, 0)
@@ -233,7 +234,7 @@ def refund_reservation(request, code):
 @user_is_reservation_admin
 @require_POST
 def refund_partially_reservation(request, code):
-    reservation = get_object_or_404(Reservation, code=code)
+    reservation = get_reservation_by_code(code)
 
     if reservation.refunded:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
@@ -319,9 +320,7 @@ def verify_payment_view(request, code):
     View to verify the Stripe PaymentIntent status for a reservation (logement or activity).
     """
 
-    reservation = Reservation.objects.filter(code=code).first()
-    if not reservation:
-        reservation = ActivityReservation.objects.filter(code=code).first()
+    reservation = get_reservation_by_code(code)
     if not reservation:
         messages.error(request, "Réservation introuvable.")
         return redirect(request.META.get("HTTP_REFERER", "/"))
