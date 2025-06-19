@@ -8,7 +8,8 @@ def is_stripe_admin(view_func):
             getattr(request.user, "is_admin", False)
             or request.user.is_superuser
             or request.user.is_owner
-            or request.user.is_owner_admin
+            or request.user.has_conciergerie
+            or request.user.has_partners
         ):
             return view_func(request, *args, **kwargs)
 
