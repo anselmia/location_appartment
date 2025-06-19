@@ -311,7 +311,7 @@ def activity_calendar(request):
     context = get_calendar_context(request.user)
     if context.get("redirect"):
         messages.info(request, "Vous devez ajouter une activité avant d’accéder au tableau de revenus.")
-        return redirect("activity:dashboard")
+        return redirect("activity:activity_dashboard")
     return render(request, "activity/calendar.html", context)
 
 
@@ -326,7 +326,7 @@ def reservation_dashboard(request: HttpRequest, activity_id: Optional[int] = Non
             activities = get_activity(request.user)
             if not activities.exists():
                 messages.info(request, "Vous devez ajouter une activité avant d’accéder au tableau des réservations.")
-                return redirect("activity:dashboard")
+                return redirect("activity:activity_dashboard")
 
         status = request.GET.get("status", "all")
         year = request.GET.get("year", "")
