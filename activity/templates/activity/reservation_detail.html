@@ -129,9 +129,9 @@
                             </dd>
                             <dt class="col-sm-5">Remboursement</dt>
                             <dd class="col-sm-7">
-                                {% if r.paid and r.refundable %}
+                                {% if reservation.paid and not reservation.refunded %}
                                     <form method="post"
-                                          action="{% url 'payment:refund_reservation' r.code %}"
+                                          action="{% url 'payment:refund_reservation' reservation.code %}"
                                           class="d-flex gap-2 align-items-center"
                                           onsubmit="return confirm('Confirmer le remboursement ?');">
                                         {% csrf_token %}
@@ -139,7 +139,7 @@
                                                name="amount"
                                                class="form-control form-control-sm"
                                                min="0"
-                                               max="{{ r.refundable_amount|stringformat:'f' }}"
+                                               max="{{ reservation.refundable_amount|stringformat:'f' }}"
                                                step="0.01"
                                                placeholder="Montant">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>

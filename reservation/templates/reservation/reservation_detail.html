@@ -160,7 +160,7 @@
                 <dd class="col-sm-7">
                   {{ reservation.platform_fee|floatformat:2|default:"—" }} €
                 </dd>
-                {% if reservation.paid and reservation.refundable %}
+                {% if reservation.paid and not reservation.refunded %}
                   <dt class="col-sm-5">Montant Remboursable</dt>
                   <dd class="col-sm-7">
                     {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
