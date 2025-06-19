@@ -1,4 +1,8 @@
-import time
+# -*- coding: utf-8 -*-
+"""Views for handling payments, refunds, and Stripe interactions.
+This module provides views for processing payments, handling webhooks, and managing payment-related tasks.
+"""
+
 import logging
 
 from decimal import Decimal, InvalidOperation
@@ -33,6 +37,7 @@ from payment.services.payment_service import (
     transfer_funds,
     get_session,
     verify_payment,
+    get_reservation_type,
 )
 from payment.models import PaymentTask
 
@@ -138,27 +143,35 @@ def stripe_webhook(request):
 def send_payment_link(request, code):
     try:
         reservation = get_reservation_by_code(code)
+        reservation_type = get_reservation_type(reservation)
         send_stripe_payment_link(reservation, request)  # Your helper function
         messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
     except Exception as e:
         logger.exception(f"❌ Failed to send payment link for {code}: {e}")
         messages.error(request, "Erreur lors de l'envoi du lien.")
-    return redirect("reservation:reservation_detail", code=code)
+
+    if reservation_type == "activity":
+        return redirect("activity:reservation_detail", code=code)
+    else:
+        return redirect("reservation:reservation_detail", code=code)
 
 
 @login_required
 @is_admin
 def transfer_reservation_payment(request, code):
     reservation = get_reservation_by_code(code)
-
+    reservation_type = get_reservation_type(reservation)
     try:
         transfer_funds(reservation)
 
         messages.success(request, f"Transfert effectué pour {reservation.code}.")
     except Exception as e:
         messages.error(request, f"Erreur lors du transfert : {str(e)}")
-
-    return redirect("reservation:manage_reservations")
+        logger.exception(f"❌ Failed to transfer funds for {code}: {e}")
+    if reservation_type == "activity":
+        return redirect("activity:manage_reservations")
+    else:
+        return redirect("reservation:manage_reservations")
 
 
 def payment_task_list(request):
@@ -199,6 +212,7 @@ def payment_task_list(request):
 def refund_reservation(request, code):
     user = request.user
     reservation = get_reservation_by_code(code)
+    reservation_type = get_reservation_type(reservation)
 
     key = f"refund_attempts_{code}:{user.id}"
     attempts = cache.get(key, 0)
@@ -207,7 +221,10 @@ def refund_reservation(request, code):
         ip = get_client_ip(request)
         logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
         messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
-        return redirect("reservation:reservation_dashboard")
+        if reservation_type == "activity":
+            return redirect("activity:activity_dashboard")
+        elif reservation_type == "logement":
+            return redirect("logement:reservation_dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
 
@@ -227,7 +244,10 @@ def refund_reservation(request, code):
     else:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
 
-    return redirect("reservation:reservation_detail", code=code)
+    if reservation_type == "activity":
+        return redirect("activity:reservation_detail", code=code)
+    else:
+        return redirect("reservation:reservation_detail", code=code)
 
 
 @login_required
@@ -235,10 +255,13 @@ def refund_reservation(request, code):
 @require_POST
 def refund_partially_reservation(request, code):
     reservation = get_reservation_by_code(code)
-
+    reservation_type = get_reservation_type(reservation)
     if reservation.refunded:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
-        return redirect("reservation:reservation_detail", code=code)
+        if reservation_type == "activity":
+            return redirect("activity:reservation_detail", code=code)
+        else:
+            return redirect("reservation:reservation_detail", code=code)
 
     try:
         amount_str = request.POST.get("refund_amount")
@@ -249,7 +272,10 @@ def refund_partially_reservation(request, code):
                 request,
                 "Montant invalide. Il doit être supérieur à 0 et inférieur ou égal au montant total.",
             )
-            return redirect("reservation:reservation_detail", code=code)
+            if reservation_type == "activity":
+                return redirect("activity:reservation_detail", code=code)
+            else:
+                return redirect("reservation:reservation_detail", code=code)
 
         amount_in_cents = int(refund_amount * 100)
         refund = refund_payment(reservation, refund="partial", amount_cents=amount_in_cents)
@@ -265,7 +291,10 @@ def refund_partially_reservation(request, code):
         messages.error(request, f"Erreur de remboursement Stripe : {e}")
         logger.exception("Stripe refund failed")
 
-    return redirect("reservation:reservation_detail", code=code)
+    if reservation_type == "activity":
+        return redirect("activity:reservation_detail", code=code)
+    else:
+        return redirect("reservation:reservation_detail", code=code)
 
 
 @login_required
