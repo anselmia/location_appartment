@@ -920,7 +920,7 @@ def capture_reservation_payment(reservation):
 
         idempotency_key = f"capture-{reservation.stripe_payment_intent_id}-{reservation.id}"
         capture_metadata = {
-            "reservation_code": reservation.code,
+            "code": reservation.code,
             "product": "activity",
             "type": "payment_capture",
         }
