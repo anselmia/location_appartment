@@ -135,13 +135,7 @@
                                           class="d-flex gap-2 align-items-center"
                                           onsubmit="return confirm('Confirmer le remboursement ?');">
                                         {% csrf_token %}
-                                        <input type="number"
-                                               name="amount"
-                                               class="form-control form-control-sm"
-                                               min="0"
-                                               max="{{ reservation.refundable_amount|stringformat:'f' }}"
-                                               step="0.01"
-                                               placeholder="Montant">
+                                        
                                         <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
                                     </form>
                                 {% elif reservation.refunded %}
