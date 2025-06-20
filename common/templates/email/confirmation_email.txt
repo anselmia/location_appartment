@@ -2,7 +2,7 @@ Bonjour {{ user.name }} {{ user.last_name }},
 
 Merci de vous être inscrit sur notre plateforme. Veuillez cliquer sur le lien ci-dessous pour activer votre compte :
 
-https://{{ domain }}{% url 'accounts:activate' uid=uid token=token %}
+{{ domain }}{% url 'accounts:activate' uid=uid token=token %}
 
 Si vous ne vous êtes pas inscrit, ignorez cet e-mail.
 
