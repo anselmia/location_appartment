@@ -69,7 +69,7 @@ def send_mail_on_new_reservation(logement, reservation, user):
         # Build context for the email
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -110,7 +110,7 @@ def send_mail_on_new_activity_reservation(activity, reservation, user):
 
         email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -237,7 +237,7 @@ def send_mail_on_logement_refund(logement, reservation, user):
 
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -281,7 +281,7 @@ def send_mail_on_activity_refund(activity, reservation, user):
 
         email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -331,7 +331,7 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
             "entreprise": entreprise,
         }
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -378,7 +378,7 @@ def send_mail_on_new_activity_transfer(activity, reservation, user_type):
             "entreprise": entreprise,
         }
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -468,7 +468,7 @@ def send_mail_on_payment_failure(logement, reservation, user):
 
         email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -509,7 +509,7 @@ def send_mail_on_activity_payment_failure(activity, reservation, user):
         email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
         # Add espace_partenaire_url if needed
         if hasattr(settings, "SITE_ADDRESS"):
-            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "accounts/dashboard/"
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
         else:
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
@@ -725,7 +725,7 @@ def notify_vendor_new_reservation(reservation):
         context = {
             "reservation": reservation,
             "entreprise": entreprise,
-            "espace_partenaire_url": settings.SITE_ADDRESS + "accounts/dashboard/",
+            "espace_partenaire_url": settings.SITE_ADDRESS + "/accounts/dashboard/",
             "now": timezone.now(),
         }
         vendor_email = reservation.activity.owner.email

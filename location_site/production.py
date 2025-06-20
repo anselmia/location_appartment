@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-SITE_ADDRESS = "https://www.bnbazure.fr/"
+SITE_ADDRESS = "https://www.bnbazure.fr"
 DOMAIN = "bnbazure.fr"
 
 # SECURITY SETTINGS

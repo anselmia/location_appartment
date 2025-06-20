@@ -198,7 +198,7 @@ class Logement(models.Model):
 
     @property
     def calendar_link(self):
-        return f"{settings.SITE_ADDRESS}api/export/ical/{self.code}/"
+        return f"{settings.SITE_ADDRESS}/api/export/ical/{self.code}/"
 
 
 class Price(models.Model):

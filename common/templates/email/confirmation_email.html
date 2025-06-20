@@ -22,12 +22,12 @@
         Merci de vous être inscrit sur notre site. Pour activer votre compte, veuillez cliquer sur le bouton ci-dessous&nbsp;:
     </p>
     <p>
-        <a href="https://{{ domain }}/accounts/activate/{{ uid }}/{{ token }}/"
+        <a href="https://{{ domain }}accounts/activate/{{ uid }}/{{ token }}/"
            class="btn">Activer mon compte</a>
     </p>
     <p>Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur&nbsp;:</p>
     <p style="word-break:break-all; font-size:13px; color:#888;">
-        https://{{ domain }}/accounts/activate/{{ uid }}/{{ token }}/
+        https://{{ domain }}{% url 'accounts:activate' uid=uid token=token %}
     </p>
     <p>
         Merci et à bientôt,
