@@ -494,5 +494,6 @@ def test_email_view(request):
                 messages.warning(request, f"Aucune logique de test pour {func_name}")
             messages.success(request, f"Email envoyé avec succès via {func_name}")
         except Exception as e:
+            logger.exception(f"Erreur lors de l'envoi de l'email via {func_name}: {e}")
             messages.error(request, f"Erreur lors de l'envoi: {e}")
     return render(request, "administration/test_email.html", {"email_functions": EMAIL_FUNCTIONS})
