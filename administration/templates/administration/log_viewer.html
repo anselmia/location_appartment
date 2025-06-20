@@ -42,7 +42,7 @@
                        id="query"
                        class="form-control"
                        placeholder="Texte à chercher…"
-                       value="{{ query }}"
+                       value="{{ query|default_if_none:'' }}"
                        oninput="this.form.submit()">
             </div>
         </form>
