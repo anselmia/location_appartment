@@ -431,25 +431,26 @@ EMAIL_FUNCTIONS = [
 @user_passes_test(is_admin)
 def test_email_view(request):
     if request.method == "POST":
-        func_name = request.POST.get("email_function")
-        reservation = Reservation.objects.order_by("-id").first()
-        activity_reservation = ActivityReservation.objects.order_by("-id").first()
-        activity_reservation.activity.owner.email = "anselmi.arnaud@yahoo.fr"
-        activity_reservation.user.email = "anselmi.arnaud@yahoo.fr"
-        reservation.logement.owner.email = "anselmi.arnaud@yahoo.fr"
-        reservation.user.email = "anselmi.arnaud@yahoo.fr"
-        partner = Partners.objects.order_by("-id").first()
-        partner.user.email = "anselmi.arnaud@yahoo.fr"
-        logement = Logement.objects.order_by("-id").first()
-        logement.owner.email = "anselmi.arnaud@yahoo.fr"
-        conciergerie = Conciergerie.objects.order_by("-id").first()
-        conciergerie.user.email = "anselmi.arnaud@yahoo.fr"
-        user = reservation.user if reservation else None
-        session = {"checkout_session_url": "https://dummy-checkout-url.com"}
-        cd = {"name": "Test", "email": "test@example.com", "message": "Ceci est un test."}
-        msg = Message.objects.order_by("-id").first()
-        func = getattr(email_service, func_name, None)
         try:
+            func_name = request.POST.get("email_function")
+            reservation = Reservation.objects.order_by("-id").first()
+            activity_reservation = ActivityReservation.objects.order_by("-id").first()
+            activity_reservation.activity.owner.email = "anselmi.arnaud@yahoo.fr"
+            activity_reservation.user.email = "anselmi.arnaud@yahoo.fr"
+            reservation.logement.owner.email = "anselmi.arnaud@yahoo.fr"
+            reservation.user.email = "anselmi.arnaud@yahoo.fr"
+            partner = Partners.objects.order_by("-id").first()
+            partner.user.email = "anselmi.arnaud@yahoo.fr"
+            logement = Logement.objects.order_by("-id").first()
+            logement.owner.email = "anselmi.arnaud@yahoo.fr"
+            conciergerie = Conciergerie.objects.order_by("-id").first()
+            conciergerie.user.email = "anselmi.arnaud@yahoo.fr"
+            user = reservation.user if reservation else None
+            session = {"checkout_session_url": "https://dummy-checkout-url.com"}
+            cd = {"name": "Test", "email": "test@example.com", "message": "Ceci est un test."}
+            msg = Message.objects.order_by("-id").first()
+            func = getattr(email_service, func_name, None)
+
             if func_name == "notify_vendor_new_reservation":
                 func(activity_reservation)
             elif func_name in [

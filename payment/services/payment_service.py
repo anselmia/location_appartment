@@ -20,7 +20,7 @@ from common.services.email_service import (
     send_mail_on_activity_payment_failure,
     send_mail_on_new_activity_transfer,
     notify_vendor_new_reservation,
-    send_mail_activity_payment_link
+    send_mail_activity_payment_link,
 )
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
@@ -430,8 +430,6 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
             send_mail_activity_payment_link(reservation, session)
 
         logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session.url}")
-
-        
 
         logger.info(f"📧 Email envoyé à {reservation.user.email} avec le lien de paiement Stripe")
 
@@ -1217,6 +1215,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
         data (StripeCheckoutSessionEventData): The event data.
     """
     from reservation.models import Reservation
+    from activity.models import ActivityReservation
 
     reservation_code = None
     try:
@@ -1236,8 +1235,6 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
                 if product == "logement":
                     reservation = Reservation.objects.select_for_update().get(code=reservation_code)
                 elif product == "activity":
-                    from activity.models import ActivityReservation
-
                     reservation = ActivityReservation.objects.select_for_update().get(code=reservation_code)
                 else:
                     logger.error(f"❌ Unknown product type {product} for reservation {reservation_code}.")

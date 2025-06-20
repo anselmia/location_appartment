@@ -33,6 +33,59 @@ function setupFlatpickr(id) {
     minDate: today, // Use the adjusted "today" date based on user's timezone
     maxDate: maxDate,
     disable: [], // Disable the reserved dates
+    locale: {
+      firstDayOfWeek: 1,
+      weekdays: {
+        shorthand: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+        longhand: [
+          "Dimanche",
+          "Lundi",
+          "Mardi",
+          "Mercredi",
+          "Jeudi",
+          "Vendredi",
+          "Samedi",
+        ],
+      },
+      months: {
+        shorthand: [
+          "Janv",
+          "Févr",
+          "Mars",
+          "Avr",
+          "Mai",
+          "Juin",
+          "Juil",
+          "Août",
+          "Sept",
+          "Oct",
+          "Nov",
+          "Déc",
+        ],
+        longhand: [
+          "Janvier",
+          "Février",
+          "Mars",
+          "Avril",
+          "Mai",
+          "Juin",
+          "Juillet",
+          "Août",
+          "Septembre",
+          "Octobre",
+          "Novembre",
+          "Décembre",
+        ],
+      },
+      today: "Aujourd'hui",
+      clear: "Effacer",
+      monthsTitle: "Mois",
+      weekAbbreviation: "Sem",
+      rangeSeparator: " au ",
+      scrollTitle: "Défiler pour augmenter",
+      toggleTitle: "Cliquer pour basculer",
+      time_24hr: true,
+    },
     onDayCreate: function (_, __, ___, dayElem) {
       const date = formatLocalDate(dayElem.dateObj); // Get the current date in YYYY-MM-DD
 
@@ -53,9 +106,26 @@ function setupFlatpickr(id) {
       }
     },
     onChange: function (selectedDates, dateStr, instance) {
+      // Remove all custom .selected from previous range
+      document
+        .querySelectorAll(".flatpickr-day.selected-custom")
+        .forEach((el) => el.classList.remove("selected-custom"));
       if (selectedDates.length !== 2) {
         return;
       }
+      const Selectedstart = selectedDates[0];
+      const Selectedend = selectedDates[1];
+      // Loop through all day elements
+      document.querySelectorAll(".flatpickr-day").forEach((dayElem) => {
+        const dayDate = dayElem.dateObj;
+        if (!dayDate) return;
+        // Mark all days in the range (including start and end)
+        if (dayDate >= Selectedstart && dayDate <= Selectedend) {
+          dayElem.classList.add("selected-custom");
+        } else {
+          dayElem.classList.remove("selected-custom");
+        }
+      });
 
       const startStr = formatLocalDate(selectedDates[0]);
       const endStr = formatLocalDate(selectedDates[1]);

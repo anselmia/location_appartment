@@ -198,6 +198,56 @@ document.addEventListener("DOMContentLoaded", function () {
           disable: [], // Reserved dates if needed
           locale: {
             firstDayOfWeek: 1, // 1 = Monday
+            weekdays: {
+              shorthand: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+              longhand: [
+                "Dimanche",
+                "Lundi",
+                "Mardi",
+                "Mercredi",
+                "Jeudi",
+                "Vendredi",
+                "Samedi",
+              ],
+            },
+            months: {
+              shorthand: [
+                "Janv",
+                "Févr",
+                "Mars",
+                "Avr",
+                "Mai",
+                "Juin",
+                "Juil",
+                "Août",
+                "Sept",
+                "Oct",
+                "Nov",
+                "Déc",
+              ],
+              longhand: [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+              ],
+            },
+            today: "Aujourd'hui",
+            clear: "Effacer",
+            monthsTitle: "Mois",
+            weekAbbreviation: "Sem",
+            rangeSeparator: " au ",
+            scrollTitle: "Défiler pour augmenter",
+            toggleTitle: "Cliquer pour basculer",
+            time_24hr: true,
           },
           onMonthChange: function (selectedDates, dateStr, instance) {
             const currentMonth = instance.currentMonth + 1; // Flatpickr months are 0-based
