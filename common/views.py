@@ -13,7 +13,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 
 from logement.models import Logement
-from common.services.email_service import send_mail_contact
+from common.services.email_service import send_contact_email_notification
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
 
@@ -36,7 +36,7 @@ def home(request):
             if form.is_valid():
                 cd = form.cleaned_data
                 try:
-                    send_mail_contact(cd)
+                    send_contact_email_notification(cd)
                     messages.success(request, "✅ Message envoyé avec succès.")
                     return redirect("common:home")
                 except Exception as e:

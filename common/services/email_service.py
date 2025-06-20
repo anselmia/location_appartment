@@ -537,21 +537,6 @@ def send_mail_on_activity_payment_failure(activity, reservation, user):
         logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
 
-def send_mail_contact(cd):
-    try:
-        logger.info(f"📨 Tentative d'envoi de message de contact: nom={cd['name']}, email={cd['email']}")
-        subject = "Contact depuis le site"
-        message_txt = f"Message de {cd['name']} ({cd['email']}):\n\n{cd['message']}"
-        message_html = render_to_string("email/contact.html", cd)
-        msg = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [settings.CONTACT_EMAIL])
-        msg.attach_alternative(message_html, "text/html")
-        msg.send(fail_silently=False)
-        logger.info(f"✅ Message de contact envoyé avec succès: nom={cd['name']}, email={cd['email']}")
-    except Exception as e:
-        logger.error(f"❌ Erreur d'envoi de message de contact: nom={cd.get('name')} — erreur: {e}")
-        raise
-
-
 def send_message_notification_email(message, recipient):
     try:
         subject = f"Nouveau message de {message.sender}"

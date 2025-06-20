@@ -1,3 +1,16 @@
-Message de {{ name }} ({{ email }}) :
+Vous avez reçu un nouveau message de contact via le site.
 
+Expéditeur : {{ name }}
+Adresse e-mail : {{ email }}
+
+---
+
+Message :
 {{ message }}
+
+---
+
+Merci de traiter cette demande dans les plus brefs délais.
+
+Cordialement,
+L'équipe {{ entreprise.name }}
