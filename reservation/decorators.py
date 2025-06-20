@@ -4,6 +4,9 @@ from django.contrib import messages
 from functools import wraps
 from reservation.models import Reservation
 from activity.models import ActivityReservation
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def user_is_reservation_admin(view_func):
@@ -14,6 +17,9 @@ def user_is_reservation_admin(view_func):
         if not reservation:
             reservation = ActivityReservation.objects.filter(code=code).first()
         if not reservation:
+            logger.warning(
+                f"Access denied: Reservation not found. User ID: {getattr(request.user, 'id', None)}, Email: {getattr(request.user, 'email', None)}"
+            )
             raise PermissionDenied("Réservation introuvable.")
 
         # Get the associated logement or activity
@@ -29,6 +35,9 @@ def user_is_reservation_admin(view_func):
         ):
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"Access denied: User is not reservation admin/owner. User ID: {getattr(request.user, 'id', None)}, Email: {getattr(request.user, 'email', None)}"
+        )
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
     return _wrapped_view
@@ -41,11 +50,17 @@ def user_is_reservation_customer(view_func):
         if not reservation:
             reservation = ActivityReservation.objects.filter(code=code).first()
         if not reservation:
+            logger.warning(
+                f"Access denied: Reservation not found. User ID: {getattr(request.user, 'id', None)}, Email: {getattr(request.user, 'email', None)}"
+            )
             raise PermissionDenied("Réservation introuvable.")
 
         if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"Access denied: User is not reservation customer. User ID: {getattr(request.user, 'id', None)}, Email: {getattr(request.user, 'email', None)}"
+        )
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
     return _wrapped_view
@@ -63,6 +78,9 @@ def user_has_reservation(view_func):
         ):
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"Access denied: User does not have reservation. User ID: {getattr(request.user, 'id', None)}, Email: {getattr(request.user, 'email', None)}"
+        )
         messages.error(request, "Accès refusé : vous n'avez pas réservé ce logement ou cette activité.")
         return redirect("accounts:dashboard")
 

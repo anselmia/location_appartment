@@ -2,6 +2,9 @@ from django.core.exceptions import PermissionDenied
 from logement.models import Logement
 from django.db.models import Q
 from common.views import is_admin
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UserHasLogementMixin:
@@ -15,6 +18,9 @@ class UserHasLogementMixin:
         )
 
         if not (has_logement or is_admin(request.user)):
+            logger.warning(
+                f"[Restriction] Accès refusé (UserHasLogementMixin) pour l'utilisateur {getattr(request.user, 'id', '?')} ({getattr(request.user, 'email', '?')})"
+            )
             raise PermissionDenied("Vous n'avez pas les droits pour accéder à cette page.")
 
         return super().dispatch(request, *args, **kwargs)

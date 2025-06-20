@@ -32,6 +32,9 @@ def user_in_conversation(view_func):
         if is_participant:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé à la conversation {conversation_id} pour l'utilisateur {user.id} ({user.email})"
+        )
         messages.error(request, "Accès refusé : vous ne participez pas à cette conversation.")
         return redirect("accounts:dashboard")
 
@@ -46,7 +49,9 @@ def stripe_attempt_limiter(key_template, limit=3, timeout=3600):
             key = key_template.format(user_id=user.id)
             attempts = cache.get(key, 0)
             if attempts >= limit:
-                logger.warning(f"[Stripe] Limite atteinte | {key} | ip={ip}")
+                logger.warning(
+                    f"[Stripe] Limite atteinte pour l'utilisateur {user.id} ({user.email}) | {key} | ip={ip} | tentatives={attempts}"
+                )
                 messages.error(request, "Trop de tentatives. Réessayez plus tard.")
                 return redirect("accounts:dashboard")
             cache.set(key, attempts + 1, timeout)

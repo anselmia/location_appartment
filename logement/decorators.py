@@ -2,6 +2,9 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from logement.models import Logement, Room, Photo
 from django.db.models import Q
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def user_is_logement_admin(view_func):
@@ -34,6 +37,11 @@ def user_is_logement_admin(view_func):
         ):
             return view_func(request, *args, **kwargs)
 
+        # Log the access restriction
+        logger.warning(
+            f"[Restriction] Accès refusé (logement_admin) logement {logement_id} pour l'utilisateur {getattr(request.user, 'id', '?')} ({getattr(request.user, 'email', '?')})"
+        )
+
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
@@ -57,6 +65,11 @@ def user_has_logement(view_func):
 
         if has_logement:
             return view_func(request, *args, **kwargs)
+
+        # Log the access restriction
+        logger.warning(
+            f"[Restriction] Accès refusé (has_logement) pour l'utilisateur {getattr(request.user, 'id', '?')} ({getattr(request.user, 'email', '?')})"
+        )
 
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")

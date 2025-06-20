@@ -1,10 +1,16 @@
 from django.core.exceptions import PermissionDenied
 from django import forms
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AdminRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not (getattr(request.user, "is_admin", False) or request.user.is_superuser):
+            logger.warning(
+                f"[Restriction] Accès refusé (AdminRequiredMixin) pour l'utilisateur {getattr(request.user, 'id', '?')} ({getattr(request.user, 'email', '?')})"
+            )
             raise PermissionDenied("Vous n'avez pas les droits pour accéder à cette page.")
         return super().dispatch(request, *args, **kwargs)
 

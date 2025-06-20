@@ -295,6 +295,14 @@ def update_activity(request, pk):
 
 @login_required
 def activity_dashboard(request):
+    # Check if user is a partner, admin, or superuser
+    has_partner = Partners.objects.filter(user=request.user).exists()
+    if not (has_partner or request.user.is_admin or request.user.is_superuser):
+        messages.info(
+            request, "Vous devez créer un compte partenaire avant d'accéder au tableau de bord des activités."
+        )
+        return redirect("activity:activity_dashboard")
+
     activities = Activity.objects.filter(owner=request.user).order_by("-created_at")
     paginator = Paginator(activities, 9)
     page_number = request.GET.get("page", 1)

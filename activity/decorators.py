@@ -1,6 +1,9 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from activity.models import Activity, ActivityReservation
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Decorator to check if the user is a partner
@@ -10,6 +13,9 @@ def user_is_partner(view_func):
         if request.user.is_admin or request.user.is_superuser or request.user.is_partner:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé (partner) pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
@@ -29,6 +35,9 @@ def user_is_activity_admin(view_func):
         if request.user == activity.owner or request.user.is_admin or request.user.is_superuser:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé à l'activité {activity_id} (admin) pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
@@ -52,6 +61,9 @@ def user_has_activity(view_func):
         if has_activity:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé (has_activity) pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
@@ -70,6 +82,9 @@ def user_is_reservation_admin(view_func):
         if request.user == activity.owner or request.user.is_admin or request.user.is_superuser:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé à la réservation activité (admin) {reservation.code} pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
         # If the user is not authorized, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
@@ -85,6 +100,9 @@ def user_is_reservation_customer(view_func):
         if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            f"[Restriction] Accès refusé à la réservation activité (customer) {reservation.code} pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
         # If the user is not authorized, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 

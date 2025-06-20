@@ -1,4 +1,7 @@
 from django.core.exceptions import PermissionDenied
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def is_stripe_admin(view_func):
@@ -13,6 +16,11 @@ def is_stripe_admin(view_func):
         ):
             return view_func(request, *args, **kwargs)
 
+        logger.warning(
+            "[Restriction] Accès refusé (is_stripe_admin) pour l'utilisateur %s (%s)",
+            getattr(request.user, "id", "?"),
+            getattr(request.user, "email", "?"),
+        )
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
 
