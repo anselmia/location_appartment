@@ -10,7 +10,7 @@ from logement.services.calendar_service import sync_external_ical
 logger = logging.getLogger(__name__)
 
 
-@periodic_task(crontab(hour="*/1"))  # toutes les heures
+@periodic_task(crontab(minute=0))
 def sync_calendar():
     results = {}
 
