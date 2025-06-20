@@ -3,6 +3,6 @@
 Activité: {{ activity.name }}
 Réservation Code: {{ reservation.code }}
 Voyageur: {{ user.name }} {{ user.last_name }}
-Montant remboursé: {{ reservation.price|floatformat:2 }} €
+Montant remboursé: {{ reservation.refund_amount|floatformat:2 }} €
 Date de réservation: {{ reservation.date_reservation|date:"d M Y H:i" }}
 Statut actuel: {{ reservation.get_statut_display }}

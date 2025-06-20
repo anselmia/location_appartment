@@ -2,7 +2,7 @@ Bonjour {{ user.name }},
 
 Nous vous confirmons que votre réservation {reservation.code} pour "{{ activity.name }}" a été remboursée avec succès.
 
-Montant remboursé : {{ reservation.price|floatformat:2 }} €
+Montant remboursé : {{ reservation.refund_amount|floatformat:2 }} €
 Date de réservation : {{ reservation.date_reservation|date:"d M Y H:i" }}
 
 N'hésitez pas à nous contacter si vous avez des questions.
