@@ -4,7 +4,7 @@ Nouvelle réservation confirmée 🔒
 🏡 Logement : {{ logement.name }}
 📅 Du {{ reservation.start }} au {{ reservation.end }}
 👥 Nombre de voyageurs : {{ reservation.total_guest }}
-Reservation code :  {reservation.code}
+Reservation code :  {{ reservation.code }}
 💶 Prix total : {{ reservation.price }} € (taxes : {{ reservation.tax }} €)
 📆 Réservé le : {{ reservation.date_reservation }}
 

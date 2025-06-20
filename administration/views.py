@@ -20,7 +20,7 @@ from django.shortcuts import render, redirect
 
 from django.views.generic import TemplateView
 
-
+from common.services import email_service
 from common.mixins import AdminRequiredMixin
 from common.views import is_admin
 from common.services.helper_fct import date_to_timestamp, get_entreprise
@@ -29,8 +29,10 @@ from common.models import TaskHistory
 from payment.services.payment_service import retrieve_balance
 
 from reservation.models import Reservation
-from logement.models import PlatformFeeWaiver
-
+from conciergerie.models import Conciergerie
+from logement.models import PlatformFeeWaiver, Logement
+from activity.models import Partners, ActivityReservation
+from accounts.models import Message
 from administration.services.logs import parse_log_file, count_lines
 
 from administration.services.traffic import get_traffic_dashboard_data
@@ -337,7 +339,7 @@ def waiver_platform_fee_view(request, waiver_id=None):
         waiver_instance = None
 
     # Filtering logic
-    waivers = PlatformFeeWaiver.objects.select_related( "owner").all().order_by("-id")
+    waivers = PlatformFeeWaiver.objects.select_related("owner").all().order_by("-id")
     status = request.GET.get("status")
     owner_name = request.GET.get("owner_name", "").strip()
     if status == "active":
@@ -397,3 +399,99 @@ def huey_tasks_status(request):
     # Get task history from the database
     history = TaskHistory.objects.order_by("-started_at")[:100]
     return render(request, "administration/huey_tasks_status.html", {"history": history})
+
+
+EMAIL_FUNCTIONS = [
+    ("send_mail_new_account_validation", "Validation de nouveau compte"),
+    ("resend_confirmation_email", "Renvoyer l'email de confirmation"),
+    ("send_mail_on_new_reservation", "Nouvelle réservation logement"),
+    ("send_mail_on_new_activity_reservation", "Nouvelle réservation activité"),
+    ("send_pre_checkin_reminders", "Rappel pré-checkin logement"),
+    ("send_pre_checkin_activity_reminders", "Rappel pré-checkin activité"),
+    ("send_mail_on_logement_refund", "Remboursement logement"),
+    ("send_mail_on_activity_refund", "Remboursement activité"),
+    ("send_mail_on_new_transfer", "Nouveau virement logement"),
+    ("send_mail_on_new_activity_transfer", "Nouveau virement activité"),
+    ("send_mail_payment_link", "Lien de paiement"),
+    ("send_mail_activity_payment_link", "Lien de paiement activité"),
+    ("send_mail_on_payment_failure", "Échec de paiement logement"),
+    ("send_mail_on_activity_payment_failure", "Échec de paiement activité"),
+    ("send_mail_contact", "Contact"),
+    ("send_email_new_message", "Nouveau message"),
+    ("send_mail_conciergerie_request_accepted", "Conciergerie acceptée"),
+    ("send_mail_conciergerie_request_refused", "Conciergerie refusée"),
+    ("send_mail_conciergerie_request_new", "Nouvelle demande conciergerie"),
+    ("send_mail_conciergerie_stop_management", "Arrêt gestion conciergerie"),
+    ("send_partner_validation_email", "Validation partenaire"),
+    ("notify_vendor_new_reservation", "Nouvelle réservation activité (vendor)"),
+]
+
+
+@login_required
+@user_passes_test(is_admin)
+def test_email_view(request):
+    if request.method == "POST":
+        func_name = request.POST.get("email_function")
+        reservation = Reservation.objects.order_by("-id").first()
+        activity_reservation = ActivityReservation.objects.order_by("-id").first()
+        activity_reservation.activity.owner.email = "anselmi.arnaud@yahoo.fr"
+        activity_reservation.user.email = "anselmi.arnaud@yahoo.fr"
+        reservation.logement.owner.email = "anselmi.arnaud@yahoo.fr"
+        reservation.user.email = "anselmi.arnaud@yahoo.fr"
+        partner = Partners.objects.order_by("-id").first()
+        partner.user.email = "anselmi.arnaud@yahoo.fr"
+        logement = Logement.objects.order_by("-id").first()
+        logement.owner.email = "anselmi.arnaud@yahoo.fr"
+        conciergerie = Conciergerie.objects.order_by("-id").first()
+        conciergerie.user.email = "anselmi.arnaud@yahoo.fr"
+        user = reservation.user if reservation else None
+        session = {"checkout_session_url": "https://dummy-checkout-url.com"}
+        cd = {"name": "Test", "email": "test@example.com", "message": "Ceci est un test."}
+        msg = Message.objects.order_by("-id").first()
+        func = getattr(email_service, func_name, None)
+        try:
+            if func_name == "notify_vendor_new_reservation":
+                func(activity_reservation)
+            elif func_name in [
+                "send_mail_on_new_activity_reservation",
+                "send_mail_on_activity_refund",
+                "send_mail_on_activity_payment_failure",
+                "send_mail_on_new_activity_transfer",
+            ]:
+                func(activity_reservation.activity, activity_reservation, activity_reservation.user)
+            elif func_name in ["send_mail_new_account_validation", "resend_confirmation_email"]:
+                func(user, settings.SITE_ADDRESS)
+            elif func_name == "send_partner_validation_email":
+                func(partner)
+            elif func_name in [
+                "send_mail_on_logement_refund",
+                "send_mail_on_payment_failure",
+                "send_mail_on_new_reservation",
+            ]:
+                func(logement, reservation, user)
+            elif func_name == "send_mail_on_new_transfer":
+                func(logement, reservation, "owner")
+            elif func_name == "send_mail_payment_link":
+                func(reservation, session)
+            elif func_name == "send_mail_activity_payment_link":
+                func(activity_reservation, session)
+            elif func_name == "send_mail_contact":
+                func(cd)
+            elif func_name == "send_email_new_message":
+                func(msg)
+            elif func_name in [
+                "send_mail_conciergerie_stop_management",
+                "send_mail_conciergerie_request_refused",
+                "send_mail_conciergerie_request_accepted",
+            ]:
+                func(logement.owner, conciergerie, logement)
+            elif func_name == "send_mail_conciergerie_request_new":
+                func(conciergerie.user, logement, logement.owner)
+            elif func_name in ["send_pre_checkin_reminders", "send_pre_checkin_activity_reminders"]:
+                func()
+            else:
+                messages.warning(request, f"Aucune logique de test pour {func_name}")
+            messages.success(request, f"Email envoyé avec succès via {func_name}")
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'envoi: {e}")
+    return render(request, "administration/test_email.html", {"email_functions": EMAIL_FUNCTIONS})

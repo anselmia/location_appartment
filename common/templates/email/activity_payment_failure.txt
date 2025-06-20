@@ -1,6 +1,6 @@
 Bonjour {{ user.name }} {{ user.last_name }},
 
-Nous vous informons que le paiement de votre réservation (code : {{ reservation.code }}) pour le l'activité « {{ activité.name }} » a échoué.
+Nous vous informons que le paiement de votre réservation (code : {{ reservation.code }}) pour l'activité « {{ activité.name }} » a échoué.
 
 Afin de valider votre réservation, nous vous invitons à procéder au paiement dès que possible. Sans paiement, la réservation pourrait être annulée automatiquement.
 

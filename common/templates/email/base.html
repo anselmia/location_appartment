@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {% block subject %}Notification{% endblock %}
+        </title>
+        <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+        .banner {
+            background: linear-gradient(90deg, #4f8cff 0%, #1cb5e0 100%);
+            color: #fff;
+            text-align: center;
+            padding: 32px 20px 24px 20px;
+        }
+        .banner img {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 32px 30px 24px 30px;
+            color: #222;
+        }
+        .footer {
+            background: #f0f4f8;
+            color: #888;
+            text-align: center;
+            font-size: 13px;
+            padding: 18px 10px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0 28px 0;
+        }
+        .details-table td {
+            padding: 7px 0;
+        }
+        .details-table .label {
+            color: #888;
+            width: 180px;
+        }
+        .btn {
+            display: inline-block;
+            background: #4f8cff;
+            color: #fff !important;
+            padding: 12px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 18px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #1cb5e0;
+        }
+        </style>
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="banner">
+                <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+                     alt="Logo" />
+                <h1>
+                    {% block banner_title %}Nouvelle notification{% endblock %}
+                </h1>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="footer">
+                &copy; {{ entreprise.name }} {{ now|date:"Y" }}
+                <br>
+                Merci de votre confiance.
+            </div>
+        </div>
+    </body>
+</html>

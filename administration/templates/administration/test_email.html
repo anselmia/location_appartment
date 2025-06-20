@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Tester l'envoi d'emails</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="email_function">Sélectionnez une fonction d'email :</label>
+                <select class="form-control"
+                        id="email_function"
+                        name="email_function"
+                        required>
+                    {% for func, label in email_functions %}<option value="{{ func }}">{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Envoyer l'email de test</button>
+        </form>
+        {% if messages %}
+            <ul class="mt-3">
+                {% for message in messages %}<li class="alert alert-{{ message.tags }}">{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endblock %}

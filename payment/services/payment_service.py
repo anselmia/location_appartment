@@ -20,6 +20,7 @@ from common.services.email_service import (
     send_mail_on_activity_payment_failure,
     send_mail_on_new_activity_transfer,
     notify_vendor_new_reservation,
+    send_mail_activity_payment_link
 )
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
@@ -410,6 +411,8 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
     Raises:
         Exception: If link creation or email sending fails.
     """
+
+    reservation_type = get_reservation_type(reservation)
     if not reservation.user.email:
         raise ValueError(f"L'utilisateur n'a pas d'e-mail lié à la réservation {reservation.code}")
 
@@ -417,12 +420,18 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
         raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
 
     try:
-        session = create_stripe_checkout_session_with_deposit(reservation, request)
+        if reservation_type == "logement":
+            session = create_stripe_checkout_session_with_deposit(reservation, request)
+            # Optionally send an email with the payment link
+            send_mail_payment_link(reservation, session)
+        else:
+            session = create_stripe_checkout_session_with_manual_capture(reservation, request)
+            # Optionally send an email with the payment link
+            send_mail_activity_payment_link(reservation, session)
 
         logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session.url}")
 
-        # Optionally send an email with the payment link
-        send_mail_payment_link(reservation, session)
+        
 
         logger.info(f"📧 Email envoyé à {reservation.user.email} avec le lien de paiement Stripe")
 

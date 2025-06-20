@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
 
 from common.services.helper_fct import get_entreprise
@@ -453,6 +454,38 @@ def send_mail_payment_link(reservation, session):
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
+def send_mail_activity_payment_link(reservation, session):
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        # Context for email templates
+
+        email_context = {
+            "reservation": reservation,
+            "activity": reservation.activity,
+            "user": reservation.user,
+            "url": session["checkout_session_url"],
+            "entreprise": entreprise,
+        }
+
+        # ===== Customer EMAIL =====
+        message = render_to_string("email/payment_link_activity.txt", email_context)
+
+        send_mail(
+            subject=f"Réservation {reservation.code} - Activité {reservation.activity} - Lien de paiement",
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[reservation.user.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
+    except Exception as e:
+        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
 def send_mail_on_payment_failure(logement, reservation, user):
     try:
         if not user or not getattr(user, "email", None):
@@ -709,17 +742,18 @@ def notify_vendor_new_reservation(reservation):
         context = {
             "reservation": reservation,
             "entreprise": entreprise,
+            "espace_partenaire_url": settings.SITE_ADDRESS + "accounts/dashboard/",
+            "now": timezone.now(),
         }
         vendor_email = reservation.activity.owner.email
         subject = "Nouvelle demande de réservation d'activité"
-        message = render_to_string("email/activity_new_reservation.txt", context)
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [vendor_email],
-            fail_silently=False,
-        )
+        text_content = render_to_string("email/activity_new_reservation.txt", context)
+        html_content = render_to_string("email/activity_new_reservation.html", context)
+        from django.core.mail import EmailMultiAlternatives
+
+        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [vendor_email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=False)
         logger.info(f"✅ New reservation email sent to {vendor_email}")
     except Exception as e:
         logger.exception(f"❌ Failed to notify vendor for new reservation {reservation.id}: {e}")

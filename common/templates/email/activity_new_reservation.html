@@ -1,0 +1,38 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Nouvelle demande de réservation
+{% endblock subject %}
+{% block banner_title %}
+    Nouvelle demande de réservation
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ reservation.activity.owner.full_name|default:reservation.activity.owner.username }}</strong>,
+    </p>
+    <p>
+        Vous avez reçu une nouvelle demande de réservation pour votre activité&nbsp;: <strong>"{{ reservation.activity.name }}"</strong>.
+    </p>
+    <table class="details-table">
+        <tr>
+            <td class="label">Client :</td>
+            <td>{{ reservation.user.full_name|default:reservation.user.username }}</td>
+        </tr>
+        <tr>
+            <td class="label">Date :</td>
+            <td>{{ reservation.start|date:"d/m/Y H:i" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nombre de participants :</td>
+            <td>{{ reservation.guest }}</td>
+        </tr>
+    </table>
+    <p>
+        <a href="{{ espace_partenaire_url }}" class="btn">Gérer la demande</a>
+    </p>
+    <p>Merci de vous connecter à votre espace partenaire pour valider ou refuser cette demande.</p>
+    <p>
+        Cordialement,
+        <br>
+        L’équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}
