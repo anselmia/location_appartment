@@ -44,6 +44,7 @@ from payment.services.payment_service import is_stripe_admin
 from logement.models import Logement
 from activity.models import Partners, Activity
 from activity.services.reservation import get_user_activity_reservation
+from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ def register(request):
             user.save()
 
             # Email confirmation
-            current_site = get_current_site(request)
+            current_site = settings.SITE_ADDRESS
             send_mail_new_account_validation(user, current_site)
 
             messages.success(request, "Un email de confirmation vous a été envoyé.")
@@ -531,7 +532,7 @@ def resend_activation_email(request):
                 messages.info(request, "Ce compte est déjà activé.")
                 return redirect("accounts:login")
 
-            current_site = get_current_site(request)
+            current_site = settings.SITE_ADDRESS
             resend_confirmation_email(user, current_site)
             messages.success(request, "Un nouvel email de confirmation a été envoyé.")
             return redirect("accounts:login")

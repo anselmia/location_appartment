@@ -21,7 +21,7 @@ def send_mail_new_account_validation(user, current_site):
         subject = "Confirmez votre adresse email"
         email_context = {
             "user": user,
-            "domain": current_site.domain,
+            "domain": current_site,
             "uid": urlsafe_base64_encode(force_bytes(user.pk)),
             "token": default_token_generator.make_token(user),
             "entreprise": get_entreprise(),
@@ -41,7 +41,7 @@ def resend_confirmation_email(user, current_site):
         subject = "Confirmez votre adresse email"
         email_context = {
             "user": user,
-            "domain": current_site.domain,
+            "domain": current_site,
             "uid": urlsafe_base64_encode(force_bytes(user.pk)),
             "token": default_token_generator.make_token(user),
             "entreprise": get_entreprise(),
