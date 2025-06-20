@@ -148,7 +148,7 @@ def send_pre_checkin_reminders():
             target_day = today + timedelta(days=delta)
             reservations = Reservation.objects.filter(
                 start=target_day,
-                status="confirmee",
+                statut="confirmee",
                 pre_checkin_email_sent=False,
             )
 
@@ -191,7 +191,7 @@ def send_pre_checkin_activity_reminders():
             target_day = today + timedelta(days=delta)
             reservations = ActivityReservation.objects.filter(
                 start__date=target_day,
-                status="confirmee",
+                statut="confirmee",
                 pre_checkin_email_sent=False,
             )
 
