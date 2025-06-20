@@ -5,7 +5,7 @@ from activity.models import ActivityReservation
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
 
-from common.services.email_service import send_pre_checkin_reminders
+from common.services.email_service import send_pre_checkin_activity_reminders
 
 # Setup a logger
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def end_reservations():
 @periodic_task(crontab(hour=0, minute=0))  # toutes les jours à 00h00
 def send_pre_check_in():
     try:
-        send_pre_checkin_reminders()
+        send_pre_checkin_activity_reminders()
         logger.info("Check in reminders sent")
         return "Check-in reminders sent successfully"
     except Exception as e:

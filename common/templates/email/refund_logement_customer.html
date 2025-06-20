@@ -13,6 +13,11 @@
     <p>
         Nous vous informons que le remboursement de votre réservation <strong>{{ reservation.code }}</strong> pour le logement <strong>{{ logement.name }}</strong> a été effectué.
     </p>
+    <p>
+        <strong>Montant remboursé :</strong> {{ reservation.price|floatformat:2 }} €
+        <br>
+        <strong>Date de réservation :</strong> {{ reservation.date_reservation|date:"d M Y H:i" }}
+    </p>
     <p>Le montant sera crédité sur votre compte dans les prochains jours.</p>
     <p>
         Merci de votre confiance.
