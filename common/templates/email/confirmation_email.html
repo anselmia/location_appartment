@@ -27,7 +27,7 @@
     </p>
     <p>Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur&nbsp;:</p>
     <p style="word-break:break-all; font-size:13px; color:#888;">
-        https://{{ domain }}{% url 'accounts:activate' uid=uid token=token %}
+        {{ domain }}{% url 'accounts:activate' uid=uid token=token %}
     </p>
     <p>
         Merci et à bientôt,
