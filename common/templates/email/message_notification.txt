@@ -1,0 +1,8 @@
+Bonjour {{ recipient.full_name|default:recipient.username }},
+
+Vous avez reçu un nouveau message concernant la réservation : {{ reservation.code }}
+
+Message :
+{{ message.content }}
+
+Connectez-vous pour répondre : {{ site_address }}/accounts/messages/{{ message.conversation.id }}/

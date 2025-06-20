@@ -1,0 +1,22 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    ✉️
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #2196F3
+{% endblock banner_bg %}
+{% block banner_title %}
+    Nouveau message reçu
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ recipient.full_name|default:recipient.username }},</p>
+    <p>
+        Vous avez reçu un nouveau message concernant la réservation <strong>{{ reservation.code }}</strong> :
+    </p>
+    <blockquote style="background:#f5f5f5;padding:10px;border-radius:5px;">
+        {{ message.content }}
+    </blockquote>
+    <p>
+        Connectez-vous pour répondre : <a href="{{ site_address }}/accounts/messages/{{ message.conversation.id }}/">Accéder à la conversation</a>
+    </p>
+{% endblock content %}

@@ -1,0 +1,21 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    📨
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Nouveau message de contact
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        <strong>Expéditeur :</strong> {{ name }} ({{ email }})
+    </p>
+    <p>
+        <strong>Message :</strong>
+    </p>
+    <blockquote style="background:#f5f5f5;padding:10px;border-radius:5px;">
+        {{ message }}
+    </blockquote>
+{% endblock content %}

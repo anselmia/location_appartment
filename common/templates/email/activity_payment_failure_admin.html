@@ -1,0 +1,55 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Échec de paiement - {{ activity.name }} - Réservation {{ reservation.code }}
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #ff5858 0%, #ffb347 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png"
+         alt="Alerte"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Échec de paiement détecté
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ activity.owner.full_name|default:activity.owner.username }}</strong>,
+    </p>
+    <p>
+        La réservation suivante a rencontré une <strong>erreur lors du processus de paiement</strong> pour votre activité&nbsp;: <strong>"{{ activity.name }}"</strong>.
+    </p>
+    <table class="details-table">
+        <tr>
+            <td class="label">Client :</td>
+            <td>{{ user.full_name|default:user.email }}</td>
+        </tr>
+        <tr>
+            <td class="label">Dates :</td>
+            <td>du {{ reservation.start|date:"d/m/Y H:i" }} au {{ reservation.end|date:"d/m/Y H:i" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nombre de participants :</td>
+            <td>{{ reservation.participants }}</td>
+        </tr>
+        <tr>
+            <td class="label">Montant :</td>
+            <td>{{ reservation.price|floatformat:2 }} €</td>
+        </tr>
+        <tr>
+            <td class="label">Statut :</td>
+            <td>{{ reservation.get_statut_display }}</td>
+        </tr>
+    </table>
+    <p>
+        <a href="{{ espace_partenaire_url|default:'#' }}" class="btn">Voir la réservation</a>
+    </p>
+    <p>Merci de vous connecter à votre espace partenaire pour plus d’informations.</p>
+    <p>
+        Cordialement,
+        <br>
+        L’équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

@@ -1,0 +1,10 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}❌{% endblock banner_icon %}
+{% block banner_bg %}#F44336{% endblock banner_bg %}
+{% block banner_title %}Échec de paiement{% endblock banner_title %}
+{% block content %}
+<p>Bonjour {{ user.first_name }},</p>
+<p>Le paiement de votre réservation <strong>{{ reservation.code }}</strong> pour l'activité <strong>{{ activity.name }}</strong> a échoué.</p>
+<p>Merci de réessayer ou de contacter notre support si besoin.</p>
+<p>L'équipe {{ entreprise.name }}</p>
+{% endblock content %}

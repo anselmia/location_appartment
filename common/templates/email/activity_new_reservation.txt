@@ -5,7 +5,7 @@ Vous avez reçu une nouvelle demande de réservation pour votre activité "{{ re
 Détails de la demande :
 - Client : {{ reservation.user.full_name|default:reservation.user.username }}
 - Date : {{ reservation.start|date:"d/m/Y H:i" }}
-- Nombre de participants : {{ reservation.guest }}
+- Nombre de participants : {{ reservation.participants }}
 
 Merci de vous connecter à votre espace partenaire pour valider ou refuser cette demande.
 

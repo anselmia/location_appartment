@@ -1,0 +1,22 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    💸
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #2196F3
+{% endblock banner_bg %}
+{% block banner_title %}
+    Remboursement effectué
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.first_name }},</p>
+    <p>
+        Nous vous informons que le remboursement de votre réservation <strong>{{ reservation.code }}</strong> pour l'activité <strong>{{ activity.name }}</strong> a été effectué.
+    </p>
+    <p>Le montant sera crédité sur votre compte dans les prochains jours.</p>
+    <p>
+        Merci de votre confiance.
+        <br>
+        L'équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

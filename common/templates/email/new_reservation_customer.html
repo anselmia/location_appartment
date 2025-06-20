@@ -1,0 +1,22 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    ✅
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Confirmation de votre réservation
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.first_name }},</p>
+    <p>
+        Nous confirmons la réception de votre réservation <strong>{{ reservation.code }}</strong> pour le logement <strong>{{ logement.name }}</strong>.
+    </p>
+    <p>Vous trouverez tous les détails dans votre espace personnel.</p>
+    <p>
+        Merci de votre confiance.
+        <br>
+        L'équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

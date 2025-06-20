@@ -1,0 +1,34 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Transfert effectué à {{ user }} - {{ logement.name }} - Réservation {{ reservation.code }}
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #673AB7 0%, #512DA8 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+         alt="Transfert"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Transfert de fonds effectué
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ user.full_name|default:user.username }}</strong>,
+    </p>
+    <p>
+        Un transfert de fonds a été effectué pour la réservation <strong>{{ reservation.code }}</strong> du logement <strong>{{ logement.name }}</strong>.
+    </p>
+    <table class="details-table">
+        <tr>
+            <td class="label">Montant :</td>
+            <td>{{ amount }} €</td>
+        </tr>
+    </table>
+    <p>
+        Consultez votre <a href="{{ espace_partenaire_url }}">tableau de bord</a> pour plus de détails.
+    </p>
+    <p>L'équipe {{ entreprise.name }}</p>
+{% endblock content %}

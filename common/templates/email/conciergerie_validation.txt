@@ -1,0 +1,6 @@
+Bonjour {{ conciergerie.name }},
+
+Votre conciergerie a été validée par l'équipe {{ entreprise.name }}.
+Vous pouvez maintenant accéder à toutes les fonctionnalités avancées de la plateforme.
+
+Bienvenue et félicitations !

@@ -1,0 +1,37 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Confirmez votre adresse email
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #4f8cff 0%, #1cb5e0 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png"
+         alt="Email"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Confirmez votre adresse email
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ user.full_name|default:user.username }}</strong>,
+    </p>
+    <p>
+        Merci de vous être inscrit sur notre site. Pour activer votre compte, veuillez cliquer sur le bouton ci-dessous&nbsp;:
+    </p>
+    <p>
+        <a href="https://{{ domain }}/accounts/activate/{{ uid }}/{{ token }}/"
+           class="btn">Activer mon compte</a>
+    </p>
+    <p>Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur&nbsp;:</p>
+    <p style="word-break:break-all; font-size:13px; color:#888;">
+        https://{{ domain }}/accounts/activate/{{ uid }}/{{ token }}/
+    </p>
+    <p>
+        Merci et à bientôt,
+        <br>
+        L’équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

@@ -1,0 +1,23 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    🛎️
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #FF9800
+{% endblock banner_bg %}
+{% block banner_title %}
+    Votre séjour approche
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ reservation.user.first_name }},</p>
+    <p>
+        Votre séjour au logement <strong>{{ logement.name }}</strong> commence bientôt (le {{ reservation.start|date:"d/m/Y" }}).
+    </p>
+    <p>Pensez à préparer votre arrivée !</p>
+    <p>Pour toute question, contactez {{ user_contact.get_full_name }}.</p>
+    <p>
+        À très bientôt,
+        <br>
+        L'équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

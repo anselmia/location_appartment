@@ -1,0 +1,44 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Échec de paiement - {{ logement.name }} - Réservation {{ reservation.code }}
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #ff5858 0%, #ffb347 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png"
+         alt="Alerte"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Échec de paiement détecté
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ logement.owner.full_name|default:logement.owner.username }}</strong>,
+    </p>
+    <p>
+        La réservation suivante a rencontré une <strong>erreur lors du processus de paiement</strong> pour votre logement&nbsp;: <strong>"{{ logement.name }}"</strong>.
+    </p>
+    <table class="details-table">
+        <tr>
+            <td class="label">Client :</td>
+            <td>{{ user.full_name|default:user.email }}</td>
+        </tr>
+        <tr>
+            <td class="label">Dates :</td>
+            <td>{{ reservation.start|date:"d/m/Y" }} - {{ reservation.end|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Montant :</td>
+            <td>{{ reservation.amount }} €</td>
+        </tr>
+    </table>
+    <p>
+        Merci de vérifier la situation et de contacter le client si besoin.
+        <br>
+        <a href="{{ espace_partenaire_url }}">Accéder au tableau de bord</a>
+    </p>
+    <p>L'équipe {{ entreprise.name }}</p>
+{% endblock content %}

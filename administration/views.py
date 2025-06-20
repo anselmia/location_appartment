@@ -424,6 +424,9 @@ EMAIL_FUNCTIONS = [
     ("send_mail_conciergerie_stop_management", "Arrêt gestion conciergerie"),
     ("send_partner_validation_email", "Validation partenaire"),
     ("notify_vendor_new_reservation", "Nouvelle réservation activité (vendor)"),
+    ("send_conciergerie_validation_email_notification", "Validation conciergerie (nouveau)"),
+    ("send_message_notification_email", "Notification message (centralisé)"),
+    ("send_contact_email_notification", "Contact (centralisé)"),
 ]
 
 
@@ -447,7 +450,12 @@ def test_email_view(request):
             conciergerie.user.email = "anselmi.arnaud@yahoo.fr"
             user = reservation.user if reservation else None
             session = {"checkout_session_url": "https://dummy-checkout-url.com"}
-            cd = {"name": "Test", "email": "test@example.com", "message": "Ceci est un test."}
+            cd = {
+                "name": "Test",
+                "email": "test@example.com",
+                "message": "Ceci est un test.",
+                "subject": "Contact Test",
+            }
             msg = Message.objects.order_by("-id").first()
             func = getattr(email_service, func_name, None)
 
@@ -490,6 +498,12 @@ def test_email_view(request):
                 func(conciergerie.user, logement, logement.owner)
             elif func_name in ["send_pre_checkin_reminders", "send_pre_checkin_activity_reminders"]:
                 func()
+            elif func_name == "send_conciergerie_validation_email_notification":
+                func(conciergerie)
+            elif func_name == "send_message_notification_email":
+                func(msg, msg.recipients.first())
+            elif func_name == "send_contact_email_notification":
+                func(cd)
             else:
                 messages.warning(request, f"Aucune logique de test pour {func_name}")
             messages.success(request, f"Email envoyé avec succès via {func_name}")

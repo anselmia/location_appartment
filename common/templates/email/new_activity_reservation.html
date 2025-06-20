@@ -1,0 +1,42 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Nouvelle Réservation {{ reservation.code }} pour {{ activity.name }}
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #FF9800 0%, #FFB300 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+         alt="Réservation"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Nouvelle réservation d'activité confirmée
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ activity.owner.full_name|default:activity.owner.username }}</strong>,
+    </p>
+    <p>
+        Une nouvelle réservation <strong>{{ reservation.code }}</strong> a été confirmée pour l'activité <strong>{{ activity.name }}</strong>.
+    </p>
+    <table class="details-table">
+        <tr>
+            <td class="label">Client :</td>
+            <td>{{ user.full_name|default:user.email }}</td>
+        </tr>
+        <tr>
+            <td class="label">Date :</td>
+            <td>{{ reservation.start|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Montant :</td>
+            <td>{{ reservation.amount }} €</td>
+        </tr>
+    </table>
+    <p>
+        Consultez votre <a href="{{ espace_partenaire_url }}">tableau de bord</a> pour plus de détails.
+    </p>
+    <p>L'équipe {{ entreprise.name }}</p>
+{% endblock content %}

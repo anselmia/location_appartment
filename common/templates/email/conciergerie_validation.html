@@ -1,0 +1,18 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    🎉
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Conciergerie validée !
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ conciergerie.name }},</p>
+    <p>
+        Votre conciergerie a été validée par l'équipe <strong>{{ entreprise.name }}</strong>.
+    </p>
+    <p>Vous pouvez maintenant accéder à toutes les fonctionnalités avancées de la plateforme.</p>
+    <p>Bienvenue et félicitations !</p>
+{% endblock content %}
