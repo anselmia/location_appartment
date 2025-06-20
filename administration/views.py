@@ -449,6 +449,7 @@ def test_email_view(request):
             conciergerie = Conciergerie.objects.order_by("-id").first()
             conciergerie.user.email = "anselmi.arnaud@yahoo.fr"
             user = reservation.user if reservation else None
+            user.email = "anselmi.arnaud@yahoo.fr"
             session = {"checkout_session_url": "https://dummy-checkout-url.com"}
             cd = {
                 "name": "Test",
