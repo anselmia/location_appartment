@@ -89,11 +89,11 @@ def log_viewer(request):
     log_file_path = os.path.join(settings.LOG_DIR, "django.log")
     selected_level = request.GET.get("level") if request.GET.get("level") != "None" else None
     selected_logger = request.GET.get("logger") if request.GET.get("logger") != "None" else None
-    query = (
-        request.GET.get("query", "").strip().lower()
-        if request.GET.get("query") and request.GET.get("query").strip().lower() != ""
-        else None
-    )
+    query = request.GET.get("query", "")
+    if not query or query.lower() == "none":
+        query = None
+    else:
+        query = query.strip().lower()
 
     try:
         page = int(request.GET.get("page", 1))
