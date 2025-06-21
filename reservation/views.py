@@ -11,6 +11,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator, Page
 from django.db.models import Q, QuerySet
+from pytz import timezone
 
 from reservation.forms import ReservationForm
 from reservation.models import Reservation
@@ -35,6 +36,7 @@ from logement.decorators import user_has_logement
 from logement.services.logement_service import get_logements
 from common.decorators import is_admin
 from common.services.helper_fct import paginate_queryset
+from common.services.network import get_client_ip
 logger = logging.getLogger(__name__)
 
 
@@ -91,6 +93,13 @@ def book(request: HttpRequest, logement_id: int) -> HttpResponse:
                         reservation = create_or_update_reservation(
                             logement, user, start, end, guest_adult, guest_minor, price, tax
                         )
+                        ip_address = get_client_ip(request)
+                        accepted_at = timezone.now()
+                        reservation.cgu_version = settings.CGU_VERSION
+                        reservation.cgv_version = settings.CGV_VERSION
+                        reservation.accepted_at = accepted_at
+                        reservation.ip_address = ip_address
+                        reservation.save()
                         session = create_stripe_checkout_session_with_deposit(reservation, request)
                         logger.info(f"Reservation created and Stripe session initialized for user {user}")
                         return redirect(session["checkout_session_url"])

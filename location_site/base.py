@@ -163,3 +163,6 @@ Q_CLUSTER = {
     "bulk": 10,
     "orm": "default",
 }
+
+CGU_VERSION = "2025.1"
+CGV_VERSION = "2025.1"

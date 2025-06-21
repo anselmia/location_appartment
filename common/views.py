@@ -11,6 +11,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
+from django.views.generic import TemplateView
 
 from logement.models import Logement
 from common.services.email_service import send_contact_email_notification
@@ -232,3 +233,10 @@ def js_logger(request):
             logger.exception(f"Failed to log JS message: {e}")
             return HttpResponseBadRequest("Invalid data")
     return JsonResponse({"error": "Méthode non autorisée"}, status=400)
+
+
+def rental_rules(request):
+    """ View for displaying the rental rules for 2025.
+    """
+    template_name = "common/legal_framework_rental_2025.html"
+    return render(request, template_name)

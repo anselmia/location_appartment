@@ -12,4 +12,5 @@ urlpatterns = [
     path("join-owner/", views.join_owner, name="join_owner"),
     path("join-user/", views.join_user, name="join_user"),
     path("api/log-js/", views.js_logger, name="js_logger"),
+    path("guide-location-saisonniere-2025/", views.rental_rules, name="legal_rental"),
 ]

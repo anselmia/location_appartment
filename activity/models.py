@@ -219,6 +219,12 @@ class ActivityReservation(models.Model):
     pre_checkin_email_sent = models.BooleanField(default=False)
     comment = models.TextField(blank=True)
 
+    # Ajout pour l'acceptation des CGU
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    cgu_version = models.CharField(max_length=20, null=True, blank=True)
+    cgv_version = models.CharField(max_length=20, null=True, blank=True)
+
     def __str__(self):
         return f"{self.user} - {self.activity} ({self.statut})"
 

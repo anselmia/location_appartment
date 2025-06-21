@@ -115,12 +115,6 @@
                             <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Taxes collectées</h6>
-                            <p class="display-6 fw-bold" id="total-taxes">0.00 €</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -142,11 +136,9 @@
   const labels = {{ chart_labels|safe }};
   const totalRevenuNet = {{ revenue_net_data|safe }};
   const totalRevenuBrut = {{ revenue_brut_data|safe }};
-  const admintotalRevenu = {{ admin_revenue_data|safe }};
   const totalRefunds = {{ refunds_data|safe }};
   const platformEarnings = {{ platform_fee_data|safe }};
   const paymentFees = {{ payment_fee_data|safe }};
-  const taxes = {{ tax_data|safe }};
   const csrfToken = "{{ csrf_token }}";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>

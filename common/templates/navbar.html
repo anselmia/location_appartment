@@ -22,7 +22,6 @@
                       onclick="document.getElementById('navLinks').classList.remove('show')">✕</span>
             </div>
             <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
-            
             <div class="dropdown">
                 <a href="#"
                    class="dropdown-toggle"
@@ -46,6 +45,7 @@
                     <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
                     <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
                     <a href="{% url 'activity:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
+                    <a href="{% url 'common:legal_rental' %}"> {% trans "Guide location saisonnière" %}</a>
                 </div>
             </div>
             {% if user.is_authenticated %}

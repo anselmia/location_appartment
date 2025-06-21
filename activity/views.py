@@ -11,11 +11,15 @@ from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
 from django.utils.dateparse import parse_date, parse_time
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
+from django.views.generic import TemplateView
 from django.core.paginator import Paginator
 from payment.services.payment_service import PAYMENT_FEE_VARIABLE
 from activity.forms import PartnerForm, ReservationForm, ActivityForm
-
+from activity.services.activity import get_activity
 from django.contrib.auth.decorators import login_required
+from activity.mixins import UserHasActivityMixin
 from django.contrib import messages
 from activity.decorators import (
     user_is_partner,
@@ -27,6 +31,7 @@ from activity.models import Price
 from common.decorators import is_admin
 from common.services.email_service import send_partner_validation_email
 from common.services.helper_fct import paginate_queryset
+from common.services.network import get_client_ip
 from activity.models import Activity, Category, Partners, ActivityPhoto
 from activity.services.reservation import (
     validate_reservation_inputs,
@@ -38,7 +43,7 @@ from activity.services.reservation import (
     cancel_and_refund_reservation,
 )
 from activity.services.activity import get_activity, get_calendar_context
-from activity.services.price import get_price_context, get_daily_price_data, bulk_update_prices
+from activity.services.price import get_price_context, get_daily_price_data, bulk_update_prices, get_revenue_context
 from logement.models import City
 from activity.serializers import DailyPriceSerializer
 from payment.services.payment_service import (
@@ -391,10 +396,24 @@ def manage_discounts(request):
     return render(request, "activity/manage_discounts.html")
 
 
-@login_required
-def revenu(request):
-    # TODO: Statistiques de revenus pour le partenaire
-    return render(request, "activity/revenu.html")
+class RevenueView(LoginRequiredMixin, UserHasActivityMixin, TemplateView):
+    """
+    View for displaying revenue statistics for a user's activities (delegates logic to service).
+    """
+
+    template_name = "activity/revenu.html"
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        activities = get_activity(request.user)
+        if not activities.exists():
+            messages.info(request, "Vous devez ajouter une activité avant d’accéder au tableau de revenus.")
+            return redirect("logement:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_revenue_context(self.request.user, self.request))
+        return context
 
 
 def detail(request, pk):
@@ -438,6 +457,14 @@ def book(request: HttpRequest, pk: int) -> HttpResponse:
                     slot = parse_time(slot)
                     if validate_reservation_inputs(activity, user, start, guest, slot, price):
                         reservation = create_reservation(activity, user, start, slot, guest, price)
+                        ip_address = get_client_ip(request)
+                        accepted_at = timezone.now()
+                        reservation.cgu_version = settings.CGU_VERSION
+                        reservation.cgv_version = settings.CGV_VERSION
+                        reservation.accepted_at = accepted_at
+                        reservation.ip_address = ip_address
+                        reservation.save()
+
                         session = create_stripe_checkout_session_with_manual_capture(reservation, request)
                         logger.info(f"Reservation created and Stripe session initialized for user {user}")
                         return redirect(session["checkout_session_url"])

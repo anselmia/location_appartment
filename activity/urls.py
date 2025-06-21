@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from rest_framework.routers import DefaultRouter
-from activity.views import DailyPriceViewSet
+from activity.views import DailyPriceViewSet, RevenueView
 
 app_name = "activity"
 
@@ -27,7 +27,6 @@ urlpatterns = [
     path("reservations/", views.reservation_dashboard, name="reservation_dashboard"),
     path("admin-reservations/", views.manage_reservations, name="manage_reservations"),
     path("discounts/", views.manage_discounts, name="manage_discounts"),
-    path("revenu/", views.revenu, name="revenu"),
     path("book/<int:pk>/", views.book, name="book"),
     path("slots/<int:pk>/", views.activity_slots, name="activity_slots"),
     path(
@@ -51,6 +50,7 @@ urlpatterns = [
         views.cancel_booking,
         name="cancel_booking",
     ),
+    path("revenu/", RevenueView.as_view(), name="revenu"),
 ]
 
 # Add router URLs BEFORE catch-all patterns

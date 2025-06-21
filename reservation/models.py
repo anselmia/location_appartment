@@ -59,6 +59,12 @@ class Reservation(models.Model):
     admin_transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     pre_checkin_email_sent = models.BooleanField(default=False)
 
+    # Ajout pour l'acceptation des CGU
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    cgu_version = models.CharField(max_length=20, null=True, blank=True)
+    cgv_version = models.CharField(max_length=20, null=True, blank=True)
+
     def __str__(self):
         return f"{self.code}"
 

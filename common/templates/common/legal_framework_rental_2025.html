@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'common/css/legal_rental_2025.css' %}">
+{% endblock extrahead %}
+{% block content %}
+    <div class="legal-guide-page">
+        <header class="hero-banner legal-guide-hero premium-hero-banner"
+                style="position:relative;
+                       padding:0;
+                       background:none">
+            <img src="{% static 'common/img/guide-location.jpg' %}"
+                 alt="Nice Alpes-Maritimes vue aérienne"
+                 class="hero-img-visible legal-hero-img-limited"
+                 style="display:block;
+                        margin:0 auto">
+            <div class="premium-hero-overlay"
+                 style="position:absolute;
+                        top:0;
+                        left:0;
+                        width:100%;
+                        height:100%;
+                        display:flex;
+                        flex-direction:column;
+                        align-items:center;
+                        justify-content:center;
+                        text-align:center">
+                <h1 class="animate-fade-in">Guide légal 2025 – Location saisonnière à Nice</h1>
+                <p class="animate-fade-in delay">Toutes les règles, astuces et obligations pour louer en toute sérénité</p>
+            </div>
+        </header>
+        <section class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold mb-3">Louer à Nice en 2025 : ce qu’il faut savoir</h2>
+                <p class="text-muted lead mx-auto" style="max-width: 700px;">
+                    Ce guide vous accompagne pas à pas pour réussir votre location saisonnière dans les Alpes-Maritimes, en toute conformité et avec un maximum de sérénité.
+                </p>
+            </div>
+            <div class="row g-5">
+                <!-- 1. Démarches administratives & obligations légales -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/declaration-detail.jpg' %}"
+                                 alt="Déclaration, autorisations et enregistrement à Nice"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Démarches administratives & obligations légales</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>
+                                Déclarez votre bien sur <a class="ml-2" href="https://demarches.nice.fr/">demarches.nice.fr</a>
+                            </li>
+                            <li>Numéro d’enregistrement obligatoire sur chaque annonce</li>
+                            <li>Changement d’usage pour les résidences secondaires</li>
+                            <li>Respect du quota de 120 jours/an pour la résidence principale</li>
+                            <li>Déclaration des réservations tous les 4 mois</li>
+                        </ul>
+                        <div class="legal-tip mb-3 text-center">Vérifiez toujours le règlement de copropriété !</div>
+                        <ul class="legal-list">
+                            <li>Enregistrez votre logement auprès de la mairie ou de la métropole.</li>
+                            <li>Affichez le numéro d’enregistrement sur toutes les plateformes (Airbnb, Booking, etc.).</li>
+                            <li>Respectez les règles de changement d’usage pour les résidences secondaires.</li>
+                            <li>Déclarez vos réservations sur le portail de la métropole tous les 4 mois.</li>
+                            <li>Respectez le quota de 120 jours/an pour la location de votre résidence principale.</li>
+                            <li>
+                                Vérifiez les règles spécifiques de votre commune (certaines imposent des quotas ou des restrictions supplémentaires).
+                            </li>
+                            <li>
+                                <strong>Contrat écrit :</strong> Rédigez systématiquement un contrat de location saisonnière détaillé. Chez {{ entreprise.name }}, nous enregistrons automatiquement l'acceptation des conditions geénérales de vente et d'utilisation, ce qui Constitue un contrat écrit entre le loueur, le locataire et la plateforme.
+                            </li>
+                            <li>
+                                <strong>Inventaire & état des lieux :</strong> Faites un inventaire précis et un état des lieux d’entrée/sortie.
+                            </li>
+                            <li>
+                                <strong>Registre des voyageurs :</strong> Tenez à jour un registre des personnes hébergées. Toutes les réservations sur la plateforme sont archivées afin que vous puissiez les retrouver à tout moment.
+                            </li>
+                            <li>
+                                <strong>Sanctions :</strong> Contrôles fréquents à Nice : amendes jusqu’à 50 000 € en cas de non-respect.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 2. Fiscalité & Statut LMNP -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/lmnp-detail.jpg' %}"
+                                 alt="Statut LMNP (Loueur Meublé Non Professionnel)"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Fiscalité & Statut LMNP</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>Statut LMNP accessible à tous</li>
+                            <li>Recettes ≤ 23 000 € ou 50 % des revenus</li>
+                            <li>Déclaration d’activité, SIRET, comptabilité simplifiée</li>
+                            <li>Choix entre micro-BIC (abattement 50 %) ou régime réel (charges & amortissement)</li>
+                        </ul>
+                        <div class="legal-tip mb-3 text-center">
+                            Le régime réel permet d’optimiser la fiscalité, faites-vous accompagner par un expert-comptable.
+                        </div>
+                        <ul class="legal-list">
+                            <li>
+                                <strong>Définition :</strong> Le LMNP permet de louer un bien meublé à titre non professionnel, en nom propre ou via une SCI à l’IR.
+                            </li>
+                            <li>
+                                <strong>Conditions :</strong> Recettes locatives annuelles ≤ 23 000 € ou ≤ 50 % des revenus du foyer fiscal.
+                            </li>
+                            <li>
+                                <strong>Obligations :</strong> Déclarer l’activité (formulaire P0i), obtenir un SIRET, tenir une comptabilité, respecter les normes du meublé.
+                            </li>
+                            <li>
+                                <strong>Fiscalité :</strong>
+                                <ul>
+                                    <li>
+                                        <strong>Micro-BIC :</strong> Abattement forfaitaire de 50 % sur les loyers encaissés.
+                                    </li>
+                                    <li>
+                                        <strong>Régime réel :</strong> Déduction de toutes les charges et amortissement du bien et du mobilier.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Amortissement :</strong>
+                                <ul>
+                                    <li>Bien immobilier (hors terrain) : 25 à 40 ans</li>
+                                    <li>Mobilier & équipements : 5 à 10 ans</li>
+                                    <li>Travaux d’amélioration, frais d’acquisition : selon nature</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Déductions :</strong> Intérêts d’emprunt, assurances, taxe foncière, charges de copropriété, frais de gestion, petits travaux, abonnements, publicité, et frais de la plateforme !.
+                            </li>
+                            <li>
+                                <strong>TVA :</strong> Non applicable sauf services para-hôteliers.
+                            </li>
+                            <li>
+                                <strong>SCI :</strong> Possible uniquement avec une SCI à l’IR.
+                            </li>
+                            <li>
+                                <strong>Déclaration des revenus :</strong> Formulaire 2042 C PRO chaque année.
+                            </li>
+                            <li>
+                                <strong>Conseil :</strong> Le régime réel est souvent plus avantageux si vous avez des charges importantes.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 3. Fiscalité locale & Taxes -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/fiscalite.jpg' %}"
+                                 alt="Fiscalité locale et taxes spécifiques"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Fiscalité locale & Taxes</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>Taxe de séjour obligatoire</li>
+                            <li>Taxe d’habitation sur les secondaires</li>
+                            <li>Déclaration annuelle des revenus</li>
+                            <li>Taxe sur les logements vacants (TLV)</li>
+                        </ul>
+                        <ul class="legal-list">
+                            <li>
+                                <strong>Taxe de séjour :</strong> Obligatoire dans la métropole de Nice, dépend du classement du logement. À collecter auprès des voyageurs et reverser à la Métropole. {{entreprise.name }} collecte automatiquement la taxe de séjour pour vous et vous la reverse.
+                            </li>
+                            <li>
+                                <strong>Taxe d'habitation :</strong> Peut s'appliquer sur les résidences secondaires louées en saisonnier.
+                            </li>
+                            <li>
+                                <strong>Taxe sur les logements vacants :</strong> Si votre bien reste inoccupé une grande partie de l'année.
+                            </li>
+                            <li>
+                                <strong>Déclaration des revenus :</strong> Obligatoire chaque année, même sans déclaration pré-remplie.
+                            </li>
+                            <li>
+                                <strong>Conseil :</strong> Déduisez tous les frais réels si vous optez pour le régime réel.
+                            </li>
+                        </ul>
+                        <div class="taxe-sejour-table-wrapper mb-4">
+                            <h4 class="taxe-sejour-title">Tarifs de la taxe de séjour à Nice – 2025</h4>
+                            <table class="taxe-sejour-table">
+                                <thead>
+                                    <tr>
+                                        <th>Catégorie d’hébergement</th>
+                                        <th>Taxe de séjour</th>
+                                        <th>Taxe additionnelle 34%</th>
+                                        <th>Taxe totale</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Palaces</td>
+                                        <td>4,80 €</td>
+                                        <td>1,63 €</td>
+                                        <td>6,43 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hôtels, résidences, meublés 5★</td>
+                                        <td>3,50 €</td>
+                                        <td>1,19 €</td>
+                                        <td>4,69 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hôtels, résidences, meublés 4★</td>
+                                        <td>2,60 €</td>
+                                        <td>0,88 €</td>
+                                        <td>3,48 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hôtels, résidences, meublés 3★</td>
+                                        <td>1,70 €</td>
+                                        <td>0,58 €</td>
+                                        <td>2,28 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Hôtels, résidences, meublés 2★
+                                            <br>
+                                            Villages vacances 4-5★
+                                        </td>
+                                        <td>1,00 €</td>
+                                        <td>0,34 €</td>
+                                        <td>1,34 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Hôtels, résidences, meublés 1★
+                                            <br>
+                                            Villages vacances 1-3★, chambres d’hôtes, auberges
+                                        </td>
+                                        <td>0,80 €</td>
+                                        <td>0,27 €</td>
+                                        <td>1,07 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Camping, caravanage 3-5★,
+                                            <br>
+                                            aires camping-cars, parcs stationnement
+                                        </td>
+                                        <td>0,60 €</td>
+                                        <td>0,20 €</td>
+                                        <td>0,80 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Camping, caravanage 1-2★,
+                                            <br>
+                                            ports de plaisance
+                                        </td>
+                                        <td>0,20 €</td>
+                                        <td>0,07 €</td>
+                                        <td>0,27 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Hébergements sans classement
+                                            <br>
+                                            (hôtels, meublés, résidences, étudiants…)
+                                        </td>
+                                        <td>5 % (*)</td>
+                                        <td>1,70 % (*)</td>
+                                        <td>6,70 % (*)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="taxe-sejour-note">
+                                (*) Pour les hébergements sans classement : pourcentage appliqué au coût HT par personne de la nuitée, plafonné à 6,43 €.
+                                <br>
+                                <span class="taxe-sejour-ref">Sources : Code Général des Collectivités Territoriales, Loi 2020-1721, Loi 2022-1726, Délibérations Métropole Nice Côte d’Azur.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 4. Sécurité, environnement & copropriété -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/guide-location.jpg' %}"
+                                 alt="Sécurité, environnement et copropriété"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Sécurité, environnement & copropriété</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>DPE obligatoire</li>
+                            <li>Détecteurs de fumée</li>
+                            <li>Respect du voisinage et des parties communes</li>
+                            <li>Assurance PNO recommandée</li>
+                        </ul>
+                        <ul class="legal-list">
+                            <li>
+                                <strong>DPE :</strong> Diagnostic de performance énergétique obligatoire à fournir au locataire.
+                            </li>
+                            <li>
+                                <strong>Détecteurs de fumée :</strong> Un détecteur conforme doit être installé dans le logement.
+                            </li>
+                            <li>
+                                <strong>Respect du règlement de copropriété :</strong> Nuisances sonores, usage des parties communes, respect du voisinage sont essentiels.
+                            </li>
+                            <li>
+                                <strong>Assurance :</strong> Souscrivez une assurance "propriétaire non occupant" couvrant la location saisonnière.
+                            </li>
+                            <li>
+                                <strong>Conseil :</strong> Prévenez vos locataires des règles de vie de l’immeuble et du tri sélectif.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 5. Gestion locative & expérience voyageur -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/guide-location.jpg' %}"
+                                 alt="Gestion locative et expérience voyageur"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Gestion locative & expérience voyageur</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>Préparez un livret d’accueil complet et personnalisé</li>
+                            <li>Utilisez un système de remise des clés fiable</li>
+                            <li>Prévoyez un ménage professionnel entre chaque location</li>
+                            <li>Synchronisez vos calendriers avec un channel manager</li>
+                            <li>Demandez des avis pour booster votre réputation</li>
+                        </ul>
+                        <ul class="legal-list">
+                            <li>
+                                <strong>Livret d’accueil :</strong> Fournissez systématiquement un livret d’accueil (infos pratiques, consignes, numéros d’urgence, tri, équipements, Wi-Fi).
+                            </li>
+                            <li>
+                                <strong>Remise des clés :</strong> Prévoir une solution fiable (coffre sécurisé, conciergerie, accueil personnalisé).
+                            </li>
+                            <li>
+                                <strong>Service de ménage :</strong> Prévoyez un ménage professionnel entre chaque location.
+                            </li>
+                            <li>
+                                <strong>Channel manager :</strong> Synchronisez vos calendriers sur toutes les plateformes pour éviter les doubles réservations.
+                            </li>
+                            <li>
+                                <strong>Automatisation :</strong> Utilisez des outils pour automatiser les messages, la gestion des cautions, la synchronisation des calendriers.
+                            </li>
+                            <li>
+                                <strong>Gestion locative déléguée :</strong> Vous pouvez confier la gestion à une conciergerie ou une agence spécialisée.
+                            </li>
+                            <li>
+                                <strong>Demandez des avis :</strong> Sollicitez systématiquement des avis à vos voyageurs pour améliorer votre réputation.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 6. Droits, obligations sociales & litiges -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/guide-location.jpg' %}"
+                                 alt="Droits et obligations sociales du loueur"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Droits, obligations & litiges</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>Respect de la vie privée du locataire</li>
+                            <li>RGPD et confidentialité</li>
+                            <li>Accessibilité PMR</li>
+                            <li>Privilégiez la médiation en cas de litige</li>
+                        </ul>
+                        <ul class="legal-list">
+                            <li>
+                                <strong>Vie privée :</strong> Vous ne pouvez pas entrer dans le logement loué sans l’accord du locataire pendant la période de location.
+                            </li>
+                            <li>
+                                <strong>RGPD et confidentialité :</strong> Respectez la confidentialité des données de vos locataires. Droit d’accès, de rectification, d’opposition, de suppression.
+                            </li>
+                            <li>
+                                <strong>Accessibilité PMR :</strong> Mentionnez-le si votre logement est adapté.
+                            </li>
+                            <li>
+                                <strong>Litiges :</strong> Privilégiez la médiation ou un conciliateur de justice. Les plateformes proposent souvent un service de résolution des litiges.
+                            </li>
+                            <li>
+                                <strong>Assistance :</strong> Faites-vous accompagner par un professionnel ou une conciergerie si besoin.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 7. Contrôles, sanctions & plateformes -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/guide-location.jpg' %}"
+                                 alt="Contrôles, sanctions et plateformes"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Contrôles, sanctions & plateformes</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list-synthese mb-3 text-center">
+                            <li>Contrôles réguliers à Nice</li>
+                            <li>Amendes jusqu’à 50 000 €</li>
+                            <li>Suspension possible sur les plateformes</li>
+                        </ul>
+                        <ul class="legal-list">
+                            <li>Des contrôles sont régulièrement effectués à Nice et dans les grandes villes des Alpes-Maritimes.</li>
+                            <li>
+                                En cas de non-respect des règles (déclaration, quotas, taxes), des amendes allant jusqu’à 50 000 € peuvent être appliquées.
+                            </li>
+                            <li>
+                                Les plateformes ({{ entreprise.name }}, Airbnb, Booking, etc.) peuvent suspendre votre annonce en cas de non-respect de la réglementation locale.
+                            </li>
+                            <li>
+                                La ville de Nice propose un service d’accompagnement pour les loueurs : <a href="https://www.nice.fr/fr/louer-en-meuble-touristique">louer en meublé touristique</a>
+                            </li>
+                        </ul>
+                        <div class="legal-tip">
+                            Respectez la réglementation locale pour louer sereinement à Nice et dans les Alpes-Maritimes.
+                        </div>
+                    </div>
+                </div>
+                <!-- 8. Ressources utiles -->
+                <div class="col-12">
+                    <div class="p-4 border rounded-3 shadow-sm h-100 legal-card legal-card-lg legal-card-white">
+                        <div class="legal-card-img-wrapper premium-img-wrapper mx-auto mb-3">
+                            <img src="{% static 'common/img/guide-location.jpg' %}"
+                                 alt="Ressources utiles & autres infos clés"
+                                 class="legal-card-img premium-img mx-auto d-block"
+                                 width="160"
+                                 height="160">
+                        </div>
+                        <h3 class="h4 text-center premium-title mb-3">Ressources utiles</h3>
+                        <hr class="premium-separator mb-4">
+                        <ul class="legal-list">
+                            <li>
+                                <a href="https://www.nice.fr/fr/louer-en-meuble-touristique">Ville de Nice – Louer en meublé touristique</a>
+                            </li>
+                            <li>
+                                <a href="https://www.service-public.fr/particuliers/vosdroits/F2043">Guide officiel Service Public</a>
+                            </li>
+                            <li>
+                                <a href="https://www.impots.gouv.fr/particulier/locations-meublees">Fiscalité des locations meublées</a>
+                            </li>
+                            <li>
+                                <a href="https://www.cohesion-territoires.gouv.fr/location-meublee-touristique">Ministère de la Cohésion des territoires</a>
+                            </li>
+                            <li>
+                                <a href="https://www.ofeaweb.fr/ts/metropole-nca">Taxe de séjour Métropole Nice Côte d’Azur</a> - <strong>Important :</strong> La taxe de séjour est obligatoire pour les locations saisonnières à Nice.
+                            </li>
+                        </ul>
+                        <div class="legal-tip">Pour toute question ou litige, contactez-nous ou un médiateur agréé.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="contact-section fade-in-up" id="contact">
+            <div class="contact-wrapper">
+                <div class="contact-intro">
+                    <h2>Contactez-nous</h2>
+                    <p>Une question, un besoin particulier ou une demande de réservation ? Nous sommes à votre écoute.</p>
+                </div>
+                <div class="contact-card">
+                    <a href="mailto:contact@bnbazure.fr" class="cta-button">contact@bnbazure.fr</a>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock content %}
