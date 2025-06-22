@@ -1,5 +1,8 @@
 User-agent: *
 Disallow: /admin-area/
-Disallow: /accounts/
+Disallow: /accounts/login/
+Disallow: /accounts/register/
+
+Allow: /accounts/contact/
 
 Sitemap: https://www.bnbazure.fr/sitemap.xml
