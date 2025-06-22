@@ -5,8 +5,8 @@ app_name = "common"
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("cgu/", views.cgu_view, name="cgu"),
-    path("politique-de-confidenialité/", views.confidentiality_view, name="confidentiality"),
+    path("CGU/", views.cgu_view, name="cgu"),
+    path("politique-de-confidentialité/", views.confidentiality_view, name="confidentiality"),
     path("CGV/", views.cgv_view, name="cgv"),
     path("chatbot/api/", views.chatbot_api, name="chatbot_api"),
     path("join-owner/", views.join_owner, name="join_owner"),
