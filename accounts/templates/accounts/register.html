@@ -4,6 +4,7 @@
 {% load widget_tweaks %}
 {% block extrahead %}
     {{ block.super }}
+    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
 {% endblock extrahead %}
 {% block content %}
