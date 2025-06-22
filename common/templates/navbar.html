@@ -59,7 +59,7 @@
                         <div class="dropdown-menu">
                             <a href="{% url 'logement:dashboard' %}">{% trans "Tableau de bord" %}</a>
                             <a href="{% url 'logement:calendar' %}">{% trans "Calendrier" %}</a>
-                            <a href="{% url 'reservation:reservation_dashboard' %}">{% trans "Réservations" %}</a>
+                            <a href="{% url 'reservation:logement_reservation_dashboard' %}">{% trans "Réservations" %}</a>
                             <a href="{% url 'logement:manage_discounts' %}">{% trans "Réductions" %}</a>
                             <a href="{% url 'logement:revenu' %}">{% trans "Revenus" %}</a>
                         </div>
@@ -75,7 +75,7 @@
                         <div class="dropdown-menu">
                             <a href="{% url 'activity:activity_dashboard' %}">{% trans "Tableau de bord" %}</a>
                             <a href="{% url 'activity:activity_calendar' %}">{% trans "Calendrier" %}</a>
-                            <a href="{% url 'activity:reservation_dashboard' %}">{% trans "Réservations" %}</a>
+                            <a href="{% url 'reservation:activity_reservation_dashboard' %}">{% trans "Réservations" %}</a>
                             <a href="{% url 'activity:manage_discounts' %}">{% trans "Réductions" %}</a>
                             <a href="{% url 'activity:revenu' %}">{% trans "Revenus" %}</a>
                         </div>
@@ -92,8 +92,8 @@
                             <a href="{% url 'administration:financial_dashboard' %}">{% trans "Tableau de bord" %}</a>
                             <a href="{% url 'administration:edit_entreprise' %}">{% trans "Entreprise" %}</a>
                             <a href="{% url 'administration:homepage_admin_view' %}">{% trans "Home page" %}</a>
-                            <a href="{% url 'reservation:manage_reservations' %}">{% trans "Gestion des réservations (Logements)" %}</a>
-                            <a href="{% url 'activity:manage_reservations' %}">{% trans "Gestion des réservations (Activités)" %}</a>
+                            <a href="{% url 'reservation:manage_logement_reservations' %}">{% trans "Gestion des réservations (Logements)" %}</a>
+                            <a href="{% url 'reservation:manage_activity_reservations' %}">{% trans "Gestion des réservations (Activités)" %}</a>
                             <a href="{% url 'accounts:user_update_view' %}">{% trans "Gestion des Utilisateurs" %}</a>
                             <a href="{% url 'administration:offers' %}">{% trans "Offres" %}</a>
                             <a href="{% url 'payment:payment_tasks' %}">{% trans "Transactions" %}</a>

@@ -218,7 +218,7 @@
             <div class="booking-content">
                 <h3>{% trans "Choix des dates" %}</h3>
                 <form class="booking-form"
-                      action="{% url 'reservation:book' logement.id %}"
+                      action="{% url 'reservation:book_logement' logement.id %}"
                       method="get">
                     <input type="hidden" id="id_start" name="start">
                     <input type="hidden" id="id_end" name="end">

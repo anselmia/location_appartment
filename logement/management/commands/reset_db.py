@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 
-from reservation.models import Reservation
-from activity.models import ActivityReservation, Activity
+from reservation.models import Reservation, ActivityReservation
+from activity.models import Activity
 from payment.models import PaymentTask
 
 

@@ -2,9 +2,10 @@ import calendar as cal
 from collections import defaultdict
 from datetime import datetime, date
 from decimal import Decimal
-from django.db.models import Sum, F
+from collections import OrderedDict
+from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from logement.services.logement_service import get_logements
-from reservation.services.reservation_service import get_valid_reservations_for_admin, get_night_booked_in_period
+from reservation.services.logement import get_night_booked_in_period
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from reservation.models import Reservation
 from calendar import month_name
@@ -12,36 +13,81 @@ from typing import Any, Dict
 
 
 def get_revenue_context(user, request) -> Dict[str, Any]:
+    from reservation.services.reservation_service import get_valid_reservations
+    from reservation.services.logement import get_logement_reservations_queryset
+
     logements = get_logements(user)
     year = request.GET.get("year")
     month = request.GET.get("month")
     logement_id = request.GET.get("logement_id")
-    if logement_id == "" or logement_id is None:
-        logement_id = None
-    else:
-        logement_id = int(logement_id)
-    reservations = get_valid_reservations_for_admin(user)
-    all_years = reservations.annotate(year=ExtractYear("start")).values("year").distinct().order_by("year")
-    all_years = [y["year"] for y in all_years]
-    selected_year = int(year) if year and year.isdigit() else max(all_years, default=datetime.now().year)
-    all_months = (
+    logement_id = int(logement_id) if logement_id and str(logement_id).isdigit() else None
+
+    reservations = get_valid_reservations(
+        user,
+        logement_id,
+        obj_type="logement",
+        get_queryset_fn=get_logement_reservations_queryset,
+        cache_prefix="valid_logement_resa_admin",
+        select_related_fields=["user", "logement"],
+        prefetch_related_fields=["logement__photos"],
+        year=year,
+        month=month,
+    )
+
+    # Years available
+    all_years = list(
+        reservations.annotate(year=ExtractYear("start")).values_list("year", flat=True).distinct().order_by("year")
+    )
+    selected_year = (
+        int(year)
+        if year and str(year).isdigit() and int(year) in all_years
+        else (max(all_years) if all_years else datetime.now().year)
+    )
+
+    # Months available for the selected year
+    months_qs = (
         reservations.filter(start__year=selected_year)
         .annotate(month=ExtractMonth("start"))
-        .values("month")
+        .values_list("month", flat=True)
         .distinct()
         .order_by("month")
     )
-    all_months = [m["month"] for m in all_months]
-    selected_month = int(month) if month and month.isdigit() else max(all_months, default=datetime.now().month)
-    reservations = get_valid_reservations_for_admin(user, logement_id, selected_year, selected_month)
-    brut_revenue = reservations.aggregate(Sum("price"))["price__sum"] or Decimal("0.00")
-    total_refunds = reservations.aggregate(Sum("refund_amount"))["refund_amount__sum"] or Decimal("0.00")
-    platform_earnings = reservations.aggregate(Sum("platform_fee"))["platform_fee__sum"] or Decimal("0.00")
-    total_payment_fee = reservations.aggregate(Sum("payment_fee"))["payment_fee__sum"] or Decimal("0.00")
-    tax = reservations.aggregate(Sum("tax"))["tax__sum"] or Decimal("0.00")
-    total_revenu = brut_revenue - total_refunds - platform_earnings - total_payment_fee
-    total_reservations = reservations.count()
+    all_months = list(months_qs)
+    if all_months and month and str(month).isdigit() and int(month) in all_months:
+        selected_month = int(month)
+    elif all_months:
+        selected_month = max(all_months)
+    else:
+        selected_month = datetime.now().month
+
+    # Reservations for selected year and month
+    filtered_reservations = reservations.filter(start__year=selected_year, start__month=selected_month)
+
+    # Aggregates
+    aggregates = filtered_reservations.aggregate(
+        brut_revenue=Sum("price"),
+        total_refunds=Sum("refund_amount"),
+        platform_earnings=Sum("platform_fee"),
+        total_payment_fee=Sum("payment_fee"),
+        tax=Sum("tax"),
+        admin_transfer=Sum("admin_transferred_amount"),
+        owner_transfer=Sum("transferred_amount"),
+    )
+    # Add computed property manually
+    aggregates["net_revenue"] = sum(res.transferable_amount for res in filtered_reservations)
+
+    # Yearly Calculation
+    brut_revenue = aggregates["brut_revenue"] or Decimal("0.00")
+    total_refunds = aggregates["total_refunds"] or Decimal("0.00")
+    platform_earnings = aggregates["platform_earnings"] or Decimal("0.00")
+    total_payment_fee = aggregates["total_payment_fee"] or Decimal("0.00")
+    tax = aggregates["tax"] or Decimal("0.00")
+    admin_transfer = aggregates["admin_transfer"] or Decimal("0.00")
+    owner_transfer = aggregates["owner_transfer"] or Decimal("0.00")
+    total_revenu = aggregates["net_revenue"] or Decimal("0.00")
+    total_reservations = filtered_reservations.count()
     average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
+
     nights_in_month = cal.monthrange(selected_year, selected_month)[1]
     month_start = date(selected_year, selected_month, 1)
     last_day = cal.monthrange(selected_year, selected_month)[1]
@@ -52,91 +98,104 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
         if nights_in_month
         else 0
     )
-    context = {
-        "logement_id": logement_id,
-        "logements": logements,
-        "selected_year": selected_year,
-        "available_years": all_years,
-        "selected_month": selected_month,
-        "available_months": all_months,
-        "total_revenue": total_revenu,
-        "platform_earnings": platform_earnings or Decimal("0.00"),
-        "tax": tax,
-        "total_payment_fee": total_payment_fee,
-        "total_deposits": reservations.aggregate(Sum("amount_charged"))["amount_charged__sum"] or Decimal("0.00"),
-        "total_refunds": total_refunds,
-        "total_reservations": total_reservations,
-        "average_price": average_price,
-        "reservations": reservations.order_by("-date_reservation")[:100],
-        "occupancy_rate": occupancy_rate,
-        "days_booked": reserved_nights,
-    }
-    # Monthly data
-    reservations_year = get_valid_reservations_for_admin(user, logement_id, selected_year)
-    monthly_data = (
-        reservations_year.annotate(month=TruncMonth("start"))
-        .values("month")
-        .annotate(
-            brut=Sum("price"),
-            refunds=Sum("refund_amount"),
-            fees=Sum("payment_fee"),
-            platform=Sum("platform_fee"),
-            tax=Sum("tax"),
-        )
-        .order_by("month")
+
+    # Monthly data for charts
+    reservations_year = reservations.filter(start__year=selected_year)
+    monthly_data = defaultdict(
+        lambda: {
+            "brut": 0,
+            "refunds": 0,
+            "fees": 0,
+            "platform": 0,
+            "tax": 0,
+            "admin_transfer": 0,
+            "owner_transfer": 0,
+            "net_revenue": 0,
+            "net_revenue_admin": 0,
+        }
     )
-    monthly_manual_data = defaultdict(lambda: {"admin_transfer": 0, "owner_transfer": 0})
-    for reservation in reservations_year:
-        month = reservation.start.replace(day=1)
-        monthly_manual_data[month]["admin_transfer"] += reservation.admin_transferable_amount or 0
-        monthly_manual_data[month]["owner_transfer"] += reservation.transferable_amount - reservation.tax or 0
-    final_monthly_data = []
-    for row in monthly_data:
-        month = row["month"]
-        manual_data = monthly_manual_data.get(month, {"admin_transfer": 0, "owner_transfer": 0})
-        row["admin_transfer"] = manual_data["admin_transfer"]
-        row["owner_transfer"] = manual_data["owner_transfer"]
-        final_monthly_data.append(row)
+
+    for res in reservations_year:
+        month = datetime(res.start.year, res.start.month, 1)
+
+        monthly_data[month]["brut"] += res.price or 0
+        monthly_data[month]["refunds"] += res.refund_amount or 0
+        monthly_data[month]["fees"] += res.payment_fee or 0
+        monthly_data[month]["platform"] += res.platform_fee or 0
+        monthly_data[month]["tax"] += res.tax or 0
+        monthly_data[month]["admin_transfer"] += res.admin_transferred_amount or 0
+        monthly_data[month]["owner_transfer"] += res.transferred_amount or 0
+        monthly_data[month]["net_revenue"] += res.transferable_amount or 0
+        monthly_data[month]["net_revenue_admin"] += res.admin_transferable_amount or 0
+
+    monthly_data_sorted = OrderedDict(sorted(monthly_data.items()))
+
     monthly_chart = defaultdict(
         lambda: {
             "revenue_brut": Decimal("0.00"),
             "revenue_net": Decimal("0.00"),
-            "admin_revenue": Decimal("0.00"),
+            "revenue_net_admin": Decimal("0.00"),
+            "owner_transfers": Decimal("0.00"),
+            "admin_transfers": Decimal("0.00"),
             "refunds": Decimal("0.00"),
             "payment_fee": Decimal("0.00"),
             "platform_fee": Decimal("0.00"),
             "tax": Decimal("0.00"),
         }
     )
-    for item in monthly_data:
-        month_key = item["month"].month
-        monthly_chart[month_key]["revenue_brut"] = item["brut"] or Decimal("0.00")
-        monthly_chart[month_key]["revenue_net"] = item["owner_transfer"] or Decimal("0.00")
-        monthly_chart[month_key]["admin_revenue"] = item["admin_transfer"] or Decimal("0.00")
-        monthly_chart[month_key]["refunds"] = item["refunds"] or Decimal("0.00")
-        monthly_chart[month_key]["payment_fee"] = item["fees"] or Decimal("0.00")
-        monthly_chart[month_key]["platform_fee"] = item["platform"] or Decimal("0.00")
-        monthly_chart[month_key]["tax"] = item["tax"] or Decimal("0.00")
+
+    for month, row in monthly_data_sorted.items():
+        month_key = month.month
+        monthly_chart[month_key]["revenue_brut"] = row["brut"]
+        monthly_chart[month_key]["revenue_net"] = row["net_revenue"]
+        monthly_chart[month_key]["revenue_net_admin"] = row["net_revenue_admin"]
+        monthly_chart[month_key]["owner_transfers"] = row["owner_transfer"]
+        monthly_chart[month_key]["admin_transfers"] = row["admin_transfer"]
+        monthly_chart[month_key]["refunds"] = row["refunds"]
+        monthly_chart[month_key]["payment_fee"] = row["fees"]
+        monthly_chart[month_key]["platform_fee"] = row["platform"]
+        monthly_chart[month_key]["tax"] = row["tax"]
+
     chart_labels = [cal.month_abbr[m] for m in range(1, 13)]
     revenue_brut_data = [float(monthly_chart[m]["revenue_brut"]) for m in range(1, 13)]
     revenue_net_data = [float(monthly_chart[m]["revenue_net"]) for m in range(1, 13)]
-    admin_revenue_data = [float(monthly_chart[m]["admin_revenue"]) for m in range(1, 13)]
+    revenue_net_admin_data = [float(monthly_chart[m]["revenue_net"]) for m in range(1, 13)]
+    owner_transfer_data = [float(monthly_chart[m]["owner_transfers"]) for m in range(1, 13)]
+    admin_transfer_data = [float(monthly_chart[m]["owner_transfers"]) for m in range(1, 13)]
     refunds_data = [float(monthly_chart[m]["refunds"]) for m in range(1, 13)]
     payment_fee_data = [float(monthly_chart[m]["payment_fee"]) for m in range(1, 13)]
     platform_fee_data = [float(monthly_chart[m]["platform_fee"]) for m in range(1, 13)]
     tax_data = [float(monthly_chart[m]["tax"]) for m in range(1, 13)]
-    context.update(
-        {
-            "chart_labels": chart_labels,
-            "revenue_brut_data": revenue_brut_data,
-            "revenue_net_data": revenue_net_data,
-            "admin_revenue_data": admin_revenue_data,
-            "refunds_data": refunds_data,
-            "payment_fee_data": payment_fee_data,
-            "platform_fee_data": platform_fee_data,
-            "tax_data": tax_data,
-        }
-    )
+
+    context = {
+        "logement_id": logement_id,
+        "logements": logements,
+        "occupancy_rate": occupancy_rate,
+        "reserved_nights": reserved_nights,
+        "selected_year": selected_year,
+        "available_years": all_years,
+        "selected_month": selected_month,
+        "available_months": all_months,
+        "total_revenue": total_revenu,
+        "platform_earnings": platform_earnings,
+        "total_payment_fee": total_payment_fee,
+        "total_refunds": total_refunds,
+        "total_reservations": total_reservations,
+        "average_price": average_price,
+        "reservations": filtered_reservations.order_by("-date_reservation")[:100],
+        "chart_labels": chart_labels,
+        "revenue_brut_data": revenue_brut_data,
+        "revenue_net_data": revenue_net_data,
+        "revenue_net_admin_data": revenue_net_admin_data,
+        "owner_transfer_data": owner_transfer_data,
+        "admin_transfer_data": admin_transfer_data,
+        "refunds_data": refunds_data,
+        "payment_fee_data": payment_fee_data,
+        "platform_fee_data": platform_fee_data,
+        "tax_data": tax_data,
+        "has_conciergerie": any(getattr(r.logement, "admin", None) is not None for r in filtered_reservations),
+    }
+
     return context
 
 

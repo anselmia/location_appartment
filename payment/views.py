@@ -18,8 +18,8 @@ from django.views.decorators.http import require_POST
 from django.core.cache import cache
 from django.core.paginator import Paginator
 
-from activity.models import ActivityReservation, Activity
-from reservation.models import Reservation
+from activity.models import Activity
+from reservation.models import Reservation, ActivityReservation
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
 from reservation.services.reservation_service import get_reservation_by_code
 
@@ -38,6 +38,7 @@ from payment.services.payment_service import (
     get_session,
     verify_payment,
     get_reservation_type,
+    verify_transfer,
 )
 from payment.models import PaymentTask
 
@@ -51,12 +52,18 @@ def payment_success(request, type, code):
         session_id = request.GET.get("session_id")
         if not session_id:
             messages.error(request, "Session ID manquant.")
-            return redirect("reservation:book", logement_id=1)
+            if type == "activity":
+                return redirect("reservation:book_activity", pk=1)
+            else:
+                return redirect("reservation:book_logement", pk=1)
 
         session = get_session(session_id)
         if not session:
             messages.error(request, "Session invalide.")
-            return redirect("reservation:book", logement_id=1)
+            if type == "activity":
+                return redirect("reservation:book_activity", pk=1)
+            else:
+                return redirect("reservation:book_logement", pk=1)
 
         payment_intent_id = session.payment_intent
 
@@ -65,6 +72,9 @@ def payment_success(request, type, code):
             reservation.statut = "confirmee"
         elif type == "activity":
             reservation = ActivityReservation.objects.get(code=code)
+        else:
+            messages.error(request, "Type de réservation inconnu.")
+            return redirect("common:home")
 
         reservation.stripe_payment_intent_id = payment_intent_id
         reservation.save(update_fields=["statut", "stripe_payment_intent_id"])
@@ -73,13 +83,20 @@ def payment_success(request, type, code):
             return render(request, "payment/payment_logement_success.html", {"reservation": reservation})
         elif type == "activity":
             return render(request, "payment/payment_activity_success.html", {"reservation": reservation})
+
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
-        return redirect("reservation:book", logement_id=1)
+        return redirect("reservation:book_logement", pk=1)
+    except ActivityReservation.DoesNotExist:
+        messages.error(request, f"Réservation activité {code} introuvable.")
+        return redirect("reservation:book_activity", pk=1)
     except Exception as e:
         logger.exception(f"Error handling payment success: {e}")
         messages.error(request, "Erreur lors du traitement du paiement.")
-        return redirect("reservation:book", logement_id=1)
+        if type == "activity":
+            return redirect("reservation:book_activity", pk=1)
+        else:
+            return redirect("reservation:book_logement", pk=1)
 
 
 @login_required
@@ -107,7 +124,7 @@ def payment_cancel(request, type, code):
             # Delete the reservation
             reservation.delete()
 
-            return redirect(f"{reverse('logement:book', args=[logement.id])}?{query_params}")
+            return redirect(f"{reverse('reservation:book_logement', args=[logement.id])}?{query_params}")
         elif type == "activity":
             reservation = get_object_or_404(ActivityReservation, code=code)
             activity = get_object_or_404(Activity, id=reservation.activity.id)
@@ -123,7 +140,7 @@ def payment_cancel(request, type, code):
             # Delete the reservation
             reservation.delete()
 
-            return redirect(f"{reverse('activity:book', args=[activity.id])}?{query_params}")
+            return redirect(f"{reverse('reservation:book_activity', args=[activity.id])}?{query_params}")
 
     except Exception as e:
         logger.exception(f"Error handling payment cancellation: {e}")
@@ -151,9 +168,9 @@ def send_payment_link(request, code):
         messages.error(request, "Erreur lors de l'envoi du lien.")
 
     if reservation_type == "activity":
-        return redirect("activity:reservation_detail", code=code)
+        return redirect("reservation:activity_reservation_detail", code=code)
     else:
-        return redirect("reservation:reservation_detail", code=code)
+        return redirect("reservation:_logement_reservation_detail", code=code)
 
 
 @login_required
@@ -169,9 +186,9 @@ def transfer_reservation_payment(request, code):
         messages.error(request, f"Erreur lors du transfert : {str(e)}")
         logger.exception(f"❌ Failed to transfer funds for {code}: {e}")
     if reservation_type == "activity":
-        return redirect("activity:manage_reservations")
+        return redirect("reservation:manage_activity_reservations")
     else:
-        return redirect("reservation:manage_reservations")
+        return redirect("reservation:manage_logement_reservations")
 
 
 def payment_task_list(request):
@@ -222,9 +239,9 @@ def refund_reservation(request, code):
         logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
         messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
         if reservation_type == "activity":
-            return redirect("activity:activity_dashboard")
+            return redirect("reservation:activity_reservation_dashboard")
         elif reservation_type == "logement":
-            return redirect("logement:reservation_dashboard")
+            return redirect("reservation:logement_reservation_dashboard")
 
     cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
 
@@ -245,9 +262,9 @@ def refund_reservation(request, code):
         messages.warning(request, "Cette réservation a déjà été remboursée.")
 
     if reservation_type == "activity":
-        return redirect("activity:reservation_detail", code=code)
+        return redirect("reservation:activity_reservation_detail", code=code)
     else:
-        return redirect("reservation:reservation_detail", code=code)
+        return redirect("reservation:logement_reservation_detail", code=code)
 
 
 @login_required
@@ -259,9 +276,9 @@ def refund_partially_reservation(request, code):
     if reservation.refunded:
         messages.warning(request, "Cette réservation a déjà été remboursée.")
         if reservation_type == "activity":
-            return redirect("activity:reservation_detail", code=code)
+            return redirect("reservation:activity_reservation_detail", code=code)
         else:
-            return redirect("reservation:reservation_detail", code=code)
+            return redirect("reservation:logement_reservation_detail", code=code)
 
     try:
         amount_str = request.POST.get("refund_amount")
@@ -273,9 +290,9 @@ def refund_partially_reservation(request, code):
                 "Montant invalide. Il doit être supérieur à 0 et inférieur ou égal au montant total.",
             )
             if reservation_type == "activity":
-                return redirect("activity:reservation_detail", code=code)
+                return redirect("reservation:activity_reservation_detail", code=code)
             else:
-                return redirect("reservation:reservation_detail", code=code)
+                return redirect("reservation:logement_reservation_detail", code=code)
 
         amount_in_cents = int(refund_amount * 100)
         refund = refund_payment(reservation, refund="partial", amount_cents=amount_in_cents)
@@ -292,9 +309,9 @@ def refund_partially_reservation(request, code):
         logger.exception("Stripe refund failed")
 
     if reservation_type == "activity":
-        return redirect("activity:reservation_detail", code=code)
+        return redirect("reservation:activity_reservation_detail", code=code)
     else:
-        return redirect("reservation:reservation_detail", code=code)
+        return redirect("reservation:logement_reservation_detail", code=code)
 
 
 @login_required
@@ -308,7 +325,7 @@ def charge_deposit_view(request, code):
 
         if amount <= 0:
             messages.error(request, "Le montant doit être supérieur à 0.")
-            return redirect("reservation:reservation_detail", code=code)
+            return redirect("reservation:logement_reservation_detail", code=code)
 
         logement_caution = getattr(reservation.logement, "caution", None)
         if logement_caution is not None and amount > reservation.chargeable_deposit:
@@ -316,7 +333,7 @@ def charge_deposit_view(request, code):
                 request,
                 f"Le montant de la caution ({amount:.2f} €) dépasse la limite autorisée pour ce logement ({logement_caution:.2f} €).",
             )
-            return redirect("reservation:reservation_detail", code=code)
+            return redirect("reservation:logement_reservation_detail", code=code)
 
         amount_in_cents = int(amount * 100)
 
@@ -338,7 +355,7 @@ def charge_deposit_view(request, code):
         messages.error(request, f"Erreur lors du chargement Stripe : {e}")
         logger.exception("Stripe deposit charge failed")
 
-    return redirect("reservation:reservation_detail", code=code)
+    return redirect("reservation:logement_reservation_detail", code=code)
 
 
 @login_required
@@ -357,6 +374,28 @@ def verify_payment_view(request, code):
     paid, message = verify_payment(reservation)
 
     if paid:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@login_required
+@user_is_reservation_admin
+@require_POST
+def verify_transfer_view(request, code):
+    """
+    View to verify the Stripe Transfer status for a reservation (logement or activity).
+    """
+    reservation = get_reservation_by_code(code)
+    if not reservation:
+        messages.error(request, "Réservation introuvable.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    success, message = verify_transfer(reservation)
+
+    if success:
         messages.success(request, message)
     else:
         messages.warning(request, message)

@@ -2,8 +2,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.contrib import messages
 from functools import wraps
-from reservation.models import Reservation
-from activity.models import ActivityReservation
+from reservation.models import Reservation, ActivityReservation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -83,5 +82,21 @@ def user_has_reservation(view_func):
         )
         messages.error(request, "Accès refusé : vous n'avez pas réservé ce logement ou cette activité.")
         return redirect("accounts:dashboard")
+
+    return _wrapped_view
+
+    def _wrapped_view(request, *args, **kwargs):
+        # Get the reservation instance from the URL parameter
+        reservation = get_object_or_404(ActivityReservation, code=kwargs["code"])
+
+        # Check if the user is the admin or the owner of the logement
+        if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+
+        logger.warning(
+            f"[Restriction] Accès refusé à la réservation activité (customer) {reservation.code} pour l'utilisateur {request.user.id} ({request.user.email})"
+        )
+        # If the user is not authorized, raise a PermissionDenied error
+        raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
     return _wrapped_view

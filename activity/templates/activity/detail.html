@@ -45,7 +45,7 @@
             {% endif %}
 
             <form class="booking-form"
-                  action="{% url 'activity:book' activity.id %}"
+                  action="{% url 'reservation:book_activity' activity.id %}"
                   method="get">
                 <input type="hidden" id="id_start" name="start">
                 <input type="hidden" id="id_end" name="end">

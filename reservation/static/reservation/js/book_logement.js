@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to check if the input are correct
   function areInputCorrect(startDate, endDate, guest_adult, guest_minor) {
-    const url = `/reservation/check_booking_input/${logementId}?start=${startDate}&end=${endDate}&guest_adult=${guest_adult}&guest_minor=${guest_minor}`;
+    const url = `/reservation/check-logement-input/${logementId}?start=${startDate}&end=${endDate}&guest_adult=${guest_adult}&guest_minor=${guest_minor}`;
     return new Promise((resolve, reject) => {
       fetchWithLoader(url)
         .then((response) => response.json())

@@ -4,7 +4,7 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
-          href="{% static 'activity/css/reservation_dashboard.css' %}">
+          href="{% static 'reservation/css/logement_reservation_dashboard.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container py-4">
@@ -15,8 +15,9 @@
                    value="{{ status|default:'all' }}">
             <div class="col-12 d-flex flex-column flex-md-row justify-content-between gap-3">
                 <div>
-                    <h1 class="mb-2">Réservations d'activités</h1>
+                    <h1 class="mb-2">Réservations</h1>
                 </div>
+                <!-- Desktop buttons -->
                 <div class="btn-group d-none d-md-flex" role="group">
                     <button type="button"
                             class="btn btn-outline-secondary btn-sm {% if status == 'all' %}active{% endif %}"
@@ -30,10 +31,8 @@
                     <button type="button"
                             class="btn btn-outline-danger btn-sm {% if status == 'annulee' %}active{% endif %}"
                             onclick="setStatusAndSubmit('annulee')">Annulée</button>
-                    <button type="button"
-                            class="btn btn-outline-warning btn-sm {% if status == 'en_attente' %}active{% endif %}"
-                            onclick="setStatusAndSubmit('en_attente')">En attente</button>
                 </div>
+                <!-- Mobile select -->
                 <div class="d-md-none">
                     <select class="form-select form-select-sm"
                             onchange="setStatusAndSubmit(this.value)">
@@ -41,10 +40,10 @@
                         <option value="confirmee" {% if status == 'confirmee' %}selected{% endif %}>Confirmée</option>
                         <option value="terminee" {% if status == 'terminee' %}selected{% endif %}>Terminée</option>
                         <option value="annulee" {% if status == 'annulee' %}selected{% endif %}>Annulée</option>
-                        <option value="en_attente" {% if status == 'en_attente' %}selected{% endif %}>En attente</option>
                     </select>
                 </div>
             </div>
+            <!-- Filters -->
             <div class="col-md-3">
                 <label for="yearFilter" class="form-label">Année</label>
                 <select id="yearFilter"
@@ -81,7 +80,7 @@
                            name="search"
                            value="{{ request.GET.search|default_if_none:'' }}"
                            class="form-control"
-                           placeholder="🔍 Client, code...">
+                           placeholder="🔍 Voyageur, code...">
                     <button class="btn btn-primary" type="submit">Rechercher</button>
                 </div>
             </div>
@@ -92,31 +91,29 @@
                 <table class="table table-hover table-bordered table-sm text-center align-middle reservation-table">
                     <thead class="table-light text-uppercase small">
                         <tr>
-                            <th>Activité</th>
+                            <th>Logement</th>
                             <th>Code</th>
                             <th>Statut</th>
-                            <th>Client</th>
-                            <th>Date</th>
-                            <th>Créneau</th>
+                            <th>Voyageur</th>
+                            <th>Arrivée</th>
+                            <th>Départ</th>
                             <th>Réservée le</th>
-                            <th>Participants</th>
+                            <th>Invité(s)</th>
                             <th>Prix</th>
+                            <th>Taxes</th>
                             <th>Détail</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for r in reservations %}
                             <tr data-status="{{ r.statut|lower }}">
-                                <td data-label="Activité">
+                                <td data-label="Logement">
                                     <div class="d-flex align-items-center gap-2">
-                                        {% if r.activity.photos.all %}
-                                            <a href="{% url 'activity:detail' r.activity.id %}">
-                                                <img src="{{ r.activity.photos.all.0.image.url }}"
-                                                     alt="{{ r.activity.name }}"
-                                                     class="img-thumbnail"
-                                                     style="width: 50px;
-                                                            height: 50px;
-                                                            object-fit: cover">
+                                        {% if r.logement.photos.all %}
+                                            <a href="{% url 'logement:view_logement' r.logement.id %}">
+                                                <img src="{{ r.logement.photos.all.0.image.url }}"
+                                                     alt="{{ r.logement.name }}"
+                                                     class="img-thumbnail fixed-thumbnail">
                                             </a>
                                         {% else %}
                                             <div class="d-flex justify-content-center align-items-center bg-light"
@@ -125,21 +122,22 @@
                                                 <i class="bi bi-image text-muted"></i>
                                             </div>
                                         {% endif %}
-                                        <span class="d-none d-md-inline">{{ r.activity.name }}</span>
+                                        <span class="d-none d-md-inline">{{ r.logement.name }}</span>
                                     </div>
                                 </td>
                                 <td data-label="Code">{{ r.code }}</td>
                                 <td data-label="Statut">
                                     <span class="badge-status {{ r.statut|lower }}">{{ r.get_statut_display }}</span>
                                 </td>
-                                <td data-label="Client">{{ r.user.full_name|default:r.user.username }}</td>
-                                <td data-label="Date">{{ r.start|date:"d M Y" }}</td>
-                                <td data-label="Créneau">{{ r.start|date:"H:i" }}</td>
+                                <td data-label="Voyageur">{{ r.user.name }} {{ r.user.last_name }}</td>
+                                <td data-label="Arrivée">{{ r.start|date:"d M Y" }}</td>
+                                <td data-label="Départ">{{ r.end|date:"d M Y" }}</td>
                                 <td data-label="Réservée le">{{ r.date_reservation|date:"d M Y H:i" }}</td>
-                                <td data-label="Participants">{{ r.guest }}</td>
+                                <td data-label="Invités">{{ r.total_guest }}</td>
                                 <td data-label="Prix">{{ r.price|floatformat:2 }} €</td>
+                                <td data-label="Taxes">{{ r.tax|floatformat:2 }} €</td>
                                 <td data-label="Voir">
-                                    <a href="{% url 'activity:reservation_detail' r.code %}"
+                                    <a href="{% url 'reservation:logement_reservation_detail' r.code %}"
                                        class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye"></i> Voir
                                     </a>
@@ -158,21 +156,21 @@
                         <div class="card shadow-sm border-0">
                             <div class="card-body p-3">
                                 <div class="d-flex gap-3 align-items-center mb-2">
-                                    {% if r.activity.photos.all %}
-                                        <img src="{{ r.activity.photos.all.0.image.url }}"
-                                             class="rounded activity-thumbnail"
-                                             alt="{{ r.activity.name }}">
+                                    {% if r.logement.photos.all %}
+                                        <img src="{{ r.logement.photos.all.0.image.url }}"
+                                             class="rounded logement-thumbnail"
+                                             alt="{{ r.logement.name }}">
                                     {% else %}
-                                        <div class="bg-light d-flex justify-content-center align-items-center activity-thumbnail">
+                                        <div class="bg-light d-flex justify-content-center align-items-center logement-thumbnail">
                                             <i class="bi bi-image text-muted fs-4"></i>
                                         </div>
                                     {% endif %}
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <h6 class="mb-1">{{ r.activity.name }}</h6>
+                                            <h6 class="mb-1">{{ r.logement.name }}</h6>
                                             <span class="badge-status {{ r.statut|lower }}">{{ r.get_statut_display }}</span>
                                         </div>
-                                        <small class="text-muted">{{ r.user.full_name|default:r.user.username }}</small>
+                                        <small class="text-muted">{{ r.user.name }} {{ r.user.last_name }}</small>
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between small text-muted mb-1">
@@ -180,18 +178,18 @@
                                         <i class="bi bi-calendar-check"></i> {{ r.start|date:"d M" }}
                                     </div>
                                     <div>
-                                        <i class="bi bi-clock"></i> {{ r.start|date:"H:i" }}
+                                        <i class="bi bi-calendar-x"></i> {{ r.end|date:"d M" }}
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between small text-muted mb-2">
                                     <div>
-                                        <i class="bi bi-person-fill"></i> {{ r.guest }} participant(s)
+                                        <i class="bi bi-person-fill"></i> {{ r.guest }} invité(s)
                                     </div>
                                     <div>
                                         <i class="bi bi-currency-euro"></i> {{ r.price|floatformat:0 }}
                                     </div>
                                 </div>
-                                <a href="{% url 'activity:reservation_detail' r.code %}"
+                                <a href="{% url 'reservation:logement_reservation_detail' r.code %}"
                                    class="btn btn-sm btn-primary w-100">Voir la réservation</a>
                             </div>
                         </div>
@@ -237,5 +235,5 @@
     </div>
 {% endblock %}
 {% block extra_js %}
-    <script src="{% static 'activity/js/reservation_dashboard.js' %}"></script>
+    <script src="{% static 'reservation/js/logement_reservation_dashboard.js' %}"></script>
 {% endblock %}

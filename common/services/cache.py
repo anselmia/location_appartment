@@ -1,0 +1,2 @@
+CACHE_TIMEOUT_SHORT = 60 * 5  # 5 minutes
+CACHE_TIMEOUT_LONG = 60 * 60 * 24  # 24 hours

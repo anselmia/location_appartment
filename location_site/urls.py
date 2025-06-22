@@ -21,7 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.contrib.sitemaps import Sitemap
-from logement.models import Logement  # Your model
+from logement.models import Logement
+from activity.models import Activity
 from django.urls import reverse
 from django.views.generic import TemplateView
 
@@ -35,7 +36,19 @@ class LogementSitemap(Sitemap):
         return Logement.objects.all()
 
     def location(self, obj):
-        return reverse("reservation:book", kwargs={"logement_id": obj.id})
+        return reverse("reservation:book_logement", kwargs={"pk": obj.id})
+
+
+class ActivitySitemap(Sitemap):
+    changefreq = "weekly"
+    priority = 0.8
+    protocol = "https"
+
+    def items(self):
+        return Activity.objects.all()
+
+    def location(self, obj):
+        return reverse("reservation:book_activity", kwargs={"pk": obj.id})
 
 
 class StaticViewSitemap(Sitemap):
@@ -44,7 +57,7 @@ class StaticViewSitemap(Sitemap):
     protocol = "https"
 
     def items(self):
-        return ["common:home", "accounts:contact", "logement:logement_search", "common:legal_rental", "common:cgu", "common:confidentiality", "common:cgv"]
+        return ["common:home", "accounts:contact", "logement:logement_search", "activity:search", "common:legal_rental", "common:cgu", "common:confidentiality", "common:cgv"]
 
     def location(self, item):
         return reverse(item)
@@ -52,6 +65,7 @@ class StaticViewSitemap(Sitemap):
 
 sitemaps = {
     "logements": LogementSitemap,
+    "activities": ActivitySitemap,
     "static": StaticViewSitemap,
 }
 

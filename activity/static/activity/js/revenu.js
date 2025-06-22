@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const totalRevenueElem = document.getElementById("total-revenue");
+  const totalNetElem = document.getElementById("total-net");
   const totalPlatformElem = document.getElementById("total-platform");
   const totalPaymentElem = document.getElementById("total-payment");
   const totalRefundsElem = document.getElementById("total-refunds");
@@ -7,20 +8,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const economyError = document.getElementById("economy-error");
   const economyChartElem = document.getElementById("economy-chart");
 
-  try {
-    // Compute totals
-    const sum = (arr) => arr.reduce((a, b) => a + (parseFloat(b) || 0), 0);
-    const totalRevenusBrut = sum(totalRevenuBrut);
-    const totalRevenusNet = sum(totalRevenuNet);
-    const refunds = sum(totalRefunds);
-    const platform = sum(platformEarnings);
-    const payment = sum(paymentFees);
+  try {   
+    const monthIdx = selectedMonth - 1;
 
-    totalRevenueElem.textContent = `€${totalRevenusBrut.toFixed(2)}`;
-    netProfitElem.textContent = `€${totalRevenusNet.toFixed(2)}`;
-    totalRefundsElem.textContent = `€${refunds.toFixed(2)}`;
-    totalPlatformElem.textContent = `€${platform.toFixed(2)}`;
-    totalPaymentElem.textContent = `€${payment.toFixed(2)}`;
+    totalRevenueElem.textContent = `€${(
+      parseFloat(totalRevenuBrut[monthIdx]) || 0
+    ).toFixed(2)}`;
+    totalNetElem.textContent = `€${(
+      parseFloat(totalRevenuNet[monthIdx]) || 0
+    ).toFixed(2)}`;
+    netProfitElem.textContent = `€${(
+      parseFloat(totalTransfers[monthIdx]) || 0
+    ).toFixed(2)}`;
+    totalRefundsElem.textContent = `€${(
+      parseFloat(totalRefunds[monthIdx]) || 0
+    ).toFixed(2)}`;
+    totalPlatformElem.textContent = `€${(
+      parseFloat(platformEarnings[monthIdx]) || 0
+    ).toFixed(2)}`;
+    totalPaymentElem.textContent = `€${(
+      parseFloat(paymentFees[monthIdx]) || 0
+    ).toFixed(2)}`;
 
     const ctx = economyChartElem.getContext("2d");
     new Chart(ctx, {
@@ -93,9 +101,26 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
   } catch (error) {
-    economyError.textContent =
+    // Show a Bootstrap alert if available, otherwise fallback to inline message
+    let alertBox = document.getElementById("revenue-alert");
+    if (!alertBox) {
+      alertBox = document.createElement("div");
+      alertBox.id = "revenue-alert";
+      alertBox.className = "alert alert-danger mt-3";
+      alertBox.role = "alert";
+      // Insert alert at the top of the economyChartElem's parent or body
+      const revenueTitleElem = document.getElementById("revenu-title");
+      if (revenueTitleElem && revenueTitleElem.parentNode) {
+        revenueTitleElem.parentNode.insertBefore(alertBox, revenueTitleElem);
+      } else if (economyChartElem && economyChartElem.parentNode) {
+        economyChartElem.parentNode.insertBefore(alertBox, economyChartElem);
+      } else {
+        document.body.prepend(alertBox);
+      }
+    }
+    alertBox.textContent =
       "Erreur lors du chargement des données. Veuillez réessayer.";
-    economyError.style.display = "block";
+    alertBox.style.display = "block";
     console.error("Revenue Chart Error:", error);
   }
 });

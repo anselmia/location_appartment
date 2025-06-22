@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const initialMonth = new Date(today).getMonth() + 1;
 
     fetch(
-      `/activity/not-available-dates/${activityId}/?year=${initialYear}&month=${initialMonth}`
+      `/reservation/not-available-dates/${activityId}/?year=${initialYear}&month=${initialMonth}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const currentMonth = instance.currentMonth + 1; // Flatpickr months are 0-based
             const currentYear = instance.currentYear;
             fetch(
-              `/activity/not-available-dates/${activityId}/?year=${currentYear}&month=${currentMonth}`
+              `/reservation/not-available-dates/${activityId}/?year=${currentYear}&month=${currentMonth}`
             )
               .then((response) => response.json())
               .then((data) => {
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function fetchSlots(dateStr) {
     slotsSection.innerHTML =
       "<div class='text-center my-3'><span class='spinner-border'></span> Chargement des créneaux...</div>";
-    fetch(`/activity/slots/${activityId}/?date=${dateStr}`)
+    fetch(`/reservation/slots/${activityId}/?date=${dateStr}`)
       .then((response) => response.json())
       .then((data) => {
         slotsSection.innerHTML = "";

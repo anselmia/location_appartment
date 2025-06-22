@@ -17,7 +17,6 @@ from django.views.decorators.cache import cache_page
 
 from django.core.cache import cache
 
-
 from logement.models import (
     Logement,
     Price,
@@ -31,7 +30,6 @@ from logement.services.calendar_service import (
     get_calendar_context,
     export_ical_service,
 )
-
 from logement.services.revenue_service import get_economie_stats
 from logement.forms import LogementForm, DiscountForm
 from logement.serializers import DailyPriceSerializer
@@ -41,8 +39,6 @@ from logement.services.price_service import (
     get_price_for_date_service,
     get_daily_price_data,
 )
-
-
 from logement.decorators import (
     user_has_logement,
     user_is_logement_admin,

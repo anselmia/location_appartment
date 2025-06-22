@@ -34,7 +34,7 @@
     <div class="ms-auto d-flex flex-column gap-1 align-items-end">
       <a href="{% url 'logement:view_logement' logement.id %}"
          class="btn btn-outline btn-primary btn-sm">Voir</a>
-      <a href="{% url 'reservation:book' logement.id %}"
+      <a href="{% url 'reservation:book_logement' logement.id %}"
          class="btn btn-secondary btn-sm">Réserver</a>
     </div>
   </div>

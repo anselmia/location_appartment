@@ -41,4 +41,9 @@ urlpatterns = [
         views.verify_payment_view,
         name="verify_payment",
     ),
+    path(
+        "verify-transfer/<str:code>/",
+        views.verify_transfer_view,
+        name="verify_transfer",
+    ),
 ]

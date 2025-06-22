@@ -3,13 +3,13 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
-          href="{% static 'activity/css/reservation_detail.css' %}" />
+          href="{% static 'reservation/css/activity_reservation_detail.css' %}" />
 {% endblock extrahead %}
 {% block content %}
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center gap-3 ms-2">
-                <a href="{% url 'activity:reservation_dashboard' %}"
+                <a href="{% url 'reservation:activity_reservation_dashboard' %}"
                    class="btn btn-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i> Retour
                 </a>
@@ -17,7 +17,7 @@
             </div>
             {% if reservation.statut != "annulee" %}
                 <form method="post"
-                      action="{% url 'activity:cancel_reservation' reservation.code %}"
+                      action="{% url 'reservation:cancel_activity_reservation' reservation.code %}"
                       onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ?');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -87,7 +87,7 @@
                             </dd>
                             {% if reservation.statut == "en_attente" %}
                                 <form method="post"
-                                      action="{% url 'activity:validate_reservation' reservation.code %}"
+                                      action="{% url 'reservation:validate_activity_reservation' reservation.code %}"
                                       onsubmit="return confirm('Confirmez-vous la validation de cette réservation ?');"
                                       style="display:inline">
                                     {% csrf_token %}
@@ -109,7 +109,7 @@
                                     <span class="badge bg-success ms-2">Confirmé</span>
                                 {% else %}
                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
-                                    {% if reservation.stripe_payment_intent_id %}
+                                    {% if reservation.stripe_payment_intent_id and reservation.statut == "confirmee" %}
                                         <form method="post"
                                               action="{% url 'payment:verify_payment' reservation.code %}"
                                               class="d-inline ms-2">
@@ -135,7 +135,6 @@
                                           class="d-flex gap-2 align-items-center"
                                           onsubmit="return confirm('Confirmer le remboursement ?');">
                                         {% csrf_token %}
-                                        
                                         <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
                                     </form>
                                 {% elif reservation.refunded %}

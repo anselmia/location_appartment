@@ -990,8 +990,7 @@ def handle_charge_refunded(data: StripeChargeEventData):
     Args:
         data (StripeChargeEventData): The event data.
     """
-    from reservation.models import Reservation
-    from activity.models import ActivityReservation
+    from reservation.models import Reservation, ActivityReservation
 
     reservation_code = None
     try:
@@ -1073,8 +1072,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
     Args:
         data (StripePaymentIntentEventData): The event data.
     """
-    from reservation.models import Reservation
-    from activity.models import ActivityReservation
+    from reservation.models import Reservation, ActivityReservation
 
     reservation_code = None
     try:
@@ -1145,8 +1143,7 @@ def handle_payment_failed(data: StripePaymentIntentEventData) -> None:
     Args:
         data (StripePaymentIntentEventData): The event data.
     """
-    from reservation.models import Reservation
-    from activity.models import ActivityReservation
+    from reservation.models import Reservation, ActivityReservation
 
     try:
         metadata = data.object.metadata or {}
@@ -1214,8 +1211,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
     Args:
         data (StripeCheckoutSessionEventData): The event data.
     """
-    from reservation.models import Reservation
-    from activity.models import ActivityReservation
+    from reservation.models import Reservation, ActivityReservation
 
     reservation_code = None
     try:
@@ -1317,8 +1313,7 @@ def handle_transfer_created(data: StripeTransferEventData) -> None:
     Args:
         data (StripeTransferEventData): The event data.
     """
-    from reservation.models import Reservation
-    from activity.models import ActivityReservation
+    from reservation.models import Reservation, ActivityReservation
 
     try:
         transfer_id = data.object.id
@@ -1483,3 +1478,40 @@ def verify_payment(reservation: Any) -> tuple[bool, str]:
             f"❌ Erreur inattendue lors de la vérification du paiement pour la réservation {reservation.code}: {e}"
         )
         return False, "Erreur inattendue lors de la vérification du paiement."
+
+
+def verify_transfer(reservation):
+    """
+    Checks the Stripe transfer status for a reservation.
+    Returns (success: bool, message: str)
+    """
+    transfer_id = getattr(reservation, "stripe_transfer_id", None)
+    if not transfer_id:
+        logger.warning(
+            f"[verify_transfer] Aucun transfert Stripe associé à la réservation {getattr(reservation, 'code', '[unknown]')}."
+        )
+        return False, "Aucun transfert Stripe associé à cette réservation."
+
+    try:
+        logger.info(
+            f"[verify_transfer] Vérification du transfert Stripe {transfer_id} pour la réservation {getattr(reservation, 'code', '[unknown]')}."
+        )
+        transfer = stripe.Transfer.retrieve(transfer_id)
+        if transfer.amount > 0:
+            amount_cents = transfer.amount
+            amount = Decimal(amount_cents) / 100  # cents to euros
+            reservation.transferred_amount = amount
+            reservation.transferred = True
+            reservation.save(update_fields=["transferred_amount", "transferred"])
+            logger.info(
+                f"[verify_transfer] Transfert confirmé pour la réservation {getattr(reservation, 'code', '[unknown]')} : {amount:.2f} €."
+            )
+            return True, f"Transfert confirmé : {amount:.2f} €."
+        else:
+            logger.warning(
+                f"[verify_transfer] Le transfert {transfer_id} existe mais le montant est nul ou non défini."
+            )
+            return False, "Le transfert existe mais le montant est nul ou non défini."
+    except Exception as e:
+        logger.error(f"[verify_transfer] Erreur lors de la vérification du transfert Stripe {transfer_id} : {e}")
+        return False, f"Erreur lors de la vérification du transfert Stripe : {e}"

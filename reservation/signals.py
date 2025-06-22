@@ -5,10 +5,10 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from django.core.cache import cache
 
-from reservation.models import Reservation, airbnb_booking, booking_booking
+from reservation.models import Reservation, airbnb_booking, booking_booking, ActivityReservation
 
-from logement.models import CloseDate, Logement
-
+from logement.models import CloseDate as LogementCloseDate, Logement
+from activity.models import Activity, CloseDate as ActivityCloseDate
 from administration.models import SiteConfig
 
 from common.services.sms import send_sms, is_valid_number
@@ -112,11 +112,11 @@ def send_sms_on_cancel_booking(sender, instance, **kwargs):
 
 
 @receiver([post_save, post_delete], sender=Reservation)
-@receiver([post_save, post_delete], sender=CloseDate)
+@receiver([post_save, post_delete], sender=LogementCloseDate)
 @receiver([post_save, post_delete], sender=airbnb_booking)
 @receiver([post_save, post_delete], sender=booking_booking)
 @receiver([post_save, post_delete], sender=Logement)
-def clear_reservation_related_cache(sender, instance, **kwargs):
+def clear_logement_reservation_related_cache(sender, instance, **kwargs):
     logement_id = getattr(instance, "logement_id", None)
     if not logement_id and hasattr(instance, "logement"):
         logement_id = instance.logement.id
@@ -130,7 +130,7 @@ def clear_reservation_related_cache(sender, instance, **kwargs):
     if logement_id:
         keys = [
             f"reservations_{user_id}_{logement_id}",
-            f"valid_resa_admin_{user_id}_{logement_id}_*",
+            f"valid_logement_resa_admin_{user_id}_{logement_id}_*",
             f"nights_booked_{logement_id}_*",
             f"booked_dates_{logement_id}_*",
         ]
@@ -138,7 +138,7 @@ def clear_reservation_related_cache(sender, instance, **kwargs):
         keys = []
 
     # Invalider cache ciblé
-    for pattern in keys + ["reservation_years_months"]:
+    for pattern in keys + ["logement_reservation_years_months"]:
         try:
             for key in cache.keys(pattern):
                 cache.delete(key)
@@ -153,3 +153,37 @@ def clear_reservation_related_cache(sender, instance, **kwargs):
             logger.debug(f"[CACHE] Cleared availability key: {key}")
     except Exception as e:
         logger.warning(f"[CACHE] Failed to clear available_logement_* keys: {e}")
+
+
+@receiver([post_save, post_delete], sender=ActivityReservation)
+@receiver([post_save, post_delete], sender=ActivityCloseDate)
+@receiver([post_save, post_delete], sender=Activity)
+def clear_activity_reservation_related_cache(sender, instance, **kwargs):
+    activity_id = getattr(instance, "activity_id", None)
+    if not activity_id and hasattr(instance, "activity"):
+        activity_id = instance.activity.id
+    elif isinstance(instance, Activity):
+        activity_id = instance.id
+
+    user_id = getattr(instance, "user_id", None)
+    if not user_id and hasattr(instance, "user"):
+        user_id = instance.user.id
+
+    if activity_id:
+        keys = [
+            f"activity_reservations_{user_id}_all",
+            f"activity_reservations_{user_id}_{activity_id}",
+            f"valid_activity_resa_admin_{user_id}_{activity_id}_*",
+            f"valid_activity_resa_admin_{user_id}_all_all_all",
+        ]
+    else:
+        keys = []
+
+    # Invalider cache ciblé
+    for pattern in keys + ["activity_reservation_years_months"]:
+        try:
+            for key in cache.keys(pattern):
+                cache.delete(key)
+                logger.debug(f"[CACHE] Cleared key: {key}")
+        except Exception as e:
+            logger.warning(f"[CACHE] Failed to clear pattern {pattern}: {e}")

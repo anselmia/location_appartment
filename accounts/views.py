@@ -13,7 +13,7 @@ from django.contrib.auth.views import PasswordResetView
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
 from django.contrib.sites.shortcuts import get_current_site
-
+from django.conf import settings
 
 from accounts.models import Message, Conversation, CustomUser
 from accounts.forms import (
@@ -27,8 +27,8 @@ from accounts.services.conversations import get_reservations_for_conversations_t
 from accounts.decorators import stripe_attempt_limiter
 from accounts.tasks import send_contact_email
 
-from reservation.models import Reservation
-from reservation.services.reservation_service import get_user_reservation
+from reservation.models import Reservation, ActivityReservation
+from reservation.services.reservation_service import get_user_reservations
 
 from common.decorators import is_admin
 from common.services.network import get_client_ip
@@ -43,8 +43,6 @@ from conciergerie.models import Conciergerie
 from payment.services.payment_service import is_stripe_admin
 from logement.models import Logement
 from activity.models import Partners, Activity
-from activity.services.reservation import get_user_activity_reservation
-from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
@@ -111,13 +109,15 @@ def client_dashboard(request):
         code_filter = request.GET.get("code", None)
 
         try:
-            reservations = get_user_reservation(user)
+            reservations = get_user_reservations(
+                user, Reservation, statut_list=["confirmee", "annulee", "terminee", "echec_paiement"]
+            )
         except Exception as e:
             logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations.")
 
         try:
-            activity_reservations = get_user_activity_reservation(user)
+            activity_reservations = get_user_reservations(user, ActivityReservation)
         except Exception as e:
             logger.exception(f"❌ Failed to load activity reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations d'activité.")
@@ -349,7 +349,9 @@ def contact_view(request):
 def delete_account(request):
     user = request.user
 
-    has_active_reservations = get_user_reservation(user).exists()
+    has_active_reservations = get_user_reservations(
+        user, Reservation, statut_list=["confirmee", "annulee", "terminee", "echec_paiement"]
+    ).exists() or get_user_reservations(user, ActivityReservation).exists()
 
     if has_active_reservations:
         messages.error(

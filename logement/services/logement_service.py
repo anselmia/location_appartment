@@ -1,10 +1,8 @@
 import logging
 import hashlib
 import json
-from typing import Any, Dict, List, Optional, Tuple
-
-from datetime import date
-from decimal import Decimal, InvalidOperation
+from typing import Any, Dict, List, Optional
+from collections import defaultdict
 
 from django.core.cache import cache
 from django.db.models import Count, Q
@@ -13,12 +11,12 @@ from django.utils.formats import number_format
 from django.urls import reverse
 from django.templatetags.static import static
 
-from logement.models import Logement, Equipment, Photo, Room, EquipmentType, City
-from logement.forms import LogementForm
-from collections import defaultdict
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-from reservation.services.reservation_service import get_booked_dates
+
+from logement.models import Logement, Equipment, Photo, Room, EquipmentType, City
+from logement.forms import LogementForm
+from reservation.services.logement import get_booked_dates
 from payment.services.payment_service import PAYMENT_FEE_VARIABLE
 
 logger = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ def filter_logements(
     """
     Filter logements based on search criteria, using cache for performance.
     """
-    from reservation.services.reservation_service import get_available_logement_in_period
+    from reservation.services.logement import get_available_logement_in_period
 
     # Build a unique cache key based on all filter parameters
     key_input = f"{destination}-{start_date}-{end_date}-{guest_adult}-{guest_minor}-{equipment_ids}-{bedrooms}-{bathrooms}-{smoking}-{animals}-{type}"
@@ -317,7 +315,7 @@ def get_logement_search_context(request) -> Dict:
                 "lng": float(str(l.longitude).replace(",", ".")),
                 "price": number_format(l.price, decimal_pos=2, use_l10n=False) if l.price else "0.00",
                 "url": reverse("logement:view_logement", args=[l.id]),
-                "book_url": reverse("reservation:book", args=[l.id]),
+                "book_url": reverse("reservation:book_logement", args=[l.id]),
                 "image": (l.photos.first().image_webp.url if l.photos.first() else static("logement/img/no-photo.jpg")),
                 "city": l.ville.name if l.ville else "",
                 "max_traveler": l.max_traveler,

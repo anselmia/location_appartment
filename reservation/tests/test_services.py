@@ -40,7 +40,7 @@ def test_get_valid_reservations_for_admin_filters():
     admin = UserFactory(is_admin=True)
     logement = LogementFactory()
     resa = ReservationFactory(logement=logement, user=admin, statut="confirmee", start=date(2025, 1, 1))
-    qs = reservation_service.get_valid_reservations_for_admin(admin, logement.id, 2025, 1)
+    qs = reservation_service.get_valid_reservations(admin, logement.id, 2025, 1)
     assert resa in qs
 
 
@@ -68,7 +68,7 @@ def test_get_user_reservation_ordering():
     user = UserFactory()
     ReservationFactory(user=user, start=date.today())
     ReservationFactory(user=user, start=date.today() + timedelta(days=1))
-    resas = list(reservation_service.get_user_reservation(user))
+    resas = list(reservation_service.get_user_reservations(user))
     assert resas[0].start >= resas[1].start
 
 
@@ -301,7 +301,7 @@ def test_reservation_tax_capped():
 def test_get_user_reservation_statuses(statut):
     user = UserFactory()
     resa = ReservationFactory(user=user, statut=statut)
-    resas = reservation_service.get_user_reservation(user)
+    resas = reservation_service.get_user_reservations(user)
     assert resa in resas
 
 

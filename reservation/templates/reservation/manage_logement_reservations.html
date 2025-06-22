@@ -171,6 +171,14 @@
                         <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
                         <br>
                         <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                        {% if r.transferred_amount == 0 %}
+                          <form method="post"
+                                action="{% url 'payment:verify_transfer' r.code %}"
+                                class="d-inline-block ms-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Vérifier</button>
+                          </form>
+                        {% endif %}
                       {% elif r.paid %}
                         {{ r.transferable_amount|floatformat:2 }} €
                         <form method="post"

@@ -10,7 +10,7 @@ from payment.services.payment_service import get_payment_fee
 from logement.models import Price, CloseDate, Logement, Discount
 from django.shortcuts import get_object_or_404
 
-from reservation.models import airbnb_booking, booking_booking
+from reservation.models import airbnb_booking, booking_booking, Reservation
 
 
 logger = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ def get_daily_price_data(logement_id: int, start_str: str, end_str: str) -> Dict
             "guests": b.total_guest,
             "total_price": str(b.price),
         }
-        for b in get_valid_reservations_in_period(logement_id, start, end)
+        for b in get_valid_reservations_in_period(Reservation, "logement_id", logement_id, start, end)
     ]
     airbnb_bookings = [
         {

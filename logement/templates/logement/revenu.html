@@ -61,7 +61,7 @@
             <div class="card text-center h-100 border-0 shadow-sm">
               <div class="card-body">
                 <h6 class="text-muted">Jours Loués</h6>
-                <p class="display-6 fw-bold">{{ days_booked }} jours</p>
+                <p class="display-6 fw-bold">{{ reserved_nights }} jours</p>
               </div>
             </div>
           </div>
@@ -91,10 +91,18 @@
           </div>
           <div class="col">
             <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Remboursements</h6>
-              <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+              <h6 class="text-muted">Revenu Net</h6>
+              <p class="display-6 fw-bold text-success" id="total-revenue-net">0.00 €</p>
             </div>
           </div>
+          {% if has_conciergerie %}
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Revenue Conciergerie</h6>
+                <p class="display-6 fw-bold" id="total-conciergerie">0.00 €</p>
+              </div>
+            </div>
+          {% endif %}
           <div class="col">
             <div class="p-3 border rounded bg-light h-100">
               <h6 class="text-muted">Net versé</h6>
@@ -103,6 +111,12 @@
           </div>
         </div>
         <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+          <div class="col">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="text-muted">Remboursements</h6>
+              <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+            </div>
+          </div>
           <div class="col">
             <div class="p-3 border rounded bg-light h-100">
               <h6 class="text-muted">Commission plateforme</h6>
@@ -142,11 +156,13 @@
   const labels = {{ chart_labels|safe }};
   const totalRevenuNet = {{ revenue_net_data|safe }};
   const totalRevenuBrut = {{ revenue_brut_data|safe }};
-  const admintotalRevenu = {{ admin_revenue_data|safe }};
+  const admintotalRevenu = {{ revenue_net_admin_data|safe }};
   const totalRefunds = {{ refunds_data|safe }};
+  const owner_transfer_data = {{ owner_transfer_data|safe }};
   const platformEarnings = {{ platform_fee_data|safe }};
   const paymentFees = {{ payment_fee_data|safe }};
   const taxes = {{ tax_data|safe }};
+  var has_conciergerie = {{ has_conciergerie|yesno:"true,false" }};
   const csrfToken = "{{ csrf_token }}";
   </script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>

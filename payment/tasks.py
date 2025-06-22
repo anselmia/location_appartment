@@ -1,8 +1,7 @@
 import logging
 from decimal import Decimal
 from django.db import transaction
-from reservation.models import Reservation
-from activity.models import ActivityReservation
+from reservation.models import Reservation, ActivityReservation
 from payment.services.payment_service import get_refund, get_transfer, get_payment_intent
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
@@ -246,7 +245,7 @@ def check_stripe_integrity():
             )
 
     ##### ACTIVITY RESERVATIONS #####
-    from activity.models import ActivityReservation
+    from reservation.models import ActivityReservation
 
     ##### REFUNDS #####
     problematic = ActivityReservation.objects.filter(refunded=True).filter(

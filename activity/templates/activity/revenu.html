@@ -7,7 +7,7 @@
 {% endblock extrahead %}
 {% block content %}
     <div class="container my-5" id="revenue-page">
-        <h2 class="text-center fw-bold display-5 mb-5">Performance Mensuelle Activité</h2>
+        <h2 id="revenu-title" class="text-center fw-bold display-5 mb-5">Performance Mensuelle Activité</h2>
         <!-- Filtres -->
         <div class="card shadow-sm mb-5">
             <div class="card-body">
@@ -52,22 +52,6 @@
                     <div class="col">
                         <div class="card text-center h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted">Taux de remplissage</h6>
-                                <p class="display-6 text-primary fw-bold">{{ occupancy_rate }}%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card text-center h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Jours réservés</h6>
-                                <p class="display-6 fw-bold">{{ days_booked }} jours</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card text-center h-100 border-0 shadow-sm">
-                            <div class="card-body">
                                 <h6 class="text-muted">Réservations</h6>
                                 <p class="display-6 fw-bold">{{ total_reservations }}</p>
                             </div>
@@ -91,8 +75,8 @@
                     </div>
                     <div class="col">
                         <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Remboursements</h6>
-                            <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+                            <h6 class="text-muted">Revenu Net</h6>
+                            <p class="display-6 fw-bold text-success" id="total-net">0.00 €</p>
                         </div>
                     </div>
                     <div class="col">
@@ -103,6 +87,12 @@
                     </div>
                 </div>
                 <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+                    <div class="col">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <h6 class="text-muted">Remboursements</h6>
+                            <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+                        </div>
+                    </div>
                     <div class="col">
                         <div class="p-3 border rounded bg-light h-100">
                             <h6 class="text-muted">Commission plateforme</h6>
@@ -134,11 +124,13 @@
     <script>
   const activityId = {{ activity_id|default:"null" }};
   const labels = {{ chart_labels|safe }};
-  const totalRevenuNet = {{ revenue_net_data|safe }};
+  const totalTransfers = {{ transfer_data|safe }};
   const totalRevenuBrut = {{ revenue_brut_data|safe }};
+   const totalRevenuNet = {{ revenue_net_data|safe }};
   const totalRefunds = {{ refunds_data|safe }};
   const platformEarnings = {{ platform_fee_data|safe }};
   const paymentFees = {{ payment_fee_data|safe }};
+  const selectedMonth = {{ selected_month|default:"null" }};
   const csrfToken = "{{ csrf_token }}";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>

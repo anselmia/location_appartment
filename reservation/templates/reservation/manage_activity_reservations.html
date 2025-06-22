@@ -2,7 +2,7 @@
 {% load static %}
 {% block extrahead %}
     <link rel="stylesheet"
-          href="{% static 'activity/css/manage_reservations.css' %}">
+          href="{% static 'reservation/css/manage_reservations.css' %}">
 {% endblock extrahead %}
 {% block content %}
     <div class="container py-4">
@@ -67,7 +67,7 @@
                                             {% elif r.pending or r.statut == 'en_attente' %}
                                                 <span class="badge-status en_attente">En attente</span>
                                                 <form method="post"
-                                                      action="{% url 'activity:validate_reservation' r.code %}"
+                                                      action="{% url 'reservation:validate_activity_reservation' r.code %}"
                                                       class="d-inline ms-2">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-success btn-sm">Valider</button>
@@ -148,6 +148,14 @@
                                                 <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
                                                 <br>
                                                 <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                                                {% if r.transferred_amount == 0 %}
+                                                    <form method="post"
+                                                          action="{% url 'payment:verify_transfer' r.code %}"
+                                                          class="d-inline-block ms-2">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary">Vérifier</button>
+                                                    </form>
+                                                {% endif %}
                                             {% elif r.paid %}
                                                 {{ r.transferable_amount|floatformat:2 }} €
                                                 <form method="post"

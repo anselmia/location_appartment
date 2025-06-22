@@ -1,6 +1,5 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from activity.models import Activity, ActivityReservation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -66,44 +65,5 @@ def user_has_activity(view_func):
         )
         # If the user is neither the owner nor an admin, raise a PermissionDenied error
         raise PermissionDenied("Vous n'êtes pas authorisé à accéder à cette page.")
-
-    return _wrapped_view
-
-
-def user_is_reservation_admin(view_func):
-    def _wrapped_view(request, *args, **kwargs):
-        # Get the reservation instance from the URL parameter
-        reservation = get_object_or_404(ActivityReservation, code=kwargs["code"])
-
-        # Get the associated activity
-        activity = reservation.activity
-
-        # Check if the user is the owner of the activity
-        if request.user == activity.owner or request.user.is_admin or request.user.is_superuser:
-            return view_func(request, *args, **kwargs)
-
-        logger.warning(
-            f"[Restriction] Accès refusé à la réservation activité (admin) {reservation.code} pour l'utilisateur {request.user.id} ({request.user.email})"
-        )
-        # If the user is not authorized, raise a PermissionDenied error
-        raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
-
-    return _wrapped_view
-
-
-def user_is_reservation_customer(view_func):
-    def _wrapped_view(request, *args, **kwargs):
-        # Get the reservation instance from the URL parameter
-        reservation = get_object_or_404(ActivityReservation, code=kwargs["code"])
-
-        # Check if the user is the admin or the owner of the logement
-        if request.user == reservation.user or request.user.is_admin or request.user.is_superuser:
-            return view_func(request, *args, **kwargs)
-
-        logger.warning(
-            f"[Restriction] Accès refusé à la réservation activité (customer) {reservation.code} pour l'utilisateur {request.user.id} ({request.user.email})"
-        )
-        # If the user is not authorized, raise a PermissionDenied error
-        raise PermissionDenied("Vous n'êtes pas autorisé à accéder à cette page.")
 
     return _wrapped_view

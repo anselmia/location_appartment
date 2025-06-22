@@ -4,38 +4,62 @@ from . import views
 app_name = "reservation"
 
 urlpatterns = [
-    path("book/<int:logement_id>/", views.book, name="book"),
+    path("logement/<int:logement_id>/", views.book_logement, name="book_logement"),
+    path("activity/<int:pk>/", views.book_activity, name="book_activity"),
+    path("slots/<int:pk>/", views.activity_slots, name="activity_slots"),
     path(
         "api/check_availability/<int:logement_id>/",
         views.check_availability,
         name="check_availability",
     ),
     path(
-        "check_booking_input/<int:logement_id>/",
-        views.check_booking_input,
-        name="check_booking_input",
+        "check-logement-input/<int:logement_id>/",
+        views.check_logement_booking_input,
+        name="check_logement_booking_input",
     ),
     path(
-        "cancel-booking/<str:code>/",
-        views.cancel_booking,
-        name="cancel_booking",
+        "check-activity-input/<int:activity_id>/",
+        views.check_activity_booking_input,
+        name="check_activity_booking_input",
     ),
-    path("admin-reservations/", views.manage_reservations, name="manage_reservations"),
     path(
-        "details/<str:code>/",
-        views.customer_reservation_detail,
-        name="customer_reservation_detail",
+        "user-cancel-logement/<str:code>/",
+        views.customer_cancel_logement_booking,
+        name="customer_cancel_logement_booking",
     ),
-    path("", views.reservation_dashboard, name="reservation_dashboard"),
     path(
-        "<int:logement_id>/",
-        views.reservation_dashboard,
-        name="reservation_dashboard_by_id",
+        "user-cancel-activity/<str:code>/",
+        views.customer_cancel_activity_booking,
+        name="customer_cancel_activity_booking",
     ),
-    path("<str:code>/", views.reservation_detail, name="reservation_detail"),
+    path("admin-logement/", views.manage_logement_reservations, name="manage_logement_reservations"),
+    path("admin-activity/", views.manage_activity_reservations, name="manage_activity_reservations"),
     path(
-        "<str:code>/cancel/",
-        views.cancel_reservation,
-        name="cancel_reservation",
+        "logement-details/<str:code>/",
+        views.customer_logement_reservation_detail,
+        name="customer_logement_reservation_detail",
     ),
+    path(
+        "activity-details/<str:code>/",
+        views.customer_activity_reservation_detail,
+        name="customer_activity_reservation_detail",
+    ),
+    path("logements/", views.logement_reservation_dashboard, name="logement_reservation_dashboard"),
+    path("activities/", views.activity_reservation_dashboard, name="activity_reservation_dashboard"),
+    path("logement-detail/<str:code>/", views.logement_reservation_detail, name="logement_reservation_detail"),
+    path("activity-detail/<str:code>/", views.activity_reservation_detail, name="activity_reservation_detail"),
+    path(
+        "cancel-activity/<str:code>/",
+        views.cancel_activity_reservation,
+        name="cancel_activity_reservation",
+    ),
+    path(
+        "cancel-logement/<str:code>/", views.cancel_logement_reservation, name="cancel_logement_reservation"
+    ),
+    path(
+        "validate-activity/<str:code>/",
+        views.validate_activity_reservation,
+        name="validate_activity_reservation",
+    ),
+    path("not-available-dates/<int:pk>/", views.activity_not_available_dates, name="activity_not_available_dates"),
 ]

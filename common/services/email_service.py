@@ -184,7 +184,7 @@ def send_pre_checkin_reminders():
 
 def send_pre_checkin_activity_reminders():
     try:
-        from activity.models import ActivityReservation
+        from reservation.models import ActivityReservation
 
         today = date.today()
         for delta in [1, 2, 3]:

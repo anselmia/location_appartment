@@ -51,6 +51,12 @@
   background-color: var(--light-gray);
 }
 
+.fixed-thumbnail {
+    width: 50px !important;
+    height: 50px !important;
+    object-fit: cover;
+}
+
 .reservation-filters {
   border-bottom: 1px solid var(--light-border);
   padding-bottom: var(--spacing-md);
