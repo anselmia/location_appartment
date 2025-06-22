@@ -62,12 +62,12 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def book_logement(request: HttpRequest, logement_id: int) -> HttpResponse:
+def book_logement(request: HttpRequest, pk: int) -> HttpResponse:
     """
     Handle the booking process for a logement, including form validation and Stripe session creation.
     """
     try:
-        logement = get_object_or_404(Logement.objects.prefetch_related("photos"), id=logement_id)
+        logement = get_object_or_404(Logement.objects.prefetch_related("photos"), id=pk)
         user = request.user
         reserved_dates_start, reserved_dates_end = get_booked_dates(logement, user)
         logement_data = {
