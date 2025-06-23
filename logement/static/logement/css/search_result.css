@@ -382,7 +382,7 @@ li {
 
 .view-btn.active,
 .view-btn:hover {
-  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-light);
 }

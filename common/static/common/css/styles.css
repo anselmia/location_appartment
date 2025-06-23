@@ -391,14 +391,14 @@ button,
 }
 
 .btn-primary {
-  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  background-color: var(--primary-color) !important;
   color: #fff !important;
   border-color: var(--primary-light) !important;
-  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s;
+  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s  !important;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%) !important;
+  background: linear-gradient(90deg, #bfa66b 0%, #c7b491 100%) !important;
   color: #fff !important;
   border-color: #bfa66b !important;
 }

@@ -17,52 +17,70 @@
       <!-- Tabs on the left -->
       <div class="col-md-3 mb-4">
         <ul class="nav flex-column nav-pills" id="dashboardTabs" role="tablist">
-          <li class="nav-item mb-2">
-            <a class="nav-link active w-100"
-               id="profile-tab-link"
-               data-toggle="pill"
-               href="#profile-tab"
-               role="tab">Informations personnelles</a>
+          <li class="nav-item mb-2" role="presentation">
+            <button class="nav-link active w-100"
+                    id="profile-tab-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#profile-tab"
+                    type="button"
+                    role="tab"
+                    aria-controls="profile-tab"
+                    aria-selected="true">Informations personnelles</button>
           </li>
-          <li class="nav-item mb-2">
-            <a class="nav-link w-100"
-               id="password-tab-link"
-               data-toggle="pill"
-               href="#password-tab"
-               role="tab">Changer mon mot de passe</a>
+          <li class="nav-item mb-2" role="presentation">
+            <button class="nav-link w-100"
+                    id="password-tab-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#password-tab"
+                    type="button"
+                    role="tab"
+                    aria-controls="password-tab"
+                    aria-selected="false">Changer mon mot de passe</button>
           </li>
-          <li class="nav-item mb-2">
-            <a class="nav-link w-100"
-               id="reservations-tab-link"
-               data-toggle="pill"
-               href="#reservations-tab"
-               role="tab">Mes Réservations</a>
+          <li class="nav-item mb-2" role="presentation">
+            <button class="nav-link w-100"
+                    id="reservations-tab-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#reservations-tab"
+                    type="button"
+                    role="tab"
+                    aria-controls="reservations-tab"
+                    aria-selected="false">Mes Réservations</button>
           </li>
           {% if user.is_owner_admin or user.is_admin or user.is_superuser %}
-            <li class="nav-item mb-2">
-              <a class="nav-link w-100"
-                 id="admin-tab-link"
-                 data-toggle="pill"
-                 href="#admin-tab"
-                 role="tab">Compte Conciergerie</a>
+            <li class="nav-item mb-2" role="presentation">
+              <button class="nav-link w-100"
+                      id="admin-tab-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#admin-tab"
+                      type="button"
+                      role="tab"
+                      aria-controls="admin-tab"
+                      aria-selected="false">Compte Conciergerie</button>
             </li>
           {% endif %}
           {% if user.is_partner or user.is_admin or user.is_superuser %}
-            <li class="nav-item mb-2">
-              <a class="nav-link w-100"
-                 id="partner-tab-link"
-                 data-toggle="pill"
-                 href="#partner-tab"
-                 role="tab">Compte Partenaire</a>
+            <li class="nav-item mb-2" role="presentation">
+              <button class="nav-link w-100"
+                      id="partner-tab-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#partner-tab"
+                      type="button"
+                      role="tab"
+                      aria-controls="partner-tab"
+                      aria-selected="false">Compte Partenaire</button>
             </li>
           {% endif %}
           {% if is_stripe_admin %}
-            <li class="nav-item mb-2">
-              <a class="nav-link w-100"
-                 id="stripe-tab-link"
-                 data-toggle="pill"
-                 href="#stripe-tab"
-                 role="tab">Compte Stripe</a>
+            <li class="nav-item mb-2" role="presentation">
+              <button class="nav-link w-100"
+                      id="stripe-tab-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#stripe-tab"
+                      type="button"
+                      role="tab"
+                      aria-controls="stripe-tab"
+                      aria-selected="false">Compte Stripe</button>
             </li>
           {% endif %}
         </ul>
