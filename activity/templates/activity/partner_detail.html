@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}{{ partner.name }} – Détail partenaire | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Découvrez le partenaire « {{ partner.name }} » de {{ entreprise.name }} : coordonnées, informations légales, représentant, contact et statut pour la gestion d’activités à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet"
         href="{% static 'activity/css/partner_detail.css' %}">
@@ -17,7 +21,7 @@
         {% endif %}
         <div class="{% if partner.logo %}col-md-7{% else %}col-12{% endif %}">
           <div class="card-body p-4">
-            <h2 class="card-title mb-2">{{ partner.name }}</h2>
+            <h1 class="card-title mb-2">{{ partner.name }}</h1>
             {% if partner.description %}<p class="text-muted">{{ partner.description|safe }}</p>{% endif %}
             <hr>
             <div class="row g-3 mb-3">

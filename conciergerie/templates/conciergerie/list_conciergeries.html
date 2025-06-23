@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Liste des conciergeries | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Gérez les conciergeries de {{ entreprise.name }} : filtrez, validez ou supprimez des conciergeries.
+{% endblock %}
 {% block extrahead %}
     <link rel="stylesheet"
           href="{% static 'conciergerie/css/conciergerie_list.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container py-5 conciergerie-list-wrapper">
-        <h2 class="mb-4 text-center">📋 Gestion des Conciergeries</h2>
+        <h1 class="mb-4 text-center">📋 Gestion des Conciergeries</h1>
         <!-- Filtres -->
         <form method="get" class="mb-4">
             <div class="row align-items-end g-3">

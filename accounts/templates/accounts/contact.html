@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load static i18n %}
+{% block title %}Contact – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Contactez l’équipe {{ entreprise.name }} pour toute question sur la location, la réservation ou la gestion de logements à Nice et sur la Côte d’Azur. Réponse rapide et accompagnement personnalisé.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'accounts/css/contact.css' %}">

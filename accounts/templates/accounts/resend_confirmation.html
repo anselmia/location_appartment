@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block title %}Renvoyer l'email de confirmation – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Demandez le renvoi de votre email de confirmation pour activer votre compte sur {{ entreprise.name }} et accéder à tous les services de location à Nice et sur la Côte d’Azur.
+{% endblock %}
+{% block extrahead %}
+    {{ block.super }}
+    <meta name="robots" content="noindex, nofollow">
+{% endblock %}
 {% block content %}
     <div class="container mt-5" style="max-width: 500px">
-        <h3 class="mb-4">{% trans "Renvoyer l'email de confirmation" %}</h3>
+        <h1 class="mb-4">{% trans "Renvoyer l'email de confirmation" %}</h1>
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">

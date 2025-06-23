@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Gestion des Réservations | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Gérez les réservations de logements sur {{ entreprise.name }} : consultez, modifiez et gérez les paiements et remboursements.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet"
         href="{% static 'reservation/css/manage_reservations.css' %}">
 {% endblock extrahead %}
 {% block content %}
   <div class="container py-4">
-    <h2 class="mb-4 fw-bold">📋 Gestion des Réservations</h2>
+    <h1 class="mb-4 fw-bold">📋 Gestion des Réservations</h1>
     <!-- Search Bar -->
     <form method="get" class="mb-4">
       <input type="text"

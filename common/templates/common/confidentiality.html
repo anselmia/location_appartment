@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Politique de confidentialité – {{ entreprise.name }}{% endblock title%}
+{% block meta_description %}
+    Découvrez la politique de confidentialité de {{ entreprise.name }} : gestion des données personnelles, finalités, droits RGPD, sécurité et cookies pour la location de logements à Nice et sur la Côte d’Azur.
+{% endblock meta_description %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">

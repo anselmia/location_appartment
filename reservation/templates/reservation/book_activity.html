@@ -2,6 +2,10 @@
 {% load static %}
 {% load widget_tweaks %}
 {% load i18n %}
+{% block title %}Réserver une activité | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Réservez une activité sur {{ entreprise.name }} : consultez les détails, choisissez une date et un créneau horaire, et finalisez votre réservation en toute sécurité.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"

@@ -1,5 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}{% if is_edit %}Modifier{% else %}Créer{% endif %} une conciergerie | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    {% if is_edit %}
+        Modifiez les informations de la conciergerie {{ conciergerie.name }} sur {{ entreprise.name }}.
+    {% else %}
+        Créez une nouvelle conciergerie pour gérer vos services sur {{ entreprise.name }}.
+    {% endif %}
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'payment/css/payment_tasks.css' %}">
@@ -7,14 +15,14 @@
 {% block content %}
     <div class="conciergerie-form-wrapper">
         <div class="form-section">
-            <h2>
+            <h1>
                 {% if is_edit %}
                     Modifier
                 {% else %}
                     Créer
                 {% endif %}
                 une conciergerie
-            </h2>
+            </h1>
             <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 {% if form.non_field_errors %}

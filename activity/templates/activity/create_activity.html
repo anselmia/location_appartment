@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% load widget_tweaks %}
+{% block title %}Créer une activité – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Créez une nouvelle activité sur {{ entreprise.name }} : saisissez les informations, ajoutez des photos, configurez les créneaux et optimisez la gestion de vos événements à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     <link rel="stylesheet"
           href="{% static 'activity/css/activity_detail.css' %}">
@@ -13,7 +17,7 @@
             <div class="col-lg-8 col-md-10">
                 <div class="card shadow border-0 activity-detail">
                     <div class="card-header">
-                        <h2 class="mb-0 fs-4">Créer une nouvelle activité</h2>
+                        <h1 class="mb-0 fs-4">Créer une nouvelle activité</h1>
                     </div>
                     <div class="card-body">
                         <form method="post" enctype="multipart/form-data" novalidate>

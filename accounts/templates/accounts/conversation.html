@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Messagerie – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+Consultez et échangez vos messages avec l’équipe ou votre hôte via la messagerie sécurisée de {{ entreprise.name }}. Communication simple et historique de vos conversations pour vos réservations à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'accounts/css/message.css' %}">
@@ -11,6 +15,7 @@
             <a href="{% url 'accounts:messages' %}"
                class="btn btn-secondary mb-3">&larr; Retour à la messagerie</a>
         </div>
+        <h1 class="mb-4">Messagerie</h1>
         {% if active_conversation %}
             <div class="card w-100 shadow" style="max-width: 900px;">
                 <div class="card-header">

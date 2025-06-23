@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load static %}
+{% block title %}Connexion – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Connectez-vous à votre espace personnel sur {{ entreprise.name }} pour gérer vos réservations, informations et accéder à tous les services de location à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <meta name="robots" content="noindex, nofollow">
@@ -16,14 +20,15 @@
         </div>
     {% endif %}
     <div class="auth-container">
-        <h2>{% trans "Connexion" %}</h2>
+        <h1>{% trans "Connexion" %}</h1>
         <form method="post">
             {% csrf_token %}
             <label for="id_username">{% trans "Nom d’utilisateur" %}</label>
             {{ form.username }}
             <label for="id_password">{% trans "Mot de passe" %}</label>
             {{ form.password }}
-            <button class="btn btn-primary type="submit">{% trans "Se connecter" %}</button>
+            <button class="btn btn-primary type="submit">{% trans "Se connecter" %}
+            </button>
         </form>
         <div class="text-center mt-3">
             <a href="{% url 'accounts:register' %}"

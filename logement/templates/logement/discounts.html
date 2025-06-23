@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 {% load widget_tweaks %}
+{% load i18n %}
+{% block title %}Réductions pour {{ logement.name }} | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Gérez les réductions disponibles pour le logement {{ logement.name }} sur {{ entreprise.name }}. Ajoutez, modifiez ou supprimez des offres facilement.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet" href="{% static 'logement/css/discounts.css' %}">
   <link rel="stylesheet"
@@ -8,7 +13,7 @@
 {% endblock %}
 {% block content %}
   <div class="container py-4">
-    <h2 class="fw-bold mb-2">🏷️ Réductions</h2>
+    <h1 class="fw-bold mb-2">🏷️ Réductions</h1>
     <p class="text-muted mb-4">
       Gérez les réductions disponibles pour ce logement. Ajoutez, modifiez ou supprimez les offres facilement.
     </p>

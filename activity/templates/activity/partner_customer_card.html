@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}{{ partner.name }} – Partenaire de {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Découvrez le partenaire « {{ partner.name }} » de {{ entreprise.name }} : coordonnées, catégorie, description, contact et services proposés à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -27,7 +31,7 @@
                                 </div>
                             {% endif %}
                             <div>
-                                <h2 class="card-title mb-1">{{ partner.name }}</h2>
+                                <h1 class="card-title mb-1">{{ partner.name }}</h1>
                                 <p class="text-muted mb-0">{{ partner.category }}</p>
                             </div>
                         </div>

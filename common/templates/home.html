@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}
+    Location {{ entreprise.name }} – Appartement à louer sur la Côte d'Azure
+{% endblock title %}
+{% block meta_description %}
+    Plateforme locale pour réserver un appartement ou une chambre à Nice et sur la Côte d’Azur. Tarifs directs, logements de qualité, service humain et réactif.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'common/css/home.css' %}">
@@ -8,8 +14,21 @@
 {% endblock %}
 {% block content %}
     <div class="home-page">
-        <header class="hero-banner"
-                style="background-image: url('{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}')">
+        <header class="hero-banner" style="background: none;">
+            <picture>
+                <source srcset="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% else %}{% static 'logement/img/banner.webp' %}{% endif %}"
+                        type="image/webp">
+                <img src="{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}"
+                     alt="Location Côte d'Azur"
+                     width="1920"
+                     height="600"
+                     class="hero-img"
+                     loading="eager"
+                     fetchpriority="high"
+                     style="object-fit:cover;
+                            width:100%;
+                            height:600px">
+            </picture>
             <div class="overlay">
                 <h1 class="animate-fade-in">{{ entreprise.name }}</h1>
                 <p class="animate-fade-in delay">{{ config.devise }}</p>

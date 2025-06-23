@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load extra_tags %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}Réservations Logement | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Gérez les réservations de logements sur {{ entreprise.name }} : consultez, filtrez et gérez les réservations de vos logements.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"

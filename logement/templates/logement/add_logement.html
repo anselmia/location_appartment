@@ -2,6 +2,14 @@
 {% load static %}
 {% load i18n %}
 {% load widget_tweaks %}
+{% block title %}{% if is_edit %}Modifier{% else %}Créer{% endif %} un logement | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    {% if is_edit %}
+        Modifiez les informations du logement {{ logement.name }} sur {{ entreprise.name }}.
+    {% else %}
+        Créez un nouveau logement pour gérer vos locations sur {{ entreprise.name }}.
+    {% endif %}
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -15,7 +23,7 @@
         </div>
         <div class="form-box">
             <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-                <h2 class="mb-2">{{ logement.name }}</h2>
+                <h1 class="mb-2">{{ logement.name }}</h1>
                 <a href="{% url 'logement:view_logement' logement.id %}"
                    target="_blank"
                    class="btn btn-primary btn-sm">🔍 {% trans "Voir le logement" %}</a>

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Gestion des activités – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Administrez vos activités sur {{ entreprise.name }} : visualisez, ajoutez, modifiez ou désactivez vos activités à Nice et sur la Côte d’Azur. Gérez facilement vos offres et optimisez votre calendrier.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -9,7 +13,7 @@
     <div class="admin-activity-container">
         <div class="admin-header">
             <div class="admin-header-title">
-                <h2>Gestion des activités</h2>
+                <h1>Gestion des activités</h1>
                 <p class="admin-subtitle">Gérez vos activités, ajoutez ou modifiez les activités proposées</p>
             </div>
             <a href="{% url 'activity:create_activity' %}" class="btn btn-primary">➕ Nouvelle activité</a>

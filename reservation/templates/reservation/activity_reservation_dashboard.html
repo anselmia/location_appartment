@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load extra_tags %}
+{% block title %}Réservations d'activités | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Gérez les réservations d'activités sur {{ entreprise.name }} : consultez, filtrez et gérez les réservations d'activités.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"

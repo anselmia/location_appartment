@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Trouver un prestataire – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Trouvez et contactez un prestataire partenaire de {{ entreprise.name }} : coordonnées, ville, description et services proposés à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet"
         href="{% static 'activity/css/partner_list_customer.css' %}">
 {% endblock %}
 {% block content %}
   <div class="container py-5 partner-list-wrapper">
-    <h2 class="mb-4 text-center">🔎 Trouvez votre Prestataire</h2>
+    <h1 class="mb-4 text-center">🔎 Trouvez votre Prestataire</h1>
     <!-- Ville Filter -->
     <form method="get" class="mb-5">
       <div class="row justify-content-center">

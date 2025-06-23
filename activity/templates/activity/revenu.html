@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 {% load extra_tags %}
+{% block title %}Revenus & Performance Activités – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Suivez vos revenus, statistiques et performances mensuelles sur {{ entreprise.name }} : visualisez le chiffre d’affaires, les commissions, remboursements et paiements pour vos activités à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'activity/css/revenu.css' %}">
 {% endblock extrahead %}
 {% block content %}
     <div class="container my-5" id="revenue-page">
-        <h2 id="revenu-title" class="text-center fw-bold display-5 mb-5">Performance Mensuelle Activité</h2>
+        <h1 id="revenu-title" class="text-center fw-bold display-5 mb-5">Performance Mensuelle Activité</h1>
         <!-- Filtres -->
         <div class="card shadow-sm mb-5">
             <div class="card-body">

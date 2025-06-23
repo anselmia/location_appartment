@@ -63,31 +63,40 @@ section a:hover {
 
 .hero-banner {
   position: relative;
-  width: 100%;
-  height: 60vh !important;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  overflow: hidden;
+  height: 60vh; /* or 70vh for bigger */
+  min-height: 400px;
+  max-height: 900px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  text-align: center;
-  background-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.2)
-    ),
-    url("your-image-url-here");
+}
+
+.hero-banner picture,
+.hero-banner img.hero-img,
+.hero-banner .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* Fills the .hero-banner */
+  min-height: unset;
+  max-height: unset;
 }
 
 .hero-banner .overlay {
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 2rem;
-  width: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  text-align: center;
+  color: #fff;
+  padding: 5rem 1rem;
 }
 
+/* ...existing code... */
 .overlay h1 {
   font-size: 3rem;
   margin: 0;
@@ -95,7 +104,8 @@ section a:hover {
 
 .overlay p {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: white;
+  text-shadow: 0 1px 2px var(--primary-color), 0 -1px 2px var(--primary-color), 1px 0 2px var(--primary-color), -1px 0 2px var(--primary-color);
 }
 
 .cta-button {
@@ -168,25 +178,18 @@ section a:hover {
 
 @media (max-width: 768px) {
   .hero-banner {
-    height: 50vh !important;
-    background-attachment: scroll;
+    min-height: 320px !important;
+    height: 35vh !important;
+    max-height: 500px;
     padding: 2rem 1rem;
-    text-align: center;
-    background-size: contain;
+  }
+  .hero-banner picture,
+  .hero-banner img.hero-img,
+  .hero-banner .overlay {
+    min-height: 320px !important;
+    max-height: 500px;
   }
   .hero-banner .overlay {
-    padding: 1rem 0.7rem;
-  }
-  .overlay h1 {
-    font-size: 1.8rem;
-    line-height: 1.2;
-    margin-bottom: 0.5rem;
-  }
-  .overlay p {
-    font-size: 1rem;
-  }
-  .cta-button {
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
+    padding: 1.5rem 0.7rem;
   }
 }

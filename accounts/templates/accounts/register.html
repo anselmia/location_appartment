@@ -2,6 +2,10 @@
 {% load i18n %}
 {% load static %}
 {% load widget_tweaks %}
+{% block title %}Créer un compte – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Inscrivez-vous sur {{ entreprise.name }} pour réserver ou gérer vos logements à Nice et sur la Côte d’Azur : création de compte simple, sécurité, accès à tous les services de location.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <meta name="robots" content="noindex, nofollow">
@@ -9,7 +13,7 @@
 {% endblock extrahead %}
 {% block content %}
     <div class="auth-container">
-        <h2>{% trans "Créer un compte" %}</h2>
+        <h1>{% trans "Créer un compte" %}</h1>
         {% if form.errors %}
             <div class="alert alert-danger text-start">
                 {% for field in form %}

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %}
-{% block title %}
-    {% trans "Détails de l'activité" %}
+{% block title %}{{ activity.name }} – Détails de l'activité | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Découvrez l’activité « {{ activity.name }} » proposée par {{ activity.partner_obj.name }} à {{ activity.location }} : description, créneaux, réservation, prix et informations pratiques à Nice et sur la Côte d’Azur.
 {% endblock %}
 {% block extrahead %}
     {{ block.super }}
@@ -43,7 +44,6 @@
                          height="270">
                 </div>
             {% endif %}
-
             <form class="booking-form"
                   action="{% url 'reservation:book_activity' activity.id %}"
                   method="get">
@@ -69,7 +69,6 @@
                 </div>
             </form>
         </div>
-        
         <div class="activity-detail-content">
             <h1 class="activity-title">{{ activity.name }}</h1>
             <div class="activity-meta mb-3">
@@ -103,7 +102,6 @@
             </div>
         </div>
     </div>
-
 {% endblock content %}
 {% block extra_js %}
     <script>

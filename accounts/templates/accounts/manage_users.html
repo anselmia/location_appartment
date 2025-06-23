@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Gestion des utilisateurs – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Administrez les comptes utilisateurs sur {{ entreprise.name }} : modification, suppression, gestion des droits et informations pour la location à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
     <link rel="stylesheet" href="{% static 'accounts/css/manage_users.css' %}">
 {% endblock extrahead %}
 {% block content %}
     <div class="user-admin-panel">
         <div class="container py-4">
+            <h1 class="mb-4">Gestion des utilisateurs</h1>
             <!-- User selector -->
             <form method="get"
                   action="{% url 'accounts:user_update_view' %}"

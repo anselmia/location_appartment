@@ -1,51 +1,61 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load extra_tags %}
-
-{% block extrahead %}
-  {{ block.super }}  
-  <link rel="stylesheet" href="{% static 'payment/css/payment_success.css' %}">
+{% block title %}Réservation Confirmée | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Votre réservation pour le logement {{ reservation.logement.name }} a été confirmée. Consultez les détails de votre séjour et accédez à votre tableau de bord.
 {% endblock %}
-
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet"
+          href="{% static 'payment/css/payment_success.css' %}">
+{% endblock %}
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-xl-8 col-lg-10">
-            <div class="card border-0 shadow-lg rounded-5 overflow-hidden animate-fade-in">
-                <div class="card-body bg-white px-5 py-5">
-                    <div class="text-center mb-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="currentColor" class="bi bi-check-circle-fill text-success mb-4" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 8.439 6.03 6.97a.75.75 0 1 0-1.06 1.061l1.999 1.999z"/>
-                        </svg>
-                        <h2 class="fw-bold text-dark display-5">Votre Réservation {{ reservation.code }} est Confirmée</h2>
-                        <p class="text-muted lead">Merci pour votre confiance. Voici le récapitulatif de votre séjour.</p>
-                    </div>
-                    <div class="reservation-summary">
-                        <ul class="list-group list-group-flush mb-4">
-                            <li class="list-group-item bg-transparent border-0 py-2">
-                                <span class="fw-semibold">Nom du logement :</span> {{ reservation.logement.name }}
-                            </li>
-                            <li class="list-group-item bg-transparent border-0 py-2">
-                                <span class="fw-semibold">Voyageurs :</span> {{ reservation.total_guest }}
-                            </li>
-                            <li class="list-group-item bg-transparent border-0 py-2">
-                                <span class="fw-semibold">Date de début :</span> {{ reservation.start }}
-                            </li>
-                            <li class="list-group-item bg-transparent border-0 py-2">
-                                <span class="fw-semibold">Date de fin :</span> {{ reservation.end }}
-                            </li>
-                            <li class="list-group-item bg-transparent border-0 py-2">
-                                <span class="fw-semibold">Prix total :</span> {{ reservation.price }} €
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="text-center d-grid gap-3">
-                        <a href="{% url 'common:home' %}" class="btn btn-primary btn-lg rounded-pill shadow-sm">Retour à l'accueil</a>
-                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-dark btn-lg rounded-pill">Voir mes Réservations</a>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-10">
+                <div class="card border-0 shadow-lg rounded-5 overflow-hidden animate-fade-in">
+                    <div class="card-body bg-white px-5 py-5">
+                        <div class="text-center mb-5">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="72"
+                                 height="72"
+                                 fill="currentColor"
+                                 class="bi bi-check-circle-fill text-success mb-4"
+                                 viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 8.439 6.03 6.97a.75.75 0 1 0-1.06 1.061l1.999 1.999z" />
+                            </svg>
+                            <h1 class="fw-bold text-dark display-5">Votre Réservation {{ reservation.code }} est Confirmée</h1>
+                            <p class="text-muted lead">Merci pour votre confiance. Voici le récapitulatif de votre séjour.</p>
+                        </div>
+                        <div class="reservation-summary">
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item bg-transparent border-0 py-2">
+                                    <span class="fw-semibold">Nom du logement :</span> {{ reservation.logement.name }}
+                                </li>
+                                <li class="list-group-item bg-transparent border-0 py-2">
+                                    <span class="fw-semibold">Voyageurs :</span> {{ reservation.total_guest }}
+                                </li>
+                                <li class="list-group-item bg-transparent border-0 py-2">
+                                    <span class="fw-semibold">Date de début :</span> {{ reservation.start }}
+                                </li>
+                                <li class="list-group-item bg-transparent border-0 py-2">
+                                    <span class="fw-semibold">Date de fin :</span> {{ reservation.end }}
+                                </li>
+                                <li class="list-group-item bg-transparent border-0 py-2">
+                                    <span class="fw-semibold">Prix total :</span> {{ reservation.price }} €
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-center d-grid gap-3">
+                            <a href="{% url 'common:home' %}"
+                               class="btn btn-primary btn-lg rounded-pill shadow-sm">Retour à l'accueil</a>
+                            <a href="{% url 'accounts:dashboard' %}"
+                               class="btn btn-outline-dark btn-lg rounded-pill">Voir mes Réservations</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

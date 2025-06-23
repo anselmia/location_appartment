@@ -2,9 +2,16 @@
 {% load static %}
 {% block extrahead %}
   {{ block.super }}
-  <link rel="canonical" href="https://www.bnbazure.fr/cgu/" />
   <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
+{% block title %}Conditions Générales d’Utilisation – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}Consultez les conditions générales d'utilisation de {{ entreprise.name }} pour la location de logements à Nice et sur la Côte d'Azur. Découvrez nos engagements et obligations.{% endblock %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load common_tags %}
+
+{% block entreprise_name %}{{ entreprise.name }}{% endblock %}
+{% block contact_mail %}{{ entreprise.contact_email }}{% endblock %}
 {% block content %}
   <div class="cgu-wrapper">
     <article class="cgu-content">
@@ -120,7 +127,6 @@
         <p>
           {{ entreprise.name }} fournit uniquement un service de mise en relation entre loueurs et voyageurs. Elle n’est ni partie au contrat de location, ni responsable de l’état des logements, ni de leur conformité réglementaire ou fiscale. Elle agit uniquement comme intermédiaire technique au sens du Règlement (UE) 2022/2065.
         </p>
-
         <h2>18. Signalement de contenu illicite (DSA)</h2>
         <p>
           Conformément au Règlement sur les services numériques (DSA), tout utilisateur peut signaler un contenu illicite ou frauduleux via notre formulaire de contact ou à l’adresse suivante : <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>.
@@ -128,7 +134,6 @@
         <p>
           Tout signalement sera analysé dans les meilleurs délais. En cas de manquement avéré, {{ entreprise.name }} pourra retirer le contenu ou suspendre l’annonceur.
         </p>
-
         <h2>19. Traitement des réclamations</h2>
         <p>
           En cas de litige lié à l’utilisation de la plateforme, l’utilisateur peut transmettre une réclamation à <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>.
@@ -136,7 +141,6 @@
         <p>
           Conformément à l’article L.612-1 du Code de la consommation, un recours gratuit à un médiateur de la consommation est possible en cas de désaccord persistant.
         </p>
-
         <h2>20. Contournement</h2>
         <p>
           Il est interdit d’utiliser la plateforme pour entrer en contact avec un loueur ou un voyageur dans le but de conclure une location en dehors de {{ entreprise.name }}. Tout comportement de contournement peut entraîner la suppression du compte et des poursuites.

@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% block title %}Tableau de bord des logements | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Gérez vos logements sur {{ entreprise.name }} : ajoutez, modifiez et consultez vos annonces de logements disponibles.
+{% endblock %}
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'logement/css/dashboard.css' %}">
@@ -8,7 +14,7 @@
   <div class="admin-logement-container">
     <div class="admin-header">
       <div class="admin-header-title">
-        <h2>Gestion des logements</h2>
+        <h1>Gestion des logements</h1>
         <p class="admin-subtitle">Gérez vos annonces, ajoutez ou modifiez les logements disponibles</p>
       </div>
       <a href="{% url 'logement:add_logement' %}" class="btn-add-logement">➕ Nouveau logement</a>

@@ -4,6 +4,10 @@
 {% load i18n %}
 {% load humanize %}
 {% block title %}Détail de la réservation - {{ reservation.code }}{% endblock %}
+{% block meta_description %}
+    Détails de la réservation {{ reservation.code }} pour l'activité {{ reservation.activity.name }}.
+    Consultez les informations générales, l'état de la réservation et les détails de paiement.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -16,7 +20,7 @@
                class="btn btn-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i> Retour à mes réservations
             </a>
-            <h2 class="fw-bold mb-0">Réservation {{ reservation.code }}</h2>
+            <h1 class="fw-bold mb-0">Réservation {{ reservation.code }}</h1>
         </div>
         <div class="card shadow-sm">
             <div class="card-body">

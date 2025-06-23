@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Conciergeries disponibles | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}  
+  Découvrez les conciergeries disponibles sur {{ entreprise.name }} : trouvez celle qui correspond à vos besoins en filtrant par ville et explorez leurs services.
+{% endblock %}
 {% block extrahead %}
 <link rel="stylesheet" href="{% static 'conciergerie/css/conciergerie_customer.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container py-5 conciergerie-list-wrapper">
-  <h2 class="mb-4 text-center">🔎 Trouvez votre conciergerie</h2>
+  <h1 class="mb-4 text-center">🔎 Trouvez votre conciergerie</h1>
 
   <!-- Ville Filter -->
   <form method="get" class="mb-5">

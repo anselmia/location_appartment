@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Réservation {{ reservation.code }} | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Détails de la réservation {{ reservation.code }} sur {{ entreprise.name }} : informations sur le logement, propriétaire, dates et paiement.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
@@ -12,7 +16,7 @@
                class="btn btn-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i> Retour à mes réservations
             </a>
-            <h2 class="fw-bold mb-0">Réservation {{ reservation.code }}</h2>
+            <h1 class="fw-bold mb-0">Réservation {{ reservation.code }}</h1>
         </div>
         <div class="card shadow-sm">
             <div class="card-body">

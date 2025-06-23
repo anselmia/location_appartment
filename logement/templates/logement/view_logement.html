@@ -2,6 +2,10 @@
 {% load static %}
 {% load i18n %}
 {% load extra_tags %}
+{% block title %}Détails du Logement | {{ logement.name }} | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+    Découvrez les détails du logement {{ logement.name }} sur {{ entreprise.name }} : photos, description, équipements et conditions de réservation.
+{% endblock %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"

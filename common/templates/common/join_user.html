@@ -1,84 +1,104 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Réserver un logement local – {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Réservez facilement un logement de qualité à Nice et sur la Côte d’Azur avec {{ entreprise.name }} : sélection locale, frais réduits, paiement sécurisé, accompagnement humain et expérience authentique.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet" href="{% static 'common/css/join_owner.css' %}">
 {% endblock %}
 {% block content %}
-<div class="join-owner-wrapper">
-  <!-- Hero Section -->
-  <section class="hero-section text-white text-center d-flex align-items-center justify-content-center"
-           style="background: linear-gradient(to right, rgba(34, 34, 34, 0.85), rgba(0, 0, 0, 0.65)), url('{% static 'common/img/join_user.jpg' %}') center/cover no-repeat;
-                  height: 60vh">
-    <div class="container">
-      <h1 class="display-4 fw-bold mb-4">Réservez en toute confiance, vivez une expérience locale authentique</h1>
-      <p class="lead mb-4">Accédez à des logements de qualité, proposés par des hôtes professionnels et engagés près de chez vous.</p>
-      <a href="{% url 'logement:logement_search' %}" class="btn btn-lg btn-primary px-4 py-2 shadow">Trouver un logement</a>
-    </div>
-  </section>
-
-  <!-- Pourquoi réserver ici -->
-  <section class="py-5 bg-light">
-    <div class="container">
-      <div class="text-center mb-5">
-        <h2 class="fw-bold display-5">Pourquoi passer par notre plateforme&nbsp;?</h2>
-        <p class="lead text-muted">Un modèle local, des frais réduits, un accompagnement humain et des logements de confiance.</p>
+  <div class="join-owner-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section text-white text-center d-flex align-items-center justify-content-center"
+             style="background: linear-gradient(to right, rgba(34, 34, 34, 0.85), rgba(0, 0, 0, 0.65)), url('{% static 'common/img/join_user.jpg' %}') center/cover no-repeat;
+                    height: 60vh">
+      <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Réservez en toute confiance, vivez une expérience locale authentique</h1>
+        <p class="lead mb-4">
+          Accédez à des logements de qualité, proposés par des hôtes professionnels et engagés près de chez vous.
+        </p>
+        <a href="{% url 'logement:logement_search' %}"
+           class="btn btn-lg btn-primary px-4 py-2 shadow">Trouver un logement</a>
       </div>
-      <div class="row g-5">
-        <div class="col-lg-6">
-          <h3 class="fw-semibold mb-3">Logements sélectionnés localement</h3>
-          <p class="text-muted">Tous les logements sont gérés par des conciergeries ou propriétaires partenaires rigoureusement sélectionnés. Pas d'intermédiaire distant, mais des professionnels locaux proches de vous.</p>
-
-          <h3 class="fw-semibold mt-5 mb-3">Moins de frais, plus de valeur</h3>
-          <p class="text-muted">Nous ne prélevons pas de commission sur chaque nuitée. Notre modèle est plus juste et plus transparent, avec des frais réduits au strict minimum.</p>
-
-          <h3 class="fw-semibold mt-5 mb-3">Réservation fluide et sécurisée</h3>
-          <p class="text-muted">Réservez en quelques clics depuis votre ordinateur ou mobile. Toutes les disponibilités sont à jour et les paiements sont gérés via Stripe.</p>
+    </section>
+    <!-- Pourquoi réserver ici -->
+    <section class="py-5 bg-light">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold display-5">Pourquoi passer par notre plateforme&nbsp;?</h2>
+          <p class="lead text-muted">
+            Un modèle local, des frais réduits, un accompagnement humain et des logements de confiance.
+          </p>
         </div>
-        <div class="col-lg-6">
-          <h3 class="fw-semibold mb-3">Expérience locale authentique</h3>
-          <p class="text-muted">Nos hôtes partagent leur connaissance du territoire, leurs recommandations, et s’investissent personnellement dans l’accueil.</p>
-
-          <h3 class="fw-semibold mt-5 mb-3">Support réactif et humain</h3>
-          <p class="text-muted">Nous sommes une petite équipe à taille humaine, disponible pour vous aider en cas de besoin. Pas de robot, pas de décalage horaire&nbsp;: un vrai service de proximité.</p>
-
-          <h3 class="fw-semibold mt-5 mb-3">Confiance et transparence</h3>
-          <p class="text-muted">Chaque réservation est traçable, chaque interlocuteur est identifié, et nos CGU sont claires. Vous savez toujours avec qui vous interagissez.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Engagements -->
-  <section class="py-5 bg-white border-top">
-    <div class="container">
-      <div class="text-center mb-5">
-        <h2 class="fw-bold display-5">Nos engagements envers vous</h2>
-        <p class="lead text-muted">Votre confort, votre sécurité et votre satisfaction sont notre priorité.</p>
-      </div>
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="p-4 shadow-sm rounded bg-light h-100">
-            <h5 class="fw-bold">Qualité vérifiée</h5>
-            <p class="text-muted">Les logements sont inspectés, équipés et suivis régulièrement par nos partenaires locaux.</p>
+        <div class="row g-5">
+          <div class="col-lg-6">
+            <h3 class="fw-semibold mb-3">Logements sélectionnés localement</h3>
+            <p class="text-muted">
+              Tous les logements sont gérés par des conciergeries ou propriétaires partenaires rigoureusement sélectionnés. Pas d'intermédiaire distant, mais des professionnels locaux proches de vous.
+            </p>
+            <h3 class="fw-semibold mt-5 mb-3">Moins de frais, plus de valeur</h3>
+            <p class="text-muted">
+              Nous ne prélevons pas de commission sur chaque nuitée. Notre modèle est plus juste et plus transparent, avec des frais réduits au strict minimum.
+            </p>
+            <h3 class="fw-semibold mt-5 mb-3">Réservation fluide et sécurisée</h3>
+            <p class="text-muted">
+              Réservez en quelques clics depuis votre ordinateur ou mobile. Toutes les disponibilités sont à jour et les paiements sont gérés via Stripe.
+            </p>
           </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-4 shadow-sm rounded bg-light h-100">
-            <h5 class="fw-bold">Accompagnement personnalisé</h5>
-            <p class="text-muted">Nos hôtes vous accueillent et vous accompagnent tout au long de votre séjour, avec attention et réactivité.</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-4 shadow-sm rounded bg-light h-100">
-            <h5 class="fw-bold">Séjour sécurisé</h5>
-            <p class="text-muted">Paiement protégé, assurance, caution gérée automatiquement&nbsp;: tout est prévu pour une expérience sereine.</p>
+          <div class="col-lg-6">
+            <h3 class="fw-semibold mb-3">Expérience locale authentique</h3>
+            <p class="text-muted">
+              Nos hôtes partagent leur connaissance du territoire, leurs recommandations, et s’investissent personnellement dans l’accueil.
+            </p>
+            <h3 class="fw-semibold mt-5 mb-3">Support réactif et humain</h3>
+            <p class="text-muted">
+              Nous sommes une petite équipe à taille humaine, disponible pour vous aider en cas de besoin. Pas de robot, pas de décalage horaire&nbsp;: un vrai service de proximité.
+            </p>
+            <h3 class="fw-semibold mt-5 mb-3">Confiance et transparence</h3>
+            <p class="text-muted">
+              Chaque réservation est traçable, chaque interlocuteur est identifié, et nos CGU sont claires. Vous savez toujours avec qui vous interagissez.
+            </p>
           </div>
         </div>
       </div>
-      <div class="text-center mt-5">
-        <a href="{% url 'logement:logement_search' %}" class="btn btn-lg btn-primary px-5 py-3 shadow">Explorer les logements disponibles</a>
+    </section>
+    <!-- Engagements -->
+    <section class="py-5 bg-white border-top">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold display-5">Nos engagements envers vous</h2>
+          <p class="lead text-muted">Votre confort, votre sécurité et votre satisfaction sont notre priorité.</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded bg-light h-100">
+              <h5 class="fw-bold">Qualité vérifiée</h5>
+              <p class="text-muted">Les logements sont inspectés, équipés et suivis régulièrement par nos partenaires locaux.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded bg-light h-100">
+              <h5 class="fw-bold">Accompagnement personnalisé</h5>
+              <p class="text-muted">
+                Nos hôtes vous accueillent et vous accompagnent tout au long de votre séjour, avec attention et réactivité.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 shadow-sm rounded bg-light h-100">
+              <h5 class="fw-bold">Séjour sécurisé</h5>
+              <p class="text-muted">
+                Paiement protégé, assurance, caution gérée automatiquement&nbsp;: tout est prévu pour une expérience sereine.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-5">
+          <a href="{% url 'logement:logement_search' %}"
+             class="btn btn-lg btn-primary px-5 py-3 shadow">Explorer les logements disponibles</a>
+        </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 {% endblock %}

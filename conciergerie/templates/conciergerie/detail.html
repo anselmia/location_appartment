@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}{{ conciergerie.name }} – Détail conciergerie | {{ entreprise.name }}{% endblock %}
+{% block meta_description %}
+  Découvrez la conciergerie « {{ conciergerie.name }} » de {{ entreprise.name }} : coordonnées, informations légales, représentant, contact et statut pour la gestion de services à Nice et sur la Côte d’Azur.
+{% endblock %}
 {% block extrahead %}
   <link rel="stylesheet"
         href="{% static 'conciergerie/css/conciergerie_detail.css' %}">
@@ -17,7 +21,7 @@
         {% endif %}
         <div class="{% if conciergerie.logo %}col-md-7{% else %}col-12{% endif %}">
           <div class="card-body p-4">
-            <h2 class="card-title mb-2">{{ conciergerie.name }}</h2>
+            <h1 class="card-title mb-2">{{ conciergerie.name }}</h1>
             {% if conciergerie.description %}<p class="text-muted">{{ conciergerie.description }}</p>{% endif %}
             <hr>
             <div class="row g-3 mb-3">
