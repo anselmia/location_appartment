@@ -114,15 +114,6 @@ h2 {
     transition: all 0.2s;
 }
 
-.page-item.active a {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.page-item a:hover {
-    background: var(--primary-light);
-    color: white;
-}
 
 /* === Responsive Adjustments === */
 @media (max-width: 767.98px) {

@@ -720,7 +720,7 @@ ul.list-unstyled li .ml-3 {
 
 .page-item.active span,
 .page-item.active a {
-  background: var(--primary-color);
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
   color: #fff !important;
   border-color: var(--primary-light);
   font-weight: bold;

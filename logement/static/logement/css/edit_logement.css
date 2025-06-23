@@ -40,12 +40,13 @@
 }
 
 .admin-logement-edit .nav-pills .nav-link.active {
-  background-color: var(--primary-color);
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
   color: #fff;
 }
 
 .admin-logement-edit .nav-pills .nav-link:hover:not(.active) {
-  background-color: var(--background-highlight);
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  color: #fff;
 }
 
 .admin-logement-edit .form-field {
@@ -187,14 +188,7 @@
   font-weight: 500;
   transition: background 0.2s, color 0.2s;
 }
-.conciergerie-block .btn-conciergerie-primary {
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-}
-.conciergerie-block .btn-conciergerie-primary:hover {
-  background: var(--primary-light);
-}
+
 .conciergerie-block .btn-conciergerie-danger {
   background: #fff0f0;
   color: #e74c3c;
