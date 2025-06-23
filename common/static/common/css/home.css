@@ -124,6 +124,21 @@ section a:hover {
   transform: translateY(-2px) scale(1.03);
 }
 
+.hero-cta-group {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.cta-owner {
+  background: linear-gradient(90deg, #2b3d55 0%, #4a6a97 100%);
+  color: #fff !important;
+}
+.cta-owner:hover {
+  background: linear-gradient(90deg, #23344a 0%, #3d5779 100%);
+}
+
 .btn-show-more {
   display: inline-block;
   padding: 0.6rem 1.2rem;
@@ -321,7 +336,7 @@ section a:hover {
   background: linear-gradient(120deg, #fff8f0 60%, #f8f5f2 100%);
 }
 .lux-section-inner {
-  max-width: 1100px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -393,6 +408,7 @@ section a:hover {
   letter-spacing: 0.01em;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  text-align: center;
 }
 .luxury-divider {
   width: 60px;
@@ -527,6 +543,7 @@ section a:hover {
   transition: border 0.2s;
   box-shadow: none;
 }
+
 .contact-form input:focus,
 .contact-form textarea:focus {
   border-color: #d4af7f;
@@ -549,5 +566,112 @@ section a:hover {
   }
   .overlay p {
     font-size: 1.1rem;
+  }
+  .hero-cta-group {
+    flex-direction: column;
+    gap: 1rem;
+  }
+    .commitments-section img,
+  .lux-section .img-fluid,
+  .lux-section img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+  .commitments-section .luxury-card,
+  .lux-section .luxury-card {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+}
+}
+@media (max-width: 600px) {
+  .btn-show-more {
+    display: block;
+    width: 100%;
+    margin: 1.5rem 0 0 0;
+    font-size: 1.1rem;
+    padding: 1rem 0;
+  }
+  .logements-section {
+    padding: 1.5rem 0.3rem 1.5rem 0.3rem;
+  }
+}
+
+.logement-img-wrapper {
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logement-img-wrapper img,
+.logement-img-wrapper picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.promo-banner-launch {
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  position: relative;
+  background: linear-gradient(90deg, #ffe9c0 0%, #d4af7f 100%);
+  color: #2b3d55;
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 1rem 0.5rem 1rem 0.5rem;
+  letter-spacing: 0.02em;
+  z-index: 20;
+  box-shadow: 0 2px 12px rgba(191,166,107,0.10);
+  border-radius: 0 0 1.2rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.promo-banner-launch .promo-badge {
+  background: #bfa66b;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.35em 1em;
+  font-size: 1rem;
+  margin-right: 0.7em;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(191,166,107,0.13);
+}
+
+.promo-banner-launch .promo-text {
+  font-weight: 400;
+  font-size: 1.05rem;
+  margin-left: 0.7em;
+}
+
+@media (max-width: 600px) {
+  .promo-banner-launch {
+    font-size: 1rem;
+    padding: 0.7rem 0.2rem;
+    border-radius: 0 0 0.7rem 0.7rem;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .promo-banner-launch .promo-badge,
+  .promo-banner-launch .promo-text {
+    margin: 0;
+    padding: 0.25em 0.7em;
+    font-size: 0.95rem;
   }
 }

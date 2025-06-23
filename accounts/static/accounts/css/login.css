@@ -66,8 +66,6 @@
 
 .auth-form button {
   width: 100%;
-  padding: 10px;
-  background: #2b3d55;
   color: white;
   border: none;
   border-radius: 6px;
@@ -76,21 +74,14 @@
   transition: background 0.3s;
 }
 
-.auth-form button:hover {
-  background: #1a5fd1;
-}
-
 .register-btn {
     display: inline-block;
-    margin-top: 10px;
-    color: #2b3d55;
     font-weight: 500;
     text-decoration: underline;
     transition: color 0.2s ease;
 }
 
 .register-btn:hover {
-    color: #1a5fd1;
     text-decoration: none;
 }
 
@@ -109,6 +100,10 @@
 
 .btn-submit:hover {
     background-color: #1a5fd1;
+}
+
+.main-content {
+    display: block;
 }
 
 .alert-danger {
