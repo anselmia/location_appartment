@@ -274,18 +274,11 @@ li {
 
 .filter-button {
   margin-top: 1rem;
-  background-color: var(--primary-color, #bfa66b);
-  color: white;
   border: none;
   border-radius: 999px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
   text-decoration: none;
-}
-
-.filter-button:hover {
-  background-color: #d4af7f;
 }
 
 .reset-button {
@@ -355,9 +348,6 @@ li {
 }
 
 .search-btn {
-  background: var(--primary-color, #bfa66b);
-  color: white;
-  border: none;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -392,9 +382,9 @@ li {
 
 .view-btn.active,
 .view-btn:hover {
-  background: var(--primary-color);
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--primary-light);
 }
 
 #logement-map {

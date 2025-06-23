@@ -1,16 +1,25 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-    Location {{ entreprise.name }} – Appartement à louer sur la Côte d'Azure
+    Location {{ entreprise.name }} – Appartement à louer sur la Côte d'Azur
 {% endblock title %}
 {% block meta_description %}
     Plateforme locale pour réserver un appartement ou une chambre à Nice et sur la Côte d’Azur. Tarifs directs, logements de qualité, service humain et réactif.
 {% endblock %}
 {% block extrahead %}
     {{ block.super }}
+    <!-- Preload and preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap"
+          as="style"
+          onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{% static 'common/css/home.css' %}">
     <link rel="stylesheet"
-          href="{% static 'logement/css/logements_grid.css' %}">
+          href="{% static 'logement/css/logements_grid.css' %}"
+          media="print"
+          onload="this.media='all'">
 {% endblock %}
 {% block content %}
     <div class="home-page">
@@ -24,10 +33,7 @@
                      height="600"
                      class="hero-img"
                      loading="eager"
-                     fetchpriority="high"
-                     style="object-fit:cover;
-                            width:100%;
-                            height:600px">
+                     fetchpriority="high">
             </picture>
             <div class="overlay">
                 <h1 class="animate-fade-in">{{ entreprise.name }}</h1>
@@ -37,118 +43,140 @@
         </header>
         <section class="container py-5">
             <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold mb-3">Louer en toute sérénité avec {{ entreprise.name }}</h2>
+                <h2 class="display-5 fw-bold mb-3 section-title-luxury">Louer en toute sérénité avec {{ entreprise.name }}</h2>
+                <div class="luxury-divider"></div>
                 <p class="text-muted lead mx-auto" style="max-width: 700px;">
                     Nous connectons voyageurs et propriétaires (ou conciergeries) pour offrir des <strong>séjours de qualité</strong>, gérés avec sérieux et transparence.
                 </p>
             </div>
             <div class="row g-5">
                 <div class="col-md-6">
-                    <h3 class="h5">
-                        <i class="bi bi-cash-coin me-2"></i>Tarifs maîtrisés, sans surprises
-                    </h3>
-                    <p>
-                        Grâce à notre modèle direct entre particuliers ou conciergeries, vous bénéficiez de <strong>tarifs compétitifs</strong> tout en profitant d’un logement de qualité. Pas de frais cachés.
-                    </p>
+                    <div class="luxury-card">
+                        <h3 class="h5 mb-3">
+                            <i class="bi bi-cash-coin me-2 text-gold"></i>Tarifs maîtrisés, sans surprises
+                        </h3>
+                        <p>
+                            Grâce à notre modèle direct entre particuliers ou conciergeries, vous bénéficiez de <strong>tarifs compétitifs</strong> tout en profitant d’un logement de qualité. Pas de frais cachés.
+                        </p>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <h3 class="h5">
-                        <i class="bi bi-stars me-2"></i>Un accompagnement humain
-                    </h3>
-                    <p>
-                        Propriétaires engagés ou conciergeries expérimentées, nous veillons à ce que chaque voyageur reçoive un <strong>service attentionné</strong>.
-                    </p>
+                    <div class="luxury-card">
+                        <h3 class="h5 mb-3">
+                            <i class="bi bi-stars me-2 text-gold"></i>Un accompagnement humain
+                        </h3>
+                        <p>
+                            Propriétaires engagés ou conciergeries expérimentées, nous veillons à ce que chaque voyageur reçoive un <strong>service attentionné</strong>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
-        <section class="container commitments-section text-center">
-            <h2 class="mb-5">Nos engagements</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-                <div class="col">
-                    <div class="p-3 border rounded-3 shadow-sm h-100">
-                        <img src="{% static 'logement/img/price_commitment.jpg' %}"
-                             class="img-fluid rounded mb-3"
-                             alt="Tarifs justes"
-                             data-bs-toggle="tooltip"
-                             data-bs-placement="top"
-                             data-bs-html="true"
-                             title='<div class="engagement-tooltip"> <b>Pourquoi choisir {{ entreprise.name }} ?</b> <div class="et-body"> Nous ne prélevons que <b>{{ payment_fee_variable }}&nbsp;%</b> de commission, contre 15-20&nbsp;% ailleurs.<br> <ul class="et-list"> <li><b>Tarifs plus accessibles</b> pour les voyageurs</li> <li><b>Revenus plus élevés</b> pour les hôtes</li> <li>Relation directe et transparente</li> <li>Économie plus équilibrée et durable</li> </ul> </div> <div class="et-footer"> <em>Voyager autrement, c’est choisir un modèle plus humain et équitable.</em> </div> </div>'>
-                        <i class="bi bi-tag-fill fs-3 text-primary mb-2"></i>
-                        <h5 class="fw-bold">Tarifs justes</h5>
-                        <p class="text-muted small">Des prix flexibles et compétitifs via nos partenaires de confiance.</p>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="p-3 border rounded-3 shadow-sm h-100">
-                        <img src="{% static 'logement/img/proximity_commitment.jpg' %}"
-                             class="img-fluid rounded mb-3"
-                             alt="Service réactif"
-                             data-bs-toggle="tooltip"
-                             data-bs-placement="top"
-                             data-bs-html="true"
-                             title="<div class='engagement-tooltip'> <h6 class='mb-2'>hello !</h6> <p class='mb-0'>Here is a <b>longer</b> and <span style='color:var(--primary)'>formatted</span> description for this engagement. You can add <i>lists</i>, <br> line breaks, and more.</p> </div>">
-                            <i class="bi bi-headset fs-3 text-primary mb-2"></i>
-                            <h5 class="fw-bold">Service réactif</h5>
-                            <p class="text-muted small">Une assistance personnalisée avant, pendant et après votre séjour.</p>
+        <!-- ENGAGEMENTS -->
+        <section class="lux-section alt-bg fade-in-up">
+            <div class="container">
+                <div class="lux-section-inner">
+                    <h2 class="mb-5 section-title-luxury">Nos engagements</h2>
+                    <div class="luxury-divider"></div>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                        <div class="col">
+                            <div class="p-3 border rounded-3 shadow-sm h-100 luxury-card">
+                                <picture>
+                                    <source srcset="{% static 'common/img/price_commitment.webp' %}"
+                                            type="image/webp">
+                                    <img src="{% static 'common/img/price_commitment.jpg' %}"
+                                         class="img-fluid rounded mb-3"
+                                         alt="Tarifs justes"
+                                         loading="lazy"
+                                         width="400"
+                                         height="250">
+                                </picture>
+                                <i class="bi bi-tag-fill fs-3 text-gold mb-2"></i>
+                                <h5 class="fw-bold">Tarifs justes</h5>
+                                <p class="text-muted small">Des prix flexibles et compétitifs via nos partenaires de confiance.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3 border rounded-3 shadow-sm h-100">
-                            <img src="{% static 'logement/img/quality_commitment.jpg' %}"
-                                 class="img-fluid rounded mb-3"
-                                 alt="Qualité"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="top"
-                                 data-bs-html="true"
-                                 title="<div class='engagement-tooltip'> <h6 class='mb-2'>Engagement Title</h6> <p class='mb-0'>Here is a <b>longer</b> and <span style='color:var(--primary)'>formatted</span> description for this engagement. You can add <i>lists</i>, <br> line breaks, and more.</p> </div>">
-                                <i class="bi bi-house-door fs-3 text-primary mb-2"></i>
+                        <div class="col">
+                            <div class="p-3 border rounded-3 shadow-sm h-100 luxury-card">
+                                <picture>
+                                    <source srcset="{% static 'common/img/proximity_commitment.webp' %}"
+                                            type="image/webp">
+                                    <img src="{% static 'common/img/proximity_commitment.jpg' %}"
+                                         class="img-fluid rounded mb-3"
+                                         alt="Service réactif"
+                                         loading="lazy"
+                                         width="400"
+                                         height="250">
+                                </picture>
+                                <i class="bi bi-headset fs-3 text-gold mb-2"></i>
+                                <h5 class="fw-bold">Service réactif</h5>
+                                <p class="text-muted small">Une assistance personnalisée avant, pendant et après votre séjour.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-3 border rounded-3 shadow-sm h-100 luxury-card">
+                                <picture>
+                                    <source srcset="{% static 'common/img/quality_commitment.webp' %}"
+                                            type="image/webp">
+                                    <img src="{% static 'common/img/quality_commitment.jpg' %}"
+                                         class="img-fluid rounded mb-3"
+                                         alt="Qualité de service"
+                                         loading="lazy"
+                                         width="400"
+                                         height="250">
+                                </picture>
+                                <i class="bi bi-house-door fs-3 text-gold mb-2"></i>
                                 <h5 class="fw-bold">Logements de qualité</h5>
                                 <p class="text-muted small">Bien localisés, propres, bien équipés : standards d’hospitalité moderne.</p>
                             </div>
                         </div>
                         <div class="col">
-                            <div class="p-3 border rounded-3 shadow-sm h-100">
-                                <img src="{% static 'logement/img/booking_commitment.jpg' %}"
-                                     class="img-fluid rounded mb-3"
-                                     alt="Réservation"
-                                     data-bs-toggle="tooltip"
-                                     data-bs-placement="top"
-                                     data-bs-html="true"
-                                     title="<div class='engagement-tooltip'> <b>Réservez simplement avec {{ entreprise.name }}</b> <div class='et-body'> Plus besoin de passer par des plateformes compliquées ou de payer des frais inutiles.<br> Sur <b>bnbazure.fr</b>, réservez votre hébergement en quelques clics seulement.<br><br> <ul class='et-list'> <li><b>Procédure intuitive</b> et rapide</li> <li><b>100&nbsp;% sécurisée</b> à chaque étape</li> <li><b>Interface claire</b> avec toutes les infos utiles</li> <li>Assistance disponible en cas de doute</li> </ul> </div> <div class='et-footer'> <em>Parce que voyager doit rester simple, fluide et rassurant.</em> </div> </div>">
-                                <i class="bi bi-lightning-charge-fill fs-3 text-primary mb-2"></i>
+                            <div class="p-3 border rounded-3 shadow-sm h-100 luxury-card">
+                                <picture>
+                                    <source srcset="{% static 'common/img/booking_commitment.webp' %}"
+                                            type="image/webp">
+                                    <img src="{% static 'common/img/booking_commitment.jpg' %}"
+                                         class="img-fluid rounded mb-3"
+                                         alt="Qualité de Réservation"
+                                         loading="lazy"
+                                         width="400"
+                                         height="250">
+                                </picture>
+                                <i class="bi bi-lightning-charge-fill fs-3 text-gold mb-2"></i>
                                 <h5 class="fw-bold">Réservation simple</h5>
                                 <p class="text-muted small">Réservez en quelques clics et partez l’esprit tranquille.</p>
                             </div>
                         </div>
                     </div>
-                </section>
-                <div class="wave-separator">
-                    <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-                        <path fill="#f8f5f2" fill-opacity="1" d="M0,160L1440,320L1440,0L0,0Z"></path>
-                    </svg>
                 </div>
-                <section class="logements-section fade-in-up"
-                         id="logements"
-                         style="background-image: url('{% static "logement/img/logement.jpg" %}')">
-                    <h2>Nos logements disponibles</h2>
+            </div>
+        </section>
+        <!-- LOGEMENTS -->
+        <section class="lux-section logements-section fade-in-up"
+                 id="logements"
+                 style="background-image: url('{% static "logement/img/logement.jpg" %}')">
+            <div class="container">
+                <div class="lux-section-inner">
+                    <h2 class="section-title-luxury">Nos logements disponibles</h2>
+                    <div class="luxury-divider"></div>
                     {% if logements %}
                         <div class="logements-grid">
                             {% for logement in logements|slice:":6" %}
-                                <div class="card logement-card fade-in-up">
+                                <div class="card logement-card fade-in-up luxury-card">
                                     <a href="{% url 'logement:view_logement' logement.id %}">
                                         <div class="logement-img-wrapper">
                                             <picture>
                                                 <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
                                                 <img src="{{ logement.photos.first.image.url }}"
                                                      loading="lazy"
+                                                     width="400"
+                                                     height="250"
                                                      alt="{{ logement.name }}">
                                             </picture>
-                                            <!-- Top-left badge -->
                                             <div class="logement-badge">
                                                 <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
                                                 {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
                                             </div>
-                                            <!-- Bottom-right icons -->
                                             <div class="logement-icons-overlay">
                                                 {% for equip in logement.equipment.all %}
                                                     {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
@@ -166,7 +194,6 @@
                                                     <i class="fas fa-smoking-ban" title="Non fumeur"></i>
                                                 {% endif %}
                                             </div>
-                                            <!-- Location -->
                                             <div class="logement-location">
                                                 <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
                                             </div>
@@ -189,97 +216,81 @@
                     {% else %}
                         <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
                     {% endif %}
-                    <div class="text-center " style="margin-top: 2rem;">
+                    <div class="text-center" style="margin-top: 2rem;">
                         <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
                     </div>
-                </section>
-                <!-- {% if config.services %}
-            <section class="services-section fade-in-up">
-                <h2>Nos Services</h2>
-                <div class="services-grid">
-                    {% for service in config.services.all %}
-                        <div class="service-card fade-in-up">
-                            {% if service.background_image %}
-                                <div class="img-wrapper">
-                                    <img src="{{ service.background_image.url }}" alt="{{ service.title }}" class="img-fit" />
-                                </div>
-                            {% else %}
-                                <div class="service-img" style="background-color: #f3f4f6;"></div>
-                            {% endif %}
-                            <div class="card-body">
-                                <h3>{{ service.title }}</h3>
-                                <p>{{ service.description }}</p>
-                            </div>
-                        </div>
-                    {% endfor %}
                 </div>
-            </section>
-        {% endif %}
-        -->
-                {% if config.testimonials %}
-                    <section class="testimonials-section fade-in-up">
-                        <h2>Ce que nos clients disent</h2>
-                        <div class="testimonials-slider" id="testimonialSlider">
-                            {% for avis in config.testimonials.all %}
-                                <div class="testimonial-card fade-in-up">
-                                    <blockquote>
-                                        “{{ avis.content }}”
-                                    </blockquote>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </section>
-                {% endif %}
-                <section class="py-5 join-us-section">
-                    <div class="container">
-                        <div class="row align-items-center join-us-wrapper">
-                            <div class="col-md-6 join-text">
-                                <h2>Rejoignez une plateforme locale engagée</h2>
-                                <p>
-                                    Vous êtes propriétaire ou conciergerie ? Offrez à vos biens la visibilité qu’ils méritent tout en gardant le contrôle.
-                                </p>
-                                <p>
-                                    Contrairement aux grandes plateformes impersonnelles, nous valorisons la proximité, l’humain, et une relation de confiance.
-                                </p>
-                                <a href="{% url 'accounts:contact' %}" class="btn btn-primary mt-3 mb-3">Devenir partenaire</a>
-                            </div>
-                            <div class="col-md-6 text-center">
-                                <img src="{% static 'logement/img/local_support.jpg' %}"
-                                     alt="Plateforme locale"
-                                     class="img-fluid rounded shadow">
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <section class="contact-section fade-in-up" id="contact">
-                    <div class="contact-wrapper">
-                        <div class="contact-intro">
-                            <h2>Contactez-nous</h2>
-                            <p>Une question, un besoin particulier ou une demande de réservation ? Nous sommes à votre écoute.</p>
-                        </div>
-                        <div class="contact-card">
-                            <form method="post" action="" class="contact-form">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    {{ contact_form.name.label_tag }}
-                                    {{ contact_form.name }}
-                                </div>
-                                <input type="hidden" name="subject" value="Contact depuis le site">
-                                <div class="form-group">
-                                    {{ contact_form.email.label_tag }}
-                                    {{ contact_form.email }}
-                                </div>
-                                <div class="form-group">
-                                    {{ contact_form.message.label_tag }}
-                                    {{ contact_form.message }}
-                                </div>
-                                <button type="submit" class="btn-submit">Envoyer le message</button>
-                            </form>
-                        </div>
-                    </div>
-                </section>
             </div>
-        {% endblock %}
-        {% block extra_js %}
-            <script src="{% static 'common/js/home.js' %}"></script>
-        {% endblock %}
+        </section>
+        <!-- JOIN US -->
+        <section class="lux-section join-us-section fade-in-up">
+            <div class="container">
+                <div class="lux-section-inner">
+                    <div class="row align-items-center join-us-wrapper">
+                        <div class="col-md-6 join-text">
+                            <h2 class="section-title-luxury">Rejoignez une plateforme locale engagée</h2>
+                            <div class="luxury-divider left"></div>
+                            <p>
+                                Vous êtes propriétaire ou conciergerie ? Offrez à vos biens la visibilité qu’ils méritent tout en gardant le contrôle.
+                            </p>
+                            <p>
+                                Contrairement aux grandes plateformes impersonnelles, nous valorisons la proximité, l’humain, et une relation de confiance.
+                            </p>
+                            <a href="{% url 'accounts:contact' %}"
+                               class="btn btn-primary mt-3 mb-3 btn-luxury">Devenir partenaire</a>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <img src="{% static 'logement/img/local_support.jpg' %}"
+                                 alt="Plateforme locale"
+                                 class="img-fluid rounded shadow"
+                                 width="500"
+                                 height="350"
+                                 loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- CONTACT -->
+        <section class="lux-section contact-section fade-in-up" id="contact">
+            <div class="container">
+                <div class="lux-section-inner contact-wrapper-luxury">
+                    <div class="contact-intro">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope-paper-heart"></i>
+                        </div>
+                        <h2>Contactez-nous</h2>
+                        <div class="luxury-divider"></div>
+                        <p>
+                            Une question, un besoin particulier ou une demande de réservation ?
+                            <br>
+                            Nous sommes à votre écoute.
+                        </p>
+                    </div>
+                    <div class="contact-card-luxury">
+                        <form method="post" action="" class="contact-form">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                {{ contact_form.name.label_tag }}
+                                {{ contact_form.name }}
+                            </div>
+                            <input type="hidden" name="subject" value="Contact depuis le site">
+                            <div class="form-group">
+                                {{ contact_form.email.label_tag }}
+                                {{ contact_form.email }}
+                            </div>
+                            <div class="form-group">
+                                {{ contact_form.message.label_tag }}
+                                {{ contact_form.message }}
+                            </div>
+                            <button type="submit" class="btn-luxury">Envoyer le message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'common/js/home.js' %}" defer></script>
+{% endblock %}

@@ -28,16 +28,6 @@ li {
   color: var(--text-color);
 }
 
-section h2::after {
-  content: "";
-  display: block;
-  margin: 0.5rem auto 0;
-  width: 60px;
-  height: 3px;
-  background-color: var(--primary-color, #bfa66b);
-  border-radius: 4px;
-}
-
 section a:hover {
   color: var(--secondary-color);
 }
@@ -61,6 +51,7 @@ section a:hover {
   background: #d4af7f;
 }
 
+/* --- Modern, immersive, luxury hero banner --- */
 .hero-banner {
   position: relative;
   overflow: hidden;
@@ -105,24 +96,32 @@ section a:hover {
 .overlay p {
   font-size: 1.5rem;
   color: white;
-  text-shadow: 0 1px 2px var(--primary-color), 0 -1px 2px var(--primary-color), 1px 0 2px var(--primary-color), -1px 0 2px var(--primary-color);
+  text-shadow: 0 1px 2px var(--primary-color), 0 -1px 2px var(--primary-color),
+    1px 0 2px var(--primary-color), -1px 0 2px var(--primary-color);
 }
 
 .cta-button {
-  margin-top: 1rem;
-  background-color: var(--primary-color, #ff385c);
-  color: white;
-  padding: 0.7rem 1.5rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  color: #222 !important;
+  font-weight: 700;
   border: none;
   border-radius: 999px;
-  font-size: 1rem;
+  padding: 1.1rem 2.7rem;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 24px rgba(191, 166, 107, 0.13);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: background 0.3s ease;
   text-decoration: none;
+  display: inline-block;
+  text-shadow: none;
 }
-
 .cta-button:hover {
-  background-color: #d4af7f;
+  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
+  color: #fff !important;
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.18);
+  transform: translateY(-2px) scale(1.03);
 }
 
 .btn-show-more {
@@ -146,6 +145,40 @@ section a:hover {
   background: linear-gradient(to top, #fff8f0, #f8f5f2);
   text-align: center;
   margin-bottom: 20px;
+}
+
+/* Commitments section cards */
+.commitments-section .col .p-3 {
+  background: #fff;
+  transition: box-shadow 0.2s;
+}
+.commitments-section .col .p-3:hover {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+.commitments-section img {
+  display: block;
+  margin: 0 auto 1rem auto;
+  max-width: 100%;
+  height: auto;
+}
+.cta-button,
+.btn-show-more {
+  background: var(--primary-color, #ff385c);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  display: inline-block;
+}
+.cta-button:hover,
+.btn-show-more:hover {
+  background: #d4af7f;
+  box-shadow: 0 0 10px rgba(191, 166, 107, 0.6);
+  color: #fff;
 }
 
 .engagement-tooltip {
@@ -176,20 +209,345 @@ section a:hover {
   color: #555;
 }
 
+/* --- Luxury Contact Section --- */
+.contact-section {
+  background: linear-gradient(135deg, #f8f5f2 60%, #fff8f0 100%);
+  padding: 0;
+}
+
+.contact-wrapper-luxury {
+  max-width: 8000px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2.5rem 1.5rem;
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.13),
+    0 1.5px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  top: -2rem;
+}
+
+.contact-intro {
+  text-align: center;
+  margin-bottom: 2.2rem;
+}
+
+.contact-icon {
+  font-size: 2.7rem;
+  color: #d4af7f;
+  margin-bottom: 0.5rem;
+}
+
+.luxury-divider {
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #d4af7f 0%, #fff8f0 100%);
+  border-radius: 2px;
+  margin: 0.7rem auto 1.2rem auto;
+}
+
+.contact-card-luxury {
+  background: #fffdfa;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.09);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+}
+
+.contact-form .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.contact-form label {
+  font-weight: 600;
+  color: #bfa66b;
+  margin-bottom: 0.3rem;
+  display: block;
+  letter-spacing: 0.01em;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  border: 1.5px solid #e6e1d9;
+  border-radius: 0.7rem;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  background: #f9f7f3;
+  color: #222;
+  transition: border 0.2s;
+  box-shadow: none;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: #d4af7f;
+  outline: none;
+  background: #fff;
+}
+
+.btn-luxury {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  color: #222;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 0;
+  font-size: 1.1rem;
+  margin-top: 0.7rem;
+  box-shadow: 0 2px 8px rgba(191, 166, 107, 0.13);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.btn-luxury:hover {
+  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(191, 166, 107, 0.18);
+}
+
+/* Section base */
+.lux-section {
+  padding: 4rem 0 3rem 0;
+  background: linear-gradient(135deg, #f8f5f2 60%, #fff8f0 100%);
+  border-radius: 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.07);
+  transition: background 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+}
+.lux-section.alt-bg {
+  background: linear-gradient(120deg, #fff8f0 60%, #f8f5f2 100%);
+}
+.lux-section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.hero-section {
+  background: linear-gradient(120deg, #fff8f0 80%, #f8f5f2 100%);
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.13),
+    0 1.5px 8px rgba(0, 0, 0, 0.06);
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: 2rem 2rem 0 0;
+}
+
+.hero-banner picture,
+.hero-banner img.hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
+}
+.hero-banner .overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  padding: 8rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 700px;
+}
+.overlay h1 {
+  font-size: 3rem;
+  margin: 0;
+  text-shadow: 0 2px 8px #000;
+  font-family: "Playfair Display", serif;
+}
+.overlay p {
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+}
 @media (max-width: 768px) {
   .hero-banner {
-    min-height: 320px !important;
-    height: 35vh !important;
-    max-height: 500px;
-    padding: 2rem 1rem;
-  }
-  .hero-banner picture,
-  .hero-banner img.hero-img,
-  .hero-banner .overlay {
-    min-height: 320px !important;
+    min-height: 320px;
+    height: 35vh;
     max-height: 500px;
   }
   .hero-banner .overlay {
-    padding: 1.5rem 0.7rem;
+    padding: 2rem 0.7rem;
+    min-height: 320px;
+  }
+  .overlay h1 {
+    font-size: 2rem;
+  }
+  .overlay p {
+    font-size: 1.1rem;
+  }
+}
+.section-title-luxury {
+  font-family: "Playfair Display", serif;
+  color: #bfa66b;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.luxury-divider {
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #d4af7f 0%, #fff8f0 100%);
+  border-radius: 2px;
+  margin: 0.7rem auto 1.2rem auto;
+}
+.luxury-divider.left {
+  margin-left: 0;
+  margin-right: auto;
+}
+.text-gold {
+  color: #bfa66b !important;
+}
+.luxury-card {
+  background: #fffdfa;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.09);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  transition: box-shadow 0.2s;
+}
+.luxury-card:hover {
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.13),
+    0 1.5px 8px rgba(0, 0, 0, 0.06);
+}
+.commitments-section {
+  background: transparent;
+  border-radius: 2rem;
+  margin-bottom: 2.5rem;
+  padding: 0;
+  box-shadow: none;
+}
+.logements-section {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 248, 240, 0.95) 60%,
+    rgba(248, 245, 242, 0.95) 100%
+  );
+  border-radius: 2rem;
+  margin-bottom: 2.5rem;
+  padding: 4rem 2rem 3rem 2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.07);
+  position: relative;
+}
+.logement-card {
+  border: none;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.09);
+  overflow: hidden;
+  background: #fffdfa;
+  transition: box-shadow 0.2s;
+}
+.logement-card:hover {
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.13),
+    0 1.5px 8px rgba(0, 0, 0, 0.06);
+}
+.btn-luxury,
+.cta-button,
+.btn-show-more {
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  color: #222 !important;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.1rem;
+  margin-top: 0.7rem;
+  box-shadow: 0 2px 8px rgba(191, 166, 107, 0.13);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-luxury:hover,
+.cta-button:hover,
+.btn-show-more:hover {
+  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(191, 166, 107, 0.18);
+}
+.contact-section {
+  background: linear-gradient(135deg, #fff8f0 60%, #f8f5f2 100%);
+  margin-bottom: 0;
+  padding-bottom: 4rem;
+}
+.contact-wrapper-luxury {
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2.5rem 1.5rem;
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.13),
+    0 1.5px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  top: -2rem;
+}
+.contact-intro {
+  text-align: center;
+  margin-bottom: 2.2rem;
+}
+.contact-icon {
+  font-size: 2.7rem;
+  color: #d4af7f;
+  margin-bottom: 0.5rem;
+}
+.contact-card-luxury {
+  background: #fffdfa;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.09);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+}
+.contact-form .form-group {
+  margin-bottom: 1.2rem;
+}
+.contact-form label {
+  font-weight: 600;
+  color: #bfa66b;
+  margin-bottom: 0.3rem;
+  display: block;
+  letter-spacing: 0.01em;
+}
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  border: 1.5px solid #e6e1d9;
+  border-radius: 0.7rem;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  background: #f9f7f3;
+  color: #222;
+  transition: border 0.2s;
+  box-shadow: none;
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: #d4af7f;
+  outline: none;
+  background: #fff;
+}
+@media (max-width: 900px) {
+  .hero-banner {
+    min-height: 320px;
+    height: 45vh;
+    max-height: 500px;
+    border-radius: 0 0 1.2rem 1.2rem;
+  }
+  .hero-banner .overlay {
+    padding: 2.2rem 0.7rem 2rem 0.7rem;
+    max-width: 98vw;
+  }
+  .overlay h1 {
+    font-size: 2rem;
+  }
+  .overlay p {
+    font-size: 1.1rem;
   }
 }

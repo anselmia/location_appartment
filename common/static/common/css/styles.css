@@ -14,8 +14,8 @@
   --color-text: #222;
   --color-title: #111;
   --color-border: #ddd;
-  --primary-light: #d8c18b;
-  --secondary-light: #3d5779;
+  --primary-light: #e7d7b0;
+  --secondary-light: #4a6a97;
   --accent-light: #584a43;
 
   --font-serif: "Playfair Display", serif;
@@ -391,22 +391,29 @@ button,
 }
 
 .btn-primary {
-  background-color: var(--primary-color) !important;
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
   color: #fff !important;
   border-color: var(--primary-light) !important;
+  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-light) !important;
+  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%) !important;
+  color: #fff !important;
+  border-color: #bfa66b !important;
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color) !important;
+  background: linear-gradient(90deg, var(--secondary-color) 0%, var(--secondary-light) 100%) !important;
   color: #fff !important;
+  border-color: var(--secondary-light) !important;
+  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s;
 }
 
 .btn-secondary:hover {
-  background-color: var(--secondary-light) !important;
+  background: linear-gradient(90deg, #23344a 0%, #3d5779 100%) !important;
+  color: #fff !important;
+  border-color: #23344a !important;
 }
 
 .btn-danger {

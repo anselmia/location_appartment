@@ -204,14 +204,3 @@
   background-color: #f0f0f0;
   border-color: #aaa;
 }
-
-.btn-book {
-  background-color: var(--primary-color, #bfa66b);
-  color: white;
-  border: 1px solid var(--primary-color, #bfa66b);
-}
-
-.btn-book:hover {
-  background-color: #d4af7f;
-  border-color: #d4af7f;
-}

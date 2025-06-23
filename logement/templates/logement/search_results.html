@@ -88,7 +88,7 @@
       {% if request.GET.is_smoking_allowed %}<input type="hidden" name="is_smoking_allowed" value="1">{% endif %}
       {% if request.GET.is_pets_allowed %}<input type="hidden" name="is_pets_allowed" value="1">{% endif %}
       {% if selected_type %}<input type="hidden" name="type" value="{{ selected_type }}">{% endif %}
-      <button type="submit" class="search-btn">
+      <button type="submit" class="search-btn btn-primary">
         <i class="fas fa-search"></i>
       </button>
     </form>
@@ -187,7 +187,7 @@
                  name="flexibility"
                  value="{{ request.GET.flexibility }}">
           <div class="filter-button-wrapper">
-            <button class="filter-button" type="submit">Filtrer</button>
+            <button class="filter-button btn-primary" type="submit">Filtrer</button>
           </div>
           <div class="filter-reset-wrapper">
             <a href="{% url 'logement:logement_search' %}" class="reset-button">Réinitialiser</a>
