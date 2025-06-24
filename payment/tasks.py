@@ -181,9 +181,9 @@ def check_stripe_integrity():
             )
 
     ##### BOOKING #####
-    problematic = Reservation.objects.filter(status="confirmee").filter(
+    problematic = Reservation.objects.filter(statut="confirmee").filter(
         checkout_amount__isnull=True
-    ) | Reservation.objects.filter(status="confirmee", checkout_amount=0)
+    ) | Reservation.objects.filter(statut="confirmee", checkout_amount=0)
 
     for resa in problematic:
         try:
@@ -345,9 +345,9 @@ def check_stripe_integrity():
             continue
 
     ##### BOOKING #####
-    problematic = ActivityReservation.objects.filter(status="confirmee").filter(
+    problematic = ActivityReservation.objects.filter(statut="confirmee").filter(
         checkout_amount__isnull=True
-    ) | ActivityReservation.objects.filter(status="confirmee", checkout_amount=0)
+    ) | ActivityReservation.objects.filter(statut="confirmee", checkout_amount=0)
 
     for resa in problematic:
         try:
