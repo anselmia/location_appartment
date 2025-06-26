@@ -46,4 +46,19 @@ urlpatterns = [
         views.verify_transfer_view,
         name="verify_transfer",
     ),
+    path(
+        "verify-payment-method/<str:code>/",
+        views.verify_payment_method_view,
+        name="verify_payment_method",
+    ),
+    path(
+        "verify-deposit-payment/<str:code>/",
+        views.verify_deposit_payment_view,
+        name="verify_deposit_payment",
+    ),
+    path(
+        "verify-refund/<str:code>/",
+        views.verify_refund_view,
+        name="verify_refund",
+    )
 ]

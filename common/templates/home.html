@@ -23,7 +23,7 @@
 {% endblock %}
 {% block content %}
     <div class="home-page">
-    <!-- PROMO BANNER -->
+        <!-- PROMO BANNER -->
         <div class="promo-banner-launch text-center">
             <span class="promo-badge">OFFRE DE LANCEMENT</span>
             <strong>0% de commission&nbsp;!</strong>
@@ -46,7 +46,8 @@
                 <p class="animate-fade-in delay">{{ config.devise }}</p>
                 <div class="hero-cta-group">
                     <a href="#logements" class="cta-button animate-slide-up delay-2">Trouvez votre logement</a>
-                    <a href="{% url 'accounts:register' %}" class="cta-button cta-owner">Proposer mon bien</a>
+                    <a href="{% url 'accounts:register' %}?role=proprietaire"
+                       class="cta-button cta-owner">Proposer mon bien</a>
                 </div>
             </div>
         </header>
@@ -240,7 +241,7 @@
                         <p>
                             Contrairement aux grandes plateformes impersonnelles, nous valorisons la proximité, l’humain, et une relation de confiance.
                         </p>
-                        <a href="{% url 'accounts:contact' %}"
+                        <a href="{% url 'accounts:register' %}"
                            class="btn btn-primary mt-3 mb-3 btn-luxury">Devenir partenaire</a>
                     </div>
                     <div class="col-md-6 text-center">

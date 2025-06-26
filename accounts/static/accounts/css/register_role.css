@@ -1,0 +1,120 @@
+/* Utilise les variables globales de common/static/common/css/styles.css */
+
+body {
+  background: var(--bg-color, #f9f9f9);
+  color: var(--text-color, #333);
+  font-family: var(--font-body, "Segoe UI", Arial, sans-serif);
+}
+
+.card {
+  background: var(--bg-white, #fff);
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow, 0 8px 24px rgba(0, 0, 0, 0.08));
+  border: none;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+h2,
+.fw-bold {
+  color: var(--primary-color, #bfa66b);
+  font-family: var(--font-title, "Playfair Display", serif);
+}
+
+/* Boutons Bootstrap customisés */
+.btn {
+  border-radius: var(--radius, 12px);
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  font-family: var(--font-body, "Segoe UI", Arial, sans-serif);
+  margin-bottom: 1rem;
+  padding: 1rem 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* Voyageur : style Bootstrap primary */
+.btn-outline-primary {
+  color: #fff;
+  border-color: var(--primary-color, #bfa66b);
+  background: var(--primary-color, #bfa66b);
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background: #fff;
+  color: var(--primary-color, #bfa66b);
+  border: 2px solid var(--primary-color, #bfa66b);
+}
+
+/* Propriétaire : secondary */
+.role-btn-proprietaire {
+  background: var(--secondary-color, #2b3d55);
+  color: #fff;
+  border: 2px solid var(--secondary-color, #2b3d55);
+}
+.role-btn-proprietaire:hover,
+.role-btn-proprietaire:focus {
+  background: #fff;
+  color: var(--secondary-color, #2b3d55);
+  border: 2px solid var(--secondary-color, #2b3d55);
+}
+
+/* Conciergerie : accent */
+.role-btn-conciergerie {
+  background: var(--accent-color, #3b2f2f);
+  color: #fff;
+  border: 2px solid var(--accent-color, #3b2f2f);
+}
+.role-btn-conciergerie:hover,
+.role-btn-conciergerie:focus {
+  background: #fff;
+  color: var(--accent-color, #3b2f2f);
+  border: 2px solid var(--accent-color, #3b2f2f);
+}
+
+/* Partenaire : primary-light */
+.role-btn-partenaire {
+  background: var(--primary-light, #e7d7b0);
+  color: var(--secondary-color, #2b3d55);
+  border: 2px solid var(--primary-light, #e7d7b0);
+}
+.role-btn-partenaire:hover,
+.role-btn-partenaire:focus {
+  background: #fff;
+  color: var(--primary-light, #e7d7b0);
+  border: 2px solid var(--primary-light, #e7d7b0);
+}
+
+/* Responsive boutons */
+@media (min-width: 768px) {
+  .role-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .role-btn-group .btn {
+    flex: 1 1 45%;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    padding: 1.2rem !important;
+  }
+  .btn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.9rem 0.5rem;
+  }
+}
+
+/* Liens */
+a {
+  color: var(--primary-color, #bfa66b);
+  text-decoration: underline;
+}
+a:hover,
+a:focus {
+  color: var(--success-color, #198754);
+  text-decoration: none;
+}

@@ -1,22 +1,33 @@
 import logging
-from django.core.cache import cache
 
-from decimal import Decimal
-from datetime import timedelta, date, datetime
-
+from datetime import date, datetime
 from typing import Any, List, Tuple, Optional
 
 from django.utils import timezone
 from django.db.models.functions import ExtractYear, ExtractMonth
 from django.db.models import Q
+from django.core.cache import cache
 
-from reservation.models import Reservation, ActivityReservation, airbnb_booking, booking_booking
-from logement.models import CloseDate
-
+from reservation.models import Reservation, ActivityReservation, airbnb_booking, booking_booking, ReservationHistory, ActivityReservationHistory
 from payment.services.payment_service import refund_payment
 from common.services.cache import CACHE_TIMEOUT_SHORT, CACHE_TIMEOUT_LONG
+from accounts.models import CustomUser
+
 
 logger = logging.getLogger(__name__)
+
+
+def get_reservation_type(reservation: Any) -> str:
+    """
+    Determine the type of reservation based on its class name.
+    """
+    if reservation.__class__.__name__ == "Reservation":
+        return "logement"
+    elif reservation.__class__.__name__ == "ActivityReservation":
+        return "activity"
+    else:
+        logger.warning(f"⚠️ Unknown reservation type for {reservation.code}, defaulting to 'unknown'.")
+        raise ValueError(f"Unknown reservation type for {reservation.code}. Please check the reservation class.")
 
 
 def get_reservations(
@@ -112,7 +123,7 @@ def get_valid_reservations(
             cache_prefix=cache_prefix,
         )
         if obj_type == "logement":
-            qs = qs.exclude(statut="en_attente").order_by("-start")
+            qs = qs.exclude(statut__in=["en_attente"]).order_by("-start")
         elif obj_type == "activity":
             qs = qs.order_by("-start")
         if select_related_fields:
@@ -129,6 +140,54 @@ def get_valid_reservations(
     except Exception as e:
         logger.error(f"Error fetching {obj_type} reservations: {e}", exc_info=True)
         raise
+
+
+def get_future_reservations(model, logement_or_activity) -> Any:
+    """
+    Récupère toutes les réservations futures pour un logement ou une activité, triées par date de début.
+    Args:
+        model: Reservation ou ActivityReservation.
+        logement_or_activity: L'objet Logement ou Activity.
+    Returns:
+        QuerySet des réservations futures.
+    """
+    # Détecte le nom du champ FK selon le modèle
+    if model.__name__ == "Reservation":
+        fk_field = "logement"
+        start_filter = timezone.now().date()
+    elif model.__name__ == "ActivityReservation":
+        fk_field = "activity"
+        start_filter = timezone.now()
+    else:
+        raise ValueError("Modèle non supporté pour get_future_reservations")
+
+    filter_kwargs = {
+        fk_field: logement_or_activity,
+        "start__gte": start_filter,
+        "statut__in": ["confirmee", "terminee"],
+    }
+    return model.objects.filter(**filter_kwargs).order_by("start")
+
+
+def get_payment_failed_reservations(model, logement_or_activity) -> Any:
+    """
+    Get all reservations with payment failure for a given logement or activity.
+    Args:
+        model: Reservation or ActivityReservation model.
+        logement_or_activity: The Logement or Activity object.
+    Returns:
+        QuerySet of reservations with payment failure.
+    """
+    if model.__name__ == "Reservation":
+        fk_field = "logement"
+    elif model.__name__ == "ActivityReservation":
+        fk_field = "activity"
+    else:
+        raise ValueError("Unsupported model for get_payment_failed_reservations")
+
+    return model.objects.filter(**{fk_field: logement_or_activity, "statut": "echec_paiement"}).order_by(
+        "-date_reservation"
+    )
 
 
 def get_user_reservations(user: Any, model, statut_list: Optional[list] = None, order_by: str = "-start") -> Any:
@@ -190,7 +249,7 @@ def mark_reservation_cancelled(reservation: Any) -> None:
         raise
 
 
-def cancel_and_refund_reservation(reservation: Any) -> Tuple[Optional[str], Optional[str]]:
+def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[Optional[str], Optional[str]]:
     """
     Cancel a reservation and process a refund if eligible (generic).
     Args:
@@ -210,6 +269,17 @@ def cancel_and_refund_reservation(reservation: Any) -> Tuple[Optional[str], Opti
             )
         if getattr(reservation, "statut") != "annulee":
             mark_reservation_cancelled(reservation)
+            reservation_type = get_reservation_type(reservation)
+            if reservation_type == "logement":
+                ReservationHistory.objects.create(
+                    reservation=reservation,
+                    details=f"Réservation {reservation.code} annulée par {user.full_name}",
+                )
+            elif reservation_type == "activity":
+                ActivityReservationHistory.objects.create(
+                    activity_reservation=reservation,
+                    details=f"Réservation {reservation.code} annulée par {user.full_name}",
+                )
         else:
             logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} is already cancelled.")
             return ("✅ Réservation déjà annulée.", None)
@@ -218,15 +288,21 @@ def cancel_and_refund_reservation(reservation: Any) -> Tuple[Optional[str], Opti
                 try:
                     amount_in_cents = getattr(reservation, "refundable_amount", 0) * 100
                     refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
-                    logger.info(f"Refund successfully processed for reservation {getattr(reservation, 'code', repr(reservation))}.")
+                    logger.info(
+                        f"Refund successfully processed for reservation {getattr(reservation, 'code', repr(reservation))}."
+                    )
                     return ("✅ Réservation annulée et remboursée avec succès.", None)
                 except Exception as e:
-                    logger.error(f"Refund failed for reservation {getattr(reservation, 'code', repr(reservation))}: {e}")
+                    logger.error(
+                        f"Refund failed for reservation {getattr(reservation, 'code', repr(reservation))}: {e}"
+                    )
                     return (
                         "⚠️ Réservation annulée, mais remboursement échoué.",
                         "❗ Le remboursement a échoué. Contactez l’assistance.",
                     )
-            logger.warning(f"No Stripe payment intent for reservation {getattr(reservation, 'code', repr(reservation))}.")
+            logger.warning(
+                f"No Stripe payment intent for reservation {getattr(reservation, 'code', repr(reservation))}."
+            )
             return (
                 "⚠️ Réservation annulée, mais remboursement échoué.",
                 "❗ Le remboursement a échoué pour une raison inconnue. Contactez l'assistance.",
@@ -234,7 +310,9 @@ def cancel_and_refund_reservation(reservation: Any) -> Tuple[Optional[str], Opti
         logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} cancelled without refund.")
         return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
     except Exception as e:
-        logger.exception(f"Error cancelling and refunding reservation {getattr(reservation, 'code', repr(reservation))}: {e}")
+        logger.exception(
+            f"Error cancelling and refunding reservation {getattr(reservation, 'code', repr(reservation))}: {e}"
+        )
         raise
 
 

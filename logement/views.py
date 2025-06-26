@@ -39,6 +39,7 @@ from logement.services.price_service import (
     get_price_for_date_service,
     get_daily_price_data,
 )
+from logement.services.logement_service import get_logements_overview, get_owner_system_messages
 from logement.decorators import (
     user_has_logement,
     user_is_logement_admin,
@@ -199,6 +200,11 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
 
     # 2. Ajouter la liste des conciergeries actives au contexte
     active_conciergeries = Conciergerie.objects.filter(actif=True).order_by("name")
+
+    # BLOCK is_owner_admin users here
+    if hasattr(request.user, "is_owner_admin") and request.user.is_owner_admin:
+        messages.error(request, "Vous n'avez pas l'autorisation d'ajouter ou modifier un logement.")
+        return redirect("logement:dashboard")
 
     context = get_logement_form_data(logement, request.user)
     context.update(
@@ -587,3 +593,38 @@ def stop_managing_logement(request):
     if owner and conciergerie:
         send_mail_conciergerie_stop_management(owner, conciergerie, logement)
     return JsonResponse({"success": True})
+
+
+@login_required
+@user_is_logement_admin
+def dashboard(request: HttpRequest) -> HttpResponse:
+    """
+    Affiche le tableau de bord de gestion des logements pour l'utilisateur connecté,
+    avec toutes les données nécessaires pour les KPI, le calendrier, les réservations récentes, les tâches à faire, etc.
+    """
+    user = request.user
+    # Récupère les stats compilées pour tous les logements de l'utilisateur
+    logement_stats = get_logements_overview(user)
+
+    if not user.onboarded:
+        show_onboarding = True
+        user.onboarded = True
+        user.save()
+    else:
+        show_onboarding = False
+
+    messages_systems = get_owner_system_messages(user)
+
+    context = {
+        "occupancy_rate": logement_stats["occupancy_rate"],
+        "total_revenue": logement_stats["total_revenue"],
+        "futur_reservations": logement_stats["futur_reservations"],
+        "futur_reservations_count": logement_stats["futur_reservations_count"],
+        "average_night_price": logement_stats.get("average_night_price", 0),  # Si tu veux afficher le prix moyen/nuit
+        "failed_reservations": logement_stats["total_failed_reservations"],
+        "history": logement_stats["history"],
+        "show_onboarding": show_onboarding,
+        "messages_systems": messages_systems,
+    }
+
+    return render(request, "logement/dash.html", context)

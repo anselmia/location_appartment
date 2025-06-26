@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.views import LoginView
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
@@ -42,18 +43,39 @@ from conciergerie.models import Conciergerie
 
 from payment.services.payment_service import is_stripe_admin
 from logement.models import Logement
-from activity.models import Partners, Activity
-
+from activity.models import Activity
+from partner.models import Partners
 
 logger = logging.getLogger(__name__)
 
 
+def select_role(request):
+    if request.method == "POST":
+        role = request.POST.get("role")
+        if role in ["voyageur", "proprietaire", "conciergerie", "partenaire"]:
+            request.session["register_role"] = role
+            return redirect("accounts:register")
+    return render(request, "accounts/register_role.html")
+
+
 @ratelimit(key="ip", rate="5/m", block=True)
 def register(request):
+    role = request.GET.get("role")
+    if not role:
+        role = request.session.get("register_role")
+        if not role:
+            return redirect("accounts:select_role")
+
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
+        # Injecte le rôle dans le formulaire pour la validation clean()
+        post_data = request.POST.copy()
+        post_data["role"] = role
+        form = CustomUserCreationForm(post_data)
         if form.is_valid():
             user = form.save(commit=False)
+            user.is_owner = role == "proprietaire"
+            user.is_owner_admin = role == "conciergerie"
+            user.is_partner = role == "partenaire"
             user.is_active = False  # prevent login until email confirmed
             user.save()
 
@@ -62,31 +84,28 @@ def register(request):
             send_mail_new_account_validation(user, current_site)
 
             messages.success(request, "Un email de confirmation vous a été envoyé.")
+
             return redirect("accounts:login")
     else:
         form = CustomUserCreationForm()
-    return render(request, "accounts/register.html", {"form": form})
+
+    return render(request, "accounts/register.html", {"form": form, "role": role})
 
 
-@ratelimit(key="ip", rate="5/m", block=True)
-def user_login(request):
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                logger.info(f"Connexion réussie pour {username}")
-                messages.success(request, f"Bienvenue {username}!")
-                return redirect("common:home")  # adapt to your homepage view name
-            else:
-                logger.warning(f"Échec de connexion pour {username}")
-        messages.error(request, "Nom d'utilisateur ou mot de passe invalide.")
-    else:
-        form = AuthenticationForm()
-    return render(request, "accounts/login.html", {"form": form})
+
+class CustomLoginView(LoginView):
+    template_name = "accounts/login.html"
+
+    def get_success_url(self):
+        user = self.request.user
+        if user.is_owner:
+            return reverse("logement:dash")
+        elif user.is_owner_admin:
+            return reverse("conciergerie:dashboard")
+        elif user.is_partner:
+            return reverse("partner:dashboard")
+        else:
+            return reverse("common:home")
 
 
 @login_required
@@ -349,9 +368,12 @@ def contact_view(request):
 def delete_account(request):
     user = request.user
 
-    has_active_reservations = get_user_reservations(
-        user, Reservation, statut_list=["confirmee", "annulee", "terminee", "echec_paiement"]
-    ).exists() or get_user_reservations(user, ActivityReservation).exists()
+    has_active_reservations = (
+        get_user_reservations(
+            user, Reservation, statut_list=["confirmee", "annulee", "terminee", "echec_paiement"]
+        ).exists()
+        or get_user_reservations(user, ActivityReservation).exists()
+    )
 
     if has_active_reservations:
         messages.error(

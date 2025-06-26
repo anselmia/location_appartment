@@ -35,6 +35,7 @@ class Conciergerie(models.Model):
     date_creation = models.DateField("Date de création", default=timezone.now)
     actif = models.BooleanField(default=True)
     validated = models.BooleanField(default=False)
+    onboarded = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Conciergerie"

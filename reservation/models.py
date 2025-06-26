@@ -6,13 +6,14 @@ from datetime import timedelta
 from django.utils import timezone
 
 from decimal import Decimal, ROUND_HALF_UP
-from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
+
 from logement.models import Logement
 from activity.models import Activity
 from common.services.helper_fct import generate_unique_code
 
 
 logger = logging.getLogger(__name__)
+
 
 class Reservation(models.Model):
     code = models.CharField(max_length=20, unique=True)
@@ -74,6 +75,7 @@ class Reservation(models.Model):
         return f"{self.code}"
 
     def save(self, *args, **kwargs):
+        from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
         if not self.code:
             # Ensure uniqueness
             for _ in range(10):  # up to 10 retries
@@ -321,6 +323,7 @@ class ActivityReservation(models.Model):
         return f"{self.user} - {self.activity} ({self.statut})"
 
     def save(self, *args, **kwargs):
+        from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
         if not self.code:
             # Ensure uniqueness
             for _ in range(10):  # up to 10 retries
@@ -455,3 +458,27 @@ class ActivityReservation(models.Model):
             logger = logging.getLogger(__name__)
             logger.exception(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
             return Decimal("0.00")
+
+
+class ReservationHistory(models.Model):
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="histories")
+    details = models.TextField(blank=True)
+    date_action = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date_action"]
+
+    def __str__(self):
+        return f"{self.reservation} - ({self.date_action:%d/%m/%Y %H:%M})"
+
+
+class ActivityReservationHistory(models.Model):
+    reservation = models.ForeignKey(ActivityReservation, on_delete=models.CASCADE, related_name="histories")
+    details = models.TextField(blank=True)
+    date_action = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date_action"]
+
+    def __str__(self):
+        return f"{self.reservation} - {self.action} ({self.date_action:%d/%m/%Y %H:%M})"

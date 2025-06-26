@@ -57,6 +57,14 @@ urlpatterns = [
         "cancel-logement/<str:code>/", views.cancel_logement_reservation, name="cancel_logement_reservation"
     ),
     path(
+        "owner-cancel-activity/<str:code>/",
+        views.owner_cancel_activity_booking,
+        name="owner_cancel_activity_booking",
+    ),
+    path(
+        "owner-cancel-logement/<str:code>/", views.owner_cancel_logement_booking, name="owner_cancel_logement_booking"
+    ),
+    path(
         "validate-activity/<str:code>/",
         views.validate_activity_reservation,
         name="validate_activity_reservation",

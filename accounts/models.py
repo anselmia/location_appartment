@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
+from django.db.models import Q
 
 
 phone_validator = RegexValidator(
@@ -18,7 +19,6 @@ class CustomUser(AbstractUser):
     phone = models.CharField(
         max_length=15,
         validators=[phone_validator],
-        unique=True,
         help_text="Numéro au format international, ex: +33612345678",
     )
     last_name = models.CharField(max_length=100, verbose_name="Prénom")
@@ -31,6 +31,23 @@ class CustomUser(AbstractUser):
     )
     stripe_account_id = models.CharField(max_length=255, blank=True, null=True)
     last_activity = models.DateTimeField(null=True, blank=True)  # Track the last activity time
+    onboarded = models.BooleanField(default=False, help_text="Indique si l'utilisateur a terminé l'onboarding")
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["email"], condition=models.Q(is_admin=True), name="unique_admin_email"),
+            models.UniqueConstraint(fields=["email"], condition=models.Q(is_owner=True), name="unique_owner_email"),
+            models.UniqueConstraint(
+                fields=["email"], condition=models.Q(is_owner_admin=True), name="unique_owneradmin_email"
+            ),
+            models.UniqueConstraint(fields=["email"], condition=models.Q(is_partner=True), name="unique_partner_email"),
+            models.UniqueConstraint(fields=["phone"], condition=models.Q(is_admin=True), name="unique_admin_phone"),
+            models.UniqueConstraint(fields=["phone"], condition=models.Q(is_owner=True), name="unique_owner_phone"),
+            models.UniqueConstraint(
+                fields=["phone"], condition=models.Q(is_owner_admin=True), name="unique_owneradmin_phone"
+            ),
+            models.UniqueConstraint(fields=["phone"], condition=models.Q(is_partner=True), name="unique_partner_phone"),
+        ]
 
     def __str__(self):
         return f"{self.name} {self.last_name}"
@@ -43,13 +60,42 @@ class CustomUser(AbstractUser):
     def has_conciergerie(self):
         from conciergerie.models import Conciergerie
 
+        return Conciergerie.objects.filter(user=self).exists()
+
+    @property
+    def has_valid_conciergerie(self):
+        from conciergerie.models import Conciergerie
+
         return Conciergerie.objects.filter(user=self, validated=True).exists()
 
     @property
     def has_partners(self):
-        from activity.models import Partners
+        from partner.models import Partners
+
+        return Partners.objects.filter(user=self).exists()
+
+    @property
+    def has_valid_partners(self):
+        from partner.models import Partners
 
         return Partners.objects.filter(user=self, validated=True).exists()
+
+    @property
+    def has_stripe_account(self):
+        return self.stripe_account_id is not None and self.stripe_account_id != ""
+
+    @property
+    def has_activities(self):
+        from activity.models import Activity
+
+        return Activity.objects.filter(owner=self).exists()
+    
+    @property
+    def has_logements(self):
+        from logement.models import Logement
+
+        return Logement.objects.filter(Q(admin=self) | Q(owner=self)).exists()
+
 
 
 class Conversation(models.Model):

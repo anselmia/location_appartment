@@ -12,7 +12,7 @@ def is_stripe_admin(view_func):
             or request.user.is_superuser
             or request.user.is_owner
             or request.user.has_conciergerie
-            or request.user.has_partners
+            or request.user.has_valid_partners
         ):
             return view_func(request, *args, **kwargs)
 

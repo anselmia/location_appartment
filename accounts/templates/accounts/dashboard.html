@@ -37,16 +37,18 @@
                     aria-controls="password-tab"
                     aria-selected="false">Changer mon mot de passe</button>
           </li>
-          <li class="nav-item mb-2" role="presentation">
-            <button class="nav-link w-100"
-                    id="reservations-tab-link"
-                    data-bs-toggle="pill"
-                    data-bs-target="#reservations-tab"
-                    type="button"
-                    role="tab"
-                    aria-controls="reservations-tab"
-                    aria-selected="false">Mes Réservations</button>
-          </li>
+          {% if not user.is_owner and not user.is_owner_admin and not user.is_partner %}
+            <li class="nav-item mb-2" role="presentation">
+              <button class="nav-link w-100"
+                      id="reservations-tab-link"
+                      data-bs-toggle="pill"
+                      data-bs-target="#reservations-tab"
+                      type="button"
+                      role="tab"
+                      aria-controls="reservations-tab"
+                      aria-selected="false">Mes Réservations</button>
+            </li>
+          {% endif %}
           {% if user.is_owner_admin or user.is_admin or user.is_superuser %}
             <li class="nav-item mb-2" role="presentation">
               <button class="nav-link w-100"
@@ -96,10 +98,12 @@
                id="password-tab"
                role="tabpanel"
                aria-labelledby="password-tab-link">{% include "accounts/partials/password_form.html" %}</div>
-          <div class="tab-pane fade"
-               id="reservations-tab"
-               role="tabpanel"
-               aria-labelledby="reservations-tab-link">{% include "accounts/partials/reservation_list.html" %}</div>
+          {% if not user.is_owner and not user.is_owner_admin and not user.is_partner %}
+            <div class="tab-pane fade"
+                 id="reservations-tab"
+                 role="tabpanel"
+                 aria-labelledby="reservations-tab-link">{% include "accounts/partials/reservation_list.html" %}</div>
+          {% endif %}
           {% if user.is_owner_admin or user.is_admin or user.is_superuser %}
             <div class="tab-pane fade"
                  id="admin-tab"

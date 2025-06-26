@@ -21,35 +21,103 @@
                 <span style="cursor:pointer"
                       onclick="document.getElementById('navLinks').classList.remove('show')">✕</span>
             </div>
-            <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
-            <div class="dropdown">
-                <a href="#"
-                   class="dropdown-toggle"
-                   role="button"
-                   aria-expanded="false"
-                   aria-haspopup="true">{% trans "Réserver" %}</a>
-                <div class="dropdown-menu">
-                    <a href="{% url 'logement:logement_search' %}">{% trans "Un logement" %}</a>
-                    <a href="{% url 'activity:search' %}">{% trans "Une activité" %}</a>
-                </div>
-            </div>
-            <!-- Nous choisir -->
-            <div class="dropdown">
-                <a href="#"
-                   class="dropdown-toggle"
-                   role="button"
-                   aria-expanded="false"
-                   aria-haspopup="true">{% trans "Nous Choisir" %}</a>
-                <div class="dropdown-menu">
-                    <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
-                    <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
-                    <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
-                    <a href="{% url 'activity:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
-                    <a href="{% url 'common:legal_rental' %}"> {% trans "Guide location saisonnière" %}</a>
-                </div>
-            </div>
             {% if user.is_authenticated %}
-                {% if user.is_superuser or user.is_admin or user.is_owner or user.has_conciergerie %}
+                {% if user.is_owner %}
+                    <a href="{% url 'logement:dash' %}">{% trans "Accueil" %}</a>
+                {% elif user.is_owner_admin %}
+                    <a href="{% url 'conciergerie:dashboard' %}">{% trans "Accueil" %}</a>
+                {% elif user.is_partner %}
+                    <a href="{% url 'partner:dashboard' %}">{% trans "Accueil" %}</a>
+                {% else %}
+                    <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'common:home' %}">{% trans "Accueil" %}</a>
+            {% endif %}
+            {% if not user.is_authenticated %}
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Réserver" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'logement:logement_search' %}">{% trans "Un logement" %}</a>
+                        <a href="{% url 'activity:search' %}">{% trans "Une activité" %}</a>
+                    </div>
+                </div>
+                <!-- Nous choisir -->
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Nous Choisir" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
+                        <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
+                        <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
+                        <a href="{% url 'partner:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
+                        <a href="{% url 'common:legal_rental' %}">{% trans "Guide location saisonnière" %}</a>
+                    </div>
+                </div>
+            {% elif not user.is_owner and not user.is_owner_admin and not user.is_partner %}
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Réserver" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'logement:logement_search' %}">{% trans "Un logement" %}</a>
+                        <a href="{% url 'activity:search' %}">{% trans "Une activité" %}</a>
+                    </div>
+                </div>
+                <!-- Nous choisir -->
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Nous Choisir" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
+                        <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
+                        <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
+                        <a href="{% url 'partner:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
+                        <a href="{% url 'common:legal_rental' %}">{% trans "Guide location saisonnière" %}</a>
+                    </div>
+                </div>
+            {% elif user.is_superuser or user.is_admin %}
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Réserver" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'logement:logement_search' %}">{% trans "Un logement" %}</a>
+                        <a href="{% url 'activity:search' %}">{% trans "Une activité" %}</a>
+                    </div>
+                </div>
+                <!-- Nous choisir -->
+                <div class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       role="button"
+                       aria-expanded="false"
+                       aria-haspopup="true">{% trans "Nous Choisir" %}</a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'common:join_owner' %}">{% trans "Hôtes" %}</a>
+                        <a href="{% url 'common:join_user' %}">{% trans "Voyageurs" %}</a>
+                        <a href="{% url 'conciergerie:customer_list' %}">{% trans "Nos Conciergeries" %}</a>
+                        <a href="{% url 'partner:partner_list_customer' %}">{% trans "Nos Partenaires" %}</a>
+                        <a href="{% url 'common:legal_rental' %}">{% trans "Guide location saisonnière" %}</a>
+                    </div>
+                </div>
+            {% endif %}
+            {% if user.is_authenticated %}
+                {% if user.is_superuser or user.is_admin or user.is_owner and user.has_stripe_account or user.has_valid_conciergerie and user.has_stripe_account and user.has_logements %}
                     <div class="dropdown">
                         <a href="#"
                            class="dropdown-toggle"
@@ -65,7 +133,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if user.is_superuser or user.is_admin or user.has_partners %}
+                {% if user.is_superuser or user.is_admin or user.has_valid_partners and user.has_stripe_account %}
                     <div class="dropdown">
                         <a href="#"
                            class="dropdown-toggle"
@@ -98,7 +166,7 @@
                             <a href="{% url 'administration:offers' %}">{% trans "Offres" %}</a>
                             <a href="{% url 'payment:payment_tasks' %}">{% trans "Transactions" %}</a>
                             <a href="{% url 'conciergerie:list_conciergeries' %}">{% trans "Conciergeries" %}</a>
-                            <a href="{% url 'activity:list_partners' %}">{% trans "Partenaires" %}</a>
+                            <a href="{% url 'partner:list_partners' %}">{% trans "Partenaires" %}</a>
                             <a href="{% url 'administration:huey_tasks_status' %}">{% trans "Tasks" %}</a>
                             <a href="{% url 'administration:traffic' %}">{% trans "Traffic" %}</a>
                             <a href="{% url 'administration:log_viewer' %}">{% trans "Logs" %}</a>

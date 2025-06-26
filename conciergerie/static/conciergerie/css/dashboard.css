@@ -1,0 +1,312 @@
+body {
+  background-color: var(--light-bg);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-header {
+  padding: 2rem 1rem 1rem;
+}
+
+.kpi-card {
+  border-left: 5px solid var(--primary-color);
+  box-shadow: var(--card-shadow);
+}
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.calendar-preview {
+  height: 300px;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #6c757d;
+}
+
+.section-title {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.todo-item.done {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+/* --- RESA CARD STYLE --- */
+.resa-cards-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  justify-content: flex-start;
+}
+
+.resa-card {
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.09);
+  border: 1.5px solid #f2e9d7;
+  min-width: 260px;
+  max-width: 320px;
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.resa-card:hover {
+  box-shadow: 0 6px 32px rgba(191, 166, 107, 0.18);
+  border-color: #e7d7b0;
+  transform: translateY(-3px) scale(1.02);
+}
+
+.resa-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: 1.2rem 1.2rem 0.7rem 1.2rem;
+  flex: 1 1 auto;
+}
+
+.resa-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.resa-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f8f5f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e7d7b0;
+  box-shadow: 0 1px 4px rgba(191, 166, 107, 0.08);
+}
+
+.resa-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resa-avatar-initial {
+  font-size: 1.3rem;
+  color: #fff;
+  background: #bfa66b;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.resa-arrival {
+  font-size: 1.05rem;
+  color: #bfa66b;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+}
+
+.resa-card-body {
+  margin-bottom: 0.7rem;
+}
+
+.resa-name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #2b3d55;
+  margin-bottom: 0.2rem;
+}
+
+.resa-dates {
+  font-size: 1.05rem;
+  color: #23344a;
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.resa-desc {
+  font-size: 0.97rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+
+.resa-card-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.7rem 1.2rem 1rem 1.2rem;
+  background: #f9f7f3;
+  border-top: 1px solid #f2e9d7;
+}
+
+.resa-message-link {
+  color: #2b3d55;
+  font-size: 0.98rem;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+.resa-message-link:hover {
+  color: #bfa66b;
+}
+
+.hoverable-card {
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.hoverable-card:hover {
+  box-shadow: 0 4px 24px rgba(191, 166, 107, 0.13);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.unstyled-link {
+  color: inherit !important;
+  text-decoration: none !important;
+  font-weight: inherit !important;
+}
+.unstyled-link:hover,
+.unstyled-link:focus {
+  color: inherit !important;
+  text-decoration: underline dotted !important; /* or none if you want no effect at all */
+}
+
+.conciergerie-fixed-messages {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1080;
+  min-width: 380px;
+  max-width: 520px;
+  background: #fffbe7;
+  color: #7c5c00;
+  border-left: 6px solid #bfa66b;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(43, 61, 85, 0.13);
+  padding: 1.3rem 2rem 1.3rem 1.5rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  pointer-events: auto;
+  animation: fadeInUp 0.7s;
+  transition: box-shadow 0.2s;
+}
+
+.conciergerie-fixed-messages .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #bfa66b;
+  position: absolute;
+  top: 0.7rem;
+  right: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.conciergerie-fixed-messages .close-btn:hover {
+  opacity: 1;
+}
+.conciergerie-fixed-messages ul {
+  padding-left: 1.2em;
+  margin-bottom: 0;
+}
+
+.conciergerie-fixed-messages li {
+  margin-bottom: 0.7em;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .conciergerie-fixed-messages {
+    right: 0.5rem;
+    left: 0.5rem;
+    min-width: unset;
+    max-width: 98vw;
+    padding: 1rem 0.7rem 1rem 1rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .resa-cards-wrapper {
+    gap: 1rem;
+  }
+  .resa-card {
+    min-width: 220px;
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 900px) {
+  .resa-cards-wrapper {
+    gap: 0.7rem;
+    padding-bottom: 0.2rem;
+  }
+  .resa-card {
+    min-width: 90vw;
+    max-width: 98vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .resa-cards-wrapper {
+    flex-direction: column;
+    gap: 0.7rem;
+    padding-bottom: 0;
+  }
+  .resa-card {
+    min-width: 99vw;
+    max-width: 99vw;
+    border-radius: 0.7rem;
+  }
+  .resa-card-link,
+  .resa-card-footer {
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-preview {
+    height: 200px;
+    font-size: 1rem;
+  }
+}

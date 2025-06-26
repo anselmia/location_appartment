@@ -1,5 +1,7 @@
 import logging
 from django.utils import timezone
+from django.db.models import Q
+
 from datetime import timedelta
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
@@ -16,15 +18,28 @@ logger = logging.getLogger(__name__)
 
 def _delete_expired_pending(model, pending_minutes=30, failed_weeks=1):
     try:
-        expiry_pending = timezone.now() - timedelta(minutes=pending_minutes)
-        count_pending, _ = model.objects.filter(
-            statut="en_attente", date_reservation__lt=expiry_pending
-        ).delete()
+        now = timezone.now()
 
-        expiry_failed = timezone.now() - timedelta(weeks=failed_weeks)
-        count_failed, _ = model.objects.filter(
-            statut="echec_paiement", date_reservation__lt=expiry_failed
-        ).delete()
+        # Detect if 'start' is a date or datetime field
+        start_field = model._meta.get_field("start")
+        if start_field.get_internal_type() == "DateField":
+            start_compare = now.date()
+        else:
+            start_compare = now
+
+        expiry_pending = now - timedelta(minutes=pending_minutes)
+        count_pending, _ = (
+            model.objects.filter(statut="en_attente")
+            .filter(Q(date_reservation__lt=expiry_pending) | Q(start__gt=start_compare))
+            .delete()
+        )
+
+        expiry_failed = now - timedelta(weeks=failed_weeks)
+        count_failed, _ = (
+            model.objects.filter(statut="echec_paiement")
+            .filter(Q(date_reservation__lt=expiry_failed) | Q(start__gt=start_compare))
+            .delete()
+        )
 
         logger.info(f"Deleted {count_pending} expired pending reservations for {model.__name__}")
         logger.info(f"Deleted {count_failed} expired reservations in failed payment for {model.__name__}")

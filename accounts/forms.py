@@ -58,17 +58,46 @@ class CustomUserCreationForm(UserCreationForm):
         username = cleaned_data.get("username")
         phone = cleaned_data.get("phone")
 
+        # Récupère le rôle choisi (par exemple depuis le contexte ou la session)
+        role = (
+            self.initial.get("role")
+            or self.data.get("role")
+            or getattr(self, "role", None)
+        )
+
         if phone:
             phone_validator(phone)
-        conflicts = CustomUser.objects.filter(Q(email=email) | Q(username=username) | Q(phone=phone))
 
-        for user in conflicts:
-            if user.email == email:
-                self.add_error("email", "Cet email est déjà utilisé.")
-            if user.username == username:
-                self.add_error("username", "Ce nom d'utilisateur est déjà pris.")
-            if user.phone == phone:
-                self.add_error("phone", "Ce numéro de téléphone est déjà utilisé.")
+        # Recherche de conflits pour le même email et le même rôle
+        role_filter = Q()
+        if role == "proprietaire":
+            role_filter = Q(is_owner=True)
+        elif role == "conciergerie":
+            role_filter = Q(is_owner_admin=True)
+        elif role == "partenaire":
+            role_filter = Q(is_partner=True)
+        elif role == "admin":
+            role_filter = Q(is_admin=True)
+
+        # Unicité email pour le même rôle
+        if email and role_filter:
+            if CustomUser.objects.filter(email=email).filter(role_filter).exists():
+                self.add_error(
+                    "email",
+                    "Cet email est déjà utilisé pour ce type de compte."
+                )
+
+        # Unicité phone pour le même rôle
+        if phone and role_filter:
+            if CustomUser.objects.filter(phone=phone).filter(role_filter).exists():
+                self.add_error(
+                    "phone",
+                    "Ce numéro de téléphone est déjà utilisé pour ce type de compte."
+                )
+
+        # Unicité username globale
+        if username and CustomUser.objects.filter(username=username).exists():
+            self.add_error("username", "Ce nom d'utilisateur est déjà pris.")
 
         return cleaned_data
 

@@ -33,10 +33,11 @@ INSTALLED_APPS = [
     "huey.contrib.djhuey",
     "activity.apps.ActivityConfig",
     "accounts.apps.AccountsConfig",
-    "administration",
-    "common",
+    "administration.apps.AdministrationConfig",
+    "common.apps.CommonConfig",
     "conciergerie.apps.ConciergerieConfig",
     "logement.apps.LogementConfig",
+    "partner.apps.PartnerConfig",
     "payment.apps.PaymentConfig",
     "reservation.apps.ReservationConfig",
 ]

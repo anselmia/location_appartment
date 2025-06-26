@@ -11,6 +11,7 @@ from logement.models import Price, CloseDate, Logement, Discount
 from django.shortcuts import get_object_or_404
 
 from reservation.models import airbnb_booking, booking_booking, Reservation
+from reservation.services.reservation_service import get_valid_reservations_in_period
 
 
 logger = logging.getLogger(__name__)
@@ -334,3 +335,31 @@ def set_price(
     except Exception as e:
         logger.exception(f"Error calculating price: {e}")
         raise
+
+
+def get_average_nightly_price(logement: Logement, start: date, end: date) -> Decimal:
+    """
+    Calculate the average nightly price for a logement over a given period.
+    """
+    try:
+        reservations = get_valid_reservations_in_period(
+            Reservation, "logement_id", logement.id, start, end
+        )
+        total_price = Decimal("0.00")
+        total_nights = (end - start).days
+
+        if total_nights <= 0:
+            return Decimal("0.00")
+
+        custom_prices = Price.objects.filter(logement=logement, date__range=(start, end))
+        price_map = {p.date: Decimal(str(p.value)) for p in custom_prices}
+
+        for day in range(total_nights):
+            current_day = start + timedelta(days=day)
+            daily_price = price_map.get(current_day, Decimal(str(logement.price)))
+            total_price += daily_price
+
+        return total_price / total_nights
+    except Exception as e:
+        logger.exception(f"Error calculating average nightly price: {e}")
+        return Decimal("0.00")

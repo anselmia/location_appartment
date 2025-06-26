@@ -19,9 +19,9 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 
 from activity.models import Activity
-from reservation.models import Reservation, ActivityReservation
+from reservation.models import Reservation, ActivityReservation, ReservationHistory, ActivityReservationHistory
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
-from reservation.services.reservation_service import get_reservation_by_code
+from reservation.services.reservation_service import get_reservation_by_code, get_reservation_type
 
 from logement.models import Logement
 
@@ -37,8 +37,10 @@ from payment.services.payment_service import (
     transfer_funds,
     get_session,
     verify_payment,
-    get_reservation_type,
     verify_transfer,
+    verify_payment_method,
+    verify_deposit_payment,
+    verify_refund
 )
 from payment.models import PaymentTask
 
@@ -70,8 +72,16 @@ def payment_success(request, type, code):
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
             reservation.statut = "confirmee"
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Nouvelle réservation {reservation.code} confirmée du {reservation.start} au {reservation.end}.",
+            )
         elif type == "activity":
             reservation = ActivityReservation.objects.get(code=code)
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Nouvelle réservation {reservation.code}  en attente de confirmation du {reservation.start} au {reservation.end}.",
+            )
         else:
             messages.error(request, "Type de réservation inconnu.")
             return redirect("common:home")
@@ -170,7 +180,7 @@ def send_payment_link(request, code):
     if reservation_type == "activity":
         return redirect("reservation:activity_reservation_detail", code=code)
     else:
-        return redirect("reservation:_logement_reservation_detail", code=code)
+        return redirect("reservation:logement_reservation_detail", code=code)
 
 
 @login_required
@@ -394,6 +404,72 @@ def verify_transfer_view(request, code):
         return redirect(request.META.get("HTTP_REFERER", "/"))
 
     success, message = verify_transfer(reservation)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@login_required
+@user_is_reservation_admin
+@require_POST
+def verify_payment_method_view(request, code):
+    """
+    View to verify the Stripe Paymment method used for a reservation (logement or activity).
+    """
+    reservation = get_reservation_by_code(code)
+    if not reservation:
+        messages.error(request, "Réservation introuvable.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    success, message = verify_payment_method(reservation)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@login_required
+@user_is_reservation_admin
+@require_POST
+def verify_deposit_payment_view(request, code):
+    """
+    View to verify the Stripe Paymment intent for deposit used for a reservation (logement or activity).
+    """
+    reservation = get_reservation_by_code(code)
+    if not reservation:
+        messages.error(request, "Réservation introuvable.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    success, message = verify_deposit_payment(reservation)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@login_required
+@user_is_reservation_admin
+@require_POST
+def verify_refund_view(request, code):
+    """
+    View to verify the Stripe Paymment intent for deposit used for a reservation (logement or activity).
+    """
+    reservation = get_reservation_by_code(code)
+    if not reservation:
+        messages.error(request, "Réservation introuvable.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    success, message = verify_refund(reservation)
 
     if success:
         messages.success(request, message)

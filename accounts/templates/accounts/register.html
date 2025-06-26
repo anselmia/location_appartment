@@ -13,7 +13,23 @@
 {% endblock extrahead %}
 {% block content %}
     <div class="auth-container">
-        <h1>{% trans "Créer un compte" %}</h1>
+        {% if role %}
+            <h1 class="text-center mb-4">
+                {% if role == "voyageur" %}
+                    Inscription Voyageur
+                {% elif role == "proprietaire" %}
+                    Inscription Propriétaire
+                {% elif role == "conciergerie" %}
+                    Inscription Conciergerie
+                {% elif role == "partenaire" %}
+                    Inscription Partenaire
+                {% else %}
+                    Créer un compte
+                {% endif %}
+            </h1>
+        {% else %}
+            <h1>{% trans "Créer un compte" %}</h1>
+        {% endif %}
         {% if form.errors %}
             <div class="alert alert-danger text-start">
                 {% for field in form %}

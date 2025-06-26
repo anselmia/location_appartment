@@ -17,7 +17,9 @@
         <h1>Gestion des logements</h1>
         <p class="admin-subtitle">Gérez vos annonces, ajoutez ou modifiez les logements disponibles</p>
       </div>
-      <a href="{% url 'logement:add_logement' %}" class="btn-add-logement">➕ Nouveau logement</a>
+      {% if user.is_owner or user.is_admin or user.is_superuser %}
+        <a href="{% url 'logement:add_logement' %}" class="btn-add-logement">➕ Nouveau logement</a>
+      {% endif %}
     </div>
     {% if logements %}
       <div class="logement-grid">

@@ -6,7 +6,7 @@
 {% endblock %}
 {% block extrahead %}
     <link rel="stylesheet"
-          href="{% static 'activity/css/partenaire_list.css' %}">
+          href="{% static 'partner/css/partenaire_list.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container py-5 partenaire-list-wrapper">
@@ -42,7 +42,7 @@
             </div>
         </form>
         <!-- Liste des partenaires avec formulaire de suppression -->
-        <form method="post" action="{% url 'activity:bulk_action' %}">
+        <form method="post" action="{% url 'partner:bulk_action' %}">
             {% csrf_token %}
             <div class="row g-4">
                 {% for c in partners %}
@@ -65,7 +65,7 @@
                             <!-- Body -->
                             <div class="card-body position-relative">
                                 <!-- Lien invisible étendu -->
-                                <a href="{% url 'activity:partner_detail' c.id %}"
+                                <a href="{% url 'partner:partner_detail' c.id %}"
                                    class="stretched-link"></a>
                                 <h5 class="card-title">{{ c.name }}</h5>
                                 <p class="text-muted small mb-1">📍 {{ c.ville.name }} – {{ c.code_postal }}</p>

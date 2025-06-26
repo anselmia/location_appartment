@@ -1,11 +1,13 @@
 import logging
 import hashlib
 import json
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 from collections import defaultdict
-
+from datetime import date
+from django.utils import timezone
 from django.core.cache import cache
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils.dateparse import parse_date
 from django.utils.formats import number_format
 from django.urls import reverse
@@ -16,10 +18,72 @@ from django.core.paginator import Paginator
 
 from logement.models import Logement, Equipment, Photo, Room, EquipmentType, City
 from logement.forms import LogementForm
-from reservation.services.logement import get_booked_dates
+from reservation.models import Reservation, ReservationHistory
+from reservation.services.logement import (
+    get_booked_dates,
+    get_logement_reservations_queryset,
+    get_occupancy_rate,
+    get_average_night_price,
+)
+from reservation.services.reservation_service import (
+    get_valid_reservations,
+    get_future_reservations,
+    get_payment_failed_reservations,
+)
 from payment.services.payment_service import PAYMENT_FEE_VARIABLE
+from accounts.models import CustomUser
 
 logger = logging.getLogger(__name__)
+
+
+def get_owner_system_messages(user):
+    """
+    Retourne les messages système pour le tableau de bord du propriétaire.
+    """
+
+    if not user.is_authenticated:
+        return []
+
+    messages_system = []
+
+    # Vérifie la présence d'un compte Stripe
+    if not user.has_stripe_account:
+        messages_system.append(
+            "Vous n'avez pas encore de compte Stripe. Veuillez en créer un pour recevoir vos paiements."
+        )
+
+    # Vérifie la présence de logements
+    if not user.has_logements:
+        messages_system.append(
+            "Vous n'avez pas encore de logements. Veuillez en ajouter pour commencer à recevoir des réservations."
+        )
+    else:
+        # Récupère les logements de l'utilisateur
+        logements = Logement.objects.filter(owner=user)
+
+        # Logement fermés
+        closed = logements.filter(statut="close")
+        if closed.exists():
+            messages_system.append(
+                f"{closed.count()} logement(s) fermé(s). Ils ne sont pas encore visibles par les voyageurs."
+            )
+
+        # Logements sans photo
+        no_photo = logements.annotate(photo_count=Count("photos")).filter(photo_count=0)
+        if no_photo.exists():
+            messages_system.append(
+                f"{no_photo.count()} logement(s) n'ont pas de photo. Ajoutez des photos pour attirer plus de voyageurs."
+            )
+
+        # Logements incomplets (ajoute d'autres critères si besoin)
+        incomplete = logements.filter(description__isnull=True) | logements.filter(description="")
+        incomplete = incomplete.distinct()
+        if incomplete.exists():
+            messages_system.append(
+                f"{incomplete.count()} logement(s) n'ont pas de description. Complétez-les pour améliorer leur attractivité."
+            )
+
+    return messages_system
 
 
 def get_logements(user: Any) -> Any:
@@ -414,3 +478,108 @@ def autocomplete_cities_service(query: str):
     except Exception as e:
         logger.exception(f"Autocomplete city search failed: {e}")
         return {"success": False, "error": "Erreur interne serveur"}
+
+
+# Statistics
+
+
+def get_logement_statistics(logement_id: int, user: CustomUser) -> Dict[str, Any]:
+    """
+    Get statistics for a specific logement.
+    """
+    logement = get_object_or_404(Logement, id=logement_id)
+    actual_year = timezone.now().year
+    reservations = get_valid_reservations(
+        user,
+        logement_id,
+        obj_type="logement",
+        get_queryset_fn=get_logement_reservations_queryset,
+        cache_prefix="valid_logement_resa_admin",
+        select_related_fields=["user", "logement"],
+        prefetch_related_fields=["logement__photos"],
+        year=actual_year,
+    )
+    futur_reservations = get_future_reservations(Reservation, logement)
+
+    # Début et fin de l'année courante
+    start_of_year = date(actual_year, 1, 1)
+    end_of_year = date(actual_year, 12, 31)
+
+    total_revenue_conciergerie = Decimal("0.00")
+    for resa in reservations:
+        total_revenue_conciergerie += getattr(resa, "admin_transferable_amount", Decimal("0.00"))
+
+    stats = {
+        "total_bookings": reservations.count(),
+        "total_revenue": reservations.aggregate(total=Sum("price"))["total"] or 0,
+        "total_revenue_conciergerie": total_revenue_conciergerie,
+        "futur_reservations": futur_reservations,
+        "occupancy_rate": get_occupancy_rate(logement, start=start_of_year, end=end_of_year),
+        "failed_reservations": get_payment_failed_reservations(Reservation, logement),
+        "average_night_price": get_average_night_price(logement, start=start_of_year, end=end_of_year),
+    }
+
+    return stats
+
+
+def get_logements_overview(user) -> List[Dict[str, Any]]:
+    """
+    Get an overview of all logements with basic details.
+    """
+    if user.is_admin or user.is_superuser:
+        logements = Logement.objects.all()
+    elif user.is_authenticated:
+        logements = Logement.objects.filter(Q(owner=user) | Q(admin=user))
+    else:
+        logements = Logement.objects.none()
+
+    total_bookings = 0
+    total_revenue = 0
+    total_revenue_conciergerie = Decimal("0.00")
+    all_futur_reservations = []
+    total_failed_reservations = []
+    occupancy_rates = []
+    average_night_prices = []
+
+    for logement in logements:
+        stat = get_logement_statistics(logement.id, user)
+        total_bookings += stat["total_bookings"]
+        total_revenue += stat["total_revenue"]
+        total_revenue_conciergerie += stat["total_revenue_conciergerie"]
+        all_futur_reservations += list(stat["futur_reservations"])
+        total_failed_reservations += list(stat["failed_reservations"])
+        # On compile les taux d'occupation pour la moyenne globale
+        occupancy_rates.append(stat["occupancy_rate"])
+        if stat["average_night_price"] is not None:
+            average_night_prices.append(stat["average_night_price"])
+
+    # Moyenne des taux d'occupation (en %)
+    if occupancy_rates:
+        occupancy_rate = sum(occupancy_rates) / len(occupancy_rates)
+        occupancy_rate = round(occupancy_rate, 2)
+    else:
+        occupancy_rate = 0.0
+
+    # Moyenne des prix par nuit
+    if average_night_prices:
+        average_night_price = sum(average_night_prices) / len(average_night_prices)
+        average_night_price = round(average_night_price, 2)
+    else:
+        average_night_price = 0.0
+
+    stats = {
+        "total_bookings": total_bookings,
+        "total_revenue": total_revenue,
+        "total_revenue_conciergerie": total_revenue_conciergerie,
+        "futur_reservations": all_futur_reservations,
+        "average_night_price": average_night_price,
+        "total_failed_reservations": total_failed_reservations,
+        "futur_reservations_count": len(all_futur_reservations),
+        "occupancy_rate": occupancy_rate,
+        "history": ReservationHistory.objects.filter(
+            Q(reservation__logement__owner=user) | Q(reservation__logement__admin=user)
+        )
+        .select_related("reservation")
+        .order_by("-date_action")[:10],
+    }
+    return stats

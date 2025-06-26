@@ -41,6 +41,25 @@ def user_in_conversation(view_func):
     return _wrapped_view
 
 
+def user_has_valid_stripe_account(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user = request.user
+
+        has_valid_stripe_account = user.has_stripe_account
+
+        if has_valid_stripe_account:
+            return view_func(request, *args, **kwargs)
+
+        logger.warning(
+            f"[Restriction] Accès refusé pour l'utilisateur {user.id} ({user.email}) : pas de compte Stripe valide"
+        )
+        messages.error(request, "Accès refusé : vous n'avez pas de compte Stripe valide.")
+        return redirect("accounts:dashboard")
+
+    return _wrapped_view
+
+
 def stripe_attempt_limiter(key_template, limit=3, timeout=3600):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):

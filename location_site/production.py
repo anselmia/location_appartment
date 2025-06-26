@@ -159,7 +159,7 @@ CACHES = {
     }
 }
 
-ADMINS = [("Arnaud Anselmi", "anselmi.arnaud@yahoo.fr")]
+ADMINS = [("Arnaud Anselmi", "admin@bnbazure.fr")]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "localhost"
 EMAIL_PORT = 25
@@ -167,3 +167,4 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = "noreply@bnbazure.fr"
 CONTACT_EMAIL = "contact@bnbazure.fr"
+ADMIN_EMAIL = "admin@bnbazure.fr"

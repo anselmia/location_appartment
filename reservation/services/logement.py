@@ -509,3 +509,53 @@ def create_or_update_reservation(
     except Exception as e:
         logger.exception(f"Error creating or updating reservation: {e}")
         raise
+
+
+def get_occupancy_rate(logement: Logement, start: date, end: date) -> Decimal:
+    """
+    Calculate the occupancy rate for a logement in a given period.
+    Args:
+        logement: The Logement object.
+        start: Start date of the period.
+        end: End date of the period.
+    Returns:
+        Decimal occupancy rate (0.0 to 100.0 %).
+    """
+    total_days = (end - start).days + 1  # Include both start and end dates
+    if total_days <= 0:
+        return Decimal(0.0)
+
+    booked_days = get_night_booked_in_period([], logement.id, start, end)
+    occupancy_rate = Decimal(booked_days) / Decimal(total_days) * Decimal("100")
+    return occupancy_rate.quantize(Decimal("0.01"))  # Round to two decimal places
+
+
+def get_average_night_price(logement: Logement, start: date, end: date) -> Decimal:
+    """
+    Calcule le prix moyen par nuit pour un logement sur une période donnée,
+    en se basant sur toutes les réservations confirmées/terminées de la période.
+    Args:
+        logement: L'objet Logement.
+        start: Date de début de la période.
+        end: Date de fin de la période.
+    Returns:
+        Decimal: prix moyen par nuit.
+    """
+    reservations = Reservation.objects.filter(
+        logement=logement, start__gte=start, end__lte=end, statut__in=["confirmee", "terminee"]
+    )
+
+    total_nights = 0
+    total_price = Decimal("0.00")
+
+    for resa in reservations:
+        nights = (resa.end - resa.start).days
+        if nights > 0:
+            total_nights += nights
+            total_price += resa.price
+
+    if total_nights == 0:
+        return None
+
+    average_price = total_price / Decimal(total_nights)
+    return average_price.quantize(Decimal("0.01"))

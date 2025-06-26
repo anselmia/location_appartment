@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}
+    Accueil Partenaire
+{% endblock title %}
+{% block meta_description %}
+    Bienvenue sur votre tableau de bord partenaire. Gérez vos activités, consultez les réservations et suivez vos performances.
+    Partenaire : {{ user.username }}.
+{% endblock meta_description %}
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'partner/css/dashboard.css' %}" />
+{% endblock extrahead %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="dashboard-header text-center">
+            <h1 class="display-6">Bienvenue {{ user.full_name }}</h1>
+            <p class="lead text-muted">Votre espace de gestion d'activités et de réservations</p>
+        </div>
+        <!-- Cartes KPI -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <a href="{% url 'activity:revenu' %}" class="text-decoration-none">
+                    <div class="card kpi-card p-3 hoverable-card">
+                        <div class="kpi-label text-muted">Revenus totaux</div>
+                        <div class="kpi-value">{{ total_revenue|floatformat:0 }}&nbsp;€</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'reservation:activity_reservation_dashboard' %}"
+                   class="text-decoration-none">
+                    <div class="card kpi-card p-3 hoverable-card">
+                        <div class="kpi-label text-muted">Séjours à venir</div>
+                        <div class="kpi-value">{{ futur_reservations_count|default:"0" }}</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <!-- Aperçu des réservations à venir -->
+        <div class="row g-4 mt-4">
+            <div class="col-lg-8">
+                <h5 class="section-title mb-3">Mes réservations à venir</h5>
+                <div class="resa-cards-wrapper">
+                    {% if futur_reservations %}
+                        {% for resa in futur_reservations %}
+                            <div class="resa-card shadow-sm">
+                                <a href="{% url 'reservation:activity_reservation_detail' resa.code %}"
+                                   class="resa-card-link">
+                                    <div class="resa-card-header">
+                                        <span class="resa-arrival">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            Arrivée dans {{ resa.start|timeuntil }}
+                                        </span>
+                                    </div>
+                                    <div class="resa-card-body">
+                                        <div class="resa-name">{{ resa.user.full_name }}</div>
+                                        <div class="resa-dates">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ resa.start|date:"j M H:i" }}–{{ resa.end|date:"j M H:i" }}.
+                                        </div>
+                                        <div class="resa-desc text-muted small">
+                                            <i class="bi bi-house-door me-1"></i>
+                                            {{ resa.activty.name|truncatechars:40|default:"Activité" }}
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="resa-card-footer">
+                                    {% if resa.conversation %}
+                                        <a href="{% url 'accounts:messages_conversation' resa.conversation.id %}"
+                                           class="resa-message-link">
+                                            <i class="bi bi-chat-dots me-1"></i>Envoyer un message
+                                        </a>
+                                    {% else %}
+                                        <form method="post"
+                                              action="{% url 'accounts:start_conversation' %}"
+                                              style="display:inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="reservation_id" value="{{ resa.id }}">
+                                            <button type="submit" class="resa-message-link btn btn-link p-0">
+                                                <i class="bi bi-chat-dots me-1"></i>Démarrer la conversation
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">Aucune réservation à venir.</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <h5 class="section-title">Réservations échouées</h5>
+                <div class="card p-3 shadow-sm">
+                    <ul class="list-group list-group-flush">
+                        {% for resa in failed_reservations %}
+                            <li class="list-group-item">
+                                <a href="{% url 'reservation:activité_reservation_detail' resa.code %}"
+                                   class="text-danger fw-bold text-decoration-underline">
+                                    {{ resa.user.first_name }} — du {{ resa.start|date:"d M" }} au {{ resa.end|date:"d M" }}
+                                </a>
+                                <span class="badge bg-danger ms-2">Échec paiement</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Aucune réservation échouée.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <h5 class="section-title mt-4">Activités récentes</h5>
+                <div class="card p-3 shadow-sm">
+                    <ul class="list-group list-group-flush">
+                        {% for hist in history %}
+                            <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                                <a href="{% url 'reservation:activity_reservation_detail' hist.reservation.code %}"
+                                   class="unstyled-link">
+                                    <div>
+                                        <span class="text-muted small">{{ hist.details }}</span>
+                                    </div>
+                                </a>
+                                <span class="text-muted ms-md-3 mt-2 mt-md-0" style="white-space:nowrap;">
+                                    <i class="bi bi-clock me-1"></i>{{ hist.date_action|date:"d/m/Y H:i" }}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Aucune réservation récente.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="partner-fixed-messages position-relative" id="partnerSystemMessages">
+            <button class="close-btn" onclick="document.getElementById('partnerSystemMessages').style.display='none';" aria-label="Fermer">&times;</button>
+            <ul class="mb-0 ps-3">
+                {% for msg in messages_systems %}
+                    <li>{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% if show_onboarding %}
+        <!-- Onboarding Modal -->
+        <div class="modal fade"
+             id="onboardingModal"
+             tabindex="-1"
+             aria-labelledby="onboardingModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="onboardingModalLabel">Bienvenue sur votre espace partenaire !</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Voici comment bien démarrer :</p>
+                        <ul>
+                            <li>
+                                <b>1. Créer votre profil partenaire</b> pour maximiser votre visibilité via votre tableau de bord (Mon Compte). Ensuite attendez qu'un administrateur valide votre profil.
+                            </li>
+                            <li>
+                                <b>2. Complétez votre profil stripe</b> pour recevoir vos paiements. Vous pouvez le faire dans la section <a href="{% url 'accounts:dashboard' %}">Mon Compte > Stripe</a>.
+                            </li>
+                            <li>
+                                <b>3. Ajoutez vos premières activités</b> pour les rendre réservables par les voyageurs.
+                            </li>
+                            <li>
+                                <b>4. Suivez vos réservations et revenus</b> depuis ce tableau de bord.
+                            </li>
+                            <li>
+                                <b>5. Besoin d'aide ?</b> Contactez notre équipe support.
+                            </li>
+                        </ul>
+                        <p class="mb-0">Bonne expérience sur notre plateforme !</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Commencer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
+{% block extra_js %}
+    {% if show_onboarding %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var onboardingModal = new bootstrap.Modal(document.getElementById('onboardingModal'));
+                onboardingModal.show();
+            });
+        </script>
+    {% endif %}
+{% endblock extra_js %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Reservation, booking_booking, airbnb_booking, ActivityReservation
+from .models import Reservation, booking_booking, airbnb_booking, ActivityReservation, ReservationHistory, ActivityReservationHistory
 
 
 class ReservationAdmin(admin.ModelAdmin):
@@ -42,3 +42,5 @@ admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(ActivityReservation, ActivityReservationAdmin)
 admin.site.register(airbnb_booking)
 admin.site.register(booking_booking)
+admin.site.register(ActivityReservationHistory)
+admin.site.register(ReservationHistory)

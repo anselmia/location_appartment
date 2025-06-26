@@ -1,6 +1,7 @@
 import stripe
 import logging
 from datetime import datetime
+from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.conf import settings
@@ -31,7 +32,8 @@ from common.services.stripe.stripe_event import (
 
 from logement.models import PlatformFeeWaiver
 from payment.models import PaymentTask
-from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
+from reservation.models import ReservationHistory, ActivityReservationHistory
+
 from accounts.models import CustomUser
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,7 @@ def is_stripe_admin(user):
         or user.is_superuser
         or user.is_owner
         or user.has_conciergerie
-        or user.has_partners
+        or user.has_valid_partners
     )
 
 
@@ -194,19 +196,6 @@ def get_session(session_id: str) -> Any:
         return None
 
 
-def get_reservation_type(reservation: Any) -> str:
-    """
-    Determine the type of reservation based on its class name.
-    """
-    if reservation.__class__.__name__ == "Reservation":
-        return "logement"
-    elif reservation.__class__.__name__ == "ActivityReservation":
-        return "activity"
-    else:
-        logger.warning(f"⚠️ Unknown reservation type for {reservation.code}, defaulting to 'unknown'.")
-        raise ValueError(f"Unknown reservation type for {reservation.code}. Please check the reservation class.")
-
-
 def create_stripe_checkout_session_with_deposit(reservation: Any, request: Any) -> dict:
     """
     Create a Stripe Checkout Session for a reservation deposit.
@@ -219,6 +208,7 @@ def create_stripe_checkout_session_with_deposit(reservation: Any, request: Any) 
         Exception: If session creation fails.
     """
     from common.services.network import get_client_ip
+    from reservation.services.reservation_service import get_reservation_type
 
     ip = get_client_ip(request)
     try:
@@ -316,6 +306,7 @@ def create_stripe_checkout_session_with_manual_capture(reservation: Any, request
         Exception: If session creation fails.
     """
     from common.services.network import get_client_ip
+    from reservation.services.reservation_service import get_reservation_type
 
     ip = get_client_ip(request)
     try:
@@ -411,6 +402,7 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
     Raises:
         Exception: If link creation or email sending fails.
     """
+    from reservation.services.reservation_service import get_reservation_type
 
     reservation_type = get_reservation_type(reservation)
     if not reservation.user.email:
@@ -534,6 +526,7 @@ def charge_deposit(
     Raises:
         Exception: If payment fails.
     """
+    intent = None
     content_type = ContentType.objects.get_for_model(reservation)
     task, _ = PaymentTask.objects.get_or_create(
         content_type=content_type,
@@ -589,6 +582,12 @@ def charge_deposit(
 
         task.mark_success(intent.id)
 
+        amount = Decimal(amount_cents) / 100
+        ReservationHistory.objects.create(
+            reservation=reservation,
+            details=f"Réservation {reservation.code} - Un montant de {amount} € a été prélevé sur la caution.",
+        )
+
         logger.info(f"✅ Deposit Charged successful for reservation {reservation.code}, intent ID: {intent.id}")
         return intent
 
@@ -637,6 +636,8 @@ def transfer_funds(reservation: Any) -> None:
         Exception: If transfer fails.
     """
     try:
+        from reservation.services.reservation_service import get_reservation_type
+
         logger.info(f"💼 Preparing transfer for reservation {reservation.code}")
 
         reservation_type = get_reservation_type(reservation)
@@ -684,6 +685,13 @@ def transfer_funds(reservation: Any) -> None:
                         reservation.admin_transferred = True
                         reservation.admin_stripe_transfer_id = transfer.id
                         reservation.save(update_fields=["admin_transferred", "admin_stripe_transfer_id"])
+
+                    task.mark_success(transfer.id)
+                    if reservation_type == "logement":
+                        ReservationHistory.objects.create(
+                            reservation=reservation,
+                            details=f"Réservation {reservation.code} - Un paiement de {admin_amount} € a été transféré à {admin.full_name}.",
+                        )
 
                     logger.info(
                         f"✅ Payout transferred to {admin} for reservation {reservation.code} (transfer ID: {transfer.id})"
@@ -790,6 +798,17 @@ def transfer_funds(reservation: Any) -> None:
                 reservation.save(update_fields=["transferred", "stripe_transfer_id"])
 
             task.mark_success(transfer.id)
+
+            if reservation_type == "logement":
+                ReservationHistory.objects.create(
+                    reservation=reservation,
+                    details=f"Réservation {reservation.code} - Un paiement de {owner_amount} € a été transféré à {owner.full_name}.",
+                )
+            elif reservation_type == "activity":
+                ActivityReservationHistory.objects.create(
+                    reservation=reservation,
+                    details=f"Réservation {reservation.code} - Un paiement de {owner_amount} € a été transféré à {owner.full_name}.",
+                )
             logger.info(f"✅ Owner payout transferred for reservation {reservation.code} (transfer ID: {transfer.id})")
 
         except stripe.error.InvalidRequestError as e:
@@ -837,6 +856,8 @@ def refund_payment(reservation: Any, refund: str = "full", amount_cents: Any = N
     Raises:
         Exception: If refund fails.
     """
+    from reservation.services.reservation_service import get_reservation_type
+
     content_type = ContentType.objects.get_for_model(reservation)
     task, _ = PaymentTask.objects.get_or_create(
         content_type=content_type,
@@ -844,6 +865,7 @@ def refund_payment(reservation: Any, refund: str = "full", amount_cents: Any = N
         type="refund",
     )
     try:
+        amount = 0.0
         logger.info(f"💸 Initiating refund for reservation {reservation.code}")
 
         reservation_type = get_reservation_type(reservation)
@@ -859,6 +881,7 @@ def refund_payment(reservation: Any, refund: str = "full", amount_cents: Any = N
 
         if amount_cents:
             params["amount"] = int(amount_cents)
+            amount = Decimal(amount_cents) / 100
 
         refund = stripe.Refund.create(**params)
 
@@ -869,6 +892,17 @@ def refund_payment(reservation: Any, refund: str = "full", amount_cents: Any = N
             reservation.save(update_fields=["refunded", "stripe_refund_id"])
 
         task.mark_success(refund.id)
+
+        if reservation_type == "logement":
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Réservation {reservation.code} - Un remboursement de {amount} € a été effectué pour {reservation.user.full_name}.",
+            )
+        elif reservation_type == "activity":
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Réservation {reservation.code} - Un remboursement de {amount} € a été effectué pour {reservation.user.full_name}.",
+            )
         logger.info(
             f"✅ Refund processed for Reservation {reservation.code}: {refund.id}, Amount: {params.get('amount', 'full')} cents"
         )
@@ -953,6 +987,16 @@ def capture_reservation_payment(reservation):
             return {"success": False, "error": error_message}
 
         task.mark_success(captured_intent.id)
+
+        amount_captured = (
+            Decimal(captured_intent.amount_received) / 100
+            if hasattr(captured_intent, "amount_received")
+            else Decimal("0.00")
+        )
+        ActivityReservationHistory.objects.create(
+            reservation=reservation,
+            details=f"Réservation {reservation.code} validée ! Le montant de {amount_captured} € a été payé.",
+        )
         return {"success": True, "error": None}
     except stripe.error.InvalidRequestError as e:
         logger.exception(
@@ -1515,3 +1559,134 @@ def verify_transfer(reservation):
     except Exception as e:
         logger.error(f"[verify_transfer] Erreur lors de la vérification du transfert Stripe {transfer_id} : {e}")
         return False, f"Erreur lors de la vérification du transfert Stripe : {e}"
+
+
+def verify_payment_method(reservation):
+    """
+    Vérifie et retourne le moyen de paiement utilisé pour la réservation Stripe.
+    Retourne (success: bool, message: str, payment_method_id: str|None)
+    """
+    payment_intent_id = getattr(reservation, "stripe_payment_intent_id", None)
+    if not payment_intent_id:
+        logger.warning(
+            f"[verify_payment_method] Aucun PaymentIntent Stripe associé à la réservation {getattr(reservation, 'code', '[unknown]')}."
+        )
+        return False, "Aucun PaymentIntent Stripe associé à cette réservation.", None
+
+    try:
+        logger.info(
+            f"[verify_payment_method] Vérification du PaymentIntent Stripe {payment_intent_id} pour la réservation {getattr(reservation, 'code', '[unknown]')}."
+        )
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
+        payment_method = getattr(intent, "payment_method", None)
+        if payment_method:
+            # payment_method peut être un objet ou un id
+            payment_method_id = payment_method.id if hasattr(payment_method, "id") else str(payment_method)
+            logger.info(
+                f"[verify_payment_method] Moyen de paiement trouvé pour la réservation {getattr(reservation, 'code', '[unknown]')} : {payment_method_id}"
+            )
+            reservation.stripe_saved_payment_method_id = payment_method_id
+            reservation.save(update_fields=["stripe_saved_payment_method_id"])
+            return (
+                True,
+                f"Moyen de paiement trouvé : {payment_method_id}",
+            )
+        else:
+            logger.warning(
+                f"[verify_payment_method] Aucun moyen de paiement trouvé pour le PaymentIntent {payment_intent_id}."
+            )
+            return False, "Aucun moyen de paiement trouvé pour cette réservation."
+    except Exception as e:
+        logger.error(
+            f"[verify_payment_method] Erreur lors de la récupération du moyen de paiement Stripe {payment_intent_id} : {e}"
+        )
+        return False, f"Erreur lors de la récupération du moyen de paiement Stripe : {e}"
+
+
+def verify_deposit_payment(reservation: Any) -> tuple[bool, str]:
+    """
+    Vérifie si la caution d'une réservation a été payée et retourne un message d'état en français.
+    Args:
+        reservation: L'objet réservation.
+    Returns:
+        (True, message) si payée, (False, message) sinon.
+    """
+    if not getattr(reservation, "stripe_deposit_payment_intent_id", None):
+        return False, "Aucun paiement de caution Stripe associé à cette réservation."
+
+    try:
+        intent = stripe.PaymentIntent.retrieve(reservation.stripe_deposit_payment_intent_id)
+        status = intent.status
+
+        if status == "succeeded":
+            amount_cents = getattr(intent, "amount_received", 0)
+            amount = Decimal(amount_cents) / 100  # cents to euros
+            reservation.caution_charged = True
+            reservation.amount_charged = amount
+            reservation.save(update_fields=["caution_charged", "amount_charged"])
+            logger.info(f"✅ Caution pour la réservation {reservation.code} confirmée : {amount:.2f} €")
+            return True, f"Caution payée et confirmée ({amount:.2f} € reçus)."
+        elif status == "processing":
+            return False, "Le paiement de la caution est en cours de traitement. Veuillez réessayer plus tard."
+        elif status == "requires_payment_method":
+            return False, "Le paiement de la caution a échoué ou a été annulé. Un nouveau moyen de paiement est requis."
+        elif status == "requires_action":
+            return (
+                False,
+                "Le paiement de la caution nécessite une action supplémentaire de l'utilisateur (3D Secure, etc.).",
+            )
+        elif status == "canceled":
+            return False, "Le paiement de la caution a été annulé."
+        else:
+            return False, f"Statut du paiement Stripe pour la caution : {status}."
+
+    except stripe.error.StripeError as e:
+        logger.error(
+            f"❌ Erreur Stripe lors de la vérification du paiement de caution pour la réservation {reservation.code}: {e}"
+        )
+        return False, "Erreur Stripe lors de la vérification du paiement de caution."
+    except Exception as e:
+        logger.error(
+            f"❌ Erreur inattendue lors de la vérification du paiement de caution pour la réservation {reservation.code}: {e}"
+        )
+        return False, "Erreur inattendue lors de la vérification du paiement de caution."
+
+
+def verify_refund(reservation: Any) -> tuple[bool, str, Decimal]:
+    """
+    Recherche le montant remboursé pour une réservation à partir du stripe_payment_intent_id.
+    Args:
+        reservation: L'objet réservation.
+    Returns:
+        (True, message, amount) si remboursé, (False, message, Decimal('0.00')) sinon.
+    """
+    payment_intent_id = getattr(reservation, "stripe_payment_intent_id", None)
+    if not payment_intent_id:
+        return False, "Aucun PaymentIntent Stripe associé à cette réservation.", Decimal("0.00")
+
+    try:
+        # Récupère tous les remboursements liés à ce PaymentIntent
+        refunds = stripe.Refund.list(payment_intent=payment_intent_id, limit=10)
+        total_refunded = Decimal("0.00")
+        for refund in refunds.auto_paging_iter() if hasattr(refunds, "auto_paging_iter") else refunds.data:
+            if getattr(refund, "status", None) == "succeeded":
+                amount = Decimal(getattr(refund, "amount", 0)) / 100
+                total_refunded += amount
+
+        if total_refunded > 0:
+            reservation.refunded = True
+            reservation.refund_amount = amount
+            reservation.save(update_fields=["refunded", "refund_amount"])
+            return True, f"Montant total remboursé : {total_refunded:.2f} €."
+        else:
+            return False, "Aucun remboursement trouvé pour cette réservation."
+    except stripe.error.StripeError as e:
+        logger.error(
+            f"❌ Erreur Stripe lors de la récupération du remboursement pour la réservation {reservation.code}: {e}"
+        )
+        return False, "Erreur Stripe lors de la récupération du remboursement."
+    except Exception as e:
+        logger.error(
+            f"❌ Erreur inattendue lors de la récupération du remboursement pour la réservation {reservation.code}: {e}"
+        )
+        return False, "Erreur inattendue lors de la récupération du remboursement."

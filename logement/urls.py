@@ -69,6 +69,7 @@ urlpatterns = [
     path("logement/<int:logement_id>/sync/airbnb/", views.sync_airbnb_calendar_view, name="sync_airbnb_calendar"),
     path("logement/<int:logement_id>/sync/booking/", views.sync_booking_calendar_view, name="sync_booking_calendar"),
     path("api/stop-managing-logement/", views.stop_managing_logement, name="stop_managing_logement"),
+    path("dash/", views.dashboard, name="dash"),
 ]
 
 urlpatterns += router.urls

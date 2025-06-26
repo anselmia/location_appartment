@@ -6,7 +6,7 @@
     <div class="card-body">
         {% if not partner %}
             <p class="text-muted mb-3">Aucun partenaire n’est enregistré pour le moment.</p>
-            <a href="{% url 'activity:create_partner' %}" class="btn btn-primary">➕ Devenir partenaire</a>
+            <a href="{% url 'partner:create_partner' %}" class="btn btn-primary">➕ Devenir partenaire</a>
         {% else %}
             <div class="mb-3">
                 <div class="row gy-3">
@@ -48,7 +48,7 @@
                 </div>
             </div>
             <div class="d-flex flex-wrap gap-2 mt-3">
-                <a href="{% url 'activity:update_partner' partner.id %}"
+                <a href="{% url 'partner:update_partner' partner.id %}"
                    class="btn btn-primary">✏️ Modifier mon profil partenaire</a>
                 <a href="{% url 'activity:create_activity' %}" class="btn btn-success">➕ Ajouter une activité</a>
             </div>

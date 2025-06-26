@@ -2,21 +2,66 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
 
 from conciergerie.models import Conciergerie, ConciergerieRequest
 from conciergerie.forms import ConciergerieForm
 from conciergerie.tasks import send_conciergerie_validation_email
 from conciergerie.decorators import user_is_owner_admin
+from conciergerie.services.conciergerie import get_conciergerie_system_messages
 
 from logement.models import City
+from logement.decorators import user_is_logement_admin
+from logement.services.logement_service import get_logements_overview
 
 from common.decorators import is_admin
 from common.services.email_service import (
     send_mail_conciergerie_request_accepted,
     send_mail_conciergerie_request_refused,
 )
+
+
+@login_required
+@user_is_logement_admin
+def dashboard(request: HttpRequest) -> HttpResponse:
+    """
+    Affiche le tableau de bord de gestion des logements pour l'utilisateur connecté,
+    avec toutes les données nécessaires pour les KPI, le calendrier, les réservations récentes, les tâches à faire, etc.
+    """
+    user = request.user
+    # Récupère les stats compilées pour tous les logements de l'utilisateur
+    logement_stats = get_logements_overview(user)
+
+    conciergerie = Conciergerie.objects.filter(user=user).first()
+    if not conciergerie:
+        messages.info(request, "Vous n'avez pas encore de compte conciergerie. Veuillez en créer un.")
+        return redirect("accounts:dashboard")
+
+    # Onboarding message la première fois
+    if not conciergerie.onboarded:
+        show_onboarding = True
+        conciergerie.onboarded = True
+        conciergerie.save()
+    else:
+        show_onboarding = False
+
+    messages_systems = get_conciergerie_system_messages(user)
+
+    context = {
+        "occupancy_rate": logement_stats["occupancy_rate"],
+        "total_revenue": logement_stats["total_revenue"],
+        "total_revenue_conciergerie": logement_stats["total_revenue_conciergerie"],
+        "futur_reservations": logement_stats["futur_reservations"],
+        "futur_reservations_count": logement_stats["futur_reservations_count"],
+        "average_night_price": logement_stats.get("average_night_price", 0),  # Si tu veux afficher le prix moyen/nuit
+        "failed_reservations": logement_stats["total_failed_reservations"],
+        "history": logement_stats["history"],
+        "show_onboarding": show_onboarding,
+        "messages_systems": messages_systems,
+    }
+
+    return render(request, "conciergerie/dashboard.html", context)
 
 
 @login_required

@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
 from django.core.cache import cache
 
-from activity.services.activity import get_activity
 from activity.models import Activity, Price, CloseDate
 from reservation.models import ActivityReservation
 from payment.services.payment_service import get_payment_fee
@@ -169,6 +168,7 @@ def bulk_update_prices(activity_id: int, start: str, end: str, price: float, sta
 def get_revenue_context(user, request) -> Dict[str, Any]:
     from reservation.services.reservation_service import get_valid_reservations
     from reservation.services.activity import get_activity_reservations_queryset
+    from activity.services.activity import get_activity
 
     activities = get_activity(user)
     year = request.GET.get("year")

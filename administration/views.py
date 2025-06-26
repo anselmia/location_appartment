@@ -31,7 +31,7 @@ from payment.services.payment_service import retrieve_balance
 from reservation.models import Reservation, ActivityReservation
 from conciergerie.models import Conciergerie
 from logement.models import PlatformFeeWaiver, Logement
-from activity.models import Partners
+from partner.models import Partners
 from accounts.models import Message
 from administration.services.logs import parse_log_file, count_lines
 

@@ -84,10 +84,11 @@ urlpatterns = [
     path("", include("common.urls", namespace="common")),  # main site
     path("admin/", admin.site.urls),  # optional
     path("accounts/", include("accounts.urls", namespace="accounts")),
+    path("activity/", include("activity.urls", namespace="activity")),
     path("admin-area/", include("administration.urls", namespace="administration")),
     path("conciergerie/", include("conciergerie.urls", namespace="conciergerie")),
-    path("activity/", include("activity.urls", namespace="activity")),
-    path("", include("logement.urls", namespace="logement")),
+    path("logement/", include("logement.urls", namespace="logement")),
+    path("partner/", include("partner.urls", namespace="partner")),
     path("payment/", include("payment.urls", namespace="payment")),
     path("reservation/", include("reservation.urls", namespace="reservation")),
     path(

@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from reservation.forms import LogementReservationForm, ActivityReservationForm
-from reservation.models import Reservation, ActivityReservation
+from reservation.models import Reservation, ActivityReservation, ActivityReservationHistory, ReservationHistory
 from reservation.decorators import (
     user_has_reservation,
     user_is_reservation_admin,
@@ -25,6 +25,7 @@ from reservation.services.reservation_service import (
     get_reservation_years_and_months,
     mark_reservation_cancelled,
     get_valid_reservations,
+    get_reservation_type
 )
 from reservation.services.logement import (
     get_logement_reservations_queryset,
@@ -295,7 +296,7 @@ def customer_cancel_logement_booking(request: HttpRequest, code: str) -> HttpRes
     """
     try:
         reservation = get_object_or_404(Reservation, code=code, user=request.user)
-        success_message, error_message = cancel_and_refund_reservation(reservation)
+        success_message, error_message = cancel_and_refund_reservation(reservation, request.user)
         if success_message:
             messages.success(request, success_message)
         if error_message:
@@ -307,6 +308,29 @@ def customer_cancel_logement_booking(request: HttpRequest, code: str) -> HttpRes
 
 
 @login_required
+@user_is_reservation_admin
+def owner_cancel_logement_booking(request: HttpRequest, code: str) -> HttpResponse:
+    """
+    Cancel by owner a booking and process refund if possible.
+    """
+    try:
+        reservation = get_object_or_404(Reservation, code=code)
+        reservation_type = get_reservation_type(reservation)
+        success_message, error_message = cancel_and_refund_reservation(reservation, request.user)
+        if success_message:
+            messages.success(request, success_message)
+        if error_message:
+            messages.error(request, error_message)
+    except Exception as e:
+        logger.exception(f"Error canceling booking: {e}")
+        messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
+    if reservation_type == "activity":
+        return redirect("reservation:activity_reservation_detail", code=code)
+    else:
+        return redirect("reservation:logement_reservation_detail", code=code)
+
+
+@login_required
 @user_has_activity
 def customer_cancel_activity_booking(request: HttpRequest, code: str) -> HttpResponse:
     """
@@ -314,7 +338,7 @@ def customer_cancel_activity_booking(request: HttpRequest, code: str) -> HttpRes
     """
     try:
         reservation = get_object_or_404(ActivityReservation, code=code, user=request.user)
-        success_message, error_message = cancel_and_refund_reservation(reservation)
+        success_message, error_message = cancel_and_refund_reservation(reservation, request.user)
         if success_message:
             messages.success(request, success_message)
         if error_message:
@@ -324,6 +348,29 @@ def customer_cancel_activity_booking(request: HttpRequest, code: str) -> HttpRes
         messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
     return redirect("accounts:dashboard")
 
+
+@login_required
+@user_is_reservation_admin
+def owner_cancel_activity_booking(request: HttpRequest, code: str) -> HttpResponse:
+    """
+    Cancel by owner a booking and process refund if possible.
+    """
+    try:
+        reservation = get_object_or_404(ActivityReservation, code=code)
+        reservation_type = get_reservation_type(reservation)
+        success_message, error_message = cancel_and_refund_reservation(reservation, request.user)
+        if success_message:
+            messages.success(request, success_message)
+        if error_message:
+            messages.error(request, error_message)
+    except Exception as e:
+        logger.exception(f"Error canceling booking: {e}")
+        messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
+    if reservation_type == "activity":
+        return redirect("reservation:activity_reservation_detail", code=code)
+    else:
+        return redirect("reservation:logement_reservation_detail", code=code)
+    
 
 @login_required
 @is_admin
@@ -375,6 +422,11 @@ def cancel_logement_reservation(request: HttpRequest, code: str) -> HttpResponse
     reservation = get_object_or_404(Reservation, code=code)
     if reservation.statut != "annulee":
         mark_reservation_cancelled(reservation)
+        ReservationHistory.objects.create(
+            reservation=reservation,
+            user=request.user,
+            details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
+        )
         messages.success(request, "Réservation annulée avec succès.")
     else:
         messages.warning(request, "La réservation est déjà annulée.")
@@ -391,6 +443,11 @@ def cancel_activity_reservation(request: HttpRequest, code: str) -> HttpResponse
     reservation = get_object_or_404(ActivityReservation, code=code)
     if reservation.statut != "annulee":
         mark_reservation_cancelled(reservation)
+        ActivityReservationHistory.objects.create(
+            reservation=reservation,
+            user=request.user,
+            details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
+        )
         messages.success(request, "Réservation annulée avec succès.")
     else:
         messages.warning(request, "La réservation est déjà annulée.")

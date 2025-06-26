@@ -6,7 +6,7 @@
 {% endblock %}
 {% block extrahead %}
   <link rel="stylesheet"
-        href="{% static 'activity/css/partner_detail.css' %}">
+        href="{% static 'partner/css/partner_detail.css' %}">
 {% endblock %}
 {% block content %}
   <div class="partner-detail-wrapper py-5">
@@ -87,9 +87,9 @@
                 {% endif %}
               </div>
               <div class="d-flex flex-wrap gap-2">
-                <a href="{% url 'activity:update_partner' partner.id %}"
+                <a href="{% url 'partner:update_partner' partner.id %}"
                    class="btn btn-primary">✏️ Modifier</a>
-                <a href="{% url 'activity:list_partners' %}" class="btn btn-secondary">⬅️ Retour à la liste</a>
+                <a href="{% url 'partner:list_partners' %}" class="btn btn-secondary">⬅️ Retour à la liste</a>
               </div>
             </div>
           </div>

@@ -7,7 +7,7 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet"
-          href="{% static 'activity/css/partner_customer_card.css' %}">
+          href="{% static 'partner/css/partner_customer_card.css' %}">
 {% endblock extrahead %}
 {% block content %}
     <div class="container py-5">
@@ -60,7 +60,7 @@
                             </div>
                         {% endif %}
                         <div class="text-center">
-                            <a href="{% url 'activity:partner_list_customer' %}"
+                            <a href="{% url 'partner:partner_list_customer' %}"
                                class="btn btn-primary btn-lg px-5">Voir tous les partenaires</a>
                         </div>
                     </div>

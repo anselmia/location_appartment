@@ -5,13 +5,10 @@ from . import views
 app_name = "accounts"
 
 urlpatterns = [
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="accounts/login.html"),
-        name="login",
-    ),
+    path("login/", views.CustomLoginView.as_view(), name="login"),
     path("logout/", views.user_logout, name="logout"),
     path("register/", views.register, name="register"),
+    path("register/role/", views.select_role, name="select_role"),
     path("dashboard/", views.client_dashboard, name="dashboard"),
     path("update-profile/", views.update_profile, name="update_profile"),
     path("messages/", views.messages_view, name="messages"),
