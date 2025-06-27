@@ -121,3 +121,54 @@ def update_stripe_account(account_id, update_data=None):
     except Exception as e:
         logger.error(f"Erreur mise à jour Stripe Account {account_id} : {e}")
         raise
+
+
+def get_stripe_transactions(user):
+    """
+    Récupère les transactions Stripe pour un utilisateur donné.
+    """
+    if not user.stripe_account_id:
+        return None
+
+    try:
+        transactions = stripe.BalanceTransaction.list(
+            limit=100,
+            stripe_account=user.stripe_account_id,
+        )
+        return transactions.data
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des transactions Stripe pour l'utilisateur {user.id}: {e}")
+        return None
+
+
+def get_stripe_balance(user):
+    """
+    Récupère le solde Stripe pour un utilisateur donné.
+    """
+    if not user.stripe_account_id:
+        return None
+
+    try:
+        balance = stripe.Balance.retrieve(stripe_account=user.stripe_account_id)
+        return balance
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération du solde Stripe pour l'utilisateur {user.id}: {e}")
+        return None
+
+
+def get_stripe_payouts(user):
+    """
+    Récupère les paiements Stripe pour un utilisateur donné.
+    """
+    if not user.stripe_account_id:
+        return None
+
+    try:
+        payouts = stripe.Payout.list(
+            limit=100,
+            stripe_account=user.stripe_account_id,
+        )
+        return payouts.data
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des paiements Stripe pour l'utilisateur {user.id}: {e}")
+        return None

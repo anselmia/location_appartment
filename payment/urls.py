@@ -60,5 +60,10 @@ urlpatterns = [
         "verify-refund/<str:code>/",
         views.verify_refund_view,
         name="verify_refund",
-    )
+    ),
+    path(
+        "send-payment-link/<str:code>/",
+        views.send_payment_link,
+        name="send_payment_link",
+    ),
 ]

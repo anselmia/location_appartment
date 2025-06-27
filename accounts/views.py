@@ -92,7 +92,6 @@ def register(request):
     return render(request, "accounts/register.html", {"form": form, "role": role})
 
 
-
 class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
 
@@ -161,6 +160,9 @@ def client_dashboard(request):
         else:
             password_form = CustomPasswordChangeForm(user=user)
 
+        stripe_transactions = None
+        stripe_balance = None
+        stripe_payouts = None
         user_is_stripe_admin = is_stripe_admin(user)
 
         if user_is_stripe_admin and user.stripe_account_id:
@@ -168,6 +170,9 @@ def client_dashboard(request):
                 from common.services.stripe.account import (
                     get_stripe_account_info,
                     get_stripe_dashboard_link,
+                    get_stripe_transactions,
+                    get_stripe_balance,
+                    get_stripe_payouts,
                 )
 
                 stripe_account = get_stripe_account_info(user)
@@ -176,6 +181,10 @@ def client_dashboard(request):
                     logger.info(f"💳 Stripe account loaded for user {user.id}")
                 else:
                     logger.warning(f"⚠️ No Stripe account data returned for user {user.id}")
+
+                stripe_transactions = get_stripe_transactions(user)
+                stripe_balance = get_stripe_balance(user)
+                stripe_payouts = get_stripe_payouts(user)
 
             except Exception as e:
                 logger.exception(f"❌ Stripe integration failed for user {user.id}: {e}")
@@ -220,6 +229,9 @@ def client_dashboard(request):
                 "logement_administrated": logement_administrated,
                 "partner": partner,
                 "partner_activities": user_activities,
+                "stripe_transactions": stripe_transactions,
+                "stripe_balance": stripe_balance,
+                "stripe_payouts": stripe_payouts,
             },
         )
 

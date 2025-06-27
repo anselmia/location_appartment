@@ -421,11 +421,11 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
             # Optionally send an email with the payment link
             send_mail_activity_payment_link(reservation, session)
 
-        logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session.url}")
+        logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session['checkout_session_url']}")
 
         logger.info(f"📧 Email envoyé à {reservation.user.email} avec le lien de paiement Stripe")
 
-        return session.url
+        return session['checkout_session_url']
 
     except Exception as e:
         logger.exception(
@@ -1571,7 +1571,7 @@ def verify_payment_method(reservation):
         logger.warning(
             f"[verify_payment_method] Aucun PaymentIntent Stripe associé à la réservation {getattr(reservation, 'code', '[unknown]')}."
         )
-        return False, "Aucun PaymentIntent Stripe associé à cette réservation.", None
+        return False, "Aucun PaymentIntent Stripe associé à cette réservation."
 
     try:
         logger.info(
