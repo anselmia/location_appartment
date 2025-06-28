@@ -28,43 +28,100 @@ function logToServer(level, message, meta = {}) {
 
 document.addEventListener("DOMContentLoaded", function () {
   const loader = document.getElementById("loader");
-  if (loader) {
-    loader.style.display = "none";
-  }
+  if (loader) loader.style.display = "none";
 
   const banner = document.getElementById("cookie-banner");
   const acceptBtn = document.getElementById("accept-cookies");
+  const refuseBtn = document.getElementById("refuse-cookies");
+  const customizeBtn = document.getElementById("customize-cookies");
+  const customizePanel = document.getElementById("cookie-customize-panel");
+  const savePrefsBtn = document.getElementById("save-cookie-preferences");
+  const analyticsBox = document.getElementById("consent-analytics");
+  const mapsBox = document.getElementById("consent-maps");
+  const showCookieBtn = document.getElementById("show-cookie-banner");
 
-  // Show banner if no consent cookie
-  if (!document.cookie.includes("cookie_consent=true")) {
-    banner.style.display = "block";
-  }
-
-  acceptBtn.addEventListener("click", function () {
-    // Set a cookie for 6 months
+  // Helper: set consent cookie (6 months)
+  function setConsent(consent) {
     const date = new Date();
     date.setMonth(date.getMonth() + 6);
-    document.cookie = `cookie_consent=true; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
+    document.cookie = `cookie_consent=${encodeURIComponent(
+      JSON.stringify(consent)
+    )}; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
+  }
 
+  // Helper: get consent object from cookie
+  function getConsent() {
+    const match = document.cookie.match(/cookie_consent=([^;]+)/);
+    if (match) {
+      try {
+        return JSON.parse(decodeURIComponent(match[1]));
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  // Show banner if no consent
+  let consent = getConsent();
+  if (!consent) banner.style.display = "block";
+
+  // Accept all
+  acceptBtn.addEventListener("click", function () {
+    consent = { analytics: true, maps: true };
+    setConsent(consent);
     banner.style.display = "none";
-
-    // OPTIONAL: initialize services
-    initOptionalCookies(); // e.g., analytics, chat widgets, etc.
+    initOptionalCookies(consent);
   });
 
-  const showCookieBtn = document.getElementById("show-cookie-banner");
-  const cookieBanner = document.getElementById("cookie-banner");
-  if (showCookieBtn && cookieBanner) {
+  // Refuse all
+  refuseBtn.addEventListener("click", function () {
+    consent = { analytics: false, maps: false };
+    setConsent(consent);
+    banner.style.display = "none";
+    initOptionalCookies(consent);
+  });
+
+  // Show customize panel
+  customizeBtn.addEventListener("click", function () {
+    customizePanel.style.display = "block";
+    analyticsBox.checked = false;
+    mapsBox.checked = false;
+    if (consent) {
+      analyticsBox.checked = !!consent.analytics;
+      mapsBox.checked = !!consent.maps;
+    }
+  });
+
+  // Save preferences
+  savePrefsBtn.addEventListener("click", function () {
+    consent = {
+      analytics: analyticsBox.checked,
+      maps: mapsBox.checked,
+    };
+    setConsent(consent);
+    banner.style.display = "none";
+    customizePanel.style.display = "none";
+    initOptionalCookies(consent);
+  });
+
+  // Allow user to re-open the banner
+  if (showCookieBtn && banner) {
     showCookieBtn.addEventListener("click", function (e) {
       e.preventDefault();
-      cookieBanner.style.display = "block";
+      banner.style.display = "block";
+      customizePanel.style.display = "none";
     });
   }
+
+  // On page load, apply consent if already set
+  if (consent) initOptionalCookies(consent);
 });
 
-function initOptionalCookies() {
-  loadAnalytics();
-  showMapOrPlaceholder();
+// Load optional cookies/scripts based on consent
+function initOptionalCookies(consent) {
+  consent = consent || {};
+  if (consent.analytics) loadAnalytics();
+  if (consent.maps) showMapOrPlaceholder();
+  else showMapOrPlaceholder(false); // show placeholder if not allowed
 }
 
 function loadAnalytics() {
@@ -76,22 +133,33 @@ function loadAnalytics() {
 
     var inline = document.createElement("script");
     inline.innerHTML = `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-W05PFMYJQH');
-            `;
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-W05PFMYJQH');
+        `;
     document.head.appendChild(inline);
     window.gaLoaded = true;
   }
 }
 
-function showMapOrPlaceholder() {
+function showMapOrPlaceholder(allowMap = undefined) {
   const placeholder = document.getElementById("map-placeholder");
   if (!placeholder) return;
-  // Check if consent cookie is present
-  if (document.cookie.includes("cookie_consent=true")) {
-    // Show the map
+  // If allowMap is undefined, check consent cookie
+  if (allowMap === undefined) {
+    const consent = (function () {
+      const match = document.cookie.match(/cookie_consent=([^;]+)/);
+      if (match) {
+        try {
+          return JSON.parse(decodeURIComponent(match[1]));
+        } catch (e) {}
+      }
+      return {};
+    })();
+    allowMap = !!consent.maps;
+  }
+  if (allowMap && window.logementMapLink) {
     placeholder.innerHTML = `<iframe class="logement-map"
             src="${window.logementMapLink}"
             style="border:0; width:100%; height:220px;"
@@ -99,26 +167,20 @@ function showMapOrPlaceholder() {
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"></iframe>`;
   } else {
-    // Show the placeholder
     placeholder.innerHTML = `
             <div>
-                <p>La carte Google Maps est désactivée tant que vous n'avez pas accepté les cookies.</p>
+                <p>La carte Google Maps est désactivée tant que vous n'avez pas accepté les cookies tiers.</p>
                 <button id="enable-map" class="btn btn-primary btn-sm">Afficher la carte</button>
             </div>
         `;
-    // Allow manual activation if user clicks
     const btn = document.getElementById("enable-map");
     if (btn) {
       btn.addEventListener("click", function () {
-        // Set consent cookie for 6 months
-        const date = new Date();
-        date.setMonth(date.getMonth() + 6);
-        document.cookie = `cookie_consent=true; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
-        showMapOrPlaceholder();
-        // Optionally: trigger other consent-dependent features
-        if (typeof initOptionalCookies === "function") {
-          initOptionalCookies();
-        }
+        // Accept only maps cookies
+        const consent = getConsent() || {};
+        consent.maps = true;
+        setConsent(consent);
+        showMapOrPlaceholder(true);
       });
     }
   }

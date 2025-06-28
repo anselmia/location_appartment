@@ -120,13 +120,13 @@
         {% block extra_js %}{% endblock %}
         <div id="cookie-banner" style="display: none;" class="cookie-banner">
             <p>
-                Ce site utilise des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction, etc.).
+                Ce site utilise des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction).
                 <a href="{% url 'common:cgu' %}" target="_blank" rel="noopener">En savoir plus</a>
             </p>
             <div class="cookie-actions">
                 <button id="accept-cookies" class="btn btn-primary btn-sm">Tout accepter</button>
-                <button id="refuse-cookies" class="btn btn-outline-secondary btn-sm">Tout refuser</button>
-                <button id="customize-cookies" class="btn btn-link btn-sm">Personnaliser</button>
+                <button id="refuse-cookies" class="btn btn-primary btn-sm">Tout refuser</button>
+                <button id="customize-cookies" class="btn btn-primary btn-sm">Personnaliser</button>
             </div>
             <div id="cookie-customize-panel" style="display:none; margin-top:1rem;">
                 <form>
@@ -135,7 +135,7 @@
                             <input type="checkbox" checked disabled>
                             <strong>Cookies nécessaires</strong> (toujours actifs)
                         </label>
-                        <div class="text-muted small">Indispensables au fonctionnement du site (connexion, sécurité, panier...)</div>
+                        <div class="text-muted small">Indispensables au fonctionnement du site (connexion, sécurité, réservation)</div>
                     </div>
                     <div>
                         <label>
