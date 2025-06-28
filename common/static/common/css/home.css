@@ -597,7 +597,7 @@ section a:hover {
   letter-spacing: 0.02em;
   z-index: 20;
   box-shadow: 0 2px 12px rgba(191,166,107,0.10);
-  border-radius: 0 0 1.2rem 1.2rem;
+  border-radius: 1.2rem 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
