@@ -146,7 +146,7 @@
                                          height="250">
                                 </picture>
                                 <i class="bi bi-tag-fill fs-3 text-gold mb-2"></i>
-                                <h5 class="fw-bold">Tarifs justes</h5>
+                                <h3 class="fw-bold">Tarifs justes</h3>
                                 <p class="text-muted small">Des prix flexibles et compétitifs via nos partenaires de confiance.</p>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
                                          height="250">
                                 </picture>
                                 <i class="bi bi-headset fs-3 text-gold mb-2"></i>
-                                <h5 class="fw-bold">Service réactif</h5>
+                                <h3 class="fw-bold">Service réactif</h3>
                                 <p class="text-muted small">Une assistance personnalisée avant, pendant et après votre séjour.</p>
                             </div>
                         </div>
@@ -180,7 +180,7 @@
                                          height="250">
                                 </picture>
                                 <i class="bi bi-house-door fs-3 text-gold mb-2"></i>
-                                <h5 class="fw-bold">Logements de qualité</h5>
+                                <h3 class="fw-bold">Logements de qualité</h3>
                                 <p class="text-muted small">Bien localisés, propres, bien équipés : standards d’hospitalité moderne.</p>
                             </div>
                         </div>
@@ -197,7 +197,7 @@
                                          height="250">
                                 </picture>
                                 <i class="bi bi-lightning-charge-fill fs-3 text-gold mb-2"></i>
-                                <h5 class="fw-bold">Réservation simple</h5>
+                                <h3 class="fw-bold">Réservation simple</h3>
                                 <p class="text-muted small">Réservez en quelques clics et partez l’esprit tranquille.</p>
                             </div>
                         </div>
@@ -267,11 +267,11 @@
                         </div>
                     {% else %}
                         <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
-                    {% endif %}     
+                    {% endif %}
                 </div>
                 <div class="text-center" style="margin-top: 1rem;">
-                        <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
-                    </div>
+                    <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
+                </div>
             </section>
             <!-- JOIN US -->
             <section class="lux-section join-us-section fade-in-up">

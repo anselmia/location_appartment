@@ -201,6 +201,29 @@
   border-color: #aaa;
 }
 
+.btn-show-more {
+  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
+  color: #222 !important;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.1rem;
+  margin-top: 0.7rem;
+  box-shadow: 0 2px 8px rgba(191, 166, 107, 0.13);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-show-more:hover {
+  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(191, 166, 107, 0.18);
+}
+
 @media (max-width: 576px) {
   .logements-grid {
     flex-direction: column;
@@ -214,17 +237,6 @@
   }
 }
 
-/* --- Ensure the "Voir tous les logements" button is visible --- */
-@media (max-width: 576px) {
-  .btn-show-more {
-    width: 95vw;
-    max-width: 340px;
-    margin: 0 auto 1.5rem auto;
-    display: block;
-    font-size: 1.1em;
-  }
-}
-
 @media (max-width: 991.98px) {
   .logements-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -234,6 +246,19 @@
   .logement-card {
     max-width: 98vw;
     padding: 6px 6px;
+  }
+
+  .logements-section {
+    padding: 0 1rem;
+    padding-top: 2rem; /* Adjust padding for smaller screens */
+  }
+
+  .btn-show-more {
+    max-width: 340px;
+    margin: 0 auto 1.5rem auto;
+    display: block;
+    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
   }
 }
 

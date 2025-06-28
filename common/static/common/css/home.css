@@ -45,8 +45,7 @@ section a:hover {
   height: 100%;
 }
 
-.cta-button:hover,
-.btn-show-more:hover {
+.cta-button:hover {
   box-shadow: 0 0 10px rgba(191, 166, 107, 0.6);
   background: #d4af7f;
 }
@@ -100,29 +99,6 @@ section a:hover {
     1px 0 2px var(--primary-color), -1px 0 2px var(--primary-color);
 }
 
-.cta-button {
-  margin-top: 0.5rem;
-  background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
-  color: #222 !important;
-  font-weight: 700;
-  border: none;
-  border-radius: 999px;
-  padding: 1.1rem 2.7rem;
-  font-size: 1.25rem;
-  box-shadow: 0 4px 24px rgba(191, 166, 107, 0.13);
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  text-shadow: none;
-}
-.cta-button:hover {
-  background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
-  color: #fff !important;
-  box-shadow: 0 8px 32px rgba(191, 166, 107, 0.18);
-  transform: translateY(-2px) scale(1.03);
-}
 
 .hero-cta-group {
   display: flex;
@@ -139,21 +115,8 @@ section a:hover {
   background: linear-gradient(90deg, #23344a 0%, #3d5779 100%);
 }
 
-.btn-show-more {
-  display: inline-block;
-  padding: 0.6rem 1.2rem;
-  background: var(--primary-color);
-  color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background 0.3s ease;
-  text-decoration: none;
-  margin-bottom: 20px;
-}
 
-.btn-show-more:hover {
-  background: #d4af7f;
-}
+
 
 .commitments-section {
   padding: 4rem 2rem;
@@ -176,8 +139,7 @@ section a:hover {
   max-width: 100%;
   height: auto;
 }
-.cta-button,
-.btn-show-more {
+.cta-button {
   background: var(--primary-color, #ff385c);
   color: #fff;
   border: none;
@@ -189,8 +151,7 @@ section a:hover {
   text-decoration: none;
   display: inline-block;
 }
-.cta-button:hover,
-.btn-show-more:hover {
+.cta-button:hover {
   background: #d4af7f;
   box-shadow: 0 0 10px rgba(191, 166, 107, 0.6);
   color: #fff;
@@ -453,6 +414,8 @@ section a:hover {
   padding: 4rem 2rem 3rem 2rem;
   box-shadow: 0 2px 16px rgba(191, 166, 107, 0.07);
   position: relative;
+  overflow: visible !important;
+  padding-bottom: 2rem;
 }
 .logement-card {
   border: none;
@@ -467,14 +430,13 @@ section a:hover {
     0 1.5px 8px rgba(0, 0, 0, 0.06);
 }
 .btn-luxury,
-.cta-button,
-.btn-show-more {
+.cta-button {
   background: linear-gradient(90deg, #d4af7f 0%, #ffecd2 100%);
   color: #222 !important;
   font-weight: 700;
   border: none;
   border-radius: 999px;
-  padding: 0.85rem 2.2rem;
+  padding: 0.85rem 1rem;
   font-size: 1.1rem;
   margin-top: 0.7rem;
   box-shadow: 0 2px 8px rgba(191, 166, 107, 0.13);
@@ -485,8 +447,7 @@ section a:hover {
   display: inline-block;
 }
 .btn-luxury:hover,
-.cta-button:hover,
-.btn-show-more:hover {
+.cta-button:hover {
   background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
   color: #fff !important;
   box-shadow: 0 4px 16px rgba(191, 166, 107, 0.18);
@@ -586,16 +547,17 @@ section a:hover {
   .lux-section .luxury-card {
     padding: 1.2rem 0.7rem 1rem 0.7rem;
   }
-}
-}
-@media (max-width: 600px) {
-  .btn-show-more {
-    display: block;
-    width: 100%;
-    margin: 1.5rem 0 0 0;
-    font-size: 1.1rem;
-    padding: 1rem 0;
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
   }
+  .hero-cta-group a, .btn-luxury {
+    font-size: 1rem;
+    padding: 0.7rem 1.5rem;
+  }
+
+}
+@media (max-width: 600px) {  
   .logements-section {
     padding: 1.5rem 0.3rem 1.5rem 0.3rem;
   }
@@ -620,11 +582,12 @@ section a:hover {
   display: block;
 }
 .promo-banner-launch {
-  width: 100vw;
+  width: 90vw;
   left: 50%;
   right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  margin-left: -45vw;
+  margin-right: -45vw;
+  margin-bottom: 0.5rem;
   position: relative;
   background: linear-gradient(90deg, #ffe9c0 0%, #d4af7f 100%);
   color: #2b3d55;
