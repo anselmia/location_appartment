@@ -88,12 +88,17 @@
         <!-- 🗺️ Google Map container -->
         <section class="section-block">
             <h2 class="section-title">Localisation</h2>
-            <iframe class="logement-map"
-                    src="{{ logement.map_link }}"
-                    style="border:0"
-                    allowfullscreen=""
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div id="map-placeholder"
+                 class="logement-map"
+                 style="min-height:220px;
+                        background:#f5f5f5;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center">
+                <div>
+                    <p>La carte Google Maps est désactivée tant que vous n'avez pas accepté les cookies.</p>
+                </div>
+            </div>
         </section>
         <section class="section-block logement-description-block">
             <h2 class="section-title">Description du logement</h2>
@@ -246,6 +251,7 @@
 {% endblock %}
 {% block extra_js %}
     <script>
+    window.logementMapLink = "{{ logement.map_link|escapejs }}";
     const reservedDatesStart = {{ reserved_dates_start_json|safe }};
     const reservedDatesEnd = {{ reserved_dates_end_json|safe }};
     const today = new Date().toISOString().slice(0, 10);

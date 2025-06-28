@@ -16,7 +16,7 @@ Découvrez les conditions générales de vente de {{ entreprise.name }} : rés
                 <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
                 <h2>1. Présentation</h2>
                 <p>
-                    La société {{ entreprise.name }}, [forme juridique], immatriculée au RCS de [ville] sous le numéro [SIRET], dont le siège social est situé à [adresse complète], agit en qualité de mandataire pour le compte de propriétaires particuliers ou professionnels. Elle propose à la location des logements meublés de courte durée via son site internet et différentes plateformes spécialisées. Les paiements sont gérés via Stripe, prestataire de paiement sécurisé.
+                    La société {{ entreprise.name }}, {{ entreprise.form }}, immatriculée au RCS de Nice sous le numéro {{ entreprise.siret}}, dont le siège social est situé à [adresse complète], agit en qualité de mandataire pour le compte de propriétaires particuliers ou professionnels. Elle propose à la location des logements meublés de courte durée via son site internet et différentes plateformes spécialisées. Les paiements sont gérés via Stripe, prestataire de paiement sécurisé.
                 </p>
                 <h2>2. Formation du contrat</h2>
                 <p>

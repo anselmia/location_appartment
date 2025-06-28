@@ -5,17 +5,22 @@
 <html lang="{{ LANGUAGE_CODE }}" ontouchstart>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}{{ entreprise.name }} - Location Nice Côte d'Azur{% endblock %}</title>
+        <title>
+            {% block title %}{{ entreprise.name }} - Location Nice Côte d'Azur{% endblock %}
+        </title>
         <link rel="canonical" href="{{ request.build_absolute_uri }}">
         <link rel="shortcut icon" href="{% static 'logement/img/favicon.ico' %}">
-        <meta name="description" content="{% block meta_description %}{% endblock %}">
+        <meta name="description"
+              content="{% block meta_description %}{% endblock %}">
         <meta name="keywords"
               content="location Nice et côte d'Azur, location vacances Nice et côte d'Azur, chambre à louer Nice et côte d'Azur, location courte durée Nice et côte d'Azur, appartement meublé Nice et côte d'Azur, hébergement Nice et côte d'Azur, bead and breakfast Nice et côte d'Azur">
         <meta name="robots" content="index, follow">
-        <meta property="og:title" content="Location d'appartements sur Nice et la côte d'Azur" />
+        <meta property="og:title"
+              content="Location d'appartements sur Nice et la côte d'Azur" />
         <meta property="og:description"
               content="Réservez facilement un logement de vacance ou de courte durée. Réservation rapide et fiable." />
-        <meta property="og:url" content="{{ site_address|default:request.build_absolute_uri }}">
+        <meta property="og:url"
+              content="{{ site_address|default:request.build_absolute_uri }}">
         <meta property="og:type" content="website" />
         <meta name="google-site-verification"
               content="Ezmpcz3zkqC2psThMGeZ1zDx5syx8C7Qsi7b7ftz4h0" />
@@ -46,14 +51,7 @@
         <script src="https://unpkg.com/htmx.org@1.9.2"></script>
         <meta name="robots" content="index, follow">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-W05PFMYJQH"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-W05PFMYJQH');
-        </script>
+        <script id="ga-script" type="text/plain" data-cookiecategory="analytics"></script>
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -122,12 +120,41 @@
         {% block extra_js %}{% endblock %}
         <div id="cookie-banner" style="display: none;" class="cookie-banner">
             <p>
-                Ce site utilise des cookies pour vous garantir la meilleure expérience. <a href="{% url 'common:cgu' %}">En savoir plus</a>
+                Ce site utilise des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction, etc.).
+                <a href="{% url 'common:cgu' %}" target="_blank" rel="noopener">En savoir plus</a>
             </p>
-            <button id="accept-cookies">J'accepte</button>
+            <div class="cookie-actions">
+                <button id="accept-cookies" class="btn btn-primary btn-sm">Tout accepter</button>
+                <button id="refuse-cookies" class="btn btn-outline-secondary btn-sm">Tout refuser</button>
+                <button id="customize-cookies" class="btn btn-link btn-sm">Personnaliser</button>
+            </div>
+            <div id="cookie-customize-panel" style="display:none; margin-top:1rem;">
+                <form>
+                    <div>
+                        <label>
+                            <input type="checkbox" checked disabled>
+                            <strong>Cookies nécessaires</strong> (toujours actifs)
+                        </label>
+                        <div class="text-muted small">Indispensables au fonctionnement du site (connexion, sécurité, panier...)</div>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="checkbox" id="consent-analytics">
+                            Statistiques (Google Analytics)
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="checkbox" id="consent-maps">
+                            Services tiers (Google Maps, traduction)
+                        </label>
+                    </div>
+                    <button type="button"
+                            id="save-cookie-preferences"
+                            class="btn btn-primary btn-sm mt-2">Enregistrer mes choix</button>
+                </form>
+            </div>
         </div>
-        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
-        </script>
         <script src="{% static 'common/js/nav.js' %}"></script>
         <script src="{% static 'common/js/global.js' %}"></script>
         <script> chat_url= "{% url 'common:chatbot_api' %}";</script>

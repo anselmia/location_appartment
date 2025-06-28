@@ -51,11 +51,77 @@ document.addEventListener("DOMContentLoaded", function () {
     // OPTIONAL: initialize services
     initOptionalCookies(); // e.g., analytics, chat widgets, etc.
   });
+
+  const showCookieBtn = document.getElementById("show-cookie-banner");
+  const cookieBanner = document.getElementById("cookie-banner");
+  if (showCookieBtn && cookieBanner) {
+    showCookieBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      cookieBanner.style.display = "block";
+    });
+  }
 });
 
 function initOptionalCookies() {
-  // Load services that require consent
-  // Example: Google Analytics or Hotjar
+  loadAnalytics();
+  showMapOrPlaceholder();
+}
+
+function loadAnalytics() {
+  if (!window.gaLoaded) {
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=G-W05PFMYJQH";
+    document.head.appendChild(s);
+
+    var inline = document.createElement("script");
+    inline.innerHTML = `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-W05PFMYJQH');
+            `;
+    document.head.appendChild(inline);
+    window.gaLoaded = true;
+  }
+}
+
+function showMapOrPlaceholder() {
+  const placeholder = document.getElementById("map-placeholder");
+  if (!placeholder) return;
+  // Check if consent cookie is present
+  if (document.cookie.includes("cookie_consent=true")) {
+    // Show the map
+    placeholder.innerHTML = `<iframe class="logement-map"
+            src="${window.logementMapLink}"
+            style="border:0; width:100%; height:220px;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+  } else {
+    // Show the placeholder
+    placeholder.innerHTML = `
+            <div>
+                <p>La carte Google Maps est désactivée tant que vous n'avez pas accepté les cookies.</p>
+                <button id="enable-map" class="btn btn-primary btn-sm">Afficher la carte</button>
+            </div>
+        `;
+    // Allow manual activation if user clicks
+    const btn = document.getElementById("enable-map");
+    if (btn) {
+      btn.addEventListener("click", function () {
+        // Set consent cookie for 6 months
+        const date = new Date();
+        date.setMonth(date.getMonth() + 6);
+        document.cookie = `cookie_consent=true; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
+        showMapOrPlaceholder();
+        // Optionally: trigger other consent-dependent features
+        if (typeof initOptionalCookies === "function") {
+          initOptionalCookies();
+        }
+      });
+    }
+  }
 }
 
 setTimeout(() => {
@@ -126,4 +192,3 @@ function toggleChat() {
   const window = document.getElementById("chatbot-window");
   window.style.display = window.style.display === "none" ? "block" : "none";
 }
-

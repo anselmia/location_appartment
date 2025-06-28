@@ -6,6 +6,8 @@ class Entreprise(models.Model):
     contact_address = models.CharField(max_length=255, blank=True, null=True)
     contact_phone = models.CharField(max_length=30, blank=True, null=True)
     contact_email = models.EmailField(blank=True, null=True)
+    siret = models.CharField(max_length=14, blank=True, null=True)
+    form = models.CharField(max_length=20, blank=True, null=True)
     name = models.CharField(max_length=100)
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)

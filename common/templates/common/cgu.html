@@ -5,11 +5,11 @@
   <link rel="stylesheet" href="{% static 'common/css/cgu.css' %}">
 {% endblock %}
 {% block title %}Conditions Générales d’Utilisation – {{ entreprise.name }}{% endblock %}
-{% block meta_description %}Consultez les conditions générales d'utilisation de {{ entreprise.name }} pour la location de logements à Nice et sur la Côte d'Azur. Découvrez nos engagements et obligations.{% endblock %}
+{% block meta_description %}
+  Consultez les conditions générales d'utilisation de {{ entreprise.name }} pour la location de logements à Nice et sur la Côte d'Azur. Découvrez nos engagements et obligations.
+{% endblock %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-{% load common_tags %}
-
 {% block entreprise_name %}{{ entreprise.name }}{% endblock %}
 {% block contact_mail %}{{ entreprise.contact_email }}{% endblock %}
 {% block content %}
@@ -145,6 +145,19 @@
         <p>
           Il est interdit d’utiliser la plateforme pour entrer en contact avec un loueur ou un voyageur dans le but de conclure une location en dehors de {{ entreprise.name }}. Tout comportement de contournement peut entraîner la suppression du compte et des poursuites.
         </p>
+        <h2>21. Hébergeur du site</h2>
+        <p>
+          Le site est hébergé par&nbsp;:
+          <br>
+          <strong>OVH SAS</strong>
+          <br>
+          2 rue Kellermann, 59100 Roubaix, France
+          <br>
+          Téléphone&nbsp;: 1007
+          <br>
+          <a href="https://www.ovh.com/fr/" target="_blank" rel="noopener">www.ovh.com</a>
+        </p>
+        <p>Les données sont hébergées sur des serveurs situés en France.</p>
       </section>
     </article>
   </div>
