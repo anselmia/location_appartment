@@ -170,19 +170,8 @@ function showMapOrPlaceholder(allowMap = undefined) {
     placeholder.innerHTML = `
             <div>
                 <p>La carte Google Maps est désactivée tant que vous n'avez pas accepté les cookies tiers.</p>
-                <button id="enable-map" class="btn btn-primary btn-sm">Afficher la carte</button>
             </div>
         `;
-    const btn = document.getElementById("enable-map");
-    if (btn) {
-      btn.addEventListener("click", function () {
-        // Accept only maps cookies
-        const consent = getConsent() || {};
-        consent.maps = true;
-        setConsent(consent);
-        showMapOrPlaceholder(true);
-      });
-    }
   }
 }
 
