@@ -394,7 +394,8 @@ button,
   background-color: var(--primary-color) !important;
   color: #fff !important;
   border-color: var(--primary-light) !important;
-  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s  !important;
+  transition: background 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s,
+    border-color 0.25s !important;
 }
 
 .btn-primary:hover {
@@ -404,10 +405,15 @@ button,
 }
 
 .btn-secondary {
-  background: linear-gradient(90deg, var(--secondary-color) 0%, var(--secondary-light) 100%) !important;
+  background: linear-gradient(
+    90deg,
+    var(--secondary-color) 0%,
+    var(--secondary-light) 100%
+  ) !important;
   color: #fff !important;
   border-color: var(--secondary-light) !important;
-  transition: background 0.35s cubic-bezier(.4,0,.2,1), color 0.25s, border-color 0.25s;
+  transition: background 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s,
+    border-color 0.25s;
 }
 
 .btn-secondary:hover {
@@ -612,17 +618,22 @@ ul.list-unstyled li .ml-3 {
 }
 
 .cookie-banner {
+  max-width: 420px;
+  background: #fff;
   position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #2b3d55;
-  color: white;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10000;
-  font-size: 0.95rem;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  border: 1px solid #e5e5e5;
+}
+@media (max-width: 600px) {
+  .cookie-banner {
+    right: 0;
+    left: 0;
+    bottom: 0;
+    max-width: 100vw;
+    border-radius: 0;
+  }
 }
 
 .cookie-banner p {

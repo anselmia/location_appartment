@@ -118,41 +118,71 @@
         </div>
         {% include "footer.html" %}
         {% block extra_js %}{% endblock %}
-        <div id="cookie-banner" style="display: none;" class="cookie-banner">
-            <p>
-                Ce site utilise des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction).
+        <div id="cookie-banner"
+             style="display: none"
+             class="cookie-banner shadow rounded p-3"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="cookie-title">
+            <div class="d-flex align-items-center mb-2">
+                <!-- SVG Cookie Icon -->
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" class="me-2">
+                    <circle cx="19" cy="19" r="19" fill="#bfa66b" />
+                    <circle cx="13" cy="15" r="2" fill="#fff" />
+                    <circle cx="25" cy="13" r="1.5" fill="#fff" />
+                    <circle cx="19" cy="25" r="2" fill="#fff" />
+                    <circle cx="25" cy="22" r="1.2" fill="#fff" />
+                </svg>
+                <div>
+                    <span class="fw-bold fs-5" id="cookie-title">Gestion des cookies</span>
+                </div>
+            </div>
+            <p class="mb-3">
+                Nous utilisons des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction, etc.).
                 <a href="{% url 'common:cgu' %}" target="_blank" rel="noopener">En savoir plus</a>
             </p>
-            <div class="cookie-actions">
-                <button id="accept-cookies" class="btn btn-primary btn-sm">Tout accepter</button>
-                <button id="refuse-cookies" class="btn btn-primary btn-sm">Tout refuser</button>
-                <button id="customize-cookies" class="btn btn-primary btn-sm">Personnaliser</button>
+            <div class="cookie-actions d-flex flex-wrap gap-2 mb-3">
+                <button id="accept-cookies"
+                        class="btn btn-success btn-sm flex-fill shadow-sm">Tout accepter</button>
+                <button id="refuse-cookies"
+                        class="btn btn-outline-secondary btn-sm flex-fill shadow-sm">Tout refuser</button>
+                <button id="customize-cookies" class="btn btn-link btn-sm flex-fill">Personnaliser</button>
             </div>
             <div id="cookie-customize-panel" style="display:none; margin-top:1rem;">
                 <form>
-                    <div>
-                        <label>
-                            <input type="checkbox" checked disabled>
-                            <strong>Cookies nécessaires</strong> (toujours actifs)
+                    <div class="mb-3">
+                        <label class="form-check-label d-flex align-items-center">
+                            <input type="checkbox" checked disabled class="form-check-input me-2">
+                            <strong>Cookies nécessaires</strong>
+                            <span class="ms-1 badge bg-secondary">Toujours actifs</span>
                         </label>
-                        <div class="text-muted small">Indispensables au fonctionnement du site (connexion, sécurité, réservation)</div>
+                        <div class="text-muted small ms-4">Indispensables au fonctionnement du site (connexion, sécurité, réservation...)</div>
                     </div>
-                    <div>
-                        <label>
-                            <input type="checkbox" id="consent-analytics">
-                            Statistiques (Google Analytics)
+                    <div class="mb-3">
+                        <label class="form-check-label d-flex align-items-center">
+                            <input type="checkbox"
+                                   id="consent-analytics"
+                                   checked
+                                   class="form-check-input me-2">
+                            Statistiques <span class="ms-1 text-muted">(Google Analytics)</span>
                         </label>
                     </div>
-                    <div>
-                        <label>
-                            <input type="checkbox" id="consent-maps">
-                            Services tiers (Google Maps, traduction)
+                    <div class="mb-3">
+                        <label class="form-check-label d-flex align-items-center">
+                            <input type="checkbox"
+                                   id="consent-maps"
+                                   checked
+                                   class="form-check-input me-2">
+                            Services tiers <span class="ms-1 text-muted">(Google Maps, traduction...)</span>
                         </label>
                     </div>
                     <button type="button"
                             id="save-cookie-preferences"
-                            class="btn btn-primary btn-sm mt-2">Enregistrer mes choix</button>
+                            class="btn btn-primary btn-sm mt-2 w-100 shadow-sm">Enregistrer mes choix</button>
                 </form>
+            </div>
+            <div class="text-center mt-2">
+                <small class="text-muted">Vous pouvez modifier vos préférences à tout moment en cliquant sur « Gérer mes cookies » en bas de page.</small>
             </div>
         </div>
         <script src="{% static 'common/js/nav.js' %}"></script>
