@@ -10,7 +10,11 @@ const picker = new Litepicker({
   numberOfColumns: 2,
   lang: "fr-FR",
   format: "",
-  autoApply: true,
+  showCancelBtn: true, // <-- This enables the clear (cross) button
+  buttonText: {
+    cancel: "✕ Effacer",
+  },
+  autoApply: false,
   dropdowns: {
     minYear: currentYear,
     maxYear: currentYear + 1,

@@ -54,7 +54,7 @@ def calculate_price_service(
         details[f"Réduction {key}"] = f"- {round(value, 2)} €"
     details["Frais de ménage"] = f"+ {round(logement.cleaning_fee, 2)} €"
     details["Taxe de séjour"] = f"+ {round(price_data['tax_amount'], 2)} €"
-    details["Frais de transaction"] = f"+ {round(price_data['payment_fee'], 2)} €"
+    details["Frais de paiement"] = f"+ {round(price_data['payment_fee'], 2)} €"
     return {
         "final_price": round(price_data["total_price"], 2),
         "tax": round(price_data["tax_amount"], 2),

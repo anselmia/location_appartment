@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
         axios
-          .post("/prices/calculate_price/", {
+          .post("/logement/prices/calculate_price/", {
             logement_id: logementId,
             start: startDate.toISOString().split("T")[0],
             end: endDate.toISOString().split("T")[0],

@@ -76,10 +76,13 @@ body {
 
 .search-layout-container {
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
   gap: 2rem;
   max-width: 1400px;
   margin: 2rem auto;
   padding: 0 2rem;
+  width: 100%;
 }
 
 h2 {
@@ -447,6 +450,46 @@ logement-list-card {
   color: var(--secondary-color);
 }
 
+.litepicker {
+  max-width: 95vw !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  font-size: 0.98em;
+}
+
+.litepicker .button-cancel {
+  color: #bfa66b !important;
+  font-size: 1.1em;
+  padding: 0.3em 0.8em;
+  border-radius: 6px;
+  background: none !important;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.litepicker .button-cancel:hover {
+  background: #f3e9d2 !important;
+}
+
+.litepicker .button-apply {
+  background: #bfa66b !important;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 1.08em;
+  border-radius: 6px;
+  border: none;
+  padding: 0.45em 1.2em;
+  margin-left: 0.7em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(191, 166, 107, 0.1);
+  transition: background 0.18s, color 0.18s;
+}
+.litepicker .button-apply:hover,
+.litepicker .button-apply:focus {
+  background: #a88a4c !important;
+  color: #fff !important;
+}
+
 @media (min-width: 769px) {
   .search-layout-container {
     display: flex;
@@ -564,7 +607,7 @@ logement-list-card {
   }
 
   .toggle-filters-btn {
-    width: 100%;
+    width: fit-content;
     margin: 1rem auto 0;
     font-size: 1rem;
     border-radius: 30px;
@@ -584,16 +627,104 @@ logement-list-card {
     width: 100%;
   }
 
-  .logement-list-card {
-    flex-direction: row !important;
+
+  .compact-search-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1.1em;
+    padding: 1.2em 0.7em 1.2em 0.7em;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(191, 166, 107, 0.1);
+    width: 100%;
+    max-width: 340px;
+    margin: 1.5em auto;
+  }
+  .compact-search-bar .search-input {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 0.2em;
+  }
+  .compact-search-bar label {
+    font-size: 0.98em;
+    color: #bfa66b;
+    font-weight: 600;
+    margin-bottom: 0.2em;
+    letter-spacing: 0.02em;
+  }
+  .compact-search-bar input[type="text"],
+  .compact-search-bar input[type="number"] {
+    width: 100%;
+    padding: 0.55em 0.9em;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    background: #faf9f7;
+    font-size: 1.08em;
+    margin-bottom: 0.1em;
+    color: #2b3d55;
+    transition: border-color 0.2s;
+  }
+  .compact-search-bar input[type="text"]:focus,
+  .compact-search-bar input[type="number"]:focus {
+    border-color: #bfa66b;
+    outline: none;
+    background: #fff;
+  }
+  .compact-search-bar button,
+  .compact-search-bar .search-btn {
+    width: 100%;
+    margin-top: 0.7em;
+    min-width: 0;
+    border-radius: 999px;
+    background: #bfa66b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2em;
+    padding: 0.7em 0;
+    border: none;
+    box-shadow: 0 2px 8px rgba(191, 166, 107, 0.1);
+    transition: background 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .compact-search-bar button:hover,
+  .compact-search-bar .search-btn:hover {
+    background: #a88a4c;
+    color: #fff;
   }
 
-  .logement-thumb-wrapper {
-    width: 90px;
-    height: 90px;
+  .compact-search-bar .date-input,
+  .compact-search-bar input#datepicker {
+    font-size: 1em;
+    padding: 0.55em 2.2em 0.55em 0.9em; /* space for icon */
+    border-radius: 8px;
+    height: 2.6em;
+    background: #faf9f7
+      url("data:image/svg+xml,%3Csvg width='18' height='18' fill='none' stroke='%23bfa66b' stroke-width='2' viewBox='0 0 24 24'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 9h18'/%3E%3C/svg%3E")
+      no-repeat right 0.8em center/1.2em auto;
+    box-sizing: border-box;
+    color: #2b3d55;
+    border: 1px solid #e5e5e5;
+    margin-bottom: 0.1em;
+    transition: border-color 0.2s;
+  }
+  .compact-search-bar .date-input:focus,
+  .compact-search-bar input#datepicker:focus {
+    border-color: #bfa66b;
+    background-color: #fff;
+    outline: none;
   }
 
-  .logement-title {
-    font-size: 1rem;
+  .litepicker {
+    max-width: 340px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    font-size: 0.97em;
+  }
+  .litepicker .container__months {
+    flex-direction: column !important;
+    gap: 0.5em;
   }
 }

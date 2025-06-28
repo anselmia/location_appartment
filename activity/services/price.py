@@ -97,7 +97,7 @@ def get_price_context(activity_id: int, start: str, end: str, base_price: float,
     if price_data["total_extra_guest_fee"] != 0:
         details["Participants(s) supplémentaire(s)"] = f"+ {round(price_data['total_extra_guest_fee'], 2)} €"
 
-    details["Frais de transaction"] = f"+ {round(price_data['payment_fee'], 2)} €"
+    details["Frais de paiement"] = f"+ {round(price_data['payment_fee'], 2)} €"
     return {
         "final_price": round(price_data["total_price"], 2),
         "details": details,

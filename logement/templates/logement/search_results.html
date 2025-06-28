@@ -198,17 +198,13 @@
         <div class="view-switcher">
           <a href="?{{ request.GET.urlencode|add:"&view=grid" }}"
              class="view-btn {% if request.GET.view == 'grid' or not request.GET.view %}active{% endif %}"><i class="fas fa-th"></i> Grille</a>
-          <a href="?{{ request.GET.urlencode|add:"&view=list" }}"
-             class="view-btn {% if request.GET.view == 'list' %}active{% endif %}"><i class="fas fa-list"></i> Liste</a>
           <a href="?{{ request.GET.urlencode|add:"&view=map" }}"
              class="view-btn {% if request.GET.view == 'map' %}active{% endif %}"><i class="fas fa-map"></i> Plan</a>
         </div>
-        {% if request.GET.view == "list" %}
-          <div class="logements-list">{% include 'logement/partials/logement_list_view.html' %}</div>
-        {% elif request.GET.view == "map" %}
+        {% if request.GET.view == "map" %}
           <div class="logements-map">{% include 'logement/partials/logement_map_view.html' %}</div>
         {% else %}
-          <div class="logements-grid">{% include 'logement/partials/logement_grid_view.html' %}</div>
+          {% include 'logement/partials/logement_grid_view.html' %}
         {% endif %}
         {% if request.GET.view == "list" or  request.GET.view == "grid" %}
           <div class="pagination">
