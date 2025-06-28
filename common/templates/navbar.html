@@ -189,31 +189,21 @@
             {% else %}
                 <a href="{% url 'accounts:login' %}">{% trans "Connexion" %}</a>
             {% endif %}
-            <!-- Language Switcher -->
-            <form action="{% url 'logement:set_language' %}"
-                  method="post"
-                  class="lang-form">
+            <!-- Language Switcher
+            <form action="{% url 'logement:set_language' %}" method="post" class="lang-form">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit"
-                        name="language"
-                        value="fr"
-                        class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
+                <button type="submit" name="language" value="fr" class="{% if LANGUAGE_CODE == 'fr' %}active{% endif %}">
                     <img src="{% static 'logement/img/flags/fr.svg' %}" alt="Français">
                 </button>
-                <button type="submit"
-                        name="language"
-                        value="en"
-                        class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
+                <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}active{% endif %}">
                     <img src="{% static 'logement/img/flags/en.svg' %}" alt="English">
                 </button>
-                <button type="submit"
-                        name="language"
-                        value="es"
-                        class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
+                <button type="submit" name="language" value="es" class="{% if LANGUAGE_CODE == 'es' %}active{% endif %}">
                     <img src="{% static 'logement/img/flags/es.svg' %}" alt="Español">
                 </button>
             </form>
+            -->
         </div>
     </nav>
 </header>

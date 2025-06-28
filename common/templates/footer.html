@@ -1,63 +1,113 @@
 {% load static %}
 {% load i18n %}
-
-<footer class="site-footer">
-  <div class="footer-main">
+<footer class="site-footer bg-light pt-4 pb-2 shadow-sm">
+  <div class="footer-main container d-flex flex-wrap justify-content-between align-items-start gap-3 py-2">
     <!-- Column 1: Logo + contact -->
-      <div class="footer-column">
-          {% if entreprise.logo %}
-              <div class="footer-logo">
-                  <img src="{{ entreprise.logo.url }}" alt="{{ entreprise.nom }}" />
-              </div>
-          {% endif %}
-          {% if entreprise.contact_address %}
-              <p><i class="fas fa-map-marker-alt"></i> {{ entreprise.contact_address }}</p>
-          {% endif %}
-          {% if entreprise.contact_email %}
-              <p><i class="fas fa-envelope"></i> {{ entreprise.contact_email }}</p>
-          {% endif %}
-          {% if entreprise.contact_phone %}
-              <p><i class="fas fa-phone"></i> {{ entreprise.contact_phone }}</p>
-          {% endif %}
-
-          <div class="footer-social">
-              {% if entreprise.facebook %}
-                  <a href={{ entreprise.facebook}}><i class="fab fa-facebook-f"></i></a>
-              {% endif %}
-              {% if entreprise.instagram %}
-                  <a href={{ entreprise.instagram}}><i class="fab fa-instagram"></i></a>
-              {% endif %}
-              {% if entreprise.linkedin %}
-                  <a href={{ entreprise.linkedin}}><i class="fab fa-linkedin"></i></a>
-              {% endif %}
-            </div>
-      </div>
-
-    <!-- Column 2: Quick Links -->
-    <div class="footer-column">
-      <h4>{% trans "Liens rapides" %}</h4>
-      <ul>
-        <li><a href="/">{% trans "Accueil" %}</a></li>
-        <li><a href="{% url 'logement:logement_search' %}">{% trans "Nos Locations" %}</a></li>
-        <li><a href="{% url 'accounts:contact' %}">{% trans "Contact" %}</a></li>
-        {% if user.is_authenticated and user.is_admin %}
-          <li><a href="{% url 'logement:dashboard' %}">{% trans "Accès Logements" %}</a></li>
-        {% elif user.is_authenticated and user.is_superuser %}
-          <li><a href="{% url 'logement:dashboard' %}">{% trans "Accès Logements" %}</a></li>
+    <div class="footer-column flex-grow-1 d-flex flex-column align-items-center justify-content-center"
+         style="min-width:140px">
+      {% if entreprise.logo %}
+        <div class="footer-logo mb-2">
+          <img src="{{ entreprise.logo.url }}"
+               alt="{{ entreprise.nom }}"
+               style="max-width:110px;
+                      border-radius:10px;
+                      box-shadow:0 2px 8px rgba(191,166,107,0.10)" />
+        </div>
+      {% endif %}
+    </div>
+    <div class="footer-column flex-grow-1" style="min-width:140px;">
+      <h4 class="footer-title mb-2 fs-6">{% trans "Contact" %}</h4>
+      <ul class="list-unstyled small">
+        {% if entreprise.contact_address %}
+          <li class="mb-1">
+            {{ entreprise.contact_address }} <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+          </li>
+        {% endif %}
+        {% if entreprise.contact_email %}
+          <li class="mb-1">
+            <a href="mailto:{{ entreprise.contact_email }}" class="footer-link">{{ entreprise.contact_email }}</a> <i class="fas fa-envelope me-2"></i>
+          </li>
+        {% endif %}
+        {% if entreprise.contact_phone %}
+          <li class="mb-1">
+            <a href="tel:{{ entreprise.contact_phone }}" class="footer-link">{{ entreprise.contact_phone }}</a> <i class="fas fa-phone me-2"></i>
+          </li>
+        {% endif %}
+        {% if entreprise.facebook %}
+          <li>
+            <a href="{{ entreprise.facebook }}"
+               target="_blank"
+               rel="noopener"
+               class="footer-link"
+               aria-label="Facebook">Facebook</a>
+            <i class="fab fa-facebook-f"></i>
+          </li>
+        {% endif %}
+        {% if entreprise.instagram %}
+          <li>
+            <a href="{{ entreprise.instagram }}"
+               target="_blank"
+               rel="noopener"
+               class="footer-link"
+               aria-label="Instagram">Instagram</a>
+            <i class="fab fa-instagram"></i>
+          </li>
+        {% endif %}
+        {% if entreprise.linkedin %}
+          <li>
+            <a href="{{ entreprise.linkedin }}"
+               target="_blank"
+               rel="noopener"
+               class="footer-link"
+               aria-label="LinkedIn">LinkedIn</a>
+            <i class="fab fa-linkedin-in"></i>
+          </li>
         {% endif %}
       </ul>
     </div>
-
+    <!-- Column 2: Quick Links -->
+    <div class="footer-column flex-grow-1" style="min-width:140px;">
+      <h4 class="footer-title mb-2 fs-6">{% trans "Liens rapides" %}</h4>
+      <ul class="list-unstyled small">
+        <li>
+          <a href="/" class="footer-link">{% trans "Accueil" %}</a>
+        </li>
+        <li>
+          <a href="{% url 'logement:logement_search' %}" class="footer-link">{% trans "Nos Locations" %}</a>
+        </li>
+        <li>
+          <a href="{% url 'accounts:contact' %}" class="footer-link">{% trans "Contact" %}</a>
+        </li>
+        {% if user.is_authenticated and user.is_admin or user.is_superuser %}
+          <li>
+            <a href="{% url 'logement:dashboard' %}" class="footer-link">{% trans "Accès Logements" %}</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
     <!-- Column 3: Legal and icons -->
-    <div class="footer-column">
-      <h4>{% trans "Aide" %}</h4>
-      <ul>
-        <li><a href="{% url 'common:cgv' %}">{% trans "Conditions générales de vente" %}</a></li>
-        <li><a href="{% url 'common:cgu' %}">{% trans "Politique de Cookies" %}</a></li>
-        <li><a href="#" id="show-cookie-banner" class="cookie-link">Gérer mes cookies</a></li>
-        <li><a href="{% url 'common:cgu' %}">{% trans "Mentions légales" %}</a></li>
-        <li><a href="{% url 'common:confidentiality' %}">{% trans "Politique de confidentialité" %}</a></li>
+    <div class="footer-column flex-grow-1" style="min-width:140px;">
+      <h4 class="footer-title mb-2 fs-6">{% trans "Aide & Légal" %}</h4>
+      <ul class="list-unstyled small">
+        <li>
+          <a href="{% url 'common:cgv' %}" class="footer-link">{% trans "Conditions générales de vente" %}</a>
+        </li>
+        <li>
+          <a href="{% url 'common:cgu' %}" class="footer-link">{% trans "Politique de Cookies" %}</a>
+        </li>
+        <li>
+          <a href="#" id="show-cookie-banner" class="footer-link cookie-link">{% trans "Gérer mes cookies" %}</a>
+        </li>
+        <li>
+          <a href="{% url 'common:cgu' %}" class="footer-link">{% trans "Mentions légales" %}</a>
+        </li>
+        <li>
+          <a href="{% url 'common:confidentiality' %}" class="footer-link">{% trans "Politique de confidentialité" %}</a>
+        </li>
       </ul>
     </div>
   </div>
+  <div class="footer-bottom text-center mt-3 pt-2 border-top"
+       style="font-size:0.92em;
+              color:#bfa66b">© {{ entreprise.name }} {{ current_year }} &mdash; Tous droits réservés.</div>
 </footer>

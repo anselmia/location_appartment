@@ -99,7 +99,6 @@ section a:hover {
     1px 0 2px var(--primary-color), -1px 0 2px var(--primary-color);
 }
 
-
 .hero-cta-group {
   display: flex;
   gap: 1.5rem;
@@ -114,9 +113,6 @@ section a:hover {
 .cta-owner:hover {
   background: linear-gradient(90deg, #23344a 0%, #3d5779 100%);
 }
-
-
-
 
 .commitments-section {
   padding: 4rem 2rem;
@@ -532,7 +528,7 @@ section a:hover {
     flex-direction: column;
     gap: 1rem;
   }
-    .commitments-section img,
+  .commitments-section img,
   .lux-section .img-fluid,
   .lux-section img {
     max-width: 100%;
@@ -551,13 +547,13 @@ section a:hover {
     font-size: 1.4rem;
     margin-bottom: 1.2rem;
   }
-  .hero-cta-group a, .btn-luxury {
+  .hero-cta-group a,
+  .btn-luxury {
     font-size: 1rem;
     padding: 0.7rem 1.5rem;
   }
-
 }
-@media (max-width: 600px) {  
+@media (max-width: 600px) {
   .logements-section {
     padding: 1.5rem 0.3rem 1.5rem 0.3rem;
   }
@@ -582,11 +578,8 @@ section a:hover {
   display: block;
 }
 .promo-banner-launch {
-  width: 90vw;
-  left: 50%;
-  right: 50%;
-  margin-left: -45vw;
-  margin-right: -45vw;
+  width: 60vw;
+  margin: auto;
   margin-bottom: 0.5rem;
   position: relative;
   background: linear-gradient(90deg, #ffe9c0 0%, #d4af7f 100%);
@@ -596,7 +589,7 @@ section a:hover {
   padding: 1rem 0.5rem 1rem 0.5rem;
   letter-spacing: 0.02em;
   z-index: 20;
-  box-shadow: 0 2px 12px rgba(191,166,107,0.10);
+  box-shadow: 0 2px 12px rgba(191, 166, 107, 0.1);
   border-radius: 1.2rem 1.2rem;
   display: flex;
   align-items: center;
@@ -614,7 +607,7 @@ section a:hover {
   margin-right: 0.7em;
   letter-spacing: 0.04em;
   font-weight: 800;
-  box-shadow: 0 1px 4px rgba(191,166,107,0.13);
+  box-shadow: 0 1px 4px rgba(191, 166, 107, 0.13);
 }
 
 .promo-banner-launch .promo-text {
