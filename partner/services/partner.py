@@ -37,13 +37,6 @@ def get_partner_system_messages(user):
         # Récupère les activités du partenaire
         activities = Activity.objects.filter(owner=user)
 
-        # Activités non validées
-        not_validated = activities.filter(validated=False)
-        if not_validated.exists():
-            messages_system.append(
-                f"{not_validated.count()} activité(s) en attente de validation. Elles ne sont pas encore visibles par les voyageurs."
-            )
-
         # Activités sans photo
         no_photo = activities.annotate(photo_count=Count("photos")).filter(photo_count=0)
         if no_photo.exists():
