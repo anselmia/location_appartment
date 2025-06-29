@@ -260,7 +260,11 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
         Exception: If cancellation or refund fails.
     """
     try:
-        today = timezone.now().date()
+        reservation_type = get_reservation_type(reservation)
+        if reservation_type == "logement":
+            today = timezone.now().date()
+        elif reservation_type == "activity":
+            today = timezone.now()
         logger.info(f"Attempting to cancel and refund reservation {getattr(reservation, 'code', repr(reservation))}")
         if reservation.start <= today:
             return (
