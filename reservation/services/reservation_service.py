@@ -281,7 +281,7 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
                 )
             elif reservation_type == "activity":
                 ActivityReservationHistory.objects.create(
-                    activity_reservation=reservation,
+                    reservation=reservation,
                     details=f"Réservation {reservation.code} annulée par {user.full_name}",
                 )
         else:
