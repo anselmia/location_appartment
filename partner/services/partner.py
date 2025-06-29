@@ -53,7 +53,7 @@ def get_partner_system_messages(user):
             )
 
         # Activités désactivées
-        disabled = activities.filter(active=False)
+        disabled = activities.filter(is_active=False)
         if disabled.exists():
             messages_system.append(
                 f"{disabled.count()} activité(s) sont désactivées et ne peuvent pas recevoir de réservations."
