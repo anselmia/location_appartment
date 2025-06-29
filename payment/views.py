@@ -70,6 +70,7 @@ def save_payment_method(request, code):
 @login_required
 @user_has_reservation
 def payment_method_saved(request, type, code):
+    from common.services.email_service import send_mail_on_new_reservation, send_mail_on_new_activity_reservation
     try:
         card_saved = request.GET.get("card_saved")
         if card_saved:
@@ -85,12 +86,15 @@ def payment_method_saved(request, type, code):
                 reservation=reservation,
                 details=f"Nouvelle réservation {reservation.code} confirmée du {reservation.start} au {reservation.end}.",
             )
+            send_mail_on_new_reservation(reservation.logement, reservation, reservation.user)
+
         elif type == "activity":
             reservation = ActivityReservation.objects.get(code=code)
             ActivityReservationHistory.objects.create(
                 reservation=reservation,
                 details=f"Nouvelle réservation {reservation.code}  en attente de confirmation du {reservation.start} au {reservation.end}.",
             )
+            send_mail_on_new_activity_reservation(reservation.activity, reservation, reservation.user)
         else:
             messages.error(request, "Type de réservation inconnu.")
             return redirect("common:home")
