@@ -1,0 +1,44 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    ❌
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #F44336
+{% endblock banner_bg %}
+{% block banner_title %}
+    Annulation de votre réservation d’activité
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.get_full_name }},</p>
+    <p>
+        Votre réservation d’activité <strong>{{ reservation.code }}</strong> pour <strong>{{ activity.name }}</strong> a été annulée.
+        <br>
+        Si vous n'êtes pas à l'origine de cette annulation, vous pouvez contacter l'organisateur pour de plus amples informations.
+    </p>
+    <h4>Détails de votre réservation annulée :</h4>
+    <ul style="list-style:none; padding:0;">
+        <li>
+            🎯 <strong>Activité :</strong> {{ activity.name }}
+        </li>
+        <li>
+            📅 <strong>Date :</strong> {{ reservation.start|date:"d/m/Y H:i" }}
+        </li>
+        <li>
+            👥 <strong>Participants :</strong> {{ reservation.participants }}
+        </li>
+        <li>
+            💶 <strong>Montant :</strong> {{ reservation.price|floatformat:2 }} € TTC
+        </li>
+    </ul>
+    <p>
+        Vous pouvez retrouver toutes vos réservations dans votre espace personnel :
+        <a href="{{ espace_partenaire_url }}"
+           style="color:#F44336;
+                  text-decoration:underline">Accéder à mon espace</a>
+    </p>
+    <p>
+        Merci pour votre confiance,
+        <br>
+        <strong>L’équipe {{ entreprise.name }}</strong>
+    </p>
+{% endblock content %}

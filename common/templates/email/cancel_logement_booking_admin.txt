@@ -1,0 +1,15 @@
+Bonjour,
+
+La réservation {{ reservation.code }} pour le logement {{ logement.name }} a été annulée.
+
+Détails de la réservation annulée :
+- Logement : {{ logement.name }}
+- Séjour : du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
+- Voyageurs : {{ reservation.total_guest }}
+- Montant : {{ reservation.price|floatformat:2 }} € TTC
+
+Consultez le détail dans votre espace partenaire :
+{{ espace_partenaire_url }}
+
+Cordialement,
+L’équipe {{ entreprise.name }}

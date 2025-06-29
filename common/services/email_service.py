@@ -169,6 +169,7 @@ def send_mail_activity_reservation_confirmation(activity, reservation, user):
     except Exception as e:
         logger.exception(f"❌ Failed to send confirmation mail for reservation {reservation.code}: {e}")
 
+
 def send_pre_checkin_reminders():
     try:
         from reservation.models import Reservation
@@ -926,3 +927,89 @@ def send_mail_on_manual_payment_intent_failure(reservation):
         logger.info(f"Email sent to user {reservation.user.email} about manual payment intent failure")
     except Exception as e:
         logger.exception(f"Error sending email about manual payment intent failure: {e}")
+
+
+def send_mail_logement_reservation_cancellation(logement, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Admin/owner email (HTML + plain)
+        admin_message_txt = render_to_string("email/cancel_logement_booking_admin.txt", email_context)
+        admin_message_html = render_to_string("email/cancel_logement_booking_admin.html", email_context)
+        subject_admin = f"💸 Annulation de la réservation {reservation.code} - {logement.name}"
+        admin_emails = logement.mail_list
+        msg = EmailMultiAlternatives(subject_admin, admin_message_txt, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(admin_message_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"✅ cancel email sent to admins for reservation {reservation.code}.")
+
+        subject = f"Annulation de votre réservation {reservation.code} - {logement.name}"
+        body_txt = render_to_string("email/cancel_logement_booking.txt", email_context)
+        body_html = render_to_string("email/cancel_logement_booking.html", email_context)
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=body_txt,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        msg.attach_alternative(body_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"Email sent to user {user.email} about logement reservation cancellation")
+    except Exception as e:
+        logger.exception(f"Error sending email about logement reservation cancellation: {e}")
+
+
+def send_mail_activity_reservation_cancellation(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Admin/owner email (HTML + plain)
+        admin_message_txt = render_to_string("email/cancel_activity_booking_admin.txt", email_context)
+        admin_message_html = render_to_string("email/cancel_activity_booking_admin.html", email_context)
+        subject_admin = f"💸 Annulation de la réservation {reservation.code} - {activity.name}"
+        admin_emails = [activity.owner.email]
+        msg = EmailMultiAlternatives(subject_admin, admin_message_txt, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(admin_message_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"✅ cancel email sent to admins for reservation {reservation.code}.")
+
+        subject = f"Annulation de votre réservation {reservation.code} - {activity.name}"
+        body_txt = render_to_string("email/cancel_activity_booking.txt", email_context)
+        body_html = render_to_string("email/cancel_activity_booking.html", email_context)
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=body_txt,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        msg.attach_alternative(body_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"Email sent to user {user.email} about activity reservation cancellation")
+    except Exception as e:
+        logger.exception(f"Error sending email about activity reservation cancellation: {e}")

@@ -8,7 +8,14 @@ from django.db.models.functions import ExtractYear, ExtractMonth
 from django.db.models import Q
 from django.core.cache import cache
 
-from reservation.models import Reservation, ActivityReservation, airbnb_booking, booking_booking, ReservationHistory, ActivityReservationHistory
+from reservation.models import (
+    Reservation,
+    ActivityReservation,
+    airbnb_booking,
+    booking_booking,
+    ReservationHistory,
+    ActivityReservationHistory,
+)
 from payment.services.payment_service import refund_payment
 from common.services.cache import CACHE_TIMEOUT_SHORT, CACHE_TIMEOUT_LONG
 from accounts.models import CustomUser
@@ -239,10 +246,20 @@ def mark_reservation_cancelled(reservation: Any) -> None:
     Raises:
         Exception: If update fails.
     """
+    from common.services.email_service import (
+        send_mail_logement_reservation_cancellation,
+        send_mail_activity_reservation_cancellation,
+    )
+
     try:
+        reservation_type = get_reservation_type(reservation)
         logger.info(f"Marking reservation {getattr(reservation, 'code', repr(reservation))} as cancelled.")
         setattr(reservation, "statut", "annulee")
         reservation.save()
+        if reservation_type == "activity":
+            send_mail_activity_reservation_cancellation(reservation.activity, reservation, reservation.user)
+        else:
+            send_mail_logement_reservation_cancellation(reservation.logement, reservation, reservation.user)
         logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} has been marked as cancelled.")
     except Exception as e:
         logger.exception(f"Error cancelling reservation {getattr(reservation, 'code', repr(reservation))}: {e}")
@@ -259,6 +276,11 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
     Raises:
         Exception: If cancellation or refund fails.
     """
+    from common.services.email_service import (
+        send_mail_logement_reservation_cancellation,
+        send_mail_activity_reservation_cancellation,
+    )
+
     try:
         reservation_type = get_reservation_type(reservation)
         if reservation_type == "logement":

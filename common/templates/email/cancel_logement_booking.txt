@@ -1,0 +1,16 @@
+Bonjour {{ user.get_full_name }},
+
+Votre réservation {{ reservation.code }} pour le logement {{ logement.name }} a été annulée.
+Si vous n'êtes pas à l'origine de cette annulation, vous pouvez contacter le propriétaire pour de plus amples informations.
+
+Détails de votre réservation annulée :
+- Logement : {{ logement.name }}
+- Séjour : du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
+- Voyageurs : {{ reservation.total_guest }}
+- Montant : {{ reservation.price|floatformat:2 }} € TTC
+
+Vous pouvez retrouver toutes vos réservations dans votre espace personnel :
+{{ espace_partenaire_url }}
+
+Merci pour votre confiance,
+L’équipe {{ entreprise.name }}

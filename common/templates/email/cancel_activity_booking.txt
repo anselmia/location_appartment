@@ -1,0 +1,16 @@
+Bonjour {{ user.get_full_name }},
+
+Votre réservation d’activité {{ reservation.code }} pour {{ activity.name }} a été annulée.
+Si vous n'êtes pas à l'origine de cette annulation, vous pouvez contacter l'organisateur pour de plus amples informations.
+
+Détails de votre réservation annulée :
+- Activité : {{ activity.name }}
+- Date : {{ reservation.start|date:"d/m/Y H:i" }}
+- Participants : {{ reservation.participants }}
+- Montant : {{ reservation.price|floatformat:2 }} € TTC
+
+Vous pouvez retrouver toutes vos réservations dans votre espace personnel :
+{{ espace_partenaire_url }}
+
+Merci pour votre confiance,
+L’équipe {{ entreprise.name }}

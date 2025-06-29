@@ -1,0 +1,43 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    ❌
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #F44336
+{% endblock banner_bg %}
+{% block banner_title %}
+    Annulation de réservation
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour,</p>
+    <p>
+        La réservation <strong>{{ reservation.code }}</strong> pour le logement <strong>{{ logement.name }}</strong> a été annulée.
+        Si vous n'êtes pas à l'origine de cette annulation, vous pouvez contacter le client via la messagerie pour plus d'informations.
+    </p>
+    <h4>Détails de la réservation annulée :</h4>
+    <ul style="list-style:none; padding:0;">
+        <li>
+            🏠 <strong>Logement :</strong> {{ logement.name }}
+        </li>
+        <li>
+            📅 <strong>Séjour :</strong> du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
+        </li>
+        <li>
+            👥 <strong>Voyageurs :</strong> {{ reservation.total_guest }}
+        </li>
+        <li>
+            💶 <strong>Montant :</strong> {{ reservation.price|floatformat:2 }} € TTC
+        </li>
+    </ul>
+    <p>
+        Consultez le détail dans votre espace partenaire :
+        <a href="{{ espace_partenaire_url }}"
+           style="color:#F44336;
+                  text-decoration:underline">Accéder à l’espace partenaire</a>
+    </p>
+    <p>
+        Cordialement,
+        <br>
+        <strong>L’équipe {{ entreprise.name }}</strong>
+    </p>
+{% endblock content %}
