@@ -17,7 +17,6 @@ from common.services.email_service import (
     send_mail_on_new_transfer,
     send_mail_payment_link,
     send_mail_on_payment_failure,
-    send_mail_on_new_activity_reservation,
     send_mail_on_activity_payment_failure,
     send_mail_on_new_activity_transfer,
     notify_vendor_new_reservation,
@@ -1369,6 +1368,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
         data (StripePaymentIntentEventData): The event data.
     """
     from reservation.models import Reservation, ActivityReservation
+    from reservation.services.reservation_service import get_reservation_by_code
 
     reservation_code = None
     try:
@@ -1387,10 +1387,6 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
             logger.warning("⚠️ No 'type' metadata in payment intent.")
             return
 
-        if payment_type != "deposit" and product != "activity":
-            logger.info("ℹ️ Payment type is not 'deposit', skipping.")
-            return
-
         if not reservation_code:
             logger.warning("⚠️ No reservation code in metadata.")
             return
@@ -1404,18 +1400,16 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
 
         with transaction.atomic():
             try:
+                reservation = get_reservation_by_code(reservation_code)
                 if product == "logement":
-                    reservation = Reservation.objects.select_for_update().get(code=reservation_code)
-                    reservation.amount_charged = amount
+                    if payment_type == "deposit":
+                        reservation.amount_charged = amount
+                    elif payment_type == "payment_capture":
+                        reservation.checkout_amount = amount
                     reservation.save(update_fields=["amount_charged"])
                 elif product == "activity":
-                    reservation = ActivityReservation.objects.select_for_update().get(code=reservation_code)
                     reservation.checkout_amount = amount
-                    reservation.save(update_fields=["checkout_amount"])
-                    try:
-                        send_mail_on_new_activity_reservation(reservation.activity, reservation, reservation.user)
-                    except Exception as e:
-                        logger.error(f"❌ Failed to send checkout email for reservation {reservation.code}: {e}")
+                    reservation.save(update_fields=["checkout_amount"])                    
                 else:
                     logger.error(f"❌ Unknown product type {product} for reservation {reservation_code}.")
                     return
@@ -1506,7 +1500,7 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
     Args:
         data (StripeCheckoutSessionEventData): The event data.
     """
-    from reservation.models import Reservation, ActivityReservation
+    from reservation.services.reservation_service import get_reservation_by_code
 
     reservation_code = None
     try:
@@ -1521,76 +1515,15 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
 
         logger.info(f"🔔 Handling checkout.session.completed for reservation {reservation_code}")
 
-        with transaction.atomic():
-            try:
-                if product == "logement":
-                    reservation = Reservation.objects.select_for_update().get(code=reservation_code)
-                elif product == "activity":
-                    reservation = ActivityReservation.objects.select_for_update().get(code=reservation_code)
-                else:
-                    logger.error(f"❌ Unknown product type {product} for reservation {reservation_code}.")
-                    return
-            except (Reservation.DoesNotExist, ActivityReservation.DoesNotExist):
-                logger.warning(f"⚠️ Reservation {reservation_code} not found.")
-                return
+        reservation = get_reservation_by_code(reservation_code)
+        content_type = ContentType.objects.get_for_model(reservation)
+        task, _ = PaymentTask.objects.get_or_create(
+            content_type=content_type,
+            object_id=reservation.id,
+            type="checkout",
+        )            
 
-            content_type = ContentType.objects.get_for_model(reservation)
-            task, _ = PaymentTask.objects.get_or_create(
-                content_type=content_type,
-                object_id=reservation.id,
-                type="checkout",
-            )
-
-            try:
-                intent = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["payment_method"])
-            except stripe.error.StripeError as e:
-                logger.exception(
-                    f"❌ Stripe API error retrieving intent {payment_intent_id}: {e.user_message or str(e)}"
-                )
-                return
-
-            payment_method = intent.payment_method
-            if not payment_method or not getattr(payment_method, "id", None):
-                logger.error(f"❌ No valid payment method in intent {payment_intent_id}")
-                return
-            if not reservation.stripe_saved_payment_method_id:
-                reservation.stripe_saved_payment_method_id = payment_method.id
-                logger.info(f"💾 Saved payment method {payment_method.id} for reservation {reservation.code}")
-
-            if product == "logement":
-                if intent.status != "succeeded":
-                    logger.warning(
-                        f"⚠️ PaymentIntent {payment_intent_id} status '{intent.status}' is not 'succeeded'. Skipping confirmation."
-                    )
-                    return
-                reservation.checkout_amount = Decimal(intent.amount_received) / 100  # Convert cents to euros
-                reservation.save(
-                    update_fields=[
-                        "stripe_saved_payment_method_id",
-                        "paid",
-                        "checkout_amount",
-                    ]
-                )
-
-                try:
-                    send_mail_on_new_reservation(reservation.logement, reservation, reservation.user)
-                    logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
-                except Exception as e:
-                    logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
-            elif product == "activity":
-                if intent.status not in ["succeeded", "requires_capture"]:
-                    logger.warning(
-                        f"⚠️ PaymentIntent {payment_intent_id} status '{intent.status}' is not 'succeeded' or 'requires_capture'. Skipping confirmation."
-                    )
-                    return
-
-                try:
-                    notify_vendor_new_reservation(reservation)
-                    logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
-                except Exception as e:
-                    logger.exception(f"❌ Error notifying vendor for reservation {reservation.code}: {e}")
-
-            task.mark_success(payment_intent_id)
+        task.mark_success(payment_intent_id)
 
         logger.info(f"✅ Reservation {reservation.code} confirmed")
 
