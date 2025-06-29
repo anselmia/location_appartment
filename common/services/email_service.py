@@ -139,6 +139,36 @@ def send_mail_on_new_activity_reservation(activity, reservation, user):
         logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
 
 
+def send_mail_activity_reservation_confirmation(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Customer confirmation
+        if user.email:
+            subject = f"✅ Confirmation de votre Réservation {reservation.code} - {activity.name}"
+            user_message_txt = render_to_string("email/activity_reservation_confirmation_customer.txt", email_context)
+            user_message_html = render_to_string("email/activity_reservation_confirmation_customer.html", email_context)
+            msg_user = EmailMultiAlternatives(subject, user_message_txt, settings.DEFAULT_FROM_EMAIL, [user.email])
+            msg_user.attach_alternative(user_message_html, "text/html")
+            msg_user.send(fail_silently=False)
+            logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send confirmation mail for reservation {reservation.code}: {e}")
+
 def send_pre_checkin_reminders():
     try:
         from reservation.models import Reservation

@@ -1,0 +1,14 @@
+Bonjour {{ user.full_name }},
+
+Votre réservation pour l'activité "{{ activity.name }}" est confirmée !.
+Dates : du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
+Nombre de voyageurs : {{ reservation.participants }}
+
+Reservation code :  {{reservation.code}}
+
+Prix: {{ reservation.price }} € TTC
+
+Nous vous recontacterons bientôt avec plus de détails.
+
+Cordialement,
+L'équipe de {{ entreprise.name }}

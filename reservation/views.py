@@ -642,7 +642,7 @@ def customer_activity_reservation_detail(request: HttpRequest, code: str) -> Htt
 @login_required
 @user_has_activity
 def validate_activity_reservation(request, code):
-    from common.services.email_service import send_mail_on_new_activity_reservation
+    from common.services.email_service import send_mail_activity_reservation_confirmation
     reservation = get_object_or_404(ActivityReservation, code=code)
     if request.method == "POST":
         if reservation.statut == "en_attente":
@@ -650,7 +650,7 @@ def validate_activity_reservation(request, code):
                 reservation.statut = "confirmee"
                 reservation.save()
                 try:
-                    send_mail_on_new_activity_reservation(reservation.activity, reservation, reservation.user)
+                    send_mail_activity_reservation_confirmation(reservation.activity, reservation, reservation.user)
                     logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
                 except Exception as e:
                     logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")

@@ -1,0 +1,22 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    ✅
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Confirmation de votre réservation d'activité
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.full_name }},</p>
+    <p>
+        Votre réservation <strong>{{ reservation.code }}</strong> pour l'activité <strong>{{ activity.name }}</strong> a été validée.
+    </p>
+    <p>Vous pouvez retrouver tous les détails dans votre espace personnel.</p>
+    <p>
+        Merci de votre confiance.
+        <br>
+        L'équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}
