@@ -276,10 +276,6 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
     Raises:
         Exception: If cancellation or refund fails.
     """
-    from common.services.email_service import (
-        send_mail_logement_reservation_cancellation,
-        send_mail_activity_reservation_cancellation,
-    )
 
     try:
         reservation_type = get_reservation_type(reservation)

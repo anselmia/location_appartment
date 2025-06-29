@@ -23,7 +23,7 @@
             {% if reservation.statut != "annulee" %}
                 <form method="post"
                       action="{% url 'reservation:owner_cancel_activity_reservation' reservation.code %}"
-                      onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention un remboursement complet sera émis');">
+                      onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm">
                         <i class="bi bi-x-circle"></i> Annuler
