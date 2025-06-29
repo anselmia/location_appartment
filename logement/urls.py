@@ -11,22 +11,17 @@ router = DefaultRouter()
 router.register(r"prices", DailyPriceViewSet, basename="price")
 
 urlpatterns = [
-    path("logement/<int:logement_id>/", views.view_logement, name="view_logement"),
+    path("<int:logement_id>/", views.view_logement, name="view_logement"),
     path("cities/", views.autocomplete_cities, name="autocomplete_cities"),
     path("i18n/setlang/", set_language, name="set_language"),
-    path(
-        "api/get_price/<int:logement_id>/<str:date>/",
-        views.get_price_for_date,
-        name="get_price_for_date",
-    ),
     path("api/export/ical/<str:code>/", views.export_ical, name="export-ical"),
     path("search/", views.logement_search, name="logement_search"),
-    path("logement/add/", views.manage_logement, name="add_logement"),
-    path("edit-logement/<int:logement_id>/", views.manage_logement, name="edit_logement"),
-    path("edit-logement/<int:logement_id>/add_room/", views.add_room, name="add_room"),
+    path("add/", views.manage_logement, name="add_logement"),
+    path("edit/<int:logement_id>/", views.manage_logement, name="edit_logement"),
+    path("edit/<int:logement_id>/add_room/", views.add_room, name="add_room"),
     path("room/<int:room_id>/delete/", views.delete_room, name="delete_room"),
     path(
-        "edit-logement/<int:logement_id>/upload_photos/",
+        "edit/<int:logement_id>/upload_photos/",
         views.upload_photos,
         name="upload_photos",
     ),
@@ -54,20 +49,20 @@ urlpatterns = [
     ),
     path("calendar/", views.calendar, name="calendar"),
     path(
-        "logement/discounts/<int:logement_id>/",
+        "discounts/<int:logement_id>/",
         views.manage_discounts,
         name="manage_discounts",
     ),
     path(
-        "logement/discounts/",
+        "discounts/",
         views.manage_discounts,
         name="manage_discounts",
     ),
     path("revenu/", RevenueView.as_view(), name="revenu"),
     path("api/revenu/<int:logement_id>/", views.api_economie_data, name="api_revenu"),
-    path("logement-dashboard/", views.logement_dashboard, name="dashboard"),
-    path("logement/<int:logement_id>/sync/airbnb/", views.sync_airbnb_calendar_view, name="sync_airbnb_calendar"),
-    path("logement/<int:logement_id>/sync/booking/", views.sync_booking_calendar_view, name="sync_booking_calendar"),
+    path("dashboard/", views.logement_dashboard, name="dashboard"),
+    path("<int:logement_id>/sync/airbnb/", views.sync_airbnb_calendar_view, name="sync_airbnb_calendar"),
+    path("<int:logement_id>/sync/booking/", views.sync_booking_calendar_view, name="sync_booking_calendar"),
     path("api/stop-managing-logement/", views.stop_managing_logement, name="stop_managing_logement"),
     path("dash/", views.dashboard, name="dash"),
 ]

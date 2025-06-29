@@ -25,7 +25,7 @@ from reservation.services.reservation_service import (
     get_reservation_years_and_months,
     mark_reservation_cancelled,
     get_valid_reservations,
-    get_reservation_type
+    get_reservation_type,
 )
 from reservation.services.logement import (
     get_logement_reservations_queryset,
@@ -44,6 +44,7 @@ from payment.services.payment_service import (
     create_stripe_checkout_session_with_deposit,
     create_stripe_checkout_session_with_manual_capture,
     capture_reservation_payment,
+    create_stripe_setup_intent,
     PAYMENT_FEE_VARIABLE,
 )
 
@@ -122,9 +123,20 @@ def book_logement(request: HttpRequest, pk: int) -> HttpResponse:
                         reservation.accepted_at = accepted_at
                         reservation.ip_address = ip_address
                         reservation.save()
-                        session = create_stripe_checkout_session_with_deposit(reservation, request)
-                        logger.info(f"Reservation created and Stripe session initialized for user {user}")
-                        return redirect(session["checkout_session_url"])
+                        # session = create_stripe_checkout_session_with_deposit(reservation, request)
+                        setup_intent = create_stripe_setup_intent(reservation, user, request)
+                        logger.info(f"Reservation created and SetupIntent initialized for user {user}")
+                        # Passe le client_secret au template pour Stripe.js
+                        return render(
+                            request,
+                            "payment/book_logement_payment.html",  # Crée ce template pour gérer Stripe.js côté client
+                            {
+                                "setup_intent_client_secret": setup_intent["client_secret"],
+                                "reservation": reservation,
+                                "logement": logement,
+                                "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
+                            },
+                        )
                 else:
                     messages.error(request, "Une erreur est survenue")
         else:
@@ -193,9 +205,19 @@ def book_activity(request: HttpRequest, pk: int) -> HttpResponse:
                         reservation.ip_address = ip_address
                         reservation.save()
 
-                        session = create_stripe_checkout_session_with_manual_capture(reservation, request)
-                        logger.info(f"Reservation created and Stripe session initialized for user {user}")
-                        return redirect(session["checkout_session_url"])
+                        setup_intent = create_stripe_setup_intent(reservation, user, request)
+                        logger.info(f"Reservation created and SetupIntent initialized for user {user}")
+                        # Passe le client_secret au template pour Stripe.js
+                        return render(
+                            request,
+                            "payment/book_activity_payment.html",  # Crée ce template pour gérer Stripe.js côté client
+                            {
+                                "setup_intent_client_secret": setup_intent["client_secret"],
+                                "reservation": reservation,
+                                "activity": activity,
+                                "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
+                            },
+                        )
                 else:
                     messages.error(request, "Une erreur est survenue")
         else:
@@ -351,7 +373,7 @@ def customer_cancel_activity_booking(request: HttpRequest, code: str) -> HttpRes
 
 @login_required
 @user_is_reservation_admin
-def owner_cancel_activity_booking(request: HttpRequest, code: str) -> HttpResponse:
+def owner_cancel_activity_reservation(request: HttpRequest, code: str) -> HttpResponse:
     """
     Cancel by owner a booking and process refund if possible.
     """
@@ -370,7 +392,7 @@ def owner_cancel_activity_booking(request: HttpRequest, code: str) -> HttpRespon
         return redirect("reservation:activity_reservation_detail", code=code)
     else:
         return redirect("reservation:logement_reservation_detail", code=code)
-    
+
 
 @login_required
 @is_admin
@@ -623,11 +645,12 @@ def validate_activity_reservation(request, code):
     reservation = get_object_or_404(ActivityReservation, code=code)
     if request.method == "POST":
         if reservation.statut == "en_attente":
-            charge_result = capture_reservation_payment(reservation)
-            if charge_result.get("success"):
-                messages.success(request, "Le paiement a été prélevé avec succès.")
+            if reservation.stripe_saved_payment_method_id:
+                reservation.statut = "confirmee"
+                reservation.save()
+                messages.success(request, "La réservation a été confirmée avec succès.")
             else:
-                error_msg = charge_result.get("error") or "Une erreur est survenue lors du prélèvement du paiement."
+                error_msg = "Aucun moyen de paiement enregistré. Veuillez enregistrer un moyen de paiement."
                 messages.error(request, error_msg)
         else:
             messages.warning(request, "La réservation n'est pas en attente ou a déjà été traitée.")

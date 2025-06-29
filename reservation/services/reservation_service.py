@@ -283,7 +283,7 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
         else:
             logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} is already cancelled.")
             return ("✅ Réservation déjà annulée.", None)
-        if getattr(reservation, "refundable", False):
+        if getattr(reservation, "refundable", False) and reservation.paid:
             if getattr(reservation, "stripe_payment_intent_id", None):
                 try:
                     amount_in_cents = getattr(reservation, "refundable_amount", 0) * 100

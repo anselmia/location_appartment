@@ -1,0 +1,43 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    💳
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Paiement reçu pour votre réservation
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.get_full_name }},</p>
+    <p>
+        Nous vous confirmons la réception du paiement pour votre réservation <strong>{{ reservation.code }}</strong> – <strong>{{ logement.name }}</strong>.
+    </p>
+    <h4>Détails de votre réservation :</h4>
+    <ul style="list-style:none; padding:0;">
+        <li>
+            🏠 <strong>Logement :</strong> {{ logement.name }}
+        </li>
+        <li>
+            📅 <strong>Séjour :</strong> du {{ reservation.start|date:"d/m/Y" }} au {{ reservation.end|date:"d/m/Y" }}
+        </li>
+        <li>
+            👥 <strong>Voyageurs :</strong> {{ reservation.total_guest }}
+        </li>
+        <li>
+            💶 <strong>Montant payé :</strong> {{ reservation.price|floatformat:2 }} € TTC
+        </li>
+    </ul>
+    <p>
+        Vous pouvez retrouver toutes les informations relatives à votre séjour dans votre espace personnel :
+        <br>
+        <a href="{{ espace_partenaire_url }}"
+           style="color:#4CAF50;
+                  text-decoration:underline">Accéder à mon espace</a>
+    </p>
+    <p>
+        Merci pour votre confiance,
+        <br>
+        <strong>L’équipe {{ entreprise.name }}</strong>
+    </p>
+{% endblock content %}

@@ -1,0 +1,9 @@
+Bonjour {{ user.first_name }},
+
+Nous vous confirmons la réception du paiement pour votre réservation {{ reservation.code }} - {{ logement.name }}.
+
+Vous pouvez retrouver toutes les informations relatives à votre séjour dans votre espace personnel :
+{{ espace_partenaire_url }}
+
+Merci pour votre confiance et à bientôt,
+L’équipe {{ entreprise.name }}

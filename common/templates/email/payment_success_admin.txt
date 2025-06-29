@@ -1,0 +1,9 @@
+Bonjour,
+
+Un paiement a été reçu pour la réservation {{ reservation.code }} ({{ logement.name }}) effectuée par {{ user.get_full_name }} ({{ user.email }}).
+
+Consultez le détail dans l’espace partenaire :
+{{ espace_partenaire_url }}
+
+Cordialement,
+L’équipe {{ entreprise.name }}

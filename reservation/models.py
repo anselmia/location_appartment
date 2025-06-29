@@ -232,7 +232,7 @@ class Reservation(models.Model):
         Calculates the amount that can be transferred to the admin.
         """
         try:
-            if self.logement.admin:
+            if self.logement.admin and self.paid:
                 platform_fee = Decimal(self.platform_fee or 0)
                 payment_fee = Decimal(self.payment_fee or 0)
                 refund = Decimal(self.refund_amount or 0)

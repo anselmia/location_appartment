@@ -1,0 +1,11 @@
+Bonjour,
+
+Une nouvelle demande de création de conciergerie nécessite votre validation.
+
+Conciergerie : "{{ conciergerie.name }}"
+Demandeur : {{ conciergerie.user.full_name }} ({{ conciergerie.user.email }})
+
+Merci de vous connecter à votre espace d'administration pour accepter ou refuser cette demande.
+
+Cordialement,
+L'équipe {{ entreprise.name }}

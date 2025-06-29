@@ -58,8 +58,8 @@ urlpatterns = [
     ),
     path(
         "owner-cancel-activity/<str:code>/",
-        views.owner_cancel_activity_booking,
-        name="owner_cancel_activity_booking",
+        views.owner_cancel_activity_reservation,
+        name="owner_cancel_activity_reservation",
     ),
     path(
         "owner-cancel-logement/<str:code>/", views.owner_cancel_logement_booking, name="owner_cancel_logement_booking"

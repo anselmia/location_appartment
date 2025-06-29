@@ -4,11 +4,10 @@ This module provides views for processing payments, handling webhooks, and manag
 """
 
 import logging
+import json
 
 from decimal import Decimal, InvalidOperation
-from urllib.parse import urlencode
 
-from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,16 +17,18 @@ from django.views.decorators.http import require_POST
 from django.core.cache import cache
 from django.core.paginator import Paginator
 
-from activity.models import Activity
+
 from reservation.models import Reservation, ActivityReservation, ReservationHistory, ActivityReservationHistory
 from reservation.decorators import user_is_reservation_admin, user_has_reservation
 from reservation.services.reservation_service import get_reservation_by_code, get_reservation_type
 
-from logement.models import Logement
-
 from common.services.stripe.stripe_webhook import handle_stripe_webhook_request
 from common.decorators import is_admin
 from common.services.network import get_client_ip
+from common.services.email_service import (
+    send_mail_logement_payment_success,
+    send_mail_activity_payment_success,
+)
 
 from payment.decorators import is_stripe_admin
 from payment.services.payment_service import (
@@ -36,11 +37,14 @@ from payment.services.payment_service import (
     charge_deposit,
     transfer_funds,
     get_session,
+    get_payment_intent,
     verify_payment,
     verify_transfer,
     verify_payment_method,
     verify_deposit_payment,
-    verify_refund
+    verify_refund,
+    create_stripe_checkout_session_with_deposit,
+    create_stripe_checkout_session_without_deposit,
 )
 from payment.models import PaymentTask
 
@@ -49,26 +53,31 @@ logger = logging.getLogger(__name__)
 
 @login_required
 @user_has_reservation
-def payment_success(request, type, code):
+@require_POST
+def save_payment_method(request, code):
     try:
-        session_id = request.GET.get("session_id")
-        if not session_id:
-            messages.error(request, "Session ID manquant.")
-            if type == "activity":
-                return redirect("reservation:book_activity", pk=1)
-            else:
-                return redirect("reservation:book_logement", pk=1)
+        data = json.loads(request.body)
+        payment_method_id = data.get("payment_method")
+        reservation = get_reservation_by_code(code)
+        reservation.stripe_saved_payment_method_id = payment_method_id
+        reservation.save(update_fields=["stripe_saved_payment_method_id"])
+        return HttpResponse(status=200)
+    except Exception as e:
+        logger.exception(f"Erreur lors de la sauvegarde du payment_method Stripe: {e}")
+        return HttpResponse(status=400)
 
-        session = get_session(session_id)
-        if not session:
-            messages.error(request, "Session invalide.")
-            if type == "activity":
-                return redirect("reservation:book_activity", pk=1)
-            else:
-                return redirect("reservation:book_logement", pk=1)
 
-        payment_intent_id = session.payment_intent
-
+@login_required
+@user_has_reservation
+def payment_method_saved(request, type, code):
+    try:
+        card_saved = request.GET.get("card_saved")
+        if card_saved:
+            messages.success(
+                request,
+                "Votre carte a bien été enregistrée. Aucun paiement n'a encore été effectué. "
+                "Le paiement sera prélevé automatiquement 2 jours avant votre arrivée.",
+            )
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
             reservation.statut = "confirmee"
@@ -86,8 +95,76 @@ def payment_success(request, type, code):
             messages.error(request, "Type de réservation inconnu.")
             return redirect("common:home")
 
-        reservation.stripe_payment_intent_id = payment_intent_id
-        reservation.save(update_fields=["statut", "stripe_payment_intent_id"])
+        reservation.save(update_fields=["statut"])
+
+        if type == "logement":
+            return render(request, "payment/reservation_logement_success.html", {"reservation": reservation})
+        elif type == "activity":
+            return render(request, "payment/reservation_activity_success.html", {"reservation": reservation})
+
+    except Reservation.DoesNotExist:
+        messages.error(request, f"Réservation {code} introuvable.")
+        return redirect("reservation:book_logement", pk=1)
+    except ActivityReservation.DoesNotExist:
+        messages.error(request, f"Réservation activité {code} introuvable.")
+        return redirect("reservation:book_activity", pk=1)
+    except Exception as e:
+        logger.exception(f"Error handling payment success: {e}")
+        messages.error(request, "Erreur lors du traitement du paiement.")
+        if type == "activity":
+            return redirect("reservation:book_activity", pk=1)
+        else:
+            return redirect("reservation:book_logement", pk=1)
+
+
+@login_required
+@user_has_reservation
+def payment_success(request, type, code):
+    try:
+        session_id = request.GET.get("session_id")
+        if not session_id:
+            messages.error(request, "Session ID manquant. Veuillez contacter un administrateur")
+            return redirect("accounts:dashboard")
+
+        # Verify the session
+        session = get_session(session_id)
+        if not session:
+            messages.error(request, "Session Stripe introuvable. Veuillez contacter un administrateur.")
+            return redirect("accounts:dashboard")
+
+        payment_intent_id = session.payment_intent
+        payment_intent = get_payment_intent(payment_intent_id)
+        if not payment_intent:
+            messages.error(request, "Intent de paiement introuvable. Veuillez contacter un administrateur.")
+            return redirect("accounts:dashboard")
+
+        amount_paid = payment_intent.amount / 100  # Montant en euros
+
+        if type == "logement":
+            reservation = Reservation.objects.get(code=code)
+            reservation.paid = True
+            reservation.stripe_payment_intent_id = payment_intent_id
+            reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
+            send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Paiement manuel de {amount_paid}€ pour la réservation {reservation.code} confirmée du {reservation.start} au {reservation.end}.",
+            )
+        elif type == "activity":
+            reservation = ActivityReservation.objects.get(code=code)
+            reservation.paid = True
+            reservation.stripe_payment_intent_id = payment_intent_id
+            reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
+            send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Nouvelle réservation {reservation.code}  en attente de confirmation du {reservation.start} au {reservation.end}.",
+            )
+        else:
+            messages.error(request, "Type de réservation inconnu.")
+            return redirect("accounts:dashboard")
 
         if type == "logement":
             return render(request, "payment/payment_logement_success.html", {"reservation": reservation})
@@ -115,47 +192,14 @@ def payment_cancel(request, type, code):
     try:
         messages.info(
             request,
-            "Votre paiement a été annulé. Vous pouvez modifier ou reprogrammer votre réservation.",
+            "Votre paiement a été annulé. Contactez le support si nécessaire.",
         )
-        if type == "logement":
-            reservation = get_object_or_404(Reservation, code=code)
-            logement = get_object_or_404(Logement, id=reservation.logement.id)
-
-            query_params = urlencode(
-                {
-                    "start": reservation.start.isoformat(),
-                    "end": reservation.end.isoformat(),
-                    "adults": reservation.guest_adult,
-                    "minors": reservation.guest_minor,
-                    "code": reservation.code,
-                }
-            )
-
-            # Delete the reservation
-            reservation.delete()
-
-            return redirect(f"{reverse('reservation:book_logement', args=[logement.id])}?{query_params}")
-        elif type == "activity":
-            reservation = get_object_or_404(ActivityReservation, code=code)
-            activity = get_object_or_404(Activity, id=reservation.activity.id)
-
-            query_params = urlencode(
-                {
-                    "start": reservation.start.isoformat(),
-                    "guest": reservation.participants,
-                    "code": reservation.code,
-                }
-            )
-
-            # Delete the reservation
-            reservation.delete()
-
-            return redirect(f"{reverse('reservation:book_activity', args=[activity.id])}?{query_params}")
+        return redirect("accounts:dashboard")
 
     except Exception as e:
         logger.exception(f"Error handling payment cancellation: {e}")
         messages.error(request, "Une erreur est survenue.")
-        return redirect("common:home")
+        return redirect("accounts:dashboard")
 
 
 @csrf_exempt
@@ -171,7 +215,7 @@ def send_payment_link(request, code):
     try:
         reservation = get_reservation_by_code(code)
         reservation_type = get_reservation_type(reservation)
-        send_stripe_payment_link(reservation, request)  # Your helper function
+        send_stripe_payment_link(reservation)  # Your helper function
         messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
     except Exception as e:
         logger.exception(f"❌ Failed to send payment link for {code}: {e}")
@@ -181,6 +225,35 @@ def send_payment_link(request, code):
         return redirect("reservation:activity_reservation_detail", code=code)
     else:
         return redirect("reservation:logement_reservation_detail", code=code)
+
+
+@login_required
+def start_payment(request, code):
+    reservation = get_object_or_404(Reservation, code=code, user=request.user)
+    reservation_type = get_reservation_type(reservation)
+    try:
+        if reservation_type == "logement":
+            if not reservation.paid and reservation.statut in ["confirmee", "echec_paiement"]:
+                # Create a Stripe session for the deposit payment
+                session = create_stripe_checkout_session_with_deposit(reservation, request)
+                return redirect(session["checkout_session_url"])
+            else:
+                messages.error(request, "Cette réservation est déjà payée ou n'est pas éligible pour un paiement.")
+                return redirect("accounts:dashboard")
+        elif reservation_type == "activity":
+            if not reservation.paid and reservation.statut in ["confirmee", "echec_paiement"]:
+                # Create a Stripe session for the activity payment
+                session = create_stripe_checkout_session_without_deposit(reservation, request)
+                return redirect(session["checkout_session_url"])
+            else:
+                messages.error(
+                    request, "Cette réservation d'activité est déjà payée ou n'est pas éligible pour un paiement."
+                )
+                return redirect("accounts:dashboard")
+    except Exception as e:
+        logger.exception(f"Erreur lors de la création de la session Stripe pour {reservation.code}: {e}")
+        messages.error(request, "Impossible de démarrer le paiement Stripe.")
+        return redirect("reservation:customer_logement_reservation_detail", code=code)
 
 
 @login_required

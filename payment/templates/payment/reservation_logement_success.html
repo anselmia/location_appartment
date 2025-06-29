@@ -25,10 +25,31 @@
                                  viewBox="0 0 16 16">
                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.08 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 8.439 6.03 6.97a.75.75 0 1 0-1.06 1.061l1.999 1.999z" />
                             </svg>
-                            <h1 class="fw-bold text-dark display-5">Le paiement de votre Réservation {{ reservation.code }} est Confirmée</h1>
+                            <h1 class="fw-bold text-dark display-5">Votre Réservation {{ reservation.code }} est Confirmée</h1>
                             <p class="text-muted lead">Merci pour votre confiance. Voici le récapitulatif de votre séjour.</p>
                         </div>
-
+                        <div class="alert-info d-flex align-items-start gap-3 mb-4 shadow-sm rounded-3 p-3"
+                             style="font-size:1.08em;
+                                    background: #c9f1ff;
+                                    border-left: 6px solid #0dcaf0">
+                            <div>
+                                <div class="fw-bold mb-1" style="font-size:1.12em;">Votre réservation est validée&nbsp;!</div>
+                                <div>
+                                    <span>
+                                        Le paiement sera prélevé automatiquement
+                                        <strong>2 jours avant le début de votre séjour</strong>.
+                                        <br>
+                                        <span>Si votre réservation commence dans moins de 2 jours, le paiement sera effectué le jour même.</span>
+                                    </span>
+                                </div>
+                                <hr class="my-2" style="opacity:0.15;">
+                                <div class="fst-italic text-muted" style="font-size:0.98em;">
+                                    Pour garantir le bon déroulement de votre séjour, nous vous recommandons de vérifier que le montant nécessaire sera disponible sur votre compte à la date du prélèvement.
+                                    <br>
+                                    Merci de votre confiance et de votre compréhension.
+                                </div>
+                            </div>
+                        </div>
                         <div class="reservation-summary">
                             <ul class="list-group list-group-flush mb-4">
                                 <li class="list-group-item bg-transparent border-0 py-2">

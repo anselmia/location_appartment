@@ -1,0 +1,9 @@
+Bonjour {{ user.first_name }},
+
+Nous vous confirmons la réception du paiement pour votre réservation d’activité {{ reservation.code }} - {{ activity.name }}.
+
+Vous pouvez retrouver toutes les informations relatives à votre activité dans votre espace personnel :
+{{ espace_partenaire_url }}
+
+Merci pour votre confiance et à bientôt,
+L’équipe {{ entreprise.name }}

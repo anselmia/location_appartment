@@ -1,0 +1,154 @@
+/* Utilisation exclusive des variables de styles.css (common) */
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding-top: var(--spacing-lg, 2.4rem);
+  padding-bottom: var(--spacing-lg, 2.4rem);
+  background: var(--bg-color, #f9f9f9);
+}
+
+.card {
+  border-radius: var(--radius, 12px);
+  border: none;
+  box-shadow: var(--shadow, 0 8px 24px rgba(0, 0, 0, 0.08));
+  background: var(--bg-white, #fff);
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover, 0 12px 28px rgba(0, 0, 0, 0.12));
+}
+
+.card-body {
+  padding: var(--spacing-xl, 4rem) var(--spacing-md, 1.6rem);
+}
+
+h2.text-primary,
+.payment-title {
+  font-weight: 700;
+  letter-spacing: -1px;
+  font-size: 2rem;
+  color: var(--primary-color, #bfa66b);
+  font-family: var(--font-title, "Playfair Display", serif);
+}
+
+.list-group-item {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  padding: var(--spacing-sm, 0.8rem) var(--spacing-md, 1.6rem);
+  color: var(--text-color, #333);
+}
+
+.list-group-item .fw-bold {
+  font-size: 1.2rem;
+  color: var(--primary-color, #bfa66b);
+}
+
+.btn-primary {
+  background: var(--primary-color, #bfa66b) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: var(--spacing-sm, 0.8rem) 0;
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+  transition: background 0.2s, box-shadow 0.2s;
+  font-family: var(--font-sans, "Inter", sans-serif);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(
+    90deg,
+    var(--primary-color, #bfa66b) 0%,
+    var(--primary-light, #e7d7b0) 100%
+  ) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-hover, 0 4px 16px rgba(0, 0, 0, 0.15));
+}
+
+.btn-link {
+  color: var(--primary-color, #bfa66b);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-family: var(--font-sans, "Inter", sans-serif);
+}
+
+.btn-link:hover,
+.btn-link:focus {
+  color: var(--accent-color, #3b2f2f);
+  text-decoration: underline;
+}
+
+#card-element {
+  background: var(--light-bg, #f8f5f2);
+  border-radius: var(--radius, 12px);
+  padding: 16px;
+  border: 1.5px solid var(--color-border, #ddd);
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+
+#card-element.StripeElement--focus {
+  border-color: var(--primary-color, #bfa66b);
+}
+
+#card-errors {
+  min-height: 24px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  color: var(--danger-color, #dc3545);
+}
+
+.text-muted {
+  color: var(--text-muted, #7f8c8d) !important;
+}
+
+.payment-summary {
+  background: var(--light-bg, #f8f5f2);
+  border-radius: var(--radius, 12px);
+  padding: var(--spacing-md, 1.6rem) var(--spacing-sm, 0.8rem);
+  margin-bottom: var(--spacing-lg, 2.4rem);
+}
+
+.alert-info {
+  background: var(--info-color, #0dcaf0);
+  color: #fff;
+  border: none;
+}
+
+@media (max-width: 991.98px) {
+  .container {
+    padding-top: var(--spacing-md, 1.6rem);
+    padding-bottom: var(--spacing-md, 1.6rem);
+  }
+  .card-body {
+    padding: var(--spacing-lg, 2.4rem) var(--spacing-sm, 0.8rem);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .container {
+    padding-top: var(--spacing-sm, 0.8rem);
+    padding-bottom: var(--spacing-sm, 0.8rem);
+  }
+  .card-body {
+    padding: var(--spacing-md, 1.6rem) var(--spacing-xs, 0.4rem);
+  }
+  h2.text-primary,
+  .payment-title {
+    font-size: 1.3rem;
+  }
+  .list-group-item {
+    font-size: 1rem;
+    padding: var(--spacing-xs, 0.4rem) var(--spacing-xs, 0.4rem);
+  }
+  .btn-primary {
+    font-size: 1rem;
+    padding: var(--spacing-xs, 0.4rem) 0;
+  }
+}

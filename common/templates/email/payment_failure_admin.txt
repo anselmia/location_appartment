@@ -8,7 +8,7 @@ La réservation suivante a rencontré une erreur lors du processus de paiement :
 🔹 Dates : du {{ reservation.start|date:"d M Y" }} au {{ reservation.end|date:"d M Y" }}
 🔹 Montant : {{ reservation.price|floatformat:2 }} €
 
-Le statut de la réservation est toujours : "{{ reservation.get_statut_display }}".
+Le statut de la réservation est : "{{ reservation.get_statut_display }}".
 
 Vous pouvez accéder à cette réservation dans le tableau de bord d'administration pour plus d’informations ou pour renvoyer un lien de paiement si nécessaire.
 

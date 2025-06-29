@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes
 from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMultiAlternatives
-
+from django.core.mail import mail_admins
 from common.services.helper_fct import get_entreprise
 
 
@@ -410,7 +410,7 @@ def send_mail_on_new_activity_transfer(activity, reservation, user_type):
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
-def send_mail_payment_link(reservation, session):
+def send_mail_payment_link(reservation):
     try:
         entreprise = get_entreprise()
         if not entreprise:
@@ -419,10 +419,10 @@ def send_mail_payment_link(reservation, session):
             "reservation": reservation,
             "logement": reservation.logement,
             "user": reservation.user,
-            "url": session["checkout_session_url"],
+            "url": f"{settings.SITE_ADDRESS}/payment/pay/{reservation.code}/",
             "entreprise": entreprise,
         }
-        subject = f"Réservation {reservation.code} - Logement {reservation.logement} - Lien de paiement"
+        subject = f"Réservation {reservation.code} - Logement {reservation.logement.name} - Lien de paiement"
         message_txt = render_to_string("email/payment_link.txt", email_context)
         message_html = render_to_string("email/payment_link.html", email_context)
         msg = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [reservation.user.email])
@@ -433,7 +433,7 @@ def send_mail_payment_link(reservation, session):
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
-def send_mail_activity_payment_link(reservation, session):
+def send_mail_activity_payment_link(reservation):
     try:
         entreprise = get_entreprise()
         if not entreprise:
@@ -442,10 +442,10 @@ def send_mail_activity_payment_link(reservation, session):
             "reservation": reservation,
             "activity": reservation.activity,
             "user": reservation.user,
-            "url": session["checkout_session_url"],
+            "url": f"{settings.SITE_ADDRESS}/payment/pay/{reservation.code}/",
             "entreprise": entreprise,
         }
-        subject = f"Réservation {reservation.code} - Activité {reservation.activity} - Lien de paiement"
+        subject = f"Réservation {reservation.code} - Activité {reservation.activity.name} - Lien de paiement"
         message_txt = render_to_string("email/payment_link_activity.txt", email_context)
         message_html = render_to_string("email/payment_link_activity.html", email_context)
         msg = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [reservation.user.email])
@@ -454,6 +454,88 @@ def send_mail_activity_payment_link(reservation, session):
         logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
     except Exception as e:
         logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
+def send_mail_logement_payment_success(logement, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "logement": logement, "user": user, "entreprise": entreprise}
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Admin/owner email (HTML + plain)
+        admin_message_txt = render_to_string("email/payment_success_admin.txt", email_context)
+        admin_message_html = render_to_string("email/payment_success_admin.html", email_context)
+        subject_admin = f"✅ Paiement reçu - {logement.name} - Réservation {reservation.code}"
+        admin_emails = logement.mail_list
+        msg = EmailMultiAlternatives(subject_admin, admin_message_txt, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(admin_message_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"✅ Payment success email sent to admins for reservation {reservation.code}.")
+
+        # Customer email (HTML + plain)
+        if user.email:
+            message_txt = render_to_string("email/payment_success.txt", email_context)
+            message_html = render_to_string("email/payment_success.html", email_context)
+            subject = f"✅ Paiement reçu pour votre réservation {reservation.code} - {logement.name}"
+            msg_user = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [user.email])
+            msg_user.attach_alternative(message_html, "text/html")
+            msg_user.send(fail_silently=False)
+            logger.info(f"📧 Payment success email sent to {user.email} for reservation {reservation.code}.")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
+
+
+def send_mail_activity_payment_success(activity, reservation, user):
+    try:
+        if not user or not getattr(user, "email", None):
+            logger.warning(f"No valid user email for reservation {reservation.code}")
+            return
+
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        email_context = {"reservation": reservation, "activity": activity, "user": user, "entreprise": entreprise}
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Admin/owner email (HTML + plain)
+        admin_message_txt = render_to_string("email/payment_success_activity_admin.txt", email_context)
+        admin_message_html = render_to_string("email/payment_success_activity_admin.html", email_context)
+        subject_admin = f"✅ Paiement reçu - {activity.name} - Réservation {reservation.code}"
+        admin_emails = [activity.owner.email]
+        msg = EmailMultiAlternatives(subject_admin, admin_message_txt, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(admin_message_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"✅ Payment success email sent to admins for reservation {reservation.code}.")
+
+        # Customer email (HTML + plain)
+        if user.email:
+            message_txt = render_to_string("email/payment_success_activity.txt", email_context)
+            message_html = render_to_string("email/payment_success_activity.html", email_context)
+            subject = f"✅ Paiement reçu pour votre réservation {reservation.code} - {activity.name}"
+            msg_user = EmailMultiAlternatives(subject, message_txt, settings.DEFAULT_FROM_EMAIL, [user.email])
+            msg_user.attach_alternative(message_html, "text/html")
+            msg_user.send(fail_silently=False)
+            logger.info(f"📧 Payment success email sent to {user.email} for reservation {reservation.code}.")
+
+    except Exception as e:
+        logger.exception(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_payment_failure(logement, reservation, user):
@@ -492,6 +574,12 @@ def send_mail_on_payment_failure(logement, reservation, user):
             msg_user.attach_alternative(message_html, "text/html")
             msg_user.send(fail_silently=False)
             logger.info(f"📧 Payment failure email sent to {user.email} for reservation {reservation.code}.")
+
+        mail_admins(
+            subject=f"❌ Échec de paiement pour la réservation {reservation.code} - {logement.name}",
+            message=admin_message_txt,
+            fail_silently=False,
+        )
     except Exception as e:
         logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
@@ -514,7 +602,7 @@ def send_mail_on_activity_payment_failure(activity, reservation, user):
             email_context["espace_partenaire_url"] = "#"
         email_context["now"] = timezone.now()
 
-        # ===== OWNER & ADMIN EMAIL =====
+        # ===== OWNER EMAIL =====
         admin_message_txt = render_to_string("email/activity_payment_failure_admin.txt", email_context)
         admin_message_html = render_to_string("email/activity_payment_failure_admin.html", email_context)
         subject_admin = f"💸 Échec de paiement - {activity.name} - Réservation {reservation.code}"
@@ -533,6 +621,12 @@ def send_mail_on_activity_payment_failure(activity, reservation, user):
             msg_user.attach_alternative(message_html, "text/html")
             msg_user.send(fail_silently=False)
             logger.info(f"📧 Payment failure email sent to {user.email} for reservation {reservation.code}.")
+
+        mail_admins(
+            subject=f"❌ Échec de paiement pour la réservation {reservation.code} - {activity.name}",
+            message=admin_message_txt,
+            fail_silently=False,
+        )
     except Exception as e:
         logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
@@ -746,3 +840,59 @@ def send_conciergerie_validation_email_notification(conciergerie):
         logger.info(f"Validation email sent to conciergerie {conciergerie.email}")
     except Exception as e:
         logger.exception(f"Erreur d'envoi email de validation conciergerie: {e}")
+
+
+def send_admin_conciergerie_validation_email_notification(conciergerie):
+    try:
+        subject = "Nouvelle conciergerie en attente de validation"
+        context = {
+            "conciergerie": conciergerie,
+            "entreprise": get_entreprise(),
+        }
+        mail_admins(
+            subject=subject,
+            message=render_to_string("email/admin_conciergerie_validation.txt", context),
+            fail_silently=False,
+        )
+        logger.info(f"Admin validation email sent for conciergerie {conciergerie.name}")
+    except Exception as e:
+        logger.exception(f"Erreur d'envoi email de validation admin conciergerie: {e}")
+
+
+def send_admin_partner_validation_email_notification(partner):
+    try:
+        subject = "Nouveau partenaire en attente de validation"
+        context = {
+            "partner": partner,
+            "entreprise": get_entreprise(),
+        }
+        mail_admins(
+            subject=subject,
+            message=render_to_string("email/admin_partner_validation.txt", context),
+            fail_silently=False,
+        )
+        logger.info(f"Admin validation email sent for partner {partner.name}")
+    except Exception as e:
+        logger.exception(f"Erreur d'envoi email de validation admin partenaire: {e}")
+
+
+def send_mail_on_manual_payment_intent_failure(reservation):
+    try:
+        subject = "Échec de la création du paiement"
+        context = {
+            "reservation": reservation,
+            "entreprise": get_entreprise(),
+        }
+        body_txt = render_to_string("email/manual_payment_intent_failure.txt", context)
+        body_html = render_to_string("email/manual_payment_intent_failure.html", context)
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=body_txt,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[reservation.user.email],
+        )
+        msg.attach_alternative(body_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"Email sent to user {reservation.user.email} about manual payment intent failure")
+    except Exception as e:
+        logger.exception(f"Error sending email about manual payment intent failure: {e}")

@@ -1,0 +1,43 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    💳
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #4CAF50
+{% endblock banner_bg %}
+{% block banner_title %}
+    Paiement reçu pour votre activité
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.get_full_name }},</p>
+    <p>
+        Nous vous confirmons la réception du paiement pour votre réservation d’activité <strong>{{ reservation.code }}</strong> – <strong>{{ activity.name }}</strong>.
+    </p>
+    <h4>Détails de votre réservation :</h4>
+    <ul style="list-style:none; padding:0;">
+        <li>
+            🎯 <strong>Activité :</strong> {{ activity.name }}
+        </li>
+        <li>
+            📅 <strong>Date :</strong> {{ reservation.start|date:"d/m/Y H:i" }}
+        </li>
+        <li>
+            👥 <strong>Participants :</strong> {{ reservation.participants }}
+        </li>
+        <li>
+            💶 <strong>Montant payé :</strong> {{ reservation.price|floatformat:2 }} € TTC
+        </li>
+    </ul>
+    <p>
+        Vous pouvez retrouver toutes les informations relatives à votre activité dans votre espace personnel :
+        <br>
+        <a href="{{ espace_partenaire_url }}"
+            style="color:#4CAF50;
+                    text-decoration:underline">Accéder à mon espace</a>
+    </p>
+    <p>
+        Merci pour votre confiance,
+        <br>
+        <strong>L’équipe {{ entreprise.name }}</strong>
+    </p>
+{% endblock content %}

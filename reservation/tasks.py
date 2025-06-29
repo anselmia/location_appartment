@@ -34,16 +34,8 @@ def _delete_expired_pending(model, pending_minutes=30, failed_weeks=1):
             .delete()
         )
 
-        expiry_failed = now - timedelta(weeks=failed_weeks)
-        count_failed, _ = (
-            model.objects.filter(statut="echec_paiement")
-            .filter(Q(date_reservation__lt=expiry_failed) | Q(start__gt=start_compare))
-            .delete()
-        )
-
         logger.info(f"Deleted {count_pending} expired pending reservations for {model.__name__}")
-        logger.info(f"Deleted {count_failed} expired reservations in failed payment for {model.__name__}")
-        return f"Deleted {count_pending} expired pending and {count_failed} failed payment reservations for {model.__name__}"
+        return f"Deleted {count_pending} expired pending for {model.__name__}"
     except Exception as e:
         logger.exception(f"Error deleting expired reservations for {model.__name__}: {e}")
         return f"Failed to delete expired reservations for {model.__name__}"

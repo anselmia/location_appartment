@@ -22,6 +22,8 @@ from common.services.email_service import (
     send_mail_on_new_activity_transfer,
     notify_vendor_new_reservation,
     send_mail_activity_payment_link,
+    send_mail_logement_payment_success,
+    send_mail_activity_payment_success,
 )
 from common.services.stripe.stripe_event import (
     StripeCheckoutSessionEventData,
@@ -196,6 +198,62 @@ def get_session(session_id: str) -> Any:
         return None
 
 
+def create_stripe_setup_intent(reservation, user, request):
+    """
+    Crée un SetupIntent Stripe pour enregistrer une carte (usage off_session).
+    Args:
+        user: L'utilisateur Django (doit avoir stripe_customer_id).
+        request: L'objet request Django (pour logs/IP).
+    Returns:
+        dict: { 'client_secret': ..., 'setup_intent_id': ... }
+    Raises:
+        Exception si création impossible.
+    """
+    from common.services.network import get_client_ip
+
+    ip = get_client_ip(request)
+    if not getattr(user, "stripe_customer_id", None):
+        raise ValueError("L'utilisateur n'a pas de stripe_customer_id.")
+
+    # Ensure the user has a Stripe customer ID
+    customer_id = create_stripe_customer_if_not_exists(user, request)
+    if not customer_id:
+        logger.error(f"❌ No customer ID returned from Stripe for user {user.id}, IP: {ip}")
+        raise Exception("Customer ID creation failed.")
+
+    content_type = ContentType.objects.get_for_model(reservation)
+    task, _ = PaymentTask.objects.get_or_create(
+        content_type=content_type,
+        object_id=reservation.id,
+        type="create_setup_intent",
+    )
+
+    try:
+        logger.info(f"🔧 Création d'un SetupIntent Stripe pour user {user.id} ({user.email}), IP: {ip}")
+        setup_intent = stripe.SetupIntent.create(
+            customer=user.stripe_customer_id,
+            payment_method_types=["card"],
+            usage="off_session",
+            metadata={"user_id": str(user.id)},
+        )
+        logger.info(f"✅ SetupIntent créé: {setup_intent.id} pour user {user.id}")
+        task.mark_success(setup_intent.id)
+        return {
+            "client_secret": setup_intent.client_secret,
+            "setup_intent_id": setup_intent.id,
+        }
+    except stripe.error.StripeError as e:
+        logger.exception(
+            f"❌ Stripe error lors de la création du SetupIntent pour user {user.id}: {e.user_message or str(e)}"
+        )
+        task.mark_failure(e)
+        raise
+    except Exception as e:
+        logger.exception(f"❌ Erreur inattendue lors de la création du SetupIntent pour user {user.id}: {str(e)}")
+        task.mark_failure(e)
+        raise
+
+
 def create_stripe_checkout_session_with_deposit(reservation: Any, request: Any) -> dict:
     """
     Create a Stripe Checkout Session for a reservation deposit.
@@ -294,6 +352,102 @@ def create_stripe_checkout_session_with_deposit(reservation: Any, request: Any) 
         raise
 
 
+def create_stripe_checkout_session_without_deposit(reservation: Any, request: Any) -> dict:
+    """
+    Create a Stripe Checkout Session for a reservation without a deposit.
+    Args:
+        reservation: The reservation object.
+        request: The Django request object.
+    Returns:
+        dict: Contains checkout_session_url and session_id.
+    Raises:
+        Exception: If session creation fails.
+    """
+    from common.services.network import get_client_ip
+    from reservation.services.reservation_service import get_reservation_type
+
+    ip = get_client_ip(request)
+    try:
+        logger.info(
+            f"⚙️ Creating Stripe checkout session with deposit for reservation {reservation.code} | "
+            f"user={reservation.user.id} email={reservation.user.email} | IP: {ip}"
+        )
+
+        reservation_type = get_reservation_type(reservation)
+
+        # Ensure the user has a Stripe customer ID
+        customer_id = create_stripe_customer_if_not_exists(reservation.user, request)
+
+        if not customer_id:
+            logger.error(f"❌ No customer ID returned from Stripe for user {reservation.user.id}, IP: {ip}")
+            raise Exception("Customer ID creation failed.")
+
+        # Validate and convert amount
+        if reservation.price <= 0:
+            logger.error(
+                f"❌ Invalid reservation price ({reservation.price}) for reservation {reservation.code}, IP: {ip}"
+            )
+            raise ValueError("Reservation price must be positive.")
+
+        amount = int(reservation.price * 100)
+
+        # Build full URLs
+        success_url = (
+            request.build_absolute_uri(reverse("payment:payment_success", args=[reservation_type, reservation.code]))
+            + "?session_id={CHECKOUT_SESSION_ID}"
+        )
+        cancel_url = request.build_absolute_uri(
+            reverse("payment:payment_cancel", args=[reservation_type, reservation.code])
+        )
+
+        session_args = {
+            "payment_method_types": ["card"],
+            "mode": "payment",
+            "customer": customer_id,
+            "line_items": [
+                {
+                    "price_data": {
+                        "currency": "eur",
+                        "product_data": {
+                            "name": f"Réservation - {reservation.code}",
+                        },
+                        "unit_amount": amount,
+                    },
+                    "quantity": 1,
+                }
+            ],
+            "payment_intent_data": {
+                "transfer_group": f"group_{reservation.code}",
+            },
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "metadata": {"code": reservation.code, "product": reservation_type},
+        }
+
+        checkout_session = stripe.checkout.Session.create(**session_args)
+
+        logger.info(
+            f"✅ Stripe checkout session created for reservation {reservation.code} | session={checkout_session.id} | IP: {ip}"
+        )
+        logger.debug(f"🔗 Checkout URL: {checkout_session.url}")
+
+        return {
+            "checkout_session_url": checkout_session.url,
+            "session_id": checkout_session.id,
+        }
+
+    except stripe.error.StripeError as e:
+        logger.exception(
+            f"❌ Stripe error creating checkout session for reservation {reservation.code}, IP: {ip}: {e.user_message or str(e)}"
+        )
+        raise
+    except Exception as e:
+        logger.exception(
+            f"❌ Unexpected error creating checkout session for reservation {reservation.code}, IP: {ip}: {str(e)}"
+        )
+        raise
+
+
 def create_stripe_checkout_session_with_manual_capture(reservation: Any, request: Any) -> dict:
     """
     Create a Stripe Checkout Session without payment method save and manual capture later.
@@ -359,7 +513,7 @@ def create_stripe_checkout_session_with_manual_capture(reservation: Any, request
                 }
             ],
             "payment_intent_data": {
-                "capture_method": "manual",
+                "capture_method": "automatic",
                 "transfer_group": f"group_{reservation.code}",
             },
             "success_url": success_url,
@@ -391,7 +545,84 @@ def create_stripe_checkout_session_with_manual_capture(reservation: Any, request
         raise
 
 
-def send_stripe_payment_link(reservation: Any, request: Any) -> str:
+def create_reservation_payment_intents(reservation: Any) -> None:
+    """
+    Create payment intents for a reservation.
+    Args:
+        reservation: The reservation object.
+    Returns:
+        None
+    Raises:
+        Exception: If payment intent creation fails.
+    """
+    from reservation.services.reservation_service import get_reservation_type
+
+    reservation_type = get_reservation_type(reservation)
+    if not reservation.user.email:
+        raise ValueError(f"L'utilisateur n'a pas d'e-mail lié à la réservation {reservation.code}")
+
+    if reservation.price <= 0:
+        raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
+
+    payment_method_id = getattr(reservation, "stripe_saved_payment_method_id", None)
+    customer_id = getattr(reservation.user, "stripe_customer_id", None)
+
+    amount_cents = int(reservation.price * 100)
+
+    logger.info(
+        f"💳 Création d'un PaymentIntent Stripe off_session pour la réservation {reservation.code} "
+        f"(user={reservation.user.email}, customer={customer_id}, payment_method={payment_method_id}, amount={amount_cents})"
+    )
+    content_type = ContentType.objects.get_for_model(reservation)
+    task, _ = PaymentTask.objects.get_or_create(
+        content_type=content_type,
+        object_id=reservation.id,
+        type="create_manual_payment_intent",
+    )
+
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency="eur",
+            customer=customer_id,
+            payment_method=payment_method_id,
+            off_session=True,
+            confirm=True,
+            capture_method="manual",  # Use manual capture for later processing
+            transfer_group=f"group_{reservation.code}",
+            description=f"Paiement réservation {reservation.code}",
+            metadata={
+                "code": reservation.code,
+                "product": reservation_type,
+                "type": "prepare_payment",
+            },
+            idempotency_key=f"reservation_payment_{reservation.code}",
+        )
+
+        # Vérifie le statut du PaymentIntent
+        if not intent or intent.status != "succeeded":
+            logger.error(
+                f"❌ PaymentIntent {intent.id} pour la réservation {reservation.code} n'a pas abouti (statut: {intent.status})"
+            )
+            send_mail_on_manual_payment_intent_failure(reservation)
+            reservation.status = "echec_paiement"
+            reservation.save()
+            raise Exception(f"Le paiement n'a pas pu être capturé automatiquement (statut: {intent.status})")
+
+        # Sauvegarde l'ID du PaymentIntent sur la réservation
+        reservation.stripe_payment_intent_id = intent.id
+        task.mark_success(intent.id)
+        reservation.save()
+
+        logger.info(f"✅ PaymentIntent with manual capture created for {reservation.code} (PaymentIntent: {intent.id})")
+
+    except Exception as e:
+        logger.exception(f"❌ Error creating payment intents for reservation {reservation.code}: {e}")
+        task.mark_failure(e)
+        raise
+
+
+def send_stripe_payment_link(reservation: Any, ) -> str:
     """
     Send a Stripe payment link to the user for a reservation.
     Args:
@@ -412,24 +643,17 @@ def send_stripe_payment_link(reservation: Any, request: Any) -> str:
         raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
 
     try:
-        if reservation_type == "logement":
-            session = create_stripe_checkout_session_with_deposit(reservation, request)
-            # Optionally send an email with the payment link
-            send_mail_payment_link(reservation, session)
+        if reservation_type == "logement":            
+            send_mail_payment_link(reservation)
         else:
-            session = create_stripe_checkout_session_with_manual_capture(reservation, request)
-            # Optionally send an email with the payment link
-            send_mail_activity_payment_link(reservation, session)
+            send_mail_activity_payment_link(reservation)
 
-        logger.info(f"✅ Stripe Checkout session created for reservation {reservation.code}: {session['checkout_session_url']}")
-
-        logger.info(f"📧 Email envoyé à {reservation.user.email} avec le lien de paiement Stripe")
-
-        return session['checkout_session_url']
-
+        logger.info(
+            f"✅ Payment link for {reservation.code} sent to {reservation.user.email} "
+        )
     except Exception as e:
         logger.exception(
-            f"❌ Erreur lors de la création du lien de paiement Stripe pour la réservation {reservation.code}: {e}"
+            f"❌Error creating payment link for {reservation.code}: {e}"
         )
         raise
 
@@ -926,12 +1150,15 @@ def capture_reservation_payment(reservation):
     Returns a dict: { 'success': True/False, 'error': '...' }
     Idempotent: will not double-capture or double-log. Uses Stripe idempotency key.
     """
+    from reservation.services.reservation_service import get_reservation_type
     content_type = ContentType.objects.get_for_model(reservation)
     task, _ = PaymentTask.objects.get_or_create(
         content_type=content_type,
         object_id=reservation.id,
         type="capture",
     )
+
+    reservation_type = get_reservation_type(reservation)
 
     # If already marked as success, return immediately (idempotency)
     if task.status == "success":
@@ -968,6 +1195,27 @@ def capture_reservation_payment(reservation):
         captured_intent = stripe.PaymentIntent.capture(
             reservation.stripe_payment_intent_id, idempotency_key=idempotency_key, metadata=capture_metadata
         )
+
+        if captured_intent.status != "succeeded":
+            error_message = f"Échec de la capture du paiement pour la réservation {reservation.code}."
+            reservation.statut = "echec_paiement"
+            reservation.save(update_fields=["statut"])
+            logger.error(error_message)
+            task.mark_failure(error_message, captured_intent.id)
+            if reservation_type == "logement":
+                ReservationHistory.objects.create(
+                    reservation=reservation,
+                    details=f"Échec du paiement de la Réservation {reservation.code} ! Le montant de {amount_captured} € n'a pas pu être payé.",
+                )
+                send_mail_on_payment_failure(reservation.logement, reservation, reservation.user)
+            elif reservation_type == "activity":
+                ActivityReservationHistory.objects.create(
+                    reservation=reservation,
+                    details=f"Échec du paiement de la Réservation {reservation.code} ! Le montant de {amount_captured} € n'a pas pu être payé.",
+                )            
+                send_mail_on_activity_payment_failure(reservation.activity, reservation, reservation.user)
+            return {"success": False, "error": error_message}
+
         # Try to update the saved payment method from the captured intent
         payment_method_id = None
         if hasattr(captured_intent, "payment_method") and captured_intent.payment_method:
@@ -978,13 +1226,9 @@ def capture_reservation_payment(reservation):
 
         if payment_method_id and getattr(reservation, "stripe_saved_payment_method_id", None) != payment_method_id:
             reservation.stripe_saved_payment_method_id = payment_method_id
-        reservation.statut = "confirmee"
-        reservation.save(update_fields=["stripe_saved_payment_method_id", "statut"])
-        if captured_intent.status != "succeeded":
-            error_message = f"Échec de la capture du paiement pour la réservation {reservation.code}."
-            logger.error(error_message)
-            task.mark_failure(error_message, captured_intent.id)
-            return {"success": False, "error": error_message}
+        reservation.paid = True
+
+        reservation.save(update_fields=["stripe_saved_payment_method_id", "paid"])
 
         task.mark_success(captured_intent.id)
 
@@ -993,10 +1237,18 @@ def capture_reservation_payment(reservation):
             if hasattr(captured_intent, "amount_received")
             else Decimal("0.00")
         )
-        ActivityReservationHistory.objects.create(
-            reservation=reservation,
-            details=f"Réservation {reservation.code} validée ! Le montant de {amount_captured} € a été payé.",
-        )
+        if reservation_type == "logement":
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Réservation {reservation.code} validée ! Le montant de {amount_captured} € a été payé.",
+            )
+            send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
+        elif reservation_type == "activity":
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Réservation {reservation.code} validée ! Le montant de {amount_captured} € a été payé.",
+            )
+            send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
         return {"success": True, "error": None}
     except stripe.error.InvalidRequestError as e:
         logger.exception(
@@ -1159,8 +1411,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
                 elif product == "activity":
                     reservation = ActivityReservation.objects.select_for_update().get(code=reservation_code)
                     reservation.checkout_amount = amount
-                    reservation.paid = True
-                    reservation.save(update_fields=["checkout_amount", "paid"])
+                    reservation.save(update_fields=["checkout_amount"])
                     try:
                         send_mail_on_new_activity_reservation(reservation.activity, reservation, reservation.user)
                     except Exception as e:
@@ -1312,7 +1563,6 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
                         f"⚠️ PaymentIntent {payment_intent_id} status '{intent.status}' is not 'succeeded'. Skipping confirmation."
                     )
                     return
-                reservation.paid = True
                 reservation.checkout_amount = Decimal(intent.amount_received) / 100  # Convert cents to euros
                 reservation.save(
                     update_fields=[

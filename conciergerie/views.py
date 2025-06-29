@@ -19,6 +19,7 @@ from common.decorators import is_admin
 from common.services.email_service import (
     send_mail_conciergerie_request_accepted,
     send_mail_conciergerie_request_refused,
+    send_admin_conciergerie_validation_email_notification
 )
 
 
@@ -72,6 +73,8 @@ def create_conciergerie(request):
             conciergerie = form.save(commit=False)
             conciergerie.user = request.user  # ← assignation ici
             conciergerie.save()
+            # Envoi de l'email de validation
+            send_admin_conciergerie_validation_email_notification(conciergerie)
             messages.success(request, "Conciergerie créée avec succès.")
             return redirect("accounts:dashboard")  # ou autre URL
         else:

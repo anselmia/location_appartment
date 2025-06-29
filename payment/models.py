@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
+from django.core.mail import mail_admins
 
 # Create your models here.
 class PaymentTask(models.Model):
@@ -13,6 +13,8 @@ class PaymentTask(models.Model):
         ("refund", "Refund"),
         ("checkout", "Check Out"),
         ("capture", "Capture Payment"),
+        ("create_manual_payment_intent", "Create Manual Payment Intent"),
+        ("create_setup_intent", "Create Setup Intent"),
     ]
 
     # Generic relation to Reservation or ActivityReservation
@@ -20,7 +22,7 @@ class PaymentTask(models.Model):
     object_id = models.PositiveIntegerField()
     reservation = GenericForeignKey("content_type", "object_id")
 
-    type = models.CharField(max_length=20, choices=TASK_TYPES)
+    type = models.CharField(max_length=32, choices=TASK_TYPES)
     status = models.CharField(max_length=20, choices=[("success", "Success"), ("failed", "Failed")], default="failed")
 
     error = models.TextField(blank=True, null=True)
@@ -34,12 +36,17 @@ class PaymentTask(models.Model):
         self.task_id = id
         self.save(update_fields=["status", "updated_at"])
 
-    def mark_failure(self, error, id):
+    def mark_failure(self, error, id=None):
         self.status = "failed"
         self.error = str(error)
         self.updated_at = timezone.now()
         self.task_id = id
         self.save(update_fields=["status", "error", "updated_at"])
+        mail_admins(
+            "Payment Task Failure",
+            f"Task {self.type} for reservation {self.reservation.code} failed with error: {error}",
+            fail_silently=False,
+        )
 
     @property
     def reservation_type(self):

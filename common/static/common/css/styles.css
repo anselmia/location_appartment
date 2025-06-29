@@ -538,6 +538,10 @@ ul.list-unstyled li .ml-3 {
   transform: scale(1.05);
 }
 
+#chatbot-close {
+  padding: 0px 5px !important;
+}
+
 .chatbot-icon {
   width: 100%;
   height: 100%;

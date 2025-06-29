@@ -12,7 +12,10 @@ from partner.services.partner import get_partner_system_messages
 from logement.models import City
 
 from common.decorators import is_admin
-from common.services.email_service import send_partner_validation_email
+from common.services.email_service import (
+    send_partner_validation_email,
+    send_admin_partner_validation_email_notification,
+)
 
 from activity.services.activity import get_activities_overview
 
@@ -67,6 +70,7 @@ def create_partner(request):
             partner = form.save(commit=False)
             partner.user = request.user  # ← assignation ici
             partner.save()
+            send_admin_partner_validation_email_notification(partner)
             messages.success(
                 request,
                 "Votre compte partenaire est en attente de validation. Vous recevrez un email de confirmation une fois validé par notre équipe !",
@@ -78,7 +82,6 @@ def create_partner(request):
         form = PartnerForm()
 
     return render(request, "partner/create_partner.html", {"form": form, "is_edit": False})
-
 
 
 @login_required

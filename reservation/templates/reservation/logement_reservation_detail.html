@@ -100,7 +100,7 @@
           <div class="col-md-6">
             <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
             <dl class="row">
-              <dt class="col-sm-5">Prix</dt>
+              <dt class="col-sm-5">Montant</dt>
               <dd class="col-sm-7">
                 {{ reservation.checkout_amount|floatformat:2 }} €
                 {% if reservation.paid %}
@@ -141,7 +141,7 @@
                     <span class="badge bg-secondary">Non</span>
                   {% endif %}
                 </dd>
-                <dt class="col-sm-5">Frais de paiement (Non Remboursable)</dt>
+                <dt class="col-sm-5">Frais de paiement7 (Non Remboursable)</dt>
                 <dd class="col-sm-7">
                   {{ reservation.payment_fee|floatformat:2 }} €
                 </dd>

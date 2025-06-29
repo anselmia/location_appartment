@@ -5,6 +5,11 @@ app_name = "payment"
 
 urlpatterns = [
     path(
+        "payment-method-saved/<str:type>/<str:code>/",
+        views.payment_method_saved,
+        name="payment_method_saved",
+    ),
+    path(
         "success/<str:type>/<str:code>/",
         views.payment_success,
         name="payment_success",
@@ -66,4 +71,6 @@ urlpatterns = [
         views.send_payment_link,
         name="send_payment_link",
     ),
+    path('save-payment-method/<str:code>/', views.save_payment_method, name='save_payment_method'),
+    path("pay/<str:code>/", views.start_payment, name="start_payment"),
 ]

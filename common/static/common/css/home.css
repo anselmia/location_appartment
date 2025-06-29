@@ -623,6 +623,8 @@ section a:hover {
     border-radius: 0 0 0.7rem 0.7rem;
     flex-direction: column;
     gap: 0.4rem;
+    width: 100%;
+    margin: 0 auto;
   }
   .promo-banner-launch .promo-badge,
   .promo-banner-launch .promo-text {
