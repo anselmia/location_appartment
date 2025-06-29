@@ -1,0 +1,46 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    🤝
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #2196F3
+{% endblock banner_bg %}
+{% block banner_title %}
+    Validation de votre profil partenaire
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ partner.name }},</p>
+    <p>
+        Votre demande pour devenir partenaire sur <strong>{{ entreprise.name }}</strong> a bien été reçue.
+    </p>
+    {% if partner.validated %}
+        <p>
+            <strong>Félicitations !</strong> Votre profil partenaire a été validé par notre équipe.
+            <br>
+            Vous pouvez dès à présent accéder à votre espace partenaire, proposer vos activités et gérer vos réservations.
+        </p>
+        <p style="text-align:center; margin: 24px 0;">
+            <a href="{{ dashboard_url }}"
+               style="background:#2196F3;
+                      color:#fff;
+                      padding:12px 24px;
+                      border-radius:6px;
+                      text-decoration:none;
+                      font-weight:bold">Accéder à mon espace partenaire</a>
+        </p>
+    {% else %}
+        <p>
+            Votre demande est en cours de validation par notre équipe.
+            <br>
+            Vous recevrez un email dès que votre profil sera activé.
+        </p>
+        <p>
+            Pour toute question, contactez-nous à <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+        </p>
+    {% endif %}
+    <p>
+        Merci de votre confiance et bienvenue dans notre réseau !
+        <br>
+        <strong>L’équipe {{ entreprise.name }}</strong>
+    </p>
+{% endblock content %}

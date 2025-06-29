@@ -7,7 +7,7 @@ from reservation.models import Reservation, ActivityReservation
 from payment.services.payment_service import get_refund, get_transfer, get_payment_intent
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
-from django.core.mail import mail_admins
+from django.core.mail import EmailMessage
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ def check_stripe_integrity():
 
                     if not amount or amount <= 0:
                         logger.warning(f"⚠️ Invalid or missing refund amount for event {refund.id}")
-                        mail_admins(
+                        EmailMessage(
                             subject=f"[Refund Integrity] Invalid refund amount for reservation {resa.code}",
                             message=f"Refund {refund.id} for reservation {resa.code} has invalid amount: {amount} {currency}.",
                         )
