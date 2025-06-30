@@ -143,12 +143,14 @@ def payment_success(request, type, code):
             return redirect("accounts:dashboard")
 
         amount_paid = payment_intent.amount / 100  # Montant en euros
-
+        
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
+            logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
             reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
             send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
             ReservationHistory.objects.create(
@@ -160,6 +162,8 @@ def payment_success(request, type, code):
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
+            logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
             reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
             send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
             ActivityReservationHistory.objects.create(
