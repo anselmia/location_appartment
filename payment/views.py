@@ -233,7 +233,7 @@ def send_payment_link(request, code):
 
 @login_required
 def start_payment(request, code):
-    reservation = get_object_or_404(Reservation, code=code, user=request.user)
+    reservation = get_reservation_by_code(code)
     reservation_type = get_reservation_type(reservation)
     try:
         if reservation_type == "logement":
@@ -257,7 +257,10 @@ def start_payment(request, code):
     except Exception as e:
         logger.exception(f"Erreur lors de la création de la session Stripe pour {reservation.code}: {e}")
         messages.error(request, "Impossible de démarrer le paiement Stripe.")
-        return redirect("reservation:customer_logement_reservation_detail", code=code)
+        if reservation_type == "activity":
+            return redirect("reservation:customer_activity_reservation_detail", code=code)
+        else:
+            return redirect("reservation:customer_logement_reservation_detail", code=code)
 
 
 @login_required
