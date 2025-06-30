@@ -107,12 +107,12 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console", "file", "mail_admins"],
         "level": "INFO",
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "file", "mail_admins"],
             "level": "INFO",
             "propagate": False,
         },
@@ -122,22 +122,22 @@ LOGGING = {
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["file"],
-            "level": "ERROR",  # Set to DEBUG to log SQL
+            "handlers": ["file", "mail_admins"],
+            "level": "ERROR",  # S
             "propagate": False,
         },
         "myapp": {  # replace with your actual app name
-            "handlers": ["console", "file"],
+            "handlers": ["console", "file", "mail_admins"],
             "level": "DEBUG",
             "propagate": False,
         },
         "frontend": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "file", "mail_admins"],
             "level": "DEBUG",
             "propagate": False,
         },
         "logement.tasks": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "file", "mail_admins"],
             "level": "INFO",
             "propagate": False,
         },

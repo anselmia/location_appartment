@@ -2,7 +2,7 @@
 """Views for handling payments, refunds, and Stripe interactions.
 This module provides views for processing payments, handling webhooks, and managing payment-related tasks.
 """
-
+import traceback
 import logging
 import json
 
@@ -177,17 +177,14 @@ def payment_success(request, type, code):
 
     except Reservation.DoesNotExist:
         messages.error(request, f"Réservation {code} introuvable.")
-        return redirect("reservation:book_logement", pk=1)
+        return redirect("accounts:dashboard")
     except ActivityReservation.DoesNotExist:
         messages.error(request, f"Réservation activité {code} introuvable.")
-        return redirect("reservation:book_activity", pk=1)
+        return redirect("accounts:dashboard")
     except Exception as e:
-        logger.exception(f"Error handling payment success: {e}")
+        logger.error(f"Error handling payment success: {e}\n{traceback.format_exc()}")
         messages.error(request, "Erreur lors du traitement du paiement.")
-        if type == "activity":
-            return redirect("reservation:book_activity", pk=1)
-        else:
-            return redirect("reservation:book_logement", pk=1)
+        return redirect("accounts:dashboard")
 
 
 @login_required

@@ -482,4 +482,4 @@ class ActivityReservationHistory(models.Model):
         ordering = ["-date_action"]
 
     def __str__(self):
-        return f"{self.reservation} - {self.action} ({self.date_action:%d/%m/%Y %H:%M})"
+        return f"{self.reservation} - ({self.date_action:%d/%m/%Y %H:%M})"
