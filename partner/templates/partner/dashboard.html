@@ -97,7 +97,7 @@
                     <ul class="list-group list-group-flush">
                         {% for resa in failed_reservations %}
                             <li class="list-group-item">
-                                <a href="{% url 'reservation:activité_reservation_detail' resa.code %}"
+                                <a href="{% url 'reservation:activity_reservation_detail' resa.code %}"
                                    class="text-danger fw-bold text-decoration-underline">
                                     {{ resa.user.first_name }} — du {{ resa.start|date:"d M" }} au {{ resa.end|date:"d M" }}
                                 </a>
