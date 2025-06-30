@@ -620,7 +620,9 @@ def create_reservation_payment_intents(reservation: Any) -> None:
         raise
 
 
-def send_stripe_payment_link(reservation: Any, ) -> str:
+def send_stripe_payment_link(
+    reservation: Any,
+) -> str:
     """
     Send a Stripe payment link to the user for a reservation.
     Args:
@@ -641,18 +643,14 @@ def send_stripe_payment_link(reservation: Any, ) -> str:
         raise ValueError(f"Montant invalide pour la réservation {reservation.code}")
 
     try:
-        if reservation_type == "logement":            
+        if reservation_type == "logement":
             send_mail_payment_link(reservation)
         else:
             send_mail_activity_payment_link(reservation)
 
-        logger.info(
-            f"✅ Payment link for {reservation.code} sent to {reservation.user.email} "
-        )
+        logger.info(f"✅ Payment link for {reservation.code} sent to {reservation.user.email} ")
     except Exception as e:
-        logger.exception(
-            f"❌Error creating payment link for {reservation.code}: {e}"
-        )
+        logger.exception(f"❌Error creating payment link for {reservation.code}: {e}")
         raise
 
 
@@ -1149,6 +1147,7 @@ def capture_reservation_payment(reservation):
     Idempotent: will not double-capture or double-log. Uses Stripe idempotency key.
     """
     from reservation.services.reservation_service import get_reservation_type
+
     content_type = ContentType.objects.get_for_model(reservation)
     task, _ = PaymentTask.objects.get_or_create(
         content_type=content_type,
@@ -1210,7 +1209,7 @@ def capture_reservation_payment(reservation):
                 ActivityReservationHistory.objects.create(
                     reservation=reservation,
                     details=f"Échec du paiement de la Réservation {reservation.code} ! Le montant de {amount_captured} € n'a pas pu être payé.",
-                )            
+                )
                 send_mail_on_activity_payment_failure(reservation.activity, reservation, reservation.user)
             return {"success": False, "error": error_message}
 
@@ -1408,7 +1407,7 @@ def handle_payment_intent_succeeded(data: StripePaymentIntentEventData) -> None:
                     reservation.save(update_fields=["amount_charged"])
                 elif product == "activity":
                     reservation.checkout_amount = amount
-                    reservation.save(update_fields=["checkout_amount"])                    
+                    reservation.save(update_fields=["checkout_amount"])
                 else:
                     logger.error(f"❌ Unknown product type {product} for reservation {reservation_code}.")
                     return
@@ -1502,17 +1501,20 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
     from reservation.services.reservation_service import get_reservation_by_code
 
     reservation_code = None
+    task = None
     try:
         # Extract metadata and payment intent ID
         reservation_code = data.object.metadata.get("code")
         product = data.object.metadata.get("product")
         payment_intent_id = data.object.payment_intent
 
+        if not payment_intent_id:
+            logger.error("❌ Stripe checkout session is missing payment intent ID.")
+            return
+
         if not reservation_code or not payment_intent_id or not product:
             logger.error("❌ Stripe checkout session is missing info.")
             return
-
-        logger.info(f"🔔 Handling checkout.session.completed for reservation {reservation_code}")
 
         reservation = get_reservation_by_code(reservation_code)
         content_type = ContentType.objects.get_for_model(reservation)
@@ -1520,7 +1522,19 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
             content_type=content_type,
             object_id=reservation.id,
             type="checkout",
-        )            
+        )
+
+        logger.info(f"🔔 Handling checkout.session.completed for reservation {reservation_code}")
+
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        if intent.status != "succeeded":
+            logger.error(f"❌ Payment intent {payment_intent_id} for reservation {reservation_code} is not succeeded.")
+            return
+        else:
+            amount_received = Decimal(intent.amount_received) / 100
+            logger.info(f"✅ Payment intent {payment_intent_id} for reservation {reservation_code} succeeded. Amount received: {amount_received}")            
+            reservation.checkout_amount = amount_received
+            reservation.save(update_fields=["checkout_amount"])
 
         task.mark_success(payment_intent_id)
 
@@ -1530,7 +1544,8 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
         logger.exception(
             f"❌ Unexpected error in handle_checkout_session_completed for reservation {reservation_code or '[unknown]'}: {e}"
         )
-        task.mark_failure(e, payment_intent_id)
+        if task:
+            task.mark_failure(e, payment_intent_id)
 
 
 def handle_transfer_created(data: StripeTransferEventData) -> None:

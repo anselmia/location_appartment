@@ -146,12 +146,11 @@ def payment_success(request, type, code):
         
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
+            reservation.statut = "confirmee"
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
-            logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
-            logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
-            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
+            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"])
             send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
             ReservationHistory.objects.create(
                 reservation=reservation,
@@ -159,16 +158,15 @@ def payment_success(request, type, code):
             )
         elif type == "activity":
             reservation = ActivityReservation.objects.get(code=code)
+            reservation.statut = "confirmee"
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
-            logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
-            logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
-            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
+            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"])
             send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
             ActivityReservationHistory.objects.create(
                 reservation=reservation,
-                details=f"Nouvelle réservation {reservation.code}  en attente de confirmation du {reservation.start} au {reservation.end}.",
+                details=f"Paiement manuel de {amount_paid}€ pour la réservation {reservation.code} confirmée du {reservation.start} au {reservation.end}.",
             )
         else:
             messages.error(request, "Type de réservation inconnu.")
