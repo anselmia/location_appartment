@@ -148,7 +148,7 @@ def payment_success(request, type, code):
             reservation = Reservation.objects.get(code=code)
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
-            reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
             logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
             logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
             reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
@@ -161,7 +161,7 @@ def payment_success(request, type, code):
             reservation = ActivityReservation.objects.get(code=code)
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
-            reservation.stripe_saved_payment_method_id = payment_intent.payment_method
+            reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
             logger.info(f"stripe_payment_intent_id: {reservation.stripe_payment_intent_id} ({len(reservation.stripe_payment_intent_id)})")
             logger.info(f"stripe_saved_payment_method_id: {reservation.stripe_saved_payment_method_id} ({len(reservation.stripe_saved_payment_method_id)})")
             reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id"])
