@@ -96,6 +96,11 @@ class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
 
     def get_success_url(self):
+        # Si un paramètre 'next' est présent, on le privilégie
+        next_url = self.request.GET.get("next") or self.request.POST.get("next")
+        if next_url:
+            return next_url
+
         user = self.request.user
         if user.is_owner:
             return reverse("logement:dash")

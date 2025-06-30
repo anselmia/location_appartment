@@ -160,13 +160,20 @@ input,
 }
 
 .badge-status.terminee {
-  background-color: var(--info-color);
+  background-color: var(--primary-color);
   color: #fff;
 }
 
 .badge-status.annulee {
   background-color: var(--danger-color);
   color: #fff;
+  border: 1px solid #f5c2c7;
+}
+
+.badge-status.echec_paiement {
+  background-color: var(--danger-color);
+  color: #fff;
+  border: 1px solid #f5c2c7;
 }
 
 .badge-status.en_attente {

@@ -55,37 +55,6 @@ h6 {
   color: #7f8c8d !important;
 }
 
-.badge-status {
-  display: inline-block;
-  padding: 0.3em 1em;
-  border-radius: 12px;
-  font-size: 1em;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  margin-top: 0.2em;
-}
-
-.badge-status.validee {
-  background: #eafbe7;
-  color: #198754;
-  border: 1px solid #b7e4c7;
-}
-.badge-status.en_attente {
-  background: #fffbe7;
-  color: #bfa66b;
-  border: 1px solid #f7e7b7;
-}
-.badge-status.confirmee {
-  background: #e7f1ff;
-  color: #0d6efd;
-  border: 1px solid #b6d4fe;
-}
-.badge-status.anulee {
-  background: #fff3f3;
-  color: #dc3545;
-  border: 1px solid #f5c2c7;
-}
-
 /* Buttons */
 .btn {
   border-radius: 8px;
