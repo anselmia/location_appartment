@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from django.contrib import messages
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
@@ -614,6 +615,8 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         show_onboarding = False
 
     messages_systems = get_owner_system_messages(user)
+    for resa in logement_stats["futur_reservations"]:
+        resa.nb_days_until = (resa.start - timezone.localdate()).days
 
     context = {
         "occupancy_rate": logement_stats["occupancy_rate"],
@@ -626,5 +629,6 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         "show_onboarding": show_onboarding,
         "messages_systems": messages_systems,
     }
+    context['today'] = timezone.localdate()
 
     return render(request, "logement/dash.html", context)

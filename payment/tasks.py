@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 def transfert_funds():
     from payment.services.payment_service import transfer_funds
 
-    reservations = Reservation.objects.filter(statut="terminee")
+    reservations = Reservation.objects.filter(statut="terminee", transferred=False, paid=True)
     for reservation in reservations:
-        if reservation.refundable_period_passed and reservation.paid:
+        if reservation.refundable_period_passed:
             transfer_funds(reservation)
 
-    reservations = ActivityReservation.objects.filter(statut="terminee")
+    reservations = ActivityReservation.objects.filter(statut="terminee", transferred=False, paid=True)
     for reservation in reservations:
-        if reservation.refundable_period_passed and reservation.paid:
+        if reservation.refundable_period_passed:
             transfer_funds(reservation)
 
 

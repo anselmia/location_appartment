@@ -11,7 +11,6 @@ from django.core.mail import mail_admins
 from typing import Any
 
 from common.services.email_service import (
-    send_mail_on_new_reservation,
     send_mail_on_logement_refund,
     send_mail_on_activity_refund,
     send_mail_on_new_transfer,
@@ -19,7 +18,7 @@ from common.services.email_service import (
     send_mail_on_payment_failure,
     send_mail_on_activity_payment_failure,
     send_mail_on_new_activity_transfer,
-    notify_vendor_new_reservation,
+    send_mail_on_manual_payment_intent_failure,
     send_mail_activity_payment_link,
     send_mail_logement_payment_success,
     send_mail_activity_payment_success,
@@ -599,7 +598,7 @@ def create_reservation_payment_intents(reservation: Any) -> None:
         )
 
         # Vérifie le statut du PaymentIntent
-        if not intent or intent.status != "succeeded":
+        if not intent or intent.status not in ["requires_capture", "succeeded"]:
             logger.error(
                 f"❌ PaymentIntent {intent.id} pour la réservation {reservation.code} n'a pas abouti (statut: {intent.status})"
             )

@@ -126,7 +126,7 @@
                 <dd class="col-sm-7">
                   <form method="post"
                         action="{% url 'payment:send_payment_link' reservation.code %}"
-                        onsubmit="return confirm('CEnvoyer un nouveau lien de paiement au client ?');"
+                        onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');"
                         class="d-flex align-items-center">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-warning">🔁 Envoyer lien de paiement</button>
@@ -141,7 +141,7 @@
                     <span class="badge bg-secondary">Non</span>
                   {% endif %}
                 </dd>
-                <dt class="col-sm-5">Frais de paiement7 (Non Remboursable)</dt>
+                <dt class="col-sm-5">Frais de paiement (Non Remboursable)</dt>
                 <dd class="col-sm-7">
                   {{ reservation.payment_fee|floatformat:2 }} €
                 </dd>

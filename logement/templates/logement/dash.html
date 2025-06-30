@@ -76,7 +76,11 @@
                                     <div class="resa-card-header">
                                         <span class="resa-arrival">
                                             <i class="bi bi-calendar-event me-1"></i>
-                                            Arrivée dans {{ resa.start|timeuntil }}
+                                            {% if resa.start|date:"Y-m-d" == today|date:"Y-m-d" %}
+                                                Arrivée aujourd'hui
+                                            {% else %}
+                                                Arrivée dans {{ resa.nb_days_until }} jour{{ resa.nb_days_until|pluralize }}
+                                            {% endif %}
                                         </span>
                                     </div>
                                     <div class="resa-card-body">

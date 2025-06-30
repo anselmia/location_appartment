@@ -124,37 +124,96 @@
                                     {% endif %}
                                 {% endif %}
                             </dd>
-                            <dt class="col-sm-5">Méthode Stripe</dt>
-                            <dd class="col-sm-7">
-                                {{ reservation.stripe_saved_payment_method_id|default:"—" }}
-                            </dd>
-                            <dt class="col-sm-5">PaymentIntent</dt>
-                            <dd class="col-sm-7">
-                                {{ reservation.stripe_payment_intent_id|default:"—" }}
-                            </dd>
-                            <dt class="col-sm-5">Remboursement</dt>
-                            <dd class="col-sm-7">
-                                {% if reservation.paid and not reservation.refunded %}
+                            {% if reservation.statut == "echec_paiement" %}
+                                <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
+                                <dd class="col-sm-7">
                                     <form method="post"
-                                          action="{% url 'payment:refund_reservation' reservation.code %}"
-                                          class="d-flex gap-2 align-items-center"
-                                          onsubmit="return confirm('Confirmer le remboursement ?');">
+                                          action="{% url 'payment:send_payment_link' reservation.code %}"
+                                          onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');"
+                                          class="d-flex align-items-center">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
+                                        <button type="submit" class="btn btn-warning">🔁 Envoyer lien de paiement</button>
                                     </form>
+                                </dd>
+                            {% else %}
+                                <dt class="col-sm-5">Remboursée ?</dt>
+                                <dd class="col-sm-7">
+                                    {% if reservation.refunded %}
+                                        <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non</span>
+                                    {% endif %}
+                                </dd>
+                                <dt class="col-sm-5">Frais de paiement (Non Remboursable)</dt>
+                                <dd class="col-sm-7">
+                                    {{ reservation.payment_fee|floatformat:2 }} €
+                                </dd>
+                                <dt class="col-sm-5 d-flex align-items-center">
+                                    Frais Plateforme
+                                    <i class="ml-2 text-muted fas fa-info-circle"
+                                       data-toggle="tooltip"
+                                       data-placement="top"
+                                       title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel.">
+                                    </i>
+                                </dt>
+                                <dd class="col-sm-7">
+                                    {{ reservation.platform_fee|floatformat:2|default:"—" }} €
+                                </dd>
+                                {% if reservation.paid and not reservation.refunded %}
+                                    <dt class="col-sm-5">Montant Remboursable</dt>
+                                    <dd class="col-sm-7">
+                                        {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
+                                    </dd>
+                                    <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+                                    <dd class="col-sm-7">
+                                        <form method="post"
+                                              action="{% url 'payment:refund_reservation' reservation.code %}"
+                                              onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                                              class="d-flex align-items-center">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                                        </form>
+                                    </dd>
+                                    <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
+                                    <dd class="col-sm-7">
+                                        <form method="post"
+                                              action="{% url 'payment:refund_partially_reservation' reservation.code %}"
+                                              onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                                              class="d-flex align-items-center">
+                                            {% csrf_token %}
+                                            <input type="number"
+                                                   name="refund_amount"
+                                                   class="form-control"
+                                                   min="0"
+                                                   max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                                                   step="0.01"
+                                                   placeholder="Montant (€)"
+                                                   required
+                                                   style="max-width: 200px" />
+                                            <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                                        </form>
+                                    </dd>
                                 {% elif reservation.refunded %}
-                                    <dt class="col-sm-5">Montant remboursé</dt>
-                                    <dd class="col-sm-7">
-                                        {{ reservation.refund_amount|floatformat:2 }} €
-                                    </dd>
-                                    <dt class="col-sm-5">Remboursement Stripe</dt>
-                                    <dd class="col-sm-7">
-                                        {{ reservation.stripe_refund_id|default:"—" }}
-                                    </dd>
+                                    {% if reservation.refund_amount %}
+                                        <dt class="col-sm-5">Montant remboursé</dt>
+                                        <dd class="col-sm-7">
+                                            {{ reservation.refund_amount|floatformat:2 }} €
+                                        </dd>
+                                    {% else %}
+                                        <dt class="col-sm-5 align-self-center">Vérifier le remboursement</dt>
+                                        <dd class="col-sm-7">
+                                            <form method="post"
+                                                  action="{% url 'payment:verify_refund' reservation.code %}"
+                                                  class="d-flex align-items-center">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-warning">Vérifier</button>
+                                            </form>
+                                        </dd>
+                                    {% endif %}
                                 {% else %}
                                     <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                                 {% endif %}
-                            </dd>
+                            {% endif %}
                         </dl>
                     </div>
                 </div>

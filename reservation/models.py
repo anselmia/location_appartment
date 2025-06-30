@@ -290,6 +290,7 @@ class ActivityReservation(models.Model):
             ("confirmee", "Confirmée"),
             ("annulee", "Annulée"),
             ("terminee", "Terminée"),
+            ("echec_paiement", "Échec du paiement"),
         ],
         default="pending",
     )
