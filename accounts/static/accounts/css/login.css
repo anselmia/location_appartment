@@ -32,7 +32,7 @@
 }
 
 .auth-container button {
-  width: 100%;
+  width: fit-content;
   color: white;
   border: none;
   padding: 10px;

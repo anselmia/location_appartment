@@ -18,7 +18,6 @@ from reservation.models import Reservation, ActivityReservation, ActivityReserva
 from reservation.decorators import (
     user_has_reservation,
     user_is_reservation_admin,
-    user_is_reservation_customer,
 )
 from reservation.services.reservation_service import (
     cancel_and_refund_reservation,
@@ -41,9 +40,6 @@ from reservation.services.activity import (
     get_available_slots,
 )
 from payment.services.payment_service import (
-    create_stripe_checkout_session_with_deposit,
-    create_stripe_checkout_session_with_manual_capture,
-    capture_reservation_payment,
     create_stripe_setup_intent,
     PAYMENT_FEE_VARIABLE,
 )
@@ -59,6 +55,7 @@ from activity.services.activity import get_activity
 from common.decorators import is_admin
 from common.services.helper_fct import paginate_queryset
 from common.services.network import get_client_ip
+from partner.models import Partners
 
 logger = logging.getLogger(__name__)
 
@@ -620,7 +617,7 @@ def activity_reservation_dashboard(request: HttpRequest, activity_id: Optional[i
 
 
 @login_required
-@user_is_reservation_customer
+@user_has_reservation
 def customer_logement_reservation_detail(request: HttpRequest, code: str) -> HttpResponse:
     """
     Customer view for their own reservation details.
@@ -630,19 +627,25 @@ def customer_logement_reservation_detail(request: HttpRequest, code: str) -> Htt
 
 
 @login_required
-@user_is_reservation_customer
+@user_has_reservation
 def customer_activity_reservation_detail(request: HttpRequest, code: str) -> HttpResponse:
     """
     Customer view for their own reservation details.
     """
     reservation = get_object_or_404(ActivityReservation, code=code)
-    return render(request, "reservation/customer_activity_reservation_detail.html", {"reservation": reservation})
+    partner = get_object_or_404(Partners, user=reservation.activity.owner)
+    return render(
+        request,
+        "reservation/customer_activity_reservation_detail.html",
+        {"reservation": reservation, "partner": partner},
+    )
 
 
 @login_required
 @user_has_activity
 def validate_activity_reservation(request, code):
     from common.services.email_service import send_mail_activity_reservation_confirmation
+
     reservation = get_object_or_404(ActivityReservation, code=code)
     if request.method == "POST":
         if reservation.statut == "en_attente":

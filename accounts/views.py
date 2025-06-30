@@ -127,6 +127,7 @@ def client_dashboard(request):
         stripe_account = None
         conciergerie = None
         partner = None
+        partners = None
         reservations = []
         activity_reservations = []
         code_filter = request.GET.get("code", None)
@@ -144,6 +145,9 @@ def client_dashboard(request):
         except Exception as e:
             logger.exception(f"❌ Failed to load activity reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations d'activité.")
+
+        if activity_reservations:
+            partners = Partners.objects.filter(user__in=[r.activity.owner for r in activity_reservations]).distinct()
 
         formUser = CustomUserChangeForm(instance=user)
 
@@ -237,6 +241,7 @@ def client_dashboard(request):
                 "stripe_transactions": stripe_transactions,
                 "stripe_balance": stripe_balance,
                 "stripe_payouts": stripe_payouts,
+                "partners": partners,
             },
         )
 

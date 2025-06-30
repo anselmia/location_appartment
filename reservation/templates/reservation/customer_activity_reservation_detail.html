@@ -17,8 +17,8 @@
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="{% url 'accounts:dashboard' %}"
-               class="btn btn-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Retour à mes réservations
+               class="btn btn-secondary btn-sm ">
+                <i class="bi bi-arrow-left"></i> Retour
             </a>
             <h1 class="fw-bold mb-0">Réservation {{ reservation.code }}</h1>
         </div>
@@ -65,8 +65,8 @@
                         <h5 class="text-muted border-bottom pb-2">Partenaire</h5>
                         <dl class="row">
                             <dt class="col-sm-5">Société</dt>
-                            <dd class="col-sm-7">
-                                {{ reservation.activity.partner.name }}
+                            <dd class="col-sm-7">                                
+                                {{ partner.user.full_name }}
                             </dd>
                             <dt class="col-sm-5">Contact</dt>
                             <dd class="col-sm-7">

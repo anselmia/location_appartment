@@ -30,35 +30,43 @@ def dashboard(request):
     - Accessible uniquement si l'utilisateur est partenaire, admin ou superuser.
     - Sinon, redirige avec un message d'info.
     """
-    user = request.user
-    partner = Partners.objects.filter(user=user).first()
-    if not partner:
-        messages.info(request, "Vous n'avez pas encore de compte partenaire. Veuillez en créer un.")
+    try:
+        user = request.user
+        partner = Partners.objects.filter(user=user).first()
+        if not partner:
+            messages.info(request, "Vous n'avez pas encore de compte partenaire. Veuillez en créer un.")
+            return redirect("partner:create_partner")
+
+        # Onboarding message la première fois
+        if not partner.onboarded:
+            show_onboarding = True
+            partner.onboarded = True
+            partner.save()
+        else:
+            show_onboarding = False
+
+        activity_stats = get_activities_overview(user)
+
+        messages_systems = get_partner_system_messages(user)
+
+        context = {
+            "total_revenue": activity_stats["total_revenue"],
+            "futur_reservations": activity_stats["futur_reservations"],
+            "futur_reservations_count": activity_stats["futur_reservations_count"],
+            "failed_reservations": activity_stats["total_failed_reservations"],
+            "history": activity_stats["history"],
+            "show_onboarding": show_onboarding,
+            "messages_systems": messages_systems,
+        }
+
+        return render(request, "partner/dashboard.html", context)
+    except Partners.DoesNotExist:
+        messages.error(request, "Vous n'avez pas encore de compte partenaire. Veuillez en créer un.")
         return redirect("partner:create_partner")
-
-    # Onboarding message la première fois
-    if not partner.onboarded:
-        show_onboarding = True
-        partner.onboarded = True
-        partner.save()
-    else:
-        show_onboarding = False
-
-    activity_stats = get_activities_overview(user)
-
-    messages_systems = get_partner_system_messages(user)
-
-    context = {
-        "total_revenue": activity_stats["total_revenue"],
-        "futur_reservations": activity_stats["futur_reservations"],
-        "futur_reservations_count": activity_stats["futur_reservations_count"],
-        "failed_reservations": activity_stats["total_failed_reservations"],
-        "history": activity_stats["history"],
-        "show_onboarding": show_onboarding,
-        "messages_systems": messages_systems,
-    }
-
-    return render(request, "partner/dashboard.html", context)
+    except Exception as e:
+        logger.error(f"Erreur lors de l'accès au tableau de bord partenaire : {e}")
+        messages.error(request, "Une erreur est survenue lors du chargement du tableau de bord.")
+        raise
 
 
 @login_required

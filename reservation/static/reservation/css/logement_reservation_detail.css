@@ -5,8 +5,6 @@ body {
   color: var(--secondary-color);
 }
 
-
-
 .container {
   background-color: #ffffff;
   padding: 2rem 1.5rem;
@@ -54,7 +52,6 @@ dl dd {
   margin-bottom: 1rem;
 }
 
-
 /* Buttons */
 .btn {
   padding: 0.6rem 1.2rem;
@@ -63,7 +60,6 @@ dl dd {
   border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
-
 
 .btn-outline-danger {
   border-color: #dc3545;
@@ -118,5 +114,24 @@ input[name="deposit_amount"] {
   .input-group .btn {
     width: 100%;
     border-radius: 0.375rem !important;
+  }
+
+  .container.py-4 {
+    padding-left: var(--spacing-xs, 0.4rem);
+    padding-right: var(--spacing-xs, 0.4rem);
+  }
+  .card-body {
+    padding: var(--spacing-sm, 0.8rem);
+  }
+  h2.fw-bold {
+    font-size: 1.05rem;
+  }
+  .btn.btn-secondary.btn-sm {
+    font-size: 0.78rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid #dbe2ea;
+    box-shadow: none;
+    font-weight: 500;
   }
 }

@@ -187,12 +187,12 @@ input,
 }
 
 .badge-status.a-venir {
-  background-color: var(--info-color);
+  background-color: var(--success-color);
   color: #000;
 }
 
 .badge-status.remboursable {
-  background-color: var(--info-color);
+  background-color: var(--success-color);
   color: #fff;
 }
 

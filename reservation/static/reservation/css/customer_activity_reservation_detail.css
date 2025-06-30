@@ -43,6 +43,24 @@ dl.row dd {
   h5.text-muted {
     font-size: 1rem;
   }
+  .container.py-4 {
+    padding-left: var(--spacing-xs, 0.4rem);
+    padding-right: var(--spacing-xs, 0.4rem);
+  }
+  .card-body {
+    padding: var(--spacing-sm, 0.8rem);
+  }
+  h2.fw-bold {
+    font-size: 1.05rem;
+  }
+  .btn.btn-secondary.btn-sm {
+    font-size: 0.78rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid #dbe2ea;
+    box-shadow: none;
+    font-weight: 500;
+  }
 }
 
 @media (max-width: 575px) {

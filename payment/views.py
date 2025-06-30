@@ -232,6 +232,7 @@ def send_payment_link(request, code):
 
 
 @login_required
+@user_has_reservation
 def start_payment(request, code):
     reservation = get_reservation_by_code(code)
     reservation_type = get_reservation_type(reservation)

@@ -46,15 +46,16 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <a href="{% url 'reservation:customer_logement_reservation_detail' r.code %}"
-                     class="btn btn-primary btn-sm shadow-sm px-4 d-flex align-items-center gap-2">
+                     class="btn-action shadow-sm d-flex align-items-center">
                     <i class="bi bi-eye"></i> <span>Voir</span>
                   </a>
                   {% if r.coming and r.can_cancel %}
                     <form method="post"
                           action="{% url 'reservation:customer_cancel_logement_booking' r.code %}"
-                          onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
+                          onsubmit="return confirm('Confirmez-vous l\'annulation ?');"
+                          style="display:inline">
                       {% csrf_token %}
-                      <button class="btn btn-sm btn-danger shadow-sm px-4 d-flex align-items-center gap-2">
+                      <button class="btn-action btn-danger shadow-sm d-flex align-items-center">
                         <i class="bi bi-x-circle"></i> <span>Annuler</span>
                       </button>
                     </form>
@@ -115,15 +116,16 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end">
                   <a href="{% url 'reservation:customer_activity_reservation_detail' r.code %}"
-                     class="btn btn-primary btn-sm shadow-sm px-4 d-flex align-items-center gap-2">
+                     class="btn-action shadow-sm d-flex align-items-center">
                     <i class="bi bi-eye"></i> <span>Voir</span>
                   </a>
                   {% if r.coming and r.can_cancel %}
                     <form method="post"
                           action="{% url 'reservation:customer_cancel_activity_booking' r.code %}"
-                          onsubmit="return confirm('Confirmez-vous l\'annulation ?');">
+                          onsubmit="return confirm('Confirmez-vous l\'annulation ?');"
+                          style="display:inline">
                       {% csrf_token %}
-                      <button class="btn btn-sm btn-danger shadow-sm px-4 d-flex align-items-center gap-2">
+                      <button class="btn-action btn-danger shadow-sm d-flex align-items-center">
                         <i class="bi bi-x-circle"></i> <span>Annuler</span>
                       </button>
                     </form>

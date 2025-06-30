@@ -46,12 +46,33 @@
 }
 
 .card-header {
-  border-radius: var(--radius) var(--radius) 0 0;
-  background-color: var(--primary-color);
-  color: #fff;
-  font-weight: 600;
-  font-size: 1.125rem;
-  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color, #bfa66b) 0%,
+    #f5f6fa 100%
+  );
+  color: #2c2c2c;
+  font-weight: 700;
+  font-size: 1.25rem;
+  padding: 1.1rem 2rem 1.1rem 1.5rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(191, 166, 107, 0.08);
+  border-bottom: 1.5px solid #ececec;
+  display: flex;
+  align-items: center;
+  min-height: 3.2rem;
+}
+
+.card-header h5,
+.card-header h4,
+.card-header h3 {
+  margin: 0;
+  font-size: 1.15em;
+  font-family: var(--font-title, "Playfair Display", serif);
+  font-weight: 700;
+  color: inherit;
+  letter-spacing: 0.01em;
 }
 
 .card-body {
@@ -96,8 +117,6 @@
 .btn-primary:hover {
   background-color: #a78d58;
 }
-
-
 
 .btn-outline-danger {
   border-color: var(--danger-color);
@@ -175,6 +194,47 @@ form[role="search"] .btn {
   white-space: nowrap;
 }
 
+/* Modern ghost-style action buttons for reservation list */
+.reservation-actions .btn-action {
+  background: transparent;
+  color: #34495e;
+  border: 1.5px solid #dbe2ea;
+  border-radius: 999px;
+  padding: 0.35rem 1.1rem;
+  font-weight: 500;
+  font-size: 0.98rem;
+  box-shadow: none;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.reservation-actions .btn-action:hover,
+.reservation-actions .btn-action:focus {
+  background: #f4f8fb;
+  color: #1976d2;
+  border-color: #b6c6d6;
+  text-decoration: none;
+}
+
+.reservation-actions .btn-action i {
+  font-size: 1.1em;
+  margin-right: 0.3em;
+}
+
+.reservation-actions .btn-danger {
+  color: #c0392b;
+  border-color: #f5c6cb;
+  background: transparent;
+}
+.reservation-actions .btn-danger:hover,
+.reservation-actions .btn-danger:focus {
+  background: #fbeaea;
+  color: #a93226;
+  border-color: #e6b0aa;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .client-dashboard {
@@ -207,8 +267,14 @@ form[role="search"] .btn {
   }
 
   .badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .card-header {
+    font-size: 1.05rem;
+    padding: 0.8rem 1.1rem 0.8rem 1rem;
+    min-height: 2.2rem;
+  }
 }
