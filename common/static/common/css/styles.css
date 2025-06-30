@@ -59,6 +59,7 @@
   --message-other-bg: #f1f1f1;
   --unread-badge-bg: #dc3545;
   --unread-badge-color: #fff;
+  --bs-badge-border-radius: 0.375rem;
 }
 
 html,
