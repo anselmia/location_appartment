@@ -149,7 +149,7 @@ input,
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
-  border-radius: 999px;
+  border-radius: var(--bs-badge-border-radius);
   line-height: 1.2;
   vertical-align: middle;
 }
@@ -188,7 +188,7 @@ input,
 
 .badge-status.a-venir {
   background-color: var(--success-color);
-  color: #000;
+  color: #fff;
 }
 
 .badge-status.remboursable {

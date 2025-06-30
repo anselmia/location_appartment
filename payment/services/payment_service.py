@@ -1532,7 +1532,9 @@ def handle_checkout_session_completed(data: StripeCheckoutSessionEventData) -> N
             return
         else:
             amount_received = Decimal(intent.amount_received) / 100
-            logger.info(f"✅ Payment intent {payment_intent_id} for reservation {reservation_code} succeeded. Amount received: {amount_received}")            
+            logger.info(
+                f"✅ Payment intent {payment_intent_id} for reservation {reservation_code} succeeded. Amount received: {amount_received}€"
+            )
             reservation.checkout_amount = amount_received
             reservation.save(update_fields=["checkout_amount"])
 
