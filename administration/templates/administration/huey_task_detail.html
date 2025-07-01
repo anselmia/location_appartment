@@ -54,32 +54,27 @@
                     <dt class="col-sm-4">Result</dt>
                     <dd class="col-sm-8">
                         {% if result_obj %}
-                            {% if result_obj.items %}
-                                <ul class="list-unstyled mb-0">
-                                    {% for key, value in result_obj.items %}
-                                        <li>
-                                            <strong>{{ key|capfirst }}:</strong>
-                                            {% if value|is_dict %}
-                                                <ul>
-                                                    {% for k, v in value.items %}
-                                                        <li>
-                                                            <strong>{{ k|capfirst }}:</strong> {{ v }}
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
-                                            {% elif value|is_list %}
-                                                <ul>
-                                                    {% for item in value %}<li>{{ item }}</li>{% endfor %}
-                                                </ul>
-                                            {% else %}
-                                                {{ value }}
-                                            {% endif %}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                {{ result_obj }}
-                            {% endif %}
+                            <ul class="result-list">
+                                {% for key, value in result_obj.items %}
+                                    <li>
+                                        <span class="result-key">{{ key|capfirst }}:</span>
+                                        {% if value.items %}
+                                            <ul class="result-sublist">
+                                                {% for k, v in value.items %}
+                                                    <li>
+                                                        <span class="result-key">{{ k|capfirst }}:</span>
+                                                        <span class="result-value">{{ v }}</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% elif value %}
+                                            <span class="result-value">{{ value }}</span>
+                                        {% else %}
+                                            <span class="result-value text-muted">—</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
