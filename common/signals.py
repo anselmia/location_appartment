@@ -31,6 +31,7 @@ def update_last_task_result(task_name, result):
     Returns:
         dict or any: The actual result returned by the task function.
     """
+    logger.info(f"Updating last task result for task '{task_name}' with result: {result}")
     task = (
         TaskHistory.objects
         .filter(name=task_name, result__isnull=True)
