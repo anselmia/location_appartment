@@ -12,11 +12,11 @@ from huey.signals import (
 logger = logging.getLogger(__name__)
 
 
-def _serialize(obj):
+def _serialize(data):
     try:
-        return json.dumps(obj)
-    except Exception:
-        return str(obj)
+        return json.dumps(data, indent=2, default=str)
+    except Exception as e:
+        return f"<serialization error: {e}>"
 
 
 @HUEY.signal(SIGNAL_ENQUEUED)
@@ -47,7 +47,7 @@ def on_task_finished(signal, task, *args, **kwargs):
         updated.finished_at = timezone.now()
         if updated.started_at:
             updated.duration = (updated.finished_at - updated.started_at).total_seconds()
-        updated.result = _serialize(getattr(task, "result", ""))
+        updated.result = _serialize(getattr(task, "value", ""))
         updated.save()
     else:
         logger.warning(f"Task finished but no started record found: {task}")
