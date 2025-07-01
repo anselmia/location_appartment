@@ -82,7 +82,6 @@ def on_task_finished(signal, task, *args, **kwargs):
         updated.finished_at = timezone.now()
         if updated.started_at:
             updated.duration = (updated.finished_at - updated.started_at).total_seconds()
-        updated.result = _serialize(getattr(task, "value", ""))
         updated.save()
     else:
         logger.warning(f"Task finished but no started record found: {task}")
