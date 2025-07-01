@@ -70,6 +70,7 @@ def duration_hm(minutes):
 def is_dict(value):
     return isinstance(value, dict)
 
+
 @register.filter
 def is_list(value):
     return isinstance(value, list)
