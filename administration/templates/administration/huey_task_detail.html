@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
     <link rel="stylesheet"
-          href="{% static 'administration/css/huey_tasks_detail.css' %}">
+          href="{% static 'administration/css/huey_task_detail.css' %}">
     <div class="container py-4">
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
@@ -36,27 +36,27 @@
                     </dd>
                     <dt class="col-sm-4">Args</dt>
                     <dd class="col-sm-8">
-                        <pre style="white-space:pre-wrap;
-                                    word-break:break-all;
-                                    background:#f8f9fa;
-                                    padding:8px;
-                                    border-radius:4px">{{ task.args }}</pre>
+                        {% if args %}
+                            <pre class="json-block">{{ args|safe }}</pre>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
                     </dd>
                     <dt class="col-sm-4">Kwargs</dt>
                     <dd class="col-sm-8">
-                        <pre style="white-space:pre-wrap;
-                                    word-break:break-all;
-                                    background:#f8f9fa;
-                                    padding:8px;
-                                    border-radius:4px">{{ task.kwargs }}</pre>
+                        {% if kwargs %}
+                            <pre class="json-block">{{ kwargs|safe }}</pre>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
                     </dd>
                     <dt class="col-sm-4">Result</dt>
                     <dd class="col-sm-8">
-                        <pre style="white-space:pre-wrap;
-                                    word-break:break-all;
-                                    background:#f8f9fa;
-                                    padding:8px;
-                                    border-radius:4px">{{ task.result }}</pre>
+                        {% if result %}
+                            <pre class="json-block">{{ result|safe }}</pre>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
                     </dd>
                     <dt class="col-sm-4">Error</dt>
                     <dd class="col-sm-8">
