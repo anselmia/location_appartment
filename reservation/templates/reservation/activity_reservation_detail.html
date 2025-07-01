@@ -110,11 +110,11 @@
                             <dt class="col-sm-5">Montant</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.checkout_amount|floatformat:2 }} €
-                                {% if reservation.paid %}
+                                {% if reservation.paid and not reservation.checkout_amount <= 0 %}
                                     <span class="badge bg-success ms-2">Confirmé</span>
                                 {% else %}
                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
-                                    {% if reservation.stripe_payment_intent_id and reservation.statut == "confirmee" %}
+                                    {% if reservation.can_verify_payment_failed %}
                                         <form method="post"
                                               action="{% url 'payment:verify_payment' reservation.code %}"
                                               class="d-inline ms-2">
@@ -124,7 +124,7 @@
                                     {% endif %}
                                 {% endif %}
                             </dd>
-                            {% if reservation.statut == "echec_paiement" %}
+                            {% if reservation.payment_failed %}
                                 <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
                                 <dd class="col-sm-7">
                                     <form method="post"

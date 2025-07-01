@@ -67,7 +67,7 @@
                                             {% elif r.ended %}
                                                 <span class="badge-status terminee">Terminée</span>
                                             {% elif r.coming %}
-                                                <span class="badge-status a-venir">A venir</span>
+                                                <span class="badge-status a-venir">À venir</span>
                                             {% elif r.pending or r.statut == 'en_attente' %}
                                                 <span class="badge-status en_attente">En attente</span>
                                                 <form method="post"
@@ -82,24 +82,18 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="row small">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted fw-bold">Paiement</h6>
-                                        <ul class="list-unstyled">
+                                <hr class="my-3">
+                                <div class="row g-4 small">
+                                    <!-- Paiement -->
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted fw-bold mb-2">Paiement</h6>
+                                        <ul class="list-unstyled mb-2">
                                             <li>
-                                                <strong>Montant :</strong> {{ r.checkout_amount }} €
+                                                <strong>Montant :</strong> {{ r.checkout_amount|default:"0.00"|floatformat:2 }} €
                                                 {% if r.paid %}
                                                     <span class="badge bg-success ms-2">Confirmé</span>
                                                 {% else %}
                                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
-                                                    {% if r.stripe_payment_intent_id %}
-                                                        <form method="post"
-                                                              action="{% url 'payment:verify_payment' r.code %}"
-                                                              class="d-inline ms-2">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
-                                                        </form>
-                                                    {% endif %}
                                                 {% endif %}
                                             </li>
                                             <li>
@@ -109,70 +103,130 @@
                                                 <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
                                             </li>
                                             <li>
-                                                <strong>Méthode :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
+                                                <strong>ID Méthode de paiement :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
                                             </li>
                                             <li>
-                                                <strong>Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
+                                                <strong>ID Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
                                             </li>
                                         </ul>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% if r.can_verify_payment_failed %}
+                                                <form method="post" action="{% url 'payment:verify_payment' r.code %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="btn btn-outline-primary btn-sm"
+                                                            title="Vérifier le paiement Stripe">
+                                                        <i class="bi bi-shield-check"></i> Vérifier Paiement
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            {% if r.payment_failed %}
+                                                <form method="post"
+                                                      action="{% url 'payment:send_payment_link' r.code %}"
+                                                      onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="btn btn-outline-warning btn-sm"
+                                                            title="Envoyer un lien de paiement au client">
+                                                        <i class="bi bi-link-45deg"></i> Envoyer lien
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted fw-bold">Remboursement</h6>
-                                        <ul class="list-unstyled">
-                                            <li>
-                                                <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
-                                            </li>
-                                            <li>
-                                                <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
-                                            </li>
+                                    <!-- Remboursement -->
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted fw-bold mb-2">Remboursement</h6>
+                                        <ul class="list-unstyled mb-2">
+                                            {% if r.refunded %}
+                                                <li>
+                                                    <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
+                                                    <span class="badge bg-success">Remboursé</span>
+                                                    {% if r.can_verify_refund_failed %}
+                                                        <form method="post"
+                                                              action="{% url 'payment:verify_refund' r.code %}"
+                                                              class="d-inline-block ms-2">
+                                                            {% csrf_token %}
+                                                            <button type="submit"
+                                                                    class="btn btn-sm btn-outline-primary"
+                                                                    title="Vérifier le remboursement Stripe">
+                                                                <i class="bi bi-shield-check"></i> Vérifier
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </li>
+                                                <li>
+                                                    <strong>Refund ID :</strong> {{ r.stripe_refund_id|default:"--" }}
+                                                </li>
+                                            {% else %}
+                                                {% if r.paid and r.refundable_amount > 0 %}
+                                                    <li>
+                                                        <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
+                                                    </li>
+                                                    <span class="badge bg-warning text-dark">Remboursable</span>
+                                                {% else %}
+                                                    <p class="text-muted mb-0">Aucun remboursement possible.</p>
+                                                {% endif %}
+                                                <li>
+                                                    <form method="post"
+                                                          action="{% url 'payment:refund_reservation' r.code %}"
+                                                          class="d-flex gap-2 align-items-center"
+                                                          onsubmit="return confirm('Confirmer le remboursement ?');">
+                                                        {% csrf_token %}
+                                                        <input type="number"
+                                                               name="amount"
+                                                               class="form-control form-control-sm"
+                                                               min="0"
+                                                               max="{{ r.refundable_amount|stringformat:'f' }}"
+                                                               step="0.01"
+                                                               placeholder="Montant">
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                title="Rembourser">
+                                                            <i class="bi bi-cash-coin"></i> Rembourser
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
                                         </ul>
-                                        {% if r.paid and not r.refunded %}
-                                            <form method="post"
-                                                  action="{% url 'payment:refund_reservation' r.code %}"
-                                                  class="d-flex gap-2 align-items-center"
-                                                  onsubmit="return confirm('Confirmer le remboursement ?');">
-                                                {% csrf_token %}
-                                                <input type="number"
-                                                       name="amount"
-                                                       class="form-control form-control-sm"
-                                                       min="0"
-                                                       max="{{ r.refundable_amount|stringformat:'f' }}"
-                                                       step="0.01"
-                                                       placeholder="Montant">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">💸 Rembourser</button>
-                                            </form>
-                                        {% else %}
-                                            <p class="text-muted">Aucun remboursement possible.</p>
-                                        {% endif %}
                                     </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted fw-bold">Transferts</h6>
-                                        <p class="mb-1">
-                                            {% if r.transferred %}
+                                    <!-- Transferts -->
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted fw-bold mb-2">Transferts</h6>
+                                        {% if r.transferred %}
+                                            <div>
                                                 <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
                                                 <br>
                                                 <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
-                                                {% if r.transferred_amount == 0 %}
+                                                {% if not r.transferred_amount or r.transferred_amount == 0 %}
                                                     <form method="post"
                                                           action="{% url 'payment:verify_transfer' r.code %}"
                                                           class="d-inline-block ms-2">
                                                         {% csrf_token %}
-                                                        <button type="submit" class="btn btn-sm btn-outline-primary">Vérifier</button>
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-primary"
+                                                                title="Vérifier le transfert">
+                                                            <i class="bi bi-arrow-repeat"></i> Vérifier
+                                                        </button>
                                                     </form>
                                                 {% endif %}
-                                            {% elif r.paid %}
-                                                {{ r.transferable_amount|floatformat:2 }} €
+                                            </div>
+                                        {% elif r.paid and r.transferable_amount > 0 %}
+                                            <div>
+                                                <span>{{ r.transferable_amount|floatformat:2 }} € transférable</span>
                                                 <form method="post"
                                                       action="{% url 'payment:transfer_reservation' r.code %}"
                                                       class="d-inline-block ms-2"
                                                       onsubmit="return confirm('Effectuer le transfert ?');">
                                                     {% csrf_token %}
-                                                    <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
+                                                    <button class="btn btn-sm btn-outline-success" title="Transférer">
+                                                        <i class="bi bi-arrow-right-circle"></i> Transférer
+                                                    </button>
                                                 </form>
-                                            {% else %}
-                                                <p class="text-muted">Aucun transfert possible.</p>
-                                            {% endif %}
-                                        </p>
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Aucun transfert possible.</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

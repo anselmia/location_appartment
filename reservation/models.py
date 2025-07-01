@@ -76,6 +76,7 @@ class Reservation(models.Model):
 
     def save(self, *args, **kwargs):
         from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
+
         if not self.code:
             # Ensure uniqueness
             for _ in range(10):  # up to 10 retries
@@ -146,6 +147,10 @@ class Reservation(models.Model):
             return Decimal("0.00")
 
     @property
+    def can_verify_refund_failed(self):
+        return (not self.refund_amount or self.refund_amount <= 0) and self.stripe_payment_intent_id and self.paid
+
+    @property
     def partial_refundable_amount(self):
         """
         Calculates the partial refundable amount to the guest.
@@ -185,6 +190,25 @@ class Reservation(models.Model):
         return self.statut == "confirmee" and (timezone.now().date() < self.start)
 
     @property
+    def canceled(self):
+        return self.statut == "annulee"
+
+    @property
+    def payment_failed(self):
+        return (self.statut == "echec_paiement" and not self.paid) or (
+            self.statut in ["confirmee", "terminee"] and not self.stripe_saved_payment_method_id
+        )
+
+    @property
+    def can_verify_payment_failed(self):
+        return (
+            self.statut in ["confirmee", "terminee"]
+            and (not self.checkout_amount or self.checkout_amount <= 0)
+            and self.stripe_payment_intent_id
+            and self.stripe_saved_payment_method_id
+        )
+
+    @property
     def chargeable_deposit(self):
         caution = Decimal(self.logement.caution or 0)  # Ensure it is treated as a Decimal
         charged = Decimal(self.amount_charged or 0)  # Ensure it is treated as a Decimal
@@ -202,22 +226,24 @@ class Reservation(models.Model):
         transferable = price - platform_fee - refund_amount
         """
         try:
+            if self.paid and self.checkout_amount and self.checkout_amount > 0:
+                platform_fee = Decimal(self.platform_fee or 0)
+                payment_fee = Decimal(self.payment_fee or 0)
+                refund = Decimal(self.refund_amount or 0)
+                price = Decimal(self.price or 0)
 
-            platform_fee = Decimal(self.platform_fee or 0)
-            payment_fee = Decimal(self.payment_fee or 0)
-            refund = Decimal(self.refund_amount or 0)
-            price = Decimal(self.price or 0)
+                # Check if logement or owner has offered fees
+                amount = price - platform_fee - refund - payment_fee
+                amount = max(Decimal("0"), amount)
 
-            # Check if logement or owner has offered fees
-            amount = price - platform_fee - refund - payment_fee
-            amount = max(Decimal("0"), amount)
+                if self.logement.admin:
+                    admin_rate = Decimal(self.admin_fee_rate or 0)
+                    admin_fee = admin_rate * amount
+                    amount -= admin_fee
 
-            if self.logement.admin:
-                admin_rate = Decimal(self.admin_fee_rate or 0)
-                admin_fee = admin_rate * amount
-                amount -= admin_fee
-
-            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            else:
+                return Decimal(0)
 
         except Exception as e:
             import logging
@@ -232,7 +258,7 @@ class Reservation(models.Model):
         Calculates the amount that can be transferred to the admin.
         """
         try:
-            if self.logement.admin and self.paid:
+            if self.logement.admin and self.paid and self.checkout_amount and self.checkout_amount > 0:
                 platform_fee = Decimal(self.platform_fee or 0)
                 payment_fee = Decimal(self.payment_fee or 0)
                 refund = Decimal(self.refund_amount or 0)
@@ -325,6 +351,7 @@ class ActivityReservation(models.Model):
 
     def save(self, *args, **kwargs):
         from payment.services.payment_service import get_payment_fee, get_platform_fee, get_fee_waiver
+
         if not self.code:
             # Ensure uniqueness
             for _ in range(10):  # up to 10 retries
@@ -390,6 +417,10 @@ class ActivityReservation(models.Model):
             return Decimal("0.00")
 
     @property
+    def can_verify_refund_failed(self):
+        return (not self.refund_amount or self.refund_amount <= 0) and self.stripe_payment_intent_id and self.paid
+
+    @property
     def partial_refundable_amount(self):
         """
         Calculates the partial refundable amount to the guest.
@@ -431,6 +462,25 @@ class ActivityReservation(models.Model):
     @property
     def coming(self):
         return self.statut == "confirmee" and (timezone.now() < self.start)
+
+    @property
+    def canceled(self):
+        return self.statut == "annulee"
+
+    @property
+    def payment_failed(self):
+        return (self.statut == "echec_paiement" and not self.paid) or (
+            self.statut in ["confirmee", "terminee"] and not self.stripe_saved_payment_method_id
+        )
+
+    @property
+    def can_verify_payment_failed(self):
+        return (
+            self.statut in ["confirmee", "terminee"]
+            and (not self.checkout_amount or self.checkout_amount <= 0)
+            and self.stripe_payment_intent_id
+            and self.stripe_saved_payment_method_id
+        )
 
     @property
     def transferable_amount(self):

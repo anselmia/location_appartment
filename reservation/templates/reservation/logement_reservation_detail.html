@@ -103,7 +103,7 @@
               <dt class="col-sm-5">Montant</dt>
               <dd class="col-sm-7">
                 {{ reservation.checkout_amount|floatformat:2 }} €
-                {% if reservation.paid %}
+                {% if reservation.paid and not reservation.checkout_amount <= 0 %}
                   <span class="badge bg-success ms-2">Confirmé</span>
                 {% else %}
                   <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
@@ -121,7 +121,7 @@
               <dd class="col-sm-7">
                 {{ reservation.tax|floatformat:2 }} €
               </dd>
-              {% if reservation.statut == "echec_paiement" %}
+              {% if reservation.payment_failed %}
                 <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
                 <dd class="col-sm-7">
                   <form method="post"
@@ -254,7 +254,7 @@
                       </form>
                     {% endif %}
                   </dd>
-                {% elif reservation.paid %}
+                {% elif reservation.stripe_saved_payment_method_id and not reservation.caution_charged %}
                   <dt class="col-sm-5">Charger une caution</dt>
                   <dd class="col-sm-7">
                     <form method="post"
