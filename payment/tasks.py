@@ -52,7 +52,7 @@ def transfert_funds():
     return summary
 
 
-@periodic_task(crontab(hour=1, minute=0))  # tous les jours à 1h
+@periodic_task(crontab(minute=30))  # tous les jours à 1h
 def create_reservation_payment_intents():
     from payment.services.payment_service import create_reservation_payment_intents
 
@@ -101,7 +101,7 @@ def create_reservation_payment_intents():
     return summary
 
 
-@periodic_task(crontab(hour=1, minute=30))  # toutes les jours à 1h30
+@periodic_task(crontab(minute=45))  # toutes les jours à 1h30
 def capture_payment_intents():
     from payment.services.payment_service import capture_reservation_payment
 
