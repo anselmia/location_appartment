@@ -171,12 +171,25 @@ def send_mail_activity_reservation_confirmation(activity, reservation, user):
 
 
 def send_pre_checkin_reminders():
-    try:
-        from reservation.models import Reservation
+    from reservation.models import Reservation
 
+    summary = {
+        "total_sent": 0,
+        "errors": [],
+        "dates": {},
+    }
+
+    try:
         today = date.today()
+        entreprise = get_entreprise()
+        if not entreprise:
+            raise Exception("No entreprise configuration found.")
+
         for delta in [1, 2, 3]:
             target_day = today + timedelta(days=delta)
+            date_str = str(target_day)
+            sent_codes = []
+
             reservations = Reservation.objects.filter(
                 start=target_day,
                 statut="confirmee",
@@ -184,42 +197,68 @@ def send_pre_checkin_reminders():
             )
 
             for res in reservations:
-                entreprise = get_entreprise()
-                if not entreprise:
-                    return
+                try:
+                    context = {
+                        "reservation": res,
+                        "logement": res.logement,
+                        "user_contact": res.logement.admin or res.logement.owner,
+                        "entreprise": entreprise,
+                    }
 
-                context = {
-                    "reservation": res,
-                    "logement": res.logement,
-                    "user_contact": res.logement.admin if res.logement.admin else res.logement.owner,
-                    "entreprise": entreprise,
-                }
-                subject = f"Votre séjour approche - {res.logement.name}"
-                message_txt = render_to_string("email/pre_checkin_reminder.txt", context)
-                message_html = render_to_string("email/pre_checkin_reminder.html", context)
-                msg = EmailMultiAlternatives(
-                    subject,
-                    message_txt,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [res.user.email],
-                )
-                msg.attach_alternative(message_html, "text/html")
-                msg.send(fail_silently=False)
+                    subject = f"Votre séjour approche - {res.logement.name}"
+                    message_txt = render_to_string("email/pre_checkin_reminder.txt", context)
+                    message_html = render_to_string("email/pre_checkin_reminder.html", context)
 
-                res.pre_checkin_email_sent = True
-                res.save()
-                logger.info(f"📧 Pre-checkin reminder sent for reservation {res.code}")
+                    msg = EmailMultiAlternatives(
+                        subject,
+                        message_txt,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [res.user.email],
+                    )
+                    msg.attach_alternative(message_html, "text/html")
+                    msg.send(fail_silently=False)
+
+                    res.pre_checkin_email_sent = True
+                    res.save(update_fields=["pre_checkin_email_sent"])
+                    logger.info(f"📧 Pre-checkin reminder sent for reservation {res.code}")
+                    summary["total_sent"] += 1
+                    sent_codes.append(res.code)
+
+                except Exception as email_error:
+                    logger.warning(f"Failed to send pre-checkin email for {res.code}: {email_error}")
+                    summary["errors"].append(f"{res.code}: {email_error}")
+
+            if sent_codes:
+                summary["dates"][date_str] = sent_codes
+
+        return summary
+
     except Exception as e:
-        logger.exception(f"❌ Error during pre-checkin reminders: {e}")
+        logger.exception(f"❌ Fatal error during pre-checkin reminders: {e}")
+        summary["errors"].append(str(e))
+        return summary
 
 
 def send_pre_checkin_activity_reminders():
-    try:
-        from reservation.models import ActivityReservation
+    from reservation.models import ActivityReservation
 
+    summary = {
+        "total_sent": 0,
+        "errors": [],
+        "dates": {},
+    }
+
+    try:
         today = date.today()
+        entreprise = get_entreprise()
+        if not entreprise:
+            raise Exception("No entreprise configuration found.")
+
         for delta in [1, 2, 3]:
             target_day = today + timedelta(days=delta)
+            date_str = str(target_day)
+            sent_codes = []
+
             reservations = ActivityReservation.objects.filter(
                 start__date=target_day,
                 statut="confirmee",
@@ -227,33 +266,45 @@ def send_pre_checkin_activity_reminders():
             )
 
             for res in reservations:
-                entreprise = get_entreprise()
-                if not entreprise:
-                    return
+                try:
+                    context = {
+                        "reservation": res,
+                        "activity": res.activity,
+                        "user_contact": res.activity.owner,
+                        "entreprise": entreprise,
+                    }
+                    subject = f"Votre activité approche - {res.activity.name}"
+                    message_txt = render_to_string("email/pre_checkin_activity_reminder.txt", context)
+                    message_html = render_to_string("email/pre_checkin_activity_reminder.html", context)
 
-                context = {
-                    "reservation": res,
-                    "activity": res.activity,
-                    "user_contact": res.activity.owner,
-                    "entreprise": entreprise,
-                }
-                subject = f"Votre activité approche - {res.activity.name}"
-                message_txt = render_to_string("email/pre_checkin_activity_reminder.txt", context)
-                message_html = render_to_string("email/pre_checkin_activity_reminder.html", context)
-                msg = EmailMultiAlternatives(
-                    subject,
-                    message_txt,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [res.user.email],
-                )
-                msg.attach_alternative(message_html, "text/html")
-                msg.send(fail_silently=False)
+                    msg = EmailMultiAlternatives(
+                        subject,
+                        message_txt,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [res.user.email],
+                    )
+                    msg.attach_alternative(message_html, "text/html")
+                    msg.send(fail_silently=False)
 
-                res.pre_checkin_email_sent = True
-                res.save()
-                logger.info(f"📧 Pre-checkin reminder sent for reservation {res.code}")
+                    res.pre_checkin_email_sent = True
+                    res.save(update_fields=["pre_checkin_email_sent"])
+                    logger.info(f"📧 Pre-checkin activity reminder sent for reservation {res.code}")
+                    summary["total_sent"] += 1
+                    sent_codes.append(res.code)
+
+                except Exception as email_error:
+                    logger.warning(f"Failed to send pre-checkin activity email for {res.code}: {email_error}")
+                    summary["errors"].append(f"{res.code}: {email_error}")
+
+            if sent_codes:
+                summary["dates"][date_str] = sent_codes
+
+        return summary
+
     except Exception as e:
-        logger.exception(f"❌ Error during pre-checkin reminders: {e}")
+        logger.exception(f"❌ Fatal error during activity pre-checkin reminders: {e}")
+        summary["errors"].append(str(e))
+        return summary
 
 
 def send_mail_on_logement_refund(logement, reservation, user):

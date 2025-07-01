@@ -237,7 +237,6 @@ def get_booked_dates(logement: Any, user: Optional[Any] = None) -> Tuple[List[st
         if result is not None:
             return result
 
-        logger.info(f"Fetching booked dates for logement {logement.id}.")
         today = date.today()
         reserved_start = set()
         reserved_end = set()
@@ -339,8 +338,6 @@ def is_period_booked(start: date, end: date, logement_id: int, user: Any) -> boo
         bool: True if booked, False otherwise.
     """
     try:
-        logger.info(f"Checking if period {start} to {end} is booked for logement {logement_id}.")
-
         # Réservations internes
         reservations = Reservation.objects.filter(logement_id=logement_id, start__lt=end, end__gt=start).filter(
             Q(statut="confirmee") | (Q(statut="en_attente") & ~Q(user=user))
@@ -399,10 +396,6 @@ def validate_reservation_inputs(
         ValueError: If any validation fails.
     """
     try:
-        logger.info(
-            f"Validating reservation inputs for logement {logement.id}, user {user.id}, dates {start} to {end}."
-        )
-
         if guest_adult <= 0:
             raise ValueError("Nombre de voyageurs adultes invalide.")
 
@@ -477,9 +470,6 @@ def create_or_update_reservation(
         Exception: If creation or update fails.
     """
     try:
-        logger.info(
-            f"Creating or updating reservation for logement {logement.id}, user {user}, dates {start} to {end}."
-        )
         reservation = Reservation.objects.filter(
             logement=logement, user=user, start=start, end=end, statut="en_attente"
         ).first()

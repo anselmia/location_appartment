@@ -12,12 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const formGuest = document.getElementById("id_guest");
   const formStart = document.getElementById("id_start");
 
-  // 🔥 iOS Safari fix: ensure calendar opens on touch
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  logToServer("info", "Ios Device", {
-    isIosDevice: isIOS,
-  });
-
   if (
     formStart.value &&
     formGuest.value &&
@@ -157,13 +151,6 @@ document.addEventListener("DOMContentLoaded", function () {
               }
 
               isReservationValid = true;
-
-              logToServer("info", "Prix calculé avec succès", {
-                finalPrice: finalPrice,
-                start: startDateStr,
-                guest: guestValue,
-                activityId: activityId,
-              });
 
               submitBtn.disabled = !cgvCheckbox.checked;
             })
@@ -372,16 +359,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Delay a little to wait for async availability check
     setTimeout(() => {
       if (isReservationValid) {
-        logToServer(
-          "info",
-          "Soumission du formulaire de réservation d'activité validé",
-          {
-            start: formStart.value,
-            guest: parseInt(formGuest.value, 10),
-            activityId: activityId,
-          }
-        );
-
         e.target.submit();
       }
     }, 200); // adjust if needed

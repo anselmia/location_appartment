@@ -15,12 +15,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 🔥 iOS Safari fix: ensure calendar opens on touch
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  logToServer("info", "Ios Device", {
-    isIosDevice: isIOS,
-  });
-
   if (
     formStart.value &&
     formEnd.value &&
@@ -177,14 +171,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             isReservationValid = true;
 
-            logToServer("info", "Prix calculé avec succès", {
-              finalPrice: finalPrice,
-              start: startDateStr,
-              end: endDateStr,
-              guests: guestAdultValue + guestMinorValue,
-              logementId: logementId,
-            });
-
             submitBtn.disabled = !checkbox.checked;
           })
           .catch((error) => {
@@ -208,18 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // Delay a little to wait for async availability check
       setTimeout(() => {
         if (isReservationValid) {
-          logToServer(
-            "info",
-            "Soumission du formulaire de réservation validée",
-            {
-              start: formStart.value,
-              end: formEnd.value,
-              guest_adult: parseInt(formGuestAdult.value, 10),
-              guest_minor: parseInt(formGuestMinor.value, 10),
-              logementId: logementId,
-            }
-          );
-
           e.target.submit();
         }
       }, 200); // adjust if needed

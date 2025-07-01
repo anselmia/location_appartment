@@ -143,8 +143,6 @@ def get_best_discounts(discounts: Any, start_date: date, end_date: date) -> Dict
     Determine the best discounts for a given period.
     """
     try:
-        logger.info(f"Fetching best discounts for dates {start_date} to {end_date}.")
-
         best_min_nights = None
         best_days_before = None
         best_date_range_discounts = []

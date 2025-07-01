@@ -367,8 +367,6 @@ def get_logement_search_context(request) -> Dict:
     guest_adult = int(guest_adult) if guest_adult and str(guest_adult).isdigit() else 1
     guest_minor = int(guest_minor) if guest_minor and str(guest_minor).isdigit() else 0
 
-    logger.info(f"🔎 Search returned {page_obj.paginator.count} logements")
-
     # JSON data for logements with coordinates
     all_logements_json = json.dumps(
         [

@@ -134,8 +134,6 @@ def validate_reservation_inputs(
         ValueError: If any validation fails.
     """
     try:
-        logger.info(f"Validating reservation inputs for activity {activity.id}, user {user.id}, dates {start}.")
-
         if guest <= 0:
             raise ValueError("Nombre de voyageurs invalide.")
 

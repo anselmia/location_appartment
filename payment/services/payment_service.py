@@ -227,14 +227,13 @@ def create_stripe_setup_intent(reservation, user, request):
     )
 
     try:
-        logger.info(f"🔧 Création d'un SetupIntent Stripe pour user {user.id} ({user.email}), IP: {ip}")
         setup_intent = stripe.SetupIntent.create(
             customer=user.stripe_customer_id,
             payment_method_types=["card"],
             usage="off_session",
             metadata={"user_id": str(user.id)},
         )
-        logger.info(f"✅ SetupIntent créé: {setup_intent.id} pour user {user.id}")
+        logger.info(f"✅ SetupIntent créé: {setup_intent.id} pour user {user.full_name} - Réservation {reservation.code if reservation else 'N/A'}  | IP: {ip}")
         task.mark_success(setup_intent.id)
         return {
             "client_secret": setup_intent.client_secret,
@@ -694,7 +693,6 @@ def create_stripe_customer_if_not_exists(user: Any, request: Any) -> str:
         ip = get_client_ip(request)
 
         if user.stripe_customer_id and is_valid_stripe_customer(user.stripe_customer_id):
-            logger.info(f"ℹ️ Stripe customer already exists for user {user.id} ({user.email}) IP: {ip}")
             return user.stripe_customer_id
 
         if not user.email:

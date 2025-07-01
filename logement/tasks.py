@@ -13,8 +13,11 @@ logger = logging.getLogger(__name__)
 @periodic_task(crontab(minute=0))
 def sync_calendar():
     results = {}
+    logements = Logement.objects.all()
+    total_synced = 0
+    total_errors = 0
 
-    for logement in Logement.objects.all():
+    for logement in logements:
         logement_results = {}
 
         airbnb_url = logement.airbnb_calendar_link
@@ -29,10 +32,14 @@ def sync_calendar():
                     "updated": updated,
                     "deleted": deleted,
                 }
-                logger.info(f"Airbnb sync completed for logement {logement.code}.")
+                total_synced += 1
+                logger.info(f"✅ Airbnb sync completed for logement {logement.code}.")
             except Exception as e:
-                logger.error(f"Airbnb sync failed for logement {logement.code}: {e}")
-                logement_results["airbnb"] = "error"
+                logger.error(f"❌ Airbnb sync failed for logement {logement.code}: {e}")
+                logement_results["airbnb"] = {"error": str(e)}
+                total_errors += 1
+        else:
+            logement_results["airbnb"] = "skipped"
 
         if booking_url:
             try:
@@ -43,11 +50,22 @@ def sync_calendar():
                     "updated": updated,
                     "deleted": deleted,
                 }
-                logger.info(f"Booking sync completed for logement {logement.code}.")
+                total_synced += 1
+                logger.info(f"✅ Booking sync completed for logement {logement.code}.")
             except Exception as e:
-                logger.error(f"Booking sync failed for logement {logement.code}: {e}")
-                logement_results["booking"] = "error"
+                logger.error(f"❌ Booking sync failed for logement {logement.code}: {e}")
+                logement_results["booking"] = {"error": str(e)}
+                total_errors += 1
+        else:
+            logement_results["booking"] = "skipped"
 
-        results[logement.id] = logement_results
+        results[logement.code] = logement_results
 
-    return results
+    final_summary = {
+        "synced_logements": total_synced,
+        "errors": total_errors,
+        "logements": results,
+    }
+
+    logger.info(f"📅 Calendar sync summary: {final_summary}")
+    return final_summary
