@@ -419,6 +419,7 @@ def huey_tasks_status(request):
 @login_required
 @user_passes_test(is_admin)
 def huey_task_detail(request, task_id):
+    from common.services.helper_fct import parse_json_field
     try:
         task = TaskHistory.objects.get(id=task_id)
     except TaskHistory.DoesNotExist:
@@ -427,9 +428,9 @@ def huey_task_detail(request, task_id):
 
     context = {
         "task": task,
-        "args": json.dumps(task.args, indent=2) if task.args else None,
-        "kwargs": json.dumps(task.kwargs, indent=2) if task.kwargs else None,
-        "result": json.dumps(task.result, indent=2) if task.result else None,
+        "args_obj": parse_json_field(task.args) if task.args else None,
+        "kwargs_obj": parse_json_field(task.kwargs) if task.kwargs else None,
+        "result_obj": parse_json_field(task.result) if task.result else None,
     }
     return render(request, "administration/huey_task_detail.html", context)
 

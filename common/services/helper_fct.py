@@ -2,6 +2,7 @@ import random
 import string
 import time
 import logging
+import json
 
 from django.core.paginator import Paginator, Page
 from django.db.models import QuerySet
@@ -69,3 +70,17 @@ def paginate_queryset(queryset: QuerySet, request: HttpRequest, per_page: int = 
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get("page")
     return paginator.get_page(page_number)
+
+
+def pretty_json(val):
+    try:
+        return json.dumps(json.loads(val), indent=2, ensure_ascii=False)
+    except Exception:
+        return val
+
+
+def parse_json_field(val):
+    try:
+        return json.loads(val)
+    except Exception:
+        return val

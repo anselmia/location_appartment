@@ -52,8 +52,27 @@
                     </dd>
                     <dt class="col-sm-4">Result</dt>
                     <dd class="col-sm-8">
-                        {% if result %}
-                            <pre class="json-block">{{ result|safe }}</pre>
+                        {% if result_obj %}
+                            {% if result_obj.items %}
+                                <ul class="list-unstyled mb-0">
+                                    {% for key, value in result_obj.items %}
+                                        <li>
+                                            <strong>{{ key|capfirst }}:</strong>
+                                            {% if value is iterable and not value|string %}
+                                                <ul>
+                                                    {% for k, v in value.items %}
+                                                        <li><strong>{{ k|capfirst }}:</strong> {{ v }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                {{ value }}
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                {{ result_obj }}
+                            {% endif %}
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
