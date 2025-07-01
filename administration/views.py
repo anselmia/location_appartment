@@ -396,9 +396,24 @@ def delete_waiver_platform_fee(request, waiver_id):
 @login_required
 @user_passes_test(is_admin)
 def huey_tasks_status(request):
-    # Get task history from the database
-    history = TaskHistory.objects.order_by("-started_at")[:100]
-    return render(request, "administration/huey_tasks_status.html", {"history": history})
+    # Get filter from query params
+    selected_task = request.GET.get("task_name")
+    # Get all distinct task names
+    task_names = TaskHistory.objects.order_by().values_list("name", flat=True).distinct()
+    # Filter history if a task is selected
+    history_qs = TaskHistory.objects.order_by("-started_at")
+    if selected_task:
+        history_qs = history_qs.filter(name=selected_task)
+    history = history_qs[:100]
+    paginator = Paginator(history, 100)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    context = {
+        "page_obj": page_obj,
+        "task_names": task_names,
+        "selected_task": selected_task,
+    }
+    return render(request, "administration/huey_tasks_status.html", context)
 
 
 EMAIL_FUNCTIONS = [

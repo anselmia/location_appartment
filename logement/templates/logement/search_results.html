@@ -196,9 +196,9 @@
       </aside>
       <section class="logements-results">
         <div class="view-switcher">
-          <a href="?{{ request.GET.urlencode|add:"&view=grid" }}"
+          <a href="?{{ request.GET.urlencode|add:'&view=grid' }}"
              class="view-btn {% if request.GET.view == 'grid' or not request.GET.view %}active{% endif %}"><i class="fas fa-th"></i> Grille</a>
-          <a href="?{{ request.GET.urlencode|add:"&view=map" }}"
+          <a href="?{{ request.GET.urlencode|add:'&view=map' }}"
              class="view-btn {% if request.GET.view == 'map' %}active{% endif %}"><i class="fas fa-map"></i> Plan</a>
         </div>
         {% if request.GET.view == "map" %}
@@ -206,7 +206,7 @@
         {% else %}
           {% include 'logement/partials/logement_grid_view.html' %}
         {% endif %}
-        {% if request.GET.view == "list" or  request.GET.view == "grid" %}
+        {% if  request.GET.view == "grid" %}
           <div class="pagination">
             <ul class="pagination-list">
               {% if page_obj.has_previous %}
