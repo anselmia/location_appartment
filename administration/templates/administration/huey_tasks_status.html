@@ -4,9 +4,22 @@
     <link rel="stylesheet"
           href="{% static 'administration/css/huey_tasks_status.css' %}">
     <div class="huey-tasks-status-wrapper">
-        <div class="huey-section-title">Task Execution History</div>
-        <div class="huey-table-scroll">
-            <table class="huey-history-table">
+        <div class="huey-section-title mb-4">Task Execution History</div>
+        <!-- Filter by task name -->
+        <form method="get" class="mb-3 d-flex align-items-center gap-2">
+            <label for="task_name" class="form-label mb-0">Filter by task:</label>
+            <select name="task_name"
+                    id="task_name"
+                    class="form-select w-auto"
+                    onchange="this.form.submit()">
+                <option value="">All tasks</option>
+                {% for name in task_names %}
+                    <option value="{{ name }}" {% if name == selected_task %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <div class="huey-table-scroll mb-3">
+            <table class="huey-history-table table table-striped align-middle text-center">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -22,7 +35,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for entry in history %}
+                    {% for entry in page_obj %}
                         <tr>
                             <td data-label="Name">{{ entry.name }}</td>
                             <td data-label="Task ID">{{ entry.task_id }}</td>
@@ -65,35 +78,41 @@
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class="pagination">
-            <ul class="pagination-list">
-              {% if page_obj.has_previous %}
-                <li>
-                  <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}&page={{ page_obj.previous_page_number }}">«</a>
-                </li>
-              {% else %}
-                <li class="disabled">«</li>
-              {% endif %}
-              {% for i in page_obj.paginator.page_range %}
-                {% if page_obj.number == i %}
-                  <li class="active">{{ i }}</li>
-                {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
-                  <li>
-                    <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}}&page={{ i }}">{{ i }}</a>
-                  </li>
+        <div class="pagination d-flex justify-content-center mt-4">
+            <ul class="pagination-list pagination mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if selected_task %}task_name={{ selected_task }}&{% endif %}page={{ page_obj.previous_page_number }}">«</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">«</span>
+                    </li>
                 {% endif %}
-              {% endfor %}
-              {% if page_obj.has_next %}
-                <li>
-                  <a href="?destination={{ destination }}&guest_adult={{ guest_adult }}&guest_minor={{ guest_minor }}&page={{ page_obj.next_page_number }}">»</a>
-                </li>
-              {% else %}
-                <li class="disabled">»</li>
-              {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?{% if selected_task %}task_name={{ selected_task }}&{% endif %}page={{ i }}">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if selected_task %}task_name={{ selected_task }}&{% endif %}page={{ page_obj.next_page_number }}">»</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">»</span>
+                    </li>
+                {% endif %}
             </ul>
-          </div>
-        {% endif %}
-      </section>
+        </div>
     </div>
 {% endblock %}
