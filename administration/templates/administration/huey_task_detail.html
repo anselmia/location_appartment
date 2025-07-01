@@ -1,0 +1,75 @@
+{% extends "administration/base_site.html" %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet"
+          href="{% static 'administration/css/huey_tasks_detail.css' %}">
+    <div class="container py-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Huey Task Detail</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">
+                        {{ task.name }}
+                    </dd>
+                    <dt class="col-sm-4">Task ID</dt>
+                    <dd class="col-sm-8">
+                        {{ task.task_id }}
+                    </dd>
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        <span class="huey-status {{ task.status|lower }}">{{ task.status }}</span>
+                    </dd>
+                    <dt class="col-sm-4">Started At</dt>
+                    <dd class="col-sm-8">
+                        {{ task.started_at|date:"Y-m-d H:i:s" }}
+                    </dd>
+                    <dt class="col-sm-4">Finished At</dt>
+                    <dd class="col-sm-8">
+                        {{ task.finished_at|date:"Y-m-d H:i:s" }}
+                    </dd>
+                    <dt class="col-sm-4">Duration (s)</dt>
+                    <dd class="col-sm-8">
+                        {{ task.duration|floatformat:2 }}
+                    </dd>
+                    <dt class="col-sm-4">Args</dt>
+                    <dd class="col-sm-8">
+                        <pre style="white-space:pre-wrap;
+                                    word-break:break-all;
+                                    background:#f8f9fa;
+                                    padding:8px;
+                                    border-radius:4px">{{ task.args }}</pre>
+                    </dd>
+                    <dt class="col-sm-4">Kwargs</dt>
+                    <dd class="col-sm-8">
+                        <pre style="white-space:pre-wrap;
+                                    word-break:break-all;
+                                    background:#f8f9fa;
+                                    padding:8px;
+                                    border-radius:4px">{{ task.kwargs }}</pre>
+                    </dd>
+                    <dt class="col-sm-4">Result</dt>
+                    <dd class="col-sm-8">
+                        <pre style="white-space:pre-wrap;
+                                    word-break:break-all;
+                                    background:#f8f9fa;
+                                    padding:8px;
+                                    border-radius:4px">{{ task.result }}</pre>
+                    </dd>
+                    <dt class="col-sm-4">Error</dt>
+                    <dd class="col-sm-8">
+                        <pre style="white-space:pre-wrap;
+                                    word-break:break-all;
+                                    background:#fff3cd;
+                                    padding:8px;
+                                    border-radius:4px">{{ task.error }}</pre>
+                    </dd>
+                </dl>
+                <a href="{% url 'administration:huey_tasks_status' %}"
+                   class="btn btn-secondary mt-3">← Back to Task List</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

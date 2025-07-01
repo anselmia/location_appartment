@@ -59,7 +59,7 @@
 }
 
 .huey-table-scroll {
-  max-height: 340px;
+  max-height: 600px;
   overflow-y: auto;
   overflow-x: auto;
   background: #fff;

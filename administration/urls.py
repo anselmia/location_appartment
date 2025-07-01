@@ -16,4 +16,5 @@ urlpatterns = [
     path("waivers/delete/<int:waiver_id>/", views.delete_waiver_platform_fee, name="delete_waiver_platform_fee"),
     path("huey-tasks/", views.huey_tasks_status, name="huey_tasks_status"),
     path("test-email/", views.test_email_view, name="test_email"),
+    path("huey-tasks/<int:task_id>/", views.huey_task_detail, name="huey_task_detail"),
 ]

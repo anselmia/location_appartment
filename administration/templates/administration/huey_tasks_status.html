@@ -36,7 +36,8 @@
                 </thead>
                 <tbody>
                     {% for entry in page_obj %}
-                        <tr>
+                        <tr style="cursor:pointer"
+                            onclick="window.location.href='{% url 'administration:huey_task_detail' entry.id %}'">
                             <td data-label="Name">{{ entry.name }}</td>
                             <td data-label="Task ID">{{ entry.task_id }}</td>
                             <td data-label="Status">
