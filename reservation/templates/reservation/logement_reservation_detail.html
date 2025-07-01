@@ -208,7 +208,13 @@
                     </dd>
                   {% endif %}
                 {% else %}
-                  <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
+                  {% if not reservation.paid %}
+                    <p class="text-muted fst-italic mb-0">
+                      Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
+                    </p>
+                  {% else %}
+                    <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
+                  {% endif %}
                 {% endif %}
               {% endif %}
             </dl>
