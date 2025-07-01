@@ -1,4 +1,5 @@
 import logging
+import inspect
 from django.utils import timezone
 from django.db.models import Q
 
@@ -73,29 +74,65 @@ def _end_reservations(model):
 
 @periodic_task(crontab(hour=3, minute=0))  # every day at 3am
 def delete_expired_pending_reservations_logement():
-    return _delete_expired_pending(Reservation)
+    """Delete expired pending reservations for logements."""
+    from common.signals import update_last_task_result
+    logger.info("Deleting expired pending logement reservations.")
+    summary = _delete_expired_pending(Reservation)
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary
 
 
 @periodic_task(crontab(hour=3, minute=10))  # every day at 3am
 def delete_expired_pending_reservations_activity():
-    return _delete_expired_pending(ActivityReservation)
+    """Delete expired pending reservations for activities."""
+    from common.signals import update_last_task_result
+    logger.info("Deleting expired pending activity reservations.")
+    summary = _delete_expired_pending(ActivityReservation)
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary
 
 
 @periodic_task(crontab(hour=4, minute=0))  # every day at 4am
 def end_reservations_logement():
-    return _end_reservations(Reservation)
+    """End reservations for logements that have passed their end date."""
+    from common.signals import update_last_task_result
+    logger.info("Ending logement reservations that have passed their end date.")
+    summary = _end_reservations(Reservation)
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary
 
 
 @periodic_task(crontab(hour=4, minute=10))  # every day at 4am
 def end_reservations_activity():
-    return _end_reservations(ActivityReservation)
+    """End reservations for activities that have passed their end date."""
+    from common.signals import update_last_task_result
+    logger.info("Ending activity reservations that have passed their end date.")
+    summary = _end_reservations(ActivityReservation)
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary
 
 
 @periodic_task(crontab(hour=0, minute=0))  # every day at midnight
 def send_pre_check_in_logement():
-    return send_pre_checkin_reminders()
+    """Send pre-check-in reminders for logement reservations."""
+    from common.signals import update_last_task_result
+    logger.info("Sending pre-check-in reminders for logement reservations.")
+    summary = send_pre_checkin_reminders()
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary
 
 
 @periodic_task(crontab(hour=0, minute=10))  # every day at midnight
 def send_pre_check_in_activity():
-    return send_pre_checkin_activity_reminders()
+    """Send pre-check-in reminders for activity reservations."""
+    from common.signals import update_last_task_result
+    logger.info("Sending pre-check-in reminders for activity reservations.")
+    summary = send_pre_checkin_activity_reminders()
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+    return summary

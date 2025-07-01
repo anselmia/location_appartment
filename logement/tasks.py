@@ -1,5 +1,5 @@
 import logging
-
+import inspect
 from huey.contrib.djhuey import periodic_task
 from huey import crontab
 
@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 @periodic_task(crontab(minute=0))
 def sync_calendar():
+    from common.signals import update_last_task_result
+
     results = {}
     logements = Logement.objects.all()
     total_synced = 0
@@ -68,4 +70,6 @@ def sync_calendar():
     }
 
     logger.info(f"📅 Calendar sync summary: {final_summary}")
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, final_summary)
     return final_summary

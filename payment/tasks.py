@@ -1,5 +1,6 @@
 from datetime import timedelta
 import logging
+import inspect
 from decimal import Decimal
 from arrow import now
 from django.db import transaction
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @periodic_task(crontab(hour=2, minute=0))  # tous les jours à 2h
 def transfert_funds():
     from payment.services.payment_service import transfer_funds
+    from common.signals import update_last_task_result
 
     summary = {
         "reservations": {"count": 0, "transferred": 0, "skipped": 0, "errors": []},
@@ -48,13 +50,17 @@ def transfert_funds():
                 summary["activity_reservations"]["errors"].append({"id": reservation.id, "error": str(e)})
         else:
             summary["activity_reservations"]["skipped"] += 1
+    
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
 
     return summary
 
 
-@periodic_task(crontab(minute=30))  # tous les jours à 1h
+@periodic_task(crontab(minute=30))  # toutes les heures à 30 minutes
 def create_reservation_payment_intents():
     from payment.services.payment_service import create_reservation_payment_intents
+    from common.signals import update_last_task_result
 
     today = now().date()
     in_7_days = today + timedelta(days=7)
@@ -98,12 +104,16 @@ def create_reservation_payment_intents():
         except Exception as e:
             summary["activity_reservations"]["errors"].append({"id": activity.id, "error": str(e)})
 
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+
     return summary
 
 
-@periodic_task(crontab(minute=45))  # toutes les jours à 1h30
+@periodic_task(crontab(minute=45))  # toutes les heures à 45 minutes
 def capture_payment_intents():
     from payment.services.payment_service import capture_reservation_payment
+    from common.signals import update_last_task_result
 
     today = now().date()
     in_2_days = today + timedelta(days=2)
@@ -142,12 +152,16 @@ def capture_payment_intents():
         except Exception as e:
             summary["activity_reservations"]["errors"].append({"id": reservation.id, "error": str(e)})
 
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+
     return summary
 
 
 @periodic_task(crontab(hour=4, minute=0))  # tous les jours à 4h
 def check_stripe_integrity():
     from payment.services.payment_service import send_stripe_payment_link
+    from common.signals import update_last_task_result
     summary = {
         "reservations": {
             "refunds": {"checked": 0, "updated": 0, "errors": []},
@@ -382,5 +396,8 @@ def check_stripe_integrity():
             )
         except Exception as e:
             summary["activity_reservations"]["bookings"]["errors"].append(f"{resa.code}: {str(e)}")
+
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
 
     return summary

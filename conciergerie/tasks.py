@@ -1,5 +1,4 @@
 from huey.contrib.djhuey import task
-from django.conf import settings
 from common.services import email_service
 
 

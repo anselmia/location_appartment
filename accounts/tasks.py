@@ -1,5 +1,4 @@
 import logging
-from django.conf import settings
 from .models import Message, CustomUser
 from huey.contrib.djhuey import task
 from common.services import email_service

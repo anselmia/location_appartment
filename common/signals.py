@@ -19,6 +19,40 @@ def _serialize(data):
         return f"<serialization error: {e}>"
 
 
+def update_last_task_result(task_name, result):
+    """
+    Finds the most recent TaskHistory entry for a given task name with a null result,
+    runs the task function, and stores the result in the TaskHistory.
+
+    Args:
+        task_name (str): Name of the task to find in TaskHistory.
+        task_function (callable): The task function to execute and store result for.
+
+    Returns:
+        dict or any: The actual result returned by the task function.
+    """
+    task = (
+        TaskHistory.objects
+        .filter(name=task_name, result__isnull=True)
+        .order_by("-created_at")
+        .first()
+    )
+
+    if not task:
+        logger.warning(f"No TaskHistory entry with result=None found for task '{task_name}'")
+        return None
+
+    try:
+        task.result = _serialize(result)
+        task.updated_at = timezone.now()
+        task.save()
+        print(f"✅ Updated result for task {task.task_id}")
+        return result
+    except Exception as e:
+        print(f"❌ Failed to run or update task: {e}")
+        return None
+
+
 @HUEY.signal(SIGNAL_ENQUEUED)
 def on_task_started(signal, task, *args, **kwargs):
     TaskHistory.objects.create(
