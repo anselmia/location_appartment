@@ -3,7 +3,7 @@
 {% block content %}
     <link rel="stylesheet"
           href="{% static 'administration/css/huey_tasks_status.css' %}">
-    <div class="huey-tasks-status-wrapper">        
+    <div class="huey-tasks-status-wrapper">
         <div class="huey-section-title">Task Execution History</div>
         <div class="huey-table-scroll">
             <table class="huey-history-table">
@@ -33,16 +33,28 @@
                             <td data-label="Finished At">{{ entry.finished_at|date:"Y-m-d H:i:s" }}</td>
                             <td data-label="Duration (s)">{{ entry.duration|floatformat:2 }}</td>
                             <td data-label="Args">
-                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.args|truncatechars:100 }}</pre>
+                                <pre style="max-width:200px;
+                                            white-space:pre-wrap;
+                                            word-break:break-all"
+                                     title="{{ entry.args }}">{{ entry.args|truncatechars:100 }}</pre>
                             </td>
                             <td data-label="Kwargs">
-                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.kwargs|truncatechars:100 }}</pre>
+                                <pre style="max-width:200px;
+                                            white-space:pre-wrap;
+                                            word-break:break-all"
+                                     title="{{ entry.kwargs }}">{{ entry.kwargs|truncatechars:100 }}</pre>
                             </td>
                             <td data-label="Result">
-                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.result|truncatechars:100 }}</pre>
+                                <pre style="max-width:200px;
+                                            white-space:pre-wrap;
+                                            word-break:break-all"
+                                     title="{{ entry.result }}">{{ entry.result|truncatechars:100 }}</pre>
                             </td>
                             <td data-label="Error">
-                                <pre style="max-width:200px;white-space:pre-wrap;word-break:break-all;">{{ entry.error|truncatechars:100 }}</pre>
+                                <pre style="max-width:200px;
+                                            white-space:pre-wrap;
+                                            word-break:break-all"
+                                     title="{{ entry.error }}">{{ entry.error|truncatechars:100 }}</pre>
                             </td>
                         </tr>
                     {% empty %}
