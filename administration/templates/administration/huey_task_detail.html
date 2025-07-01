@@ -1,5 +1,6 @@
 {% extends "administration/base_site.html" %}
 {% load static %}
+{% load extra_tags}
 {% block content %}
     <link rel="stylesheet"
           href="{% static 'administration/css/huey_task_detail.css' %}">
@@ -58,7 +59,7 @@
                                     {% for key, value in result_obj.items %}
                                         <li>
                                             <strong>{{ key|capfirst }}:</strong>
-                                            {% if value.__class__.__name__ == 'dict' %}
+                                            {% if value|is_dict %}
                                                 <ul>
                                                     {% for k, v in value.items %}
                                                         <li>
@@ -66,7 +67,7 @@
                                                         </li>
                                                     {% endfor %}
                                                 </ul>
-                                            {% elif value.__class__.__name__ == 'list' %}
+                                            {% elif value|is_list %}
                                                 <ul>
                                                     {% for item in value %}<li>{{ item }}</li>{% endfor %}
                                                 </ul>

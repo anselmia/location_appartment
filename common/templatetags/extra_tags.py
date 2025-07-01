@@ -64,3 +64,12 @@ def duration_hm(minutes):
         return f"{hours}h"
     else:
         return f"{mins}min"
+
+
+@register.filter
+def is_dict(value):
+    return isinstance(value, dict)
+
+@register.filter
+def is_list(value):
+    return isinstance(value, list)
