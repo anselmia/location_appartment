@@ -301,6 +301,7 @@ def check_activity_booking_input(request: HttpRequest, activity_id: int) -> Json
         validate_activity_reservation_inputs(activity, user, start, guest, slot)
         return JsonResponse({"correct": True})
     except ValueError as e:
+        logger.error(f"Invalid input for activity booking: {e}")
         return JsonResponse({"correct": False, "error": str(e)})
     except Exception as e:
         logger.exception(f"Error validating booking input: {e}")
@@ -397,18 +398,22 @@ def manage_logement_reservations(request: HttpRequest) -> HttpResponse:
     """
     Admin view to manage all reservations with search and pagination.
     """
-    query = request.GET.get("q")
-    reservations = Reservation.objects.select_related("logement", "user").exclude(statut="en_attente")
-    if query:
-        reservations = reservations.filter(code__icontains=query)
-    reservations = reservations.order_by("-date_reservation")
-    page_obj = paginate_queryset(reservations, request)
-    context = {
-        "reservations": page_obj,
-        "query": query,
-        "page_obj": page_obj,
-    }
-    return render(request, "reservation/manage_logement_reservations.html", context)
+    try:
+        query = request.GET.get("q")
+        reservations = Reservation.objects.select_related("logement", "user").exclude(statut="en_attente")
+        if query:
+            reservations = reservations.filter(code__icontains=query)
+        reservations = reservations.order_by("-date_reservation")
+        page_obj = paginate_queryset(reservations, request)
+        context = {
+            "reservations": page_obj,
+            "query": query,
+            "page_obj": page_obj,
+        }
+        return render(request, "reservation/manage_logement_reservations.html", context)
+    except Exception as e:
+        logger.error(f"Error managing logement reservations: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -417,18 +422,22 @@ def manage_activity_reservations(request: HttpRequest) -> HttpResponse:
     """
     Admin view to manage all reservations with search and pagination.
     """
-    query = request.GET.get("q")
-    reservations = ActivityReservation.objects.select_related("activity", "user")
-    if query:
-        reservations = reservations.filter(code__icontains=query)
-    reservations = reservations.order_by("-date_reservation")
-    page_obj = paginate_queryset(reservations, request)
-    context = {
-        "reservations": page_obj,
-        "query": query,
-        "page_obj": page_obj,
-    }
-    return render(request, "reservation/manage_activity_reservations.html", context)
+    try:
+        query = request.GET.get("q")
+        reservations = ActivityReservation.objects.select_related("activity", "user")
+        if query:
+            reservations = reservations.filter(code__icontains=query)
+        reservations = reservations.order_by("-date_reservation")
+        page_obj = paginate_queryset(reservations, request)
+        context = {
+            "reservations": page_obj,
+            "query": query,
+            "page_obj": page_obj,
+        }
+        return render(request, "reservation/manage_activity_reservations.html", context)
+    except Exception as e:
+        logger.error(f"Error managing activity reservations: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -438,18 +447,25 @@ def cancel_logement_reservation(request: HttpRequest, code: str) -> HttpResponse
     """
     Admin action to cancel a reservation.
     """
-    reservation = get_object_or_404(Reservation, code=code)
-    if reservation.statut != "annulee":
-        mark_reservation_cancelled(reservation)
-        ReservationHistory.objects.create(
-            reservation=reservation,
-            user=request.user,
-            details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
-        )
-        messages.success(request, "Réservation annulée avec succès.")
-    else:
-        messages.warning(request, "La réservation est déjà annulée.")
-    return redirect("reservation:logement_reservation_detail", code=code)
+    try:
+        reservation = get_object_or_404(Reservation, code=code)
+        if reservation.statut != "annulee":
+            mark_reservation_cancelled(reservation)
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                user=request.user,
+                details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
+            )
+            messages.success(request, "Réservation annulée avec succès.")
+        else:
+            messages.warning(request, "La réservation est déjà annulée.")
+        return redirect("reservation:logement_reservation_detail", code=code)
+    except Reservation.DoesNotExist:
+        logger.error(f"Reservation not found for code {code}")
+        raise
+    except Exception as e:
+        logger.error(f"Error canceling logement reservation: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -459,18 +475,25 @@ def cancel_activity_reservation(request: HttpRequest, code: str) -> HttpResponse
     """
     Admin action to cancel a reservation.
     """
-    reservation = get_object_or_404(ActivityReservation, code=code)
-    if reservation.statut != "annulee":
-        mark_reservation_cancelled(reservation)
-        ActivityReservationHistory.objects.create(
-            reservation=reservation,
-            user=request.user,
-            details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
-        )
-        messages.success(request, "Réservation annulée avec succès.")
-    else:
-        messages.warning(request, "La réservation est déjà annulée.")
-    return redirect("reservation:activity_reservation_detail", code=code)
+    try:
+        reservation = get_object_or_404(ActivityReservation, code=code)
+        if reservation.statut != "annulee":
+            mark_reservation_cancelled(reservation)
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                user=request.user,
+                details=f"Réservation {reservation.code} annulée par {request.user.full_name}.",
+            )
+            messages.success(request, "Réservation annulée avec succès.")
+        else:
+            messages.warning(request, "La réservation est déjà annulée.")
+        return redirect("reservation:activity_reservation_detail", code=code)
+    except ActivityReservation.DoesNotExist:
+        logger.error(f"ActivityReservation not found for code {code}")
+        raise
+    except Exception as e:
+        logger.error(f"Error canceling activity reservation: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -479,8 +502,15 @@ def logement_reservation_detail(request: HttpRequest, code: str) -> HttpResponse
     """
     Admin view for reservation details.
     """
-    reservation = get_object_or_404(Reservation, code=code)
-    return render(request, "reservation/logement_reservation_detail.html", {"reservation": reservation})
+    try:
+        reservation = get_object_or_404(Reservation, code=code)
+        return render(request, "reservation/logement_reservation_detail.html", {"reservation": reservation})
+    except Reservation.DoesNotExist:
+        logger.error(f"Reservation not found for code {code}")
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching reservation details for {code}: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -489,8 +519,15 @@ def activity_reservation_detail(request: HttpRequest, code: str) -> HttpResponse
     """
     Admin view for reservation details.
     """
-    reservation = get_object_or_404(ActivityReservation, code=code)
-    return render(request, "reservation/activity_reservation_detail.html", {"reservation": reservation})
+    try:
+        reservation = get_object_or_404(ActivityReservation, code=code)
+        return render(request, "reservation/activity_reservation_detail.html", {"reservation": reservation})
+    except ActivityReservation.DoesNotExist:
+        logger.error(f"ActivityReservation not found for code {code}")
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching activity reservation details for {code}: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -622,8 +659,12 @@ def customer_logement_reservation_detail(request: HttpRequest, code: str) -> Htt
     """
     Customer view for their own reservation details.
     """
-    reservation = get_object_or_404(Reservation, code=code)
-    return render(request, "reservation/customer_logement_reservation_detail.html", {"reservation": reservation})
+    try:
+        reservation = get_object_or_404(Reservation, code=code)
+        return render(request, "reservation/customer_logement_reservation_detail.html", {"reservation": reservation})
+    except Exception as e:
+        logger.error(f"Error fetching reservation details for {code}: {e}", exc_info=True)
+        raise
 
 
 @login_required
@@ -632,49 +673,63 @@ def customer_activity_reservation_detail(request: HttpRequest, code: str) -> Htt
     """
     Customer view for their own reservation details.
     """
-    reservation = get_object_or_404(ActivityReservation, code=code)
-    partner = get_object_or_404(Partners, user=reservation.activity.owner)
-    return render(
-        request,
-        "reservation/customer_activity_reservation_detail.html",
-        {"reservation": reservation, "partner": partner},
-    )
+    try:
+        reservation = get_object_or_404(ActivityReservation, code=code)
+        partner = get_object_or_404(Partners, user=reservation.activity.owner)
+        return render(
+            request,
+            "reservation/customer_activity_reservation_detail.html",
+            {"reservation": reservation, "partner": partner},
+        )
+    except Partners.DoesNotExist:
+        logger.error(
+            f"Partner not found for reservation {code}. This might be expected if the activity has no partner."
+        )
+        raise
 
 
 @login_required
 @user_has_activity
 def validate_activity_reservation(request, code):
-    from common.services.email_service import send_mail_activity_reservation_confirmation
+    try:
+        from common.services.email_service import send_mail_activity_reservation_confirmation
 
-    reservation = get_object_or_404(ActivityReservation, code=code)
-    if request.method == "POST":
-        if reservation.statut == "en_attente":
-            if reservation.stripe_saved_payment_method_id:
-                reservation.statut = "confirmee"
-                reservation.save()
-                try:
-                    send_mail_activity_reservation_confirmation(reservation.activity, reservation, reservation.user)
-                    logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
-                except Exception as e:
-                    logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
-                messages.success(request, "La réservation a été confirmée avec succès.")
+        reservation = get_object_or_404(ActivityReservation, code=code)
+        if request.method == "POST":
+            if reservation.statut == "en_attente":
+                if reservation.stripe_saved_payment_method_id:
+                    reservation.statut = "confirmee"
+                    reservation.save()
+                    try:
+                        send_mail_activity_reservation_confirmation(reservation.activity, reservation, reservation.user)
+                        logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
+                    except Exception as e:
+                        logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
+                    messages.success(request, "La réservation a été confirmée avec succès.")
+                else:
+                    error_msg = "Aucun moyen de paiement enregistré. Veuillez enregistrer un moyen de paiement."
+                    messages.error(request, error_msg)
             else:
-                error_msg = "Aucun moyen de paiement enregistré. Veuillez enregistrer un moyen de paiement."
-                messages.error(request, error_msg)
-        else:
-            messages.warning(request, "La réservation n'est pas en attente ou a déjà été traitée.")
-    return redirect("reservation:activity_reservation_detail", code=reservation.code)
+                messages.warning(request, "La réservation n'est pas en attente ou a déjà été traitée.")
+        return redirect("reservation:activity_reservation_detail", code=reservation.code)
+    except Exception as e:
+        logger.error(f"Error validating activity reservation {code}: {e}")
+        raise
 
 
 def activity_slots(request, pk):
-    activity = get_object_or_404(Activity, pk=pk)
-    day_str = request.GET.get("date")
-    if not day_str:
-        return JsonResponse({"slots": []})
-    day = date.fromisoformat(day_str)
-    slots = get_available_slots(activity, day)
+    try:
+        activity = get_object_or_404(Activity, pk=pk)
+        day_str = request.GET.get("date")
+        if not day_str:
+            return JsonResponse({"slots": []})
+        day = date.fromisoformat(day_str)
+        slots = get_available_slots(activity, day)
 
-    return JsonResponse({"slots": slots})
+        return JsonResponse({"slots": slots})
+    except Exception as e:
+        logger.error(f"Error fetching activity slots for {pk} on {day_str}: {e}")
+        return JsonResponse({"slots": [], "error": str(e)}, status=400)
 
 
 @require_GET

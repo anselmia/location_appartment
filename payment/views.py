@@ -71,6 +71,7 @@ def save_payment_method(request, code):
 @user_has_reservation
 def payment_method_saved(request, type, code):
     from common.services.email_service import send_mail_on_new_reservation, send_mail_on_new_activity_reservation
+
     try:
         card_saved = request.GET.get("card_saved")
         if card_saved:
@@ -107,18 +108,17 @@ def payment_method_saved(request, type, code):
             return render(request, "payment/reservation_activity_success.html", {"reservation": reservation})
 
     except Reservation.DoesNotExist:
+        logger.error(f"Réservation {code} introuvable.")
         messages.error(request, f"Réservation {code} introuvable.")
-        return redirect("reservation:book_logement", pk=1)
+        return redirect("accounts:dashboard")
     except ActivityReservation.DoesNotExist:
-        messages.error(request, f"Réservation activité {code} introuvable.")
-        return redirect("reservation:book_activity", pk=1)
+        logger.error(f"activité {code} introuvable.")
+        messages.error(request, f"Activité {code} introuvable.")
+        return redirect("accounts:dashboard")
     except Exception as e:
         logger.exception(f"Error handling payment success: {e}")
         messages.error(request, "Erreur lors du traitement du paiement.")
-        if type == "activity":
-            return redirect("reservation:book_activity", pk=1)
-        else:
-            return redirect("reservation:book_logement", pk=1)
+        return redirect("accounts:dashboard")
 
 
 @login_required
@@ -143,14 +143,16 @@ def payment_success(request, type, code):
             return redirect("accounts:dashboard")
 
         amount_paid = payment_intent.amount / 100  # Montant en euros
-        
+
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
             reservation.statut = "confirmee"
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
-            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"])
+            reservation.save(
+                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"]
+            )
             send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
             ReservationHistory.objects.create(
                 reservation=reservation,
@@ -162,7 +164,9 @@ def payment_success(request, type, code):
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
-            reservation.save(update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"])
+            reservation.save(
+                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"]
+            )
             send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
             ActivityReservationHistory.objects.create(
                 reservation=reservation,
@@ -282,74 +286,84 @@ def transfer_reservation_payment(request, code):
 
 
 def payment_task_list(request):
-    tasks = PaymentTask.objects.select_related().order_by("-updated_at")
+    try:
+        tasks = PaymentTask.objects.select_related().order_by("-updated_at")
 
-    # Filter logic
-    task_type = request.GET.get("type")
-    status = request.GET.get("status")
-    code = request.GET.get("code")
+        # Filter logic
+        task_type = request.GET.get("type")
+        status = request.GET.get("status")
+        code = request.GET.get("code")
 
-    if task_type:
-        tasks = tasks.filter(type=task_type)
-    if status:
-        tasks = tasks.filter(status=status)
-    if code:
-        tasks = tasks.filter(
-            object_id__in=[r.id for r in Reservation.objects.filter(code__icontains=code)]
-            + [ar.id for ar in ActivityReservation.objects.filter(code__icontains=code)]
-        )
+        if task_type:
+            tasks = tasks.filter(type=task_type)
+        if status:
+            tasks = tasks.filter(status=status)
+        if code:
+            tasks = tasks.filter(
+                object_id__in=[r.id for r in Reservation.objects.filter(code__icontains=code)]
+                + [ar.id for ar in ActivityReservation.objects.filter(code__icontains=code)]
+            )
 
-    # Pagination
-    paginator = Paginator(tasks, 20)  # 20 tâches par page
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+        # Pagination
+        paginator = Paginator(tasks, 20)  # 20 tâches par page
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
 
-    context = {
-        "tasks": page_obj,
-        "types": PaymentTask.TASK_TYPES,
-        "page_obj": page_obj,
-    }
+        context = {
+            "tasks": page_obj,
+            "types": PaymentTask.TASK_TYPES,
+            "page_obj": page_obj,
+        }
 
-    return render(request, "payment/payment_tasks.html", context)
-
+        return render(request, "payment/payment_tasks.html", context)
+    except Exception as e:
+        logger.exception(f"Erreur lors de l'affichage des tâches de paiement : {e}")
+        raise
 
 @login_required
 @user_is_reservation_admin
 @require_POST
 def refund_reservation(request, code):
-    user = request.user
-    reservation = get_reservation_by_code(code)
-    reservation_type = get_reservation_type(reservation)
+    try:
+        user = request.user
+        reservation = get_reservation_by_code(code)
+        reservation_type = get_reservation_type(reservation)
 
-    key = f"refund_attempts_{code}:{user.id}"
-    attempts = cache.get(key, 0)
+        key = f"refund_attempts_{code}:{user.id}"
+        attempts = cache.get(key, 0)
 
-    if attempts >= 5:
-        ip = get_client_ip(request)
-        logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
-        messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
-        if reservation_type == "activity":
-            return redirect("reservation:activity_reservation_dashboard")
-        elif reservation_type == "logement":
-            return redirect("reservation:logement_reservation_dashboard")
+        if attempts >= 5:
+            ip = get_client_ip(request)
+            logger.warning(f"[Stripe] Trop de tentatives de remboursement | user={user.username} | ip={ip}")
+            messages.error(request, "Trop de tentatives de remboursement. Réessayez plus tard.")
+            if reservation_type == "activity":
+                return redirect("reservation:activity_reservation_dashboard")
+            elif reservation_type == "logement":
+                return redirect("reservation:logement_reservation_dashboard")
 
-    cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
+        cache.set(key, attempts + 1, timeout=60 * 10)  # 10 minutes
 
-    if not reservation.refunded:
-        try:
-            amount_in_cents = int(reservation.refundable_amount * 100)
+        if not reservation.refunded:
+            try:
+                amount_in_cents = int(reservation.refundable_amount * 100)
 
-            refund = refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
+                refund = refund_payment(reservation, refund="full", amount_cents=amount_in_cents)
 
-            messages.success(
-                request,
-                f"Une demande de remboursement de {reservation.refundable_amount:.2f} € a été effectuée avec succès.",
-            )
-        except Exception as e:
-            messages.error(request, f"Erreur de remboursement Stripe : {e}")
-            logger.exception("Stripe refund failed")
-    else:
-        messages.warning(request, "Cette réservation a déjà été remboursée.")
+                messages.success(
+                    request,
+                    f"Une demande de remboursement de {reservation.refundable_amount:.2f} € a été effectuée avec succès.",
+                )
+            except Exception as e:
+                messages.error(request, f"Erreur de remboursement Stripe : {e}")
+                logger.exception("Stripe refund failed")
+        else:
+            messages.warning(request, "Cette réservation a déjà été remboursée.")
+    except (InvalidOperation, TypeError, ValueError):
+        logger.error("Invalid refund amount")
+        messages.error(request, "Montant de remboursement invalide.")
+    except Exception as e:
+        messages.error(request, f"Erreur lors du remboursement : {e}")
+        logger.exception("Error processing refund")
 
     if reservation_type == "activity":
         return redirect("reservation:activity_reservation_detail", code=code)
@@ -393,6 +407,7 @@ def refund_partially_reservation(request, code):
         )
 
     except (InvalidOperation, TypeError, ValueError):
+        logger.exception("Invalid refund amount")
         messages.error(request, "Montant de remboursement invalide.")
     except Exception as e:
         messages.error(request, f"Erreur de remboursement Stripe : {e}")
@@ -440,6 +455,7 @@ def charge_deposit_view(request, code):
             messages.error(request, "Erreur lors du paiement de la caution.")
 
     except (InvalidOperation, ValueError, TypeError):
+        logger.exception("Invalid deposit amount")
         messages.error(request, "Montant invalide.")
     except Exception as e:
         messages.error(request, f"Erreur lors du chargement Stripe : {e}")
@@ -455,19 +471,21 @@ def verify_payment_view(request, code):
     """
     View to verify the Stripe PaymentIntent status for a reservation (logement or activity).
     """
+    try:
+        reservation = get_reservation_by_code(code)
+        if not reservation:
+            messages.error(request, "Réservation introuvable.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    reservation = get_reservation_by_code(code)
-    if not reservation:
-        messages.error(request, "Réservation introuvable.")
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+        paid, message = verify_payment(reservation)
 
-    paid, message = verify_payment(reservation)
-
-    if paid:
-        messages.success(request, message)
-    else:
-        messages.warning(request, message)
-
+        if paid:
+            messages.success(request, message)
+        else:
+            messages.warning(request, message)
+    except Exception as e:
+        logger.error(f"Error verifying payment for reservation {code}: {e}")
+        messages.error(request, "Erreur lors de la vérification du paiement.")
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
@@ -478,18 +496,21 @@ def verify_transfer_view(request, code):
     """
     View to verify the Stripe Transfer status for a reservation (logement or activity).
     """
-    reservation = get_reservation_by_code(code)
-    if not reservation:
-        messages.error(request, "Réservation introuvable.")
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+    try:
+        reservation = get_reservation_by_code(code)
+        if not reservation:
+            messages.error(request, "Réservation introuvable.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    success, message = verify_transfer(reservation)
+        success, message = verify_transfer(reservation)
 
-    if success:
-        messages.success(request, message)
-    else:
-        messages.warning(request, message)
-
+        if success:
+            messages.success(request, message)
+        else:
+            messages.warning(request, message)
+    except Exception as e:
+        logger.error(f"Error verifying transfer for reservation {code}: {e}")
+        messages.error(request, "Erreur lors de la vérification du transfert.")
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
@@ -498,20 +519,22 @@ def verify_transfer_view(request, code):
 @require_POST
 def verify_payment_method_view(request, code):
     """
-    View to verify the Stripe Paymment method used for a reservation (logement or activity).
+    View to verify the Stripe Payment method used for a reservation (logement or activity).
     """
-    reservation = get_reservation_by_code(code)
-    if not reservation:
-        messages.error(request, "Réservation introuvable.")
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+    try:
+        reservation = get_reservation_by_code(code)
+        if not reservation:
+            messages.error(request, "Réservation introuvable.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    success, message = verify_payment_method(reservation)
+        success, message = verify_payment_method(reservation)
 
-    if success:
-        messages.success(request, message)
-    else:
-        messages.warning(request, message)
-
+        if success:
+            messages.success(request, message)
+        else:
+            messages.warning(request, message)
+    except Exception as e:
+        logger.error(f"Error verifying payment method for reservation {code}: {e}")
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
@@ -522,18 +545,21 @@ def verify_deposit_payment_view(request, code):
     """
     View to verify the Stripe Paymment intent for deposit used for a reservation (logement or activity).
     """
-    reservation = get_reservation_by_code(code)
-    if not reservation:
-        messages.error(request, "Réservation introuvable.")
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+    try:
+        # Retrieve the reservation by code
+        reservation = get_reservation_by_code(code)
+        if not reservation:
+            messages.error(request, "Réservation introuvable.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    success, message = verify_deposit_payment(reservation)
+        success, message = verify_deposit_payment(reservation)
 
-    if success:
-        messages.success(request, message)
-    else:
-        messages.warning(request, message)
-
+        if success:
+            messages.success(request, message)
+        else:
+            messages.warning(request, message)
+    except Exception as e:
+        logger.error(f"Error verifying deposit payment for reservation {code}: {e}")
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
@@ -544,16 +570,19 @@ def verify_refund_view(request, code):
     """
     View to verify the Stripe Paymment intent for deposit used for a reservation (logement or activity).
     """
-    reservation = get_reservation_by_code(code)
-    if not reservation:
-        messages.error(request, "Réservation introuvable.")
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+    try:
+        reservation = get_reservation_by_code(code)
+        if not reservation:
+            messages.error(request, "Réservation introuvable.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
-    success, message = verify_refund(reservation)
+        success, message = verify_refund(reservation)
 
-    if success:
-        messages.success(request, message)
-    else:
-        messages.warning(request, message)
+        if success:
+            messages.success(request, message)
+        else:
+            messages.warning(request, message)
+    except Exception as e:
+        logger.error(f"Error verifying refund for reservation {code}: {e}")
 
     return redirect(request.META.get("HTTP_REFERER", "/"))
