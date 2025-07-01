@@ -421,18 +421,21 @@ def huey_tasks_status(request):
 def huey_task_detail(request, task_id):
     from common.services.helper_fct import parse_json_field
     try:
-        task = TaskHistory.objects.get(id=task_id)
+        task = TaskHistory.objects.get(id=task_id)    
+
+        context = {
+            "task": task,
+            "args_obj": parse_json_field(task.args) if task.args else None,
+            "kwargs_obj": parse_json_field(task.kwargs) if task.kwargs else None,
+            "result_obj": parse_json_field(task.result) if task.result else None,
+        }
+        return render(request, "administration/huey_task_detail.html", context)
     except TaskHistory.DoesNotExist:
         messages.error(request, "Tâche introuvable.")
         return redirect("administration:huey_tasks_status")
-
-    context = {
-        "task": task,
-        "args_obj": parse_json_field(task.args) if task.args else None,
-        "kwargs_obj": parse_json_field(task.kwargs) if task.kwargs else None,
-        "result_obj": parse_json_field(task.result) if task.result else None,
-    }
-    return render(request, "administration/huey_task_detail.html", context)
+    except Exception as e:
+        logger.exception(f"Erreur lors de l'affichage des détails de la tâche: {e}")
+        raise
 
 
 EMAIL_FUNCTIONS = [
