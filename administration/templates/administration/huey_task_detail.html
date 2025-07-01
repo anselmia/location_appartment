@@ -58,11 +58,17 @@
                                     {% for key, value in result_obj.items %}
                                         <li>
                                             <strong>{{ key|capfirst }}:</strong>
-                                            {% if value is iterable and not value|string %}
+                                            {% if value.__class__.__name__ == 'dict' %}
                                                 <ul>
                                                     {% for k, v in value.items %}
-                                                        <li><strong>{{ k|capfirst }}:</strong> {{ v }}</li>
+                                                        <li>
+                                                            <strong>{{ k|capfirst }}:</strong> {{ v }}
+                                                        </li>
                                                     {% endfor %}
+                                                </ul>
+                                            {% elif value.__class__.__name__ == 'list' %}
+                                                <ul>
+                                                    {% for item in value %}<li>{{ item }}</li>{% endfor %}
                                                 </ul>
                                             {% else %}
                                                 {{ value }}
