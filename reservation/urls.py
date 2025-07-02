@@ -70,4 +70,5 @@ urlpatterns = [
         name="validate_activity_reservation",
     ),
     path("not-available-dates/<int:pk>/", views.activity_not_available_dates, name="activity_not_available_dates"),
+    path('toggle-paid/<str:code>/', views.toggle_paid, name='toggle_paid')
 ]

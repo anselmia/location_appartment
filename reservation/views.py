@@ -763,3 +763,27 @@ def activity_not_available_dates(request, pk):
         return JsonResponse({"dates": not_available})
     except Exception as e:
         return JsonResponse({"dates": [], "error": str(e)}, status=400)
+
+
+@require_POST
+@login_required
+@is_admin
+def toggle_paid(request, code):
+    """Toggle the paid status of a reservation."""
+    from reservation.services.reservation_service import get_reservation_by_code
+
+    try:
+        reservation = get_reservation_by_code(code)
+        reservation.paid = not reservation.paid
+        reservation.save()
+        messages.success(request, f"Statut de paiement mis à jour pour {reservation.code}.")
+    except ActivityReservation.DoesNotExist:
+        messages.error(request, "Réservation non trouvée.")
+        logger.error(f"ActivityReservation not found for code {code}")
+    except Reservation.DoesNotExist:
+        messages.error(request, "Réservation non trouvée.")
+        logger.error(f"Reservation not found for code {code}")
+    except Exception as e:
+        messages.error(request, "Erreur lors de la mise à jour du statut de paiement.")
+        logger.error(f"Error toggling paid status for reservation {code}: {e}", exc_info=True)
+    return redirect(request.META.get("HTTP_REFERER", "reservation:manage_activity_reservations"))

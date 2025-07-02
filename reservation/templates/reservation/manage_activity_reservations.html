@@ -96,6 +96,29 @@
                                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
                                                 {% endif %}
                                             </li>
+                                            <li class="d-flex align-items-center">
+                                                <strong class="me-2">Payée :</strong>
+                                                <form method="post"
+                                                      action="{% url 'reservation:toggle_paid' r.code %}"
+                                                      class="d-inline-block m-0 p-0">
+                                                    {% csrf_token %}
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input"
+                                                               type="checkbox"
+                                                               name="paid"
+                                                               id="paidSwitch{{ r.code }}"
+                                                               {% if r.paid %}checked{% endif %}
+                                                               onchange="this.form.submit()">
+                                                        <label class="form-check-label" for="paidSwitch{{ r.code }}">
+                                                            {% if r.paid %}
+                                                                <span class="text-success">Oui</span>
+                                                            {% else %}
+                                                                <span class="text-danger">Non</span>
+                                                            {% endif %}
+                                                        </label>
+                                                    </div>
+                                                </form>
+                                            </li>
                                             <li>
                                                 <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
                                             </li>
