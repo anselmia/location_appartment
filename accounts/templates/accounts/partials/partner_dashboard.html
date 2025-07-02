@@ -8,6 +8,22 @@
             <p class="text-muted mb-3">Aucun partenaire n’est enregistré pour le moment.</p>
             <a href="{% url 'partner:create_partner' %}" class="btn btn-primary">➕ Devenir partenaire</a>
         {% else %}
+            <form method="post"
+                  action="{% url 'partner:delete_partner' partner.id %}"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte partenaire ? Cette action est irréversible.');"
+                  class="position-absolute top-0 end-0 mt-2 me-2">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-outline-danger btn-circle btn-sm shadow-sm"
+                        title="Supprimer mon compte partenaire"
+                        style="width:2rem;
+                               height:2rem;
+                               display:flex;
+                               align-items:center;
+                               justify-content:center">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
             <div class="mb-3">
                 <div class="row gy-3">
                     <div class="col-md-6">

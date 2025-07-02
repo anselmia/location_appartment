@@ -68,6 +68,8 @@ from common.services.email_service import (
     send_mail_conciergerie_stop_management,
 )
 
+from reservation.models import Reservation
+
 logger = logging.getLogger(__name__)
 
 
@@ -220,6 +222,33 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
         }
     )
     return render(request, "logement/edit_logement.html", context)
+
+
+@login_required
+@user_has_logement
+@user_is_logement_admin
+def delete_logement(request, pk):
+    try:
+        thirty_days_ago = timezone.now().date() - timezone.timedelta(days=30)
+        logement = Logement.objects.get(id=pk)
+        reservations = Reservation.objects.filter(
+            logement=logement, statut__in=["en_attente", "confirmee", "echec_paiement"]
+        )
+        ended_reservation = Reservation.objects.filter(
+            logement=logement, statut="terminee", end__gt=thirty_days_ago
+        )
+        if reservations.exists() or ended_reservation.exists():
+            messages.error(
+                request, "Vous ne pouvez pas supprimer ce logement tant qu'il a des réservations en cours."
+            )
+            return redirect("logement:dashboard")
+
+        logement.delete()
+        messages.success(request, "Logement supprimé avec succès.")
+    except Logement.DoesNotExist:
+        messages.error(request, "Ce logement n'existe pas.")
+
+    return redirect("logement:dashboard")
 
 
 @login_required
@@ -629,6 +658,6 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         "show_onboarding": show_onboarding,
         "messages_systems": messages_systems,
     }
-    context['today'] = timezone.localdate()
+    context["today"] = timezone.localdate()
 
     return render(request, "logement/dash.html", context)

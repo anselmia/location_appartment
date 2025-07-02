@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     create_conciergerie,
     update_conciergerie,
+    delete_conciergerie,
     list_conciergeries,
     bulk_action,
     conciergerie_detail,
@@ -17,6 +18,7 @@ urlpatterns = [
     path("", dashboard, name="dashboard"),
     path("add/", create_conciergerie, name="create_conciergerie"),
     path("update/", update_conciergerie, name="update_conciergerie"),
+    path("delete/<int:pk>/", delete_conciergerie, name="delete_conciergerie"),
     path("update/<int:pk>/", update_conciergerie, name="update_conciergerie"),
     path("list", list_conciergeries, name="list_conciergeries"),
     path("actions/", bulk_action, name="bulk_action"),

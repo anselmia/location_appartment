@@ -9,6 +9,22 @@
             <a href="{% url 'conciergerie:create_conciergerie' %}"
                class="btn btn-primary">➕ Créer ma conciergerie</a>
         {% else %}
+            <form method="post"
+                  action="{% url 'conciergerie:delete_conciergerie' conciergerie.id %}"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre conciergerie ? Cette action est irréversible.');"
+                  class="position-absolute top-0 end-0 mt-2 me-2">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-outline-danger btn-circle btn-sm shadow-sm"
+                        title="Supprimer ma conciergerie"
+                        style="width:2rem;
+                               height:2rem;
+                               display:flex;
+                               align-items:center;
+                               justify-content:center">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
             <div class="mb-3">
                 <div class="row gy-3">
                     <div class="col-md-6">

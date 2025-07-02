@@ -24,7 +24,24 @@
     {% if logements %}
       <div class="logement-grid">
         {% for logement in logements %}
-          <div class="logement-card">
+          <div class="logement-card position-relative">
+            <form method="post"
+                  action="{% url 'logement:delete_logement' logement.id %}"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce logement ? Cette action est irréversible.');"
+                  class="position-absolute top-0 end-0 mt-2 me-2"
+                  style="z-index:2">
+              {% csrf_token %}
+              <button type="submit"
+                      class="btn btn-danger btn-circle btn-sm shadow-sm"
+                      title="Supprimer cette activité"
+                      style="width:2rem;
+                             height:2rem;
+                             display:flex;
+                             align-items:center;
+                             justify-content:center">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
             <a href="{% url 'logement:edit_logement' logement.id %}"
                class="logement-card-link">
               {% if logement.photos.first %}

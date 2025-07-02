@@ -135,6 +135,9 @@ def get_stripe_transactions(user):
             limit=100,
             stripe_account=user.stripe_account_id,
         )
+        if transactions.data:
+            for transaction in transactions.data:
+                transaction.amount = transaction.amount / 100.0  # Convert cents to euros
         return transactions.data
     except Exception as e:
         logger.error(f"Erreur lors de la récupération des transactions Stripe pour l'utilisateur {user.id}: {e}")

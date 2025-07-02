@@ -235,6 +235,20 @@ form[role="search"] .btn {
   border-color: #e6b0aa;
 }
 
+.btn-circle {
+    border-radius: 50% !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+.btn-outline-danger {
+    opacity: 0.7;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+.btn-outline-danger:hover, .btn-outline-danger:focus {
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(220,53,69,0.15);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .client-dashboard {

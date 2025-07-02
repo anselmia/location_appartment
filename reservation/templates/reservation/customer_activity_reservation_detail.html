@@ -65,20 +65,28 @@
                         <h5 class="text-muted border-bottom pb-2">Partenaire</h5>
                         <dl class="row">
                             <dt class="col-sm-5">Société</dt>
-                            <dd class="col-sm-7">                                
-                                {{ partner.user.full_name }}
+                            <dd class="col-sm-7">
+                                {% if partner and partner.user and partner.user.full_name %}
+                                    {{ partner.user.full_name }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
                             </dd>
                             <dt class="col-sm-5">Contact</dt>
                             <dd class="col-sm-7">
-                                {{ reservation.activity.owner.full_name|default:reservation.activity.owner.username }}
+                                {% if reservation.activity and reservation.activity.owner %}
+                                    {{ reservation.activity.owner.full_name|default:reservation.activity.owner.username|default:"-" }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
                             </dd>
                             <dt class="col-sm-5">Téléphone</dt>
                             <dd class="col-sm-7">
-                                {% if reservation.activity.owner.phone %}
+                                {% if reservation.activity and reservation.activity.owner and reservation.activity.owner.phone %}
                                     <a href="tel:{{ reservation.activity.owner.phone }}"
                                        class="text-decoration-none">{{ reservation.activity.owner.phone }}</a>
                                 {% else %}
-                                    -
+                                    <span class="text-muted">-</span>
                                 {% endif %}
                             </dd>
                         </dl>

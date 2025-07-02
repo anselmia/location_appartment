@@ -6,17 +6,15 @@ from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordResetView
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
-from django.contrib.sites.shortcuts import get_current_site
 from django.conf import settings
 
-from accounts.models import Message, Conversation, CustomUser
+from accounts.models import Conversation, CustomUser
 from accounts.forms import (
     CustomUserCreationForm,
     CustomUserChangeForm,

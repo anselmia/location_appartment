@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+from django.utils import timezone
 from django.http import HttpRequest, HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -17,7 +18,7 @@ from django.contrib import messages
 
 from activity.mixins import UserHasActivityMixin
 from activity.decorators import user_has_activity
-from activity.models import Price
+from activity.models import Price, Activity
 from activity.models import Activity, Category, ActivityPhoto
 from activity.services.activity import get_activity, get_calendar_context
 from activity.services.price import get_price_context, get_daily_price_data, bulk_update_prices, get_revenue_context
@@ -29,6 +30,7 @@ from accounts.decorators import user_has_valid_stripe_account
 from logement.models import City
 
 from reservation.services.activity import available_by_day
+from reservation.models import ActivityReservation
 
 
 logger = logging.getLogger(__name__)
@@ -128,6 +130,26 @@ def update_activity(request, pk):
     else:
         form = ActivityForm(instance=activity)
     return render(request, "activity/update_activity.html", {"form": form, "activity": activity})
+
+
+@user_has_valid_partner
+@login_required
+def delete_activity(request, pk):
+    try:
+        thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+        activity = Activity.objects.get(id=pk)
+        activity_reservation = ActivityReservation.objects.filter(activity=activity, statut__in=["en_attente", "confirmee", "echec_paiement"])
+        ended_reservation = ActivityReservation.objects.filter(activity=activity, statut="terminee", end__gt=thirty_days_ago)
+        if activity_reservation.exists() or ended_reservation.exists():
+            messages.error(request, "Vous ne pouvez pas supprimer cette activité tant qu'elle a des réservations en cours.")
+            return redirect("activity:activity_dashboard")
+
+        activity.delete()
+        messages.success(request, "Activité supprimée avec succès.")
+    except Activity.DoesNotExist:
+        messages.error(request, "Cette activité n'existe pas.")
+
+    return redirect("activity:activity_dashboard")
 
 
 @login_required

@@ -21,7 +21,24 @@
         {% if activities %}
             <div class="activity-grid">
                 {% for activity in activities %}
-                    <div class="activity-card">
+                    <div class="activity-card position-relative">
+                        <form method="post"
+                              action="{% url 'activity:delete_activity' activity.id %}"
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.');"
+                              class="position-absolute top-0 end-0 mt-2 me-2"
+                              style="z-index:2">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-danger btn-circle btn-sm shadow-sm"
+                                    title="Supprimer cette activité"
+                                    style="width:2rem;
+                                           height:2rem;
+                                           display:flex;
+                                           align-items:center;
+                                           justify-content:center">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
                         <a href="{% url 'activity:update_activity' activity.id %}"
                            class="activity-card-link">
                             {% if activity.photos.first %}

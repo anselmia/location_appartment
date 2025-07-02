@@ -652,7 +652,7 @@ def customer_activity_reservation_detail(request: HttpRequest, code: str) -> Htt
     """
     try:
         reservation = get_object_or_404(ActivityReservation, code=code)
-        partner = get_object_or_404(Partners, user=reservation.activity.owner)
+        partner = Partners.objects.filter(user=reservation.activity.owner).first()
         return render(
             request,
             "reservation/customer_activity_reservation_detail.html",

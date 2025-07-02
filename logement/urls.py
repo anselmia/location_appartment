@@ -19,6 +19,7 @@ urlpatterns = [
     path("add/", views.manage_logement, name="add_logement"),
     path("edit/<int:logement_id>/", views.manage_logement, name="edit_logement"),
     path("edit/<int:logement_id>/add_room/", views.add_room, name="add_room"),
+    path("delete/<int:pk>/", views.delete_logement, name="delete_logement"),
     path("room/<int:room_id>/delete/", views.delete_room, name="delete_room"),
     path(
         "edit/<int:logement_id>/upload_photos/",

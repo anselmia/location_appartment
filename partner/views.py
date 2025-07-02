@@ -1,5 +1,6 @@
 import logging
 
+from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -18,6 +19,9 @@ from common.services.email_service import (
 )
 
 from activity.services.activity import get_activities_overview
+from activity.models import Activity
+
+from reservation.models import ActivityReservation
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +128,29 @@ def update_partner(request, pk=None):
         form = PartnerForm(instance=partner)
 
     return render(request, "partner/create_partner.html", {"form": form, "is_edit": True})
+
+
+@user_is_partner
+@login_required
+def delete_partner(request, pk):
+    try:
+        thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+        partner = Partners.objects.get(id=pk)
+        partner_activities = Activity.objects.filter(owner=partner.user)
+        if partner_activities.exists():
+            for activity in partner_activities:
+                activity_reservation = ActivityReservation.objects.filter(activity=activity, statut__in=["en_attente", "confirmee", "echec_paiement"])
+                ended_reservation = ActivityReservation.objects.filter(activity=activity, statut="terminee", end__gt=thirty_days_ago)
+                if activity_reservation.exists() or ended_reservation.exists():
+                    messages.error(request, "Vous ne pouvez pas supprimer votre partenaire tant que vous avez des activités en cours.")
+                    return redirect("accounts:dashboard")
+
+        partner.delete()
+        messages.success(request, "Compte Partenaire supprimé avec succès.")
+    except Partners.DoesNotExist:
+        messages.error(request, "Ce partenaire n'existe pas.")
+
+    return redirect("accounts:dashboard")
 
 
 @login_required

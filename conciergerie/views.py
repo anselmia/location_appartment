@@ -11,7 +11,7 @@ from conciergerie.tasks import send_conciergerie_validation_email
 from conciergerie.decorators import user_is_owner_admin
 from conciergerie.services.conciergerie import get_conciergerie_system_messages
 
-from logement.models import City
+from logement.models import City, Logement
 from logement.decorators import user_is_logement_admin
 from logement.services.logement_service import get_logements_overview
 
@@ -117,6 +117,23 @@ def update_conciergerie(request, pk=None):
         form = ConciergerieForm(instance=conciergerie)
 
     return render(request, "conciergerie/create_conciergerie.html", {"form": form, "is_edit": True})
+
+
+@user_is_owner_admin
+@login_required
+def delete_conciergerie(request, pk):
+    try:
+        conciergerie = Conciergerie.objects.get(id=pk)
+        is_admin_of_logement = Logement.objects.filter(admin=conciergerie.user).exists()
+        if is_admin_of_logement:
+            messages.error(request, "Vous ne pouvez pas supprimer votre conciergerie tant que vous êtes administrateur d'un logement.")
+            return redirect("accounts:dashboard")
+        conciergerie.delete()
+        messages.success(request, "Conciergerie supprimée avec succès.")
+    except Conciergerie.DoesNotExist:
+        messages.error(request, "Cette conciergerie n'existe pas.")
+
+    return redirect("accounts:dashboard")
 
 
 @is_admin

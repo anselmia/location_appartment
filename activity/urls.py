@@ -13,6 +13,7 @@ urlpatterns = [
     path("add/", views.create_activity, name="create_activity"),
     path("detail/<int:pk>/", views.detail, name="detail"),
     path("update/<int:pk>/", views.update_activity, name="update_activity"),
+    path("delete/<int:pk>/", views.delete_activity, name="delete_activity"),
     path("dashboard/", views.activity_dashboard, name="activity_dashboard"),
     path("calendar/", views.activity_calendar, name="activity_calendar"), 
     path("discounts/", views.manage_discounts, name="manage_discounts"),
