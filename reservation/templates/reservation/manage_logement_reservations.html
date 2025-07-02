@@ -159,8 +159,8 @@
                           <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
                         </li>
                       {% endif %}
-                      <li>
-                        {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
+                      {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
+                        <li>
                           <form method="post"
                                 action="{% url 'payment:refund_reservation' r.code %}"
                                 onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
@@ -168,6 +168,8 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">Remboursement complet</button>
                           </form>
+                        </li>
+                        <li>
                           <form method="post"
                                 action="{% url 'payment:refund_partially_reservation' r.code %}"
                                 onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
@@ -184,7 +186,9 @@
                                    style="max-width: 200px" />
                             <button type="submit" class="btn btn-outline-warning">Rembourser</button>
                           </form>
-                        {% else %}
+                        </li>
+                      {% else %}
+                        <li>
                           {% if not reservation.paid %}
                             <p class="text-muted fst-italic mb-0">
                               Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
@@ -192,8 +196,8 @@
                           {% else %}
                             <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                           {% endif %}
-                        {% endif %}
-                      </li>
+                        </li>
+                      {% endif %}
                     </ul>
                   </div>
                   <!-- Transferts -->
