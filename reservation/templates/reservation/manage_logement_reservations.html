@@ -162,14 +162,14 @@
                       <li>
                         {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
                           <form method="post"
-                                action="{% url 'payment:refund_reservation' reservation.code %}"
+                                action="{% url 'payment:refund_reservation' r.code %}"
                                 onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
                                 class="d-flex align-items-center">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">Remboursement complet</button>
                           </form>
                           <form method="post"
-                                action="{% url 'payment:refund_partially_reservation' reservation.code %}"
+                                action="{% url 'payment:refund_partially_reservation' r.code %}"
                                 onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
                                 class="d-flex align-items-center">
                             {% csrf_token %}
@@ -177,7 +177,7 @@
                                    name="refund_amount"
                                    class="form-control"
                                    min="0"
-                                   max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                                   max="{{ r.partial_refundable_amount|stringformat:'f' }}"
                                    step="0.01"
                                    placeholder="Montant (€)"
                                    required
