@@ -124,7 +124,7 @@ input[name="deposit_amount"] {
     padding: var(--spacing-sm, 0.8rem);
   }
   h2.fw-bold {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
   .btn.btn-secondary.btn-sm {
     font-size: 0.78rem;
@@ -133,5 +133,8 @@ input[name="deposit_amount"] {
     border: 1px solid #dbe2ea;
     box-shadow: none;
     font-weight: 500;
+  }
+  h1.fw-bold {
+    font-size: 1.2rem;
   }
 }

@@ -7,7 +7,7 @@
 {% block extrahead %}
   {{ block.super }}
   <link rel="stylesheet"
-        href="{% static 'reservation/css/reservation_detail.css' %}" />
+        href="{% static 'reservation/css/logement_reservation_detail.css' %}" />
 {% endblock extrahead %}
 {% block content %}
   <div class="container py-4">
@@ -17,22 +17,24 @@
            class="btn btn-secondary btn-sm">
           <i class="bi bi-arrow-left"></i> Retour
         </a>
-        <h1 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h1>
       </div>
-      {% if reservation.statut != "annulee" %}
-        <form method="post"
-              action="{% url 'reservation:owner_cancel_logement_booking' reservation.code %}"
-              onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-x-circle"></i> Annuler
-          </button>
-        </form>
-      {% endif %}
     </div>
     <div class="card shadow-sm mb-4">
       <div class="card-body">
+        {% if reservation.statut != "annulee" %}
+          <div class="d-flex justify-content-end mb-3">
+            <form method="post"
+                  action="{% url 'reservation:owner_cancel_booking' reservation.code %}"
+                  onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-x-circle"></i> Annuler
+              </button>
+            </form>
+          </div>
+        {% endif %}
         <div class="row gy-4">
+          <h1 class="fw-bold mb-1 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h1>
           <!-- Infos Générales -->
           <div class="col-md-6">
             <h5 class="text-muted mb-3 border-bottom pb-1">Informations générales</h5>
@@ -98,198 +100,204 @@
           </div>
           <!-- Paiement -->
           <div class="col-md-6">
-            <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
-            <dl class="row">
-              <dt class="col-sm-5">Montant</dt>
+            <h5 class="text-muted mb-3 border-bottom pb-1">
+              Paiement <i class="bi bi-info-circle ms-2 text-secondary"
+    data-bs-toggle="tooltip"
+    data-bs-placement="top"
+    title="Le paiement de la réservation sera pré-vérifié 7 jours avant la date d'arrivée, puis le paiement effectif sera réalisé 2 jours avant le début du séjour.">
+            </i>
+          </h5>
+          <dl class="row">
+            <dt class="col-sm-5">Montant</dt>
+            <dd class="col-sm-7">
+              {{ reservation.checkout_amount|floatformat:2 }} €
+              {% if r.paid and r.checkout_amount and r.checkout_amount > 0 %}
+                <span class="badge bg-success ms-2">Confirmé</span>
+              {% else %}
+                <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                {% if reservation.can_verify_payment_failed %}
+                  <form method="post"
+                        action="{% url 'payment:verify_payment' reservation.code %}"
+                        class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                  </form>
+                {% endif %}
+              {% endif %}
+            </dd>
+            <dt class="col-sm-5">Taxes</dt>
+            <dd class="col-sm-7">
+              {{ reservation.tax|floatformat:2 }} €
+            </dd>
+            {% if reservation.payment_failed %}
+              <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
               <dd class="col-sm-7">
-                {{ reservation.checkout_amount|floatformat:2 }} €
-                {% if reservation.paid and not reservation.checkout_amount <= 0 %}
-                  <span class="badge bg-success ms-2">Confirmé</span>
+                <form method="post"
+                      action="{% url 'payment:send_payment_link' reservation.code %}"
+                      onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');"
+                      class="d-flex align-items-center">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-warning">🔁 Envoyer lien de paiement</button>
+                </form>
+              </dd>
+            {% else %}
+              <dt class="col-sm-5">Remboursée ?</dt>
+              <dd class="col-sm-7">
+                {% if reservation.refunded %}
+                  <span class="badge bg-success">Oui</span>
                 {% else %}
-                  <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
-                  {% if reservation.stripe_payment_intent_id %}
+                  <span class="badge bg-secondary">Non</span>
+                {% endif %}
+              </dd>
+              <dt class="col-sm-5">Frais de paiement (Non Remboursable)</dt>
+              <dd class="col-sm-7">
+                {{ reservation.payment_fee|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5 d-flex align-items-center">
+                Frais Plateforme
+                <i class="ml-2 text-muted fas fa-info-circle"
+                   data-toggle="tooltip"
+                   data-placement="top"
+                   title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel.">
+                </i>
+              </dt>
+              <dd class="col-sm-7">
+                {{ reservation.platform_fee|floatformat:2|default:"—" }} €
+              </dd>
+              {% if reservation.paid and not reservation.refunded %}
+                <dt class="col-sm-5">Montant Remboursable</dt>
+                <dd class="col-sm-7">
+                  {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
+                </dd>
+                <dt class="col-sm-5 align-self-center">Remboursement total</dt>
+                <dd class="col-sm-7">
+                  <form method="post"
+                        action="{% url 'payment:refund_reservation' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                        class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                  </form>
+                </dd>
+                <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
+                <dd class="col-sm-7">
+                  <form method="post"
+                        action="{% url 'payment:refund_partially_reservation' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                        class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <input type="number"
+                           name="refund_amount"
+                           class="form-control"
+                           min="0"
+                           max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                           step="0.01"
+                           placeholder="Montant (€)"
+                           required
+                           style="max-width: 200px" />
+                    <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                  </form>
+                </dd>
+              {% elif reservation.refunded %}
+                {% if reservation.refund_amount %}
+                  <dt class="col-sm-5">Montant remboursé</dt>
+                  <dd class="col-sm-7">
+                    {{ reservation.refund_amount|floatformat:2 }} €
+                  </dd>
+                {% else %}
+                  <dt class="col-sm-5 align-self-center">Vérifier le remboursement</dt>
+                  <dd class="col-sm-7">
                     <form method="post"
-                          action="{% url 'payment:verify_payment' reservation.code %}"
+                          action="{% url 'payment:verify_refund' reservation.code %}"
+                          class="d-flex align-items-center">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-warning">Vérifier</button>
+                    </form>
+                  </dd>
+                {% endif %}
+              {% else %}
+                {% if not reservation.paid %}
+                  <p class="text-muted fst-italic mb-0">
+                    Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
+                  </p>
+                {% else %}
+                  <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          </dl>
+        </div>
+        <!-- Caution -->
+        <div class="col-md-6">
+          <h5 class="text-muted mb-3 border-bottom pb-1">Caution</h5>
+          <dl class="row align-items-center">
+            {% if not reservation.stripe_saved_payment_method_id %}
+              <dt class="col-sm-5 align-self-center">Vérifier le moyen de paiement</dt>
+              <dd class="col-sm-7">
+                <form method="post"
+                      action="{% url 'payment:verify_payment_method' reservation.code %}"
+                      class="d-flex align-items-center">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-warning">Vérifier</button>
+                </form>
+              </dd>
+            {% else %}
+              <dt class="col-sm-5">Caution</dt>
+              <dd class="col-sm-7">
+                {{ reservation.logement.caution|floatformat:2 }} €
+              </dd>
+              <dt class="col-sm-5">Caution chargée ?</dt>
+              <dd class="col-sm-7">
+                {% if reservation.caution_charged %}
+                  <span class="badge bg-success">Oui</span>
+                {% else %}
+                  <span class="badge bg-secondary">Non</span>
+                {% endif %}
+              </dd>
+              {% if reservation.caution_charged %}
+                <dt class="col-sm-5">Montant chargé</dt>
+                <dd class="col-sm-7">
+                  {% if reservation.amount_charged %}
+                    {{ reservation.amount_charged|floatformat:2 }} €
+                  {% else %}
+                    <form method="post"
+                          action="{% url 'payment:verify_deposit_payment' reservation.code %}"
                           class="d-inline ms-2">
                       {% csrf_token %}
                       <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
                     </form>
                   {% endif %}
-                {% endif %}
-              </dd>
-              <dt class="col-sm-5">Taxes</dt>
-              <dd class="col-sm-7">
-                {{ reservation.tax|floatformat:2 }} €
-              </dd>
-              {% if reservation.payment_failed %}
-                <dt class="col-sm-5 align-self-center">Paiement échoué</dt>
+                </dd>
+              {% elif reservation.stripe_saved_payment_method_id and not reservation.caution_charged %}
+                <dt class="col-sm-5">Charger une caution</dt>
                 <dd class="col-sm-7">
                   <form method="post"
-                        action="{% url 'payment:send_payment_link' reservation.code %}"
-                        onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');"
+                        action="{% url 'payment:charge_deposit' reservation.code %}"
+                        onsubmit="return confirm('Confirmez-vous le prélèvement de cette caution ?');"
                         class="d-flex align-items-center">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-warning">🔁 Envoyer lien de paiement</button>
+                    <input type="number"
+                           name="deposit_amount"
+                           class="form-control form-control-sm me-2"
+                           min="0"
+                           max="{{ reservation.chargeable_deposit|stringformat:'f' }}"
+                           step="0.01"
+                           placeholder="Montant (€)"
+                           required
+                           style="max-width: 120px" />
+                    <button type="submit" class="btn btn-sm btn-primary">Charger</button>
                   </form>
                 </dd>
               {% else %}
-                <dt class="col-sm-5">Remboursée ?</dt>
-                <dd class="col-sm-7">
-                  {% if reservation.refunded %}
-                    <span class="badge bg-success">Oui</span>
-                  {% else %}
-                    <span class="badge bg-secondary">Non</span>
-                  {% endif %}
-                </dd>
-                <dt class="col-sm-5">Frais de paiement (Non Remboursable)</dt>
-                <dd class="col-sm-7">
-                  {{ reservation.payment_fee|floatformat:2 }} €
-                </dd>
-                <dt class="col-sm-5 d-flex align-items-center">
-                  Frais Plateforme
-                  <i class="ml-2 text-muted fas fa-info-circle"
-                     data-toggle="tooltip"
-                     data-placement="top"
-                     title="Ces frais peuvent être remboursés si la réservation est remboursée intégralement. Ils ne sont pas remboursés lors d'un remboursement partiel.">
-                  </i>
-                </dt>
-                <dd class="col-sm-7">
-                  {{ reservation.platform_fee|floatformat:2|default:"—" }} €
-                </dd>
-                {% if reservation.paid and not reservation.refunded %}
-                  <dt class="col-sm-5">Montant Remboursable</dt>
-                  <dd class="col-sm-7">
-                    {{ reservation.refundable_amount|floatformat:2|default:"—" }} €
-                  </dd>
-                  <dt class="col-sm-5 align-self-center">Remboursement total</dt>
-                  <dd class="col-sm-7">
-                    <form method="post"
-                          action="{% url 'payment:refund_reservation' reservation.code %}"
-                          onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
-                          class="d-flex align-items-center">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-warning">Remboursement complet</button>
-                    </form>
-                  </dd>
-                  <dt class="col-sm-5 align-self-center">Remboursement partiel</dt>
-                  <dd class="col-sm-7">
-                    <form method="post"
-                          action="{% url 'payment:refund_partially_reservation' reservation.code %}"
-                          onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
-                          class="d-flex align-items-center">
-                      {% csrf_token %}
-                      <input type="number"
-                             name="refund_amount"
-                             class="form-control"
-                             min="0"
-                             max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
-                             step="0.01"
-                             placeholder="Montant (€)"
-                             required
-                             style="max-width: 200px" />
-                      <button type="submit" class="btn btn-outline-warning">Rembourser</button>
-                    </form>
-                  </dd>
-                {% elif reservation.refunded %}
-                  {% if reservation.refund_amount %}
-                    <dt class="col-sm-5">Montant remboursé</dt>
-                    <dd class="col-sm-7">
-                      {{ reservation.refund_amount|floatformat:2 }} €
-                    </dd>
-                  {% else %}
-                    <dt class="col-sm-5 align-self-center">Vérifier le remboursement</dt>
-                    <dd class="col-sm-7">
-                      <form method="post"
-                            action="{% url 'payment:verify_refund' reservation.code %}"
-                            class="d-flex align-items-center">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-warning">Vérifier</button>
-                      </form>
-                    </dd>
-                  {% endif %}
-                {% else %}
-                  {% if not reservation.paid %}
-                    <p class="text-muted fst-italic mb-0">
-                      Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
-                    </p>
-                  {% else %}
-                    <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
-                  {% endif %}
-                {% endif %}
+                <p class="text-muted fst-italic mb-0">Aucune caution n'est disponible pour cette réservation.</p>
               {% endif %}
-            </dl>
-          </div>
-          <!-- Caution -->
-          <div class="col-md-6">
-            <h5 class="text-muted mb-3 border-bottom pb-1">Caution</h5>
-            <dl class="row align-items-center">
-              {% if not reservation.stripe_saved_payment_method_id %}
-                <dt class="col-sm-5 align-self-center">Vérifier le moyen de paiement</dt>
-                <dd class="col-sm-7">
-                  <form method="post"
-                        action="{% url 'payment:verify_payment_method' reservation.code %}"
-                        class="d-flex align-items-center">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-warning">Vérifier</button>
-                  </form>
-                </dd>
-              {% else %}
-                <dt class="col-sm-5">Caution</dt>
-                <dd class="col-sm-7">
-                  {{ reservation.logement.caution|floatformat:2 }} €
-                </dd>
-                <dt class="col-sm-5">Caution chargée ?</dt>
-                <dd class="col-sm-7">
-                  {% if reservation.caution_charged %}
-                    <span class="badge bg-success">Oui</span>
-                  {% else %}
-                    <span class="badge bg-secondary">Non</span>
-                  {% endif %}
-                </dd>
-                {% if reservation.caution_charged %}
-                  <dt class="col-sm-5">Montant chargé</dt>
-                  <dd class="col-sm-7">
-                    {% if reservation.amount_charged %}
-                      {{ reservation.amount_charged|floatformat:2 }} €
-                    {% else %}
-                      <form method="post"
-                            action="{% url 'payment:verify_deposit_payment' reservation.code %}"
-                            class="d-inline ms-2">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
-                      </form>
-                    {% endif %}
-                  </dd>
-                {% elif reservation.stripe_saved_payment_method_id and not reservation.caution_charged %}
-                  <dt class="col-sm-5">Charger une caution</dt>
-                  <dd class="col-sm-7">
-                    <form method="post"
-                          action="{% url 'payment:charge_deposit' reservation.code %}"
-                          onsubmit="return confirm('Confirmez-vous le prélèvement de cette caution ?');"
-                          class="d-flex align-items-center">
-                      {% csrf_token %}
-                      <input type="number"
-                             name="deposit_amount"
-                             class="form-control form-control-sm me-2"
-                             min="0"
-                             max="{{ reservation.chargeable_deposit|stringformat:'f' }}"
-                             step="0.01"
-                             placeholder="Montant (€)"
-                             required
-                             style="max-width: 120px" />
-                      <button type="submit" class="btn btn-sm btn-primary">Charger</button>
-                    </form>
-                  </dd>
-                {% else %}
-                  <p class="text-muted fst-italic mb-0">Aucune caution n'est disponible pour cette réservation.</p>
-                {% endif %}
-              {% endif %}
-            </dl>
-          </div>
+            {% endif %}
+          </dl>
         </div>
       </div>
     </div>
   </div>
+</div>
 {% endblock content %}
 {% block extra_js %}
   <script>

@@ -18,22 +18,24 @@
                    class="btn btn-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i> Retour
                 </a>
-                <h1 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h1>
             </div>
-            {% if reservation.statut != "annulee" %}
-                <form method="post"
-                      action="{% url 'reservation:owner_cancel_activity_reservation' reservation.code %}"
-                      onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-x-circle"></i> Annuler
-                    </button>
-                </form>
-            {% endif %}
         </div>
         <div class="card shadow-sm mb-4">
-            <div class="card-body">
+            <div class="card-body">                
+                {% if reservation.statut != "annulee" %}
+                    <div class="d-flex justify-content-end mb-3">
+                        <form method="post"
+                              action="{% url 'reservation:owner_cancel_booking' reservation.code %}"
+                              onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
                 <div class="row gy-4">
+                    <h1 class="fw-bold mb-0 ml-3 mb-sm-0">Détails de la Réservation {{ reservation.code }}</h1>
                     <!-- Infos Générales -->
                     <div class="col-md-6">
                         <h5 class="text-muted mb-3 border-bottom pb-1">Informations générales</h5>
@@ -105,12 +107,19 @@
                     </div>
                     <!-- Paiement -->
                     <div class="col-md-6">
-                        <h5 class="text-muted mb-3 border-bottom pb-1">Paiement</h5>
+                        <h5 class="text-muted mb-3 border-bottom pb-1">
+                            Paiement
+                            <i class="bi bi-info-circle ms-2 text-secondary"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="top"
+                               title="Le paiement de la réservation sera pré-vérifié 7 jours avant la date d'arrivée, puis le paiement effectif sera réalisé 2 jours avant le début du séjour.">
+                            </i>
+                        </h5>
                         <dl class="row">
                             <dt class="col-sm-5">Montant</dt>
                             <dd class="col-sm-7">
                                 {{ reservation.checkout_amount|floatformat:2 }} €
-                                {% if reservation.paid and not reservation.checkout_amount <= 0 %}
+                                {% if r.paid and r.checkout_amount and r.checkout_amount > 0 %}
                                     <span class="badge bg-success ms-2">Confirmé</span>
                                 {% else %}
                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
@@ -212,7 +221,9 @@
                                     {% endif %}
                                 {% else %}
                                     {% if not reservation.paid %}
-                                        <p class="text-muted fst-italic mb-0">Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.</p>
+                                        <p class="text-muted fst-italic mb-0">
+                                            Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
+                                        </p>
                                     {% else %}
                                         <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                                     {% endif %}

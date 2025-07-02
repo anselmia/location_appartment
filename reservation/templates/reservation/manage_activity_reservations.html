@@ -42,7 +42,25 @@
                              class="accordion-collapse collapse"
                              aria-labelledby="heading{{ r.code }}"
                              data-bs-parent="#activityReservationAccordion">
-                            <div class="accordion-body">
+                            <div class="accordion-body position-relative">
+                                <form method="post"
+                                      action="{% url 'reservation:owner_cancel_booking' r.code %}"
+                                      onsubmit="return confirm('Confirmez-vous l’annulation définitive de cette réservation ? Attention si le paiement a été effectué, un remboursement complet sera émis');"
+                                      class="position-absolute top-0 end-0"
+                                      style="z-index:2">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-circle btn-sm shadow-sm"
+                                            title="Annuler la réservation"
+                                            style="margin: 0.5rem;
+                                                   width:2rem;
+                                                   height:2rem;
+                                                   display:flex;
+                                                   align-items:center;
+                                                   justify-content:center">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
                                 <div class="row mb-3 small">
                                     <div class="col-md-6">
                                         <p class="mb-1">
@@ -86,14 +104,29 @@
                                 <div class="row g-4 small">
                                     <!-- Paiement -->
                                     <div class="col-md-4">
-                                        <h6 class="text-muted fw-bold mb-2">Paiement</h6>
+                                        <h6 class="text-muted fw-bold mb-2">
+                                            Paiement
+                                            <i class="bi bi-info-circle ms-2 text-secondary"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="top"
+                                               title="Le paiement de la réservation sera pré-vérifié 7 jours avant la date d'arrivée, puis le paiement effectif sera réalisé 2 jours avant le début du séjour.">
+                                            </i>
+                                        </h6>
                                         <ul class="list-unstyled mb-2">
                                             <li>
                                                 <strong>Montant :</strong> {{ r.checkout_amount|default:"0.00"|floatformat:2 }} €
-                                                {% if r.paid %}
+                                                {% if r.paid and r.checkout_amount and r.checkout_amount > 0 %}
                                                     <span class="badge bg-success ms-2">Confirmé</span>
                                                 {% else %}
                                                     <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                                                    {% if reservation.can_verify_payment_failed %}
+                                                        <form method="post"
+                                                              action="{% url 'payment:verify_payment' reservation.code %}"
+                                                              class="d-inline ms-2">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                                                        </form>
+                                                    {% endif %}
                                                 {% endif %}
                                             </li>
                                             <li class="d-flex align-items-center">
