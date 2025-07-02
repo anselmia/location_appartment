@@ -161,12 +161,15 @@
                                     <div class="col-md-4">
                                         <h6 class="text-muted fw-bold mb-2">Remboursement</h6>
                                         <ul class="list-unstyled mb-2">
-                                            <li>
-                                                <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
-                                            </li>
-                                            <li>
-                                                <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
-                                            </li>
+                                            {% if r.refunded %}
+                                                <li class="text-success">
+                                                    <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
+                                                </li>
+                                            {% else %}
+                                                <li class="text-muted">
+                                                     <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
+                                                </li>
+                                            {% endif %}%
                                         </ul>
                                         {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
                                             <form method="post"
