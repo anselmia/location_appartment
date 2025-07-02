@@ -299,10 +299,15 @@ def payment_task_list(request):
         if status:
             tasks = tasks.filter(status=status)
         if code:
-            tasks = tasks.filter(
-                object_id__in=[r.id for r in Reservation.objects.filter(code__icontains=code)]
-                + [ar.id for ar in ActivityReservation.objects.filter(code__icontains=code)]
-            )
+            reservation_ids = [r.id for r in Reservation.objects.filter(code__icontains=code)]
+            activity_ids = [ar.id for ar in ActivityReservation.objects.filter(code__icontains=code)]
+            all_ids = reservation_ids + activity_ids
+            if all_ids:
+                tasks = tasks.filter(object_id__in=all_ids)
+                # Exclude tasks whose content_object is None (dangling generic relation)
+                tasks = [t for t in tasks if getattr(t, 'content_type', None) is not None]
+            else:
+                tasks = tasks.none()
 
         # Pagination
         paginator = Paginator(tasks, 20)  # 20 tâches par page

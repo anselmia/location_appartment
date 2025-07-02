@@ -18,7 +18,7 @@ class PaymentTask(models.Model):
     ]
 
     # Generic relation to Reservation or ActivityReservation
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField()
     reservation = GenericForeignKey("content_type", "object_id")
 
