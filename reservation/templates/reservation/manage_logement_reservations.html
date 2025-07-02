@@ -158,36 +158,43 @@
                         <li class="text-muted">
                           <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
                         </li>
-                      {% endif %}                      
-                    </ul>
-                    {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
-                      <form method="post"
-                            action="{% url 'payment:refund_reservation' r.code %}"
-                            class="d-flex gap-2 align-items-center"
-                            onsubmit="return confirm('Confirmer le remboursement ?');">
-                        {% csrf_token %}
-                        <input type="number"
-                               name="amount"
-                               class="form-control form-control-sm"
-                               min="0"
-                               max="{{ r.refundable_amount|stringformat:'f' }}"
-                               step="0.01"
-                               placeholder="Montant">
-                        <button type="submit"
-                                class="btn btn-sm btn-outline-danger"
-                                title="Rembourser">
-                          <i class="bi bi-cash-coin"></i> Rembourser
-                        </button>
-                      </form>
-                    {% else %}
-                      {% if not reservation.paid %}
-                        <p class="text-muted fst-italic mb-0">
-                          Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
-                        </p>
-                      {% else %}
-                        <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                       {% endif %}
-                    {% endif %}
+                      <li>
+                        {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
+                          <form method="post"
+                                action="{% url 'payment:refund_reservation' reservation.code %}"
+                                onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                                class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                          </form>
+                          <form method="post"
+                                action="{% url 'payment:refund_partially_reservation' reservation.code %}"
+                                onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                                class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <input type="number"
+                                   name="refund_amount"
+                                   class="form-control"
+                                   min="0"
+                                   max="{{ reservation.partial_refundable_amount|stringformat:'f' }}"
+                                   step="0.01"
+                                   placeholder="Montant (€)"
+                                   required
+                                   style="max-width: 200px" />
+                            <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                          </form>
+                        {% else %}
+                          {% if not reservation.paid %}
+                            <p class="text-muted fst-italic mb-0">
+                              Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
+                            </p>
+                          {% else %}
+                            <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
+                          {% endif %}
+                        {% endif %}
+                      </li>
+                    </ul>
                   </div>
                   <!-- Transferts -->
                   <div class="col-md-4">
