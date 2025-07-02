@@ -120,7 +120,10 @@
                                             <a href="{% url 'logement:view_logement' r.logement.id %}">
                                                 <img src="{{ r.logement.photos.all.0.image.url }}"
                                                      alt="{{ r.logement.name }}"
-                                                     class="img-thumbnail fixed-thumbnail">
+                                                     class="img-thumb"
+                                                     style="width: 50px;
+                                                            height: 50px;
+                                                            object-fit: cover">
                                             </a>
                                         {% else %}
                                             <div class="d-flex justify-content-center align-items-center bg-light"

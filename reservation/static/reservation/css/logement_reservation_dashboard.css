@@ -43,18 +43,14 @@
 }
 
 .logement-thumbnail,
-.placeholder-img {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 6px;
-  background-color: var(--light-gray);
-}
-
-.fixed-thumbnail {
-    width: 50px !important;
-    height: 50px !important;
+.reservation-table img.img-thumb {
+    width: 50px;
+    height: 50px;
     object-fit: cover;
+    border-radius: var(--radius, 12px);
+    background: var(--light-bg, #f8f5f2);
+    padding: .25rem;
+    border: 1px solid #dee2e6;
 }
 
 .reservation-filters {

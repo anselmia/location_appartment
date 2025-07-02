@@ -210,6 +210,9 @@ class Reservation(models.Model):
 
     @property
     def chargeable_deposit(self):
+        # If more than 15 days after the end date, no deposit can be charged
+        if self.end and timezone.now().date() > (self.end + timedelta(days=15)):
+            return Decimal("0.00")
         caution = Decimal(self.logement.caution or 0)  # Ensure it is treated as a Decimal
         charged = Decimal(self.amount_charged or 0)  # Ensure it is treated as a Decimal
         result = max(Decimal("0"), caution - charged)
