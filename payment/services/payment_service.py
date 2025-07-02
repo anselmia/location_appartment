@@ -196,6 +196,30 @@ def get_session(session_id: str) -> Any:
         return None
 
 
+def detach_stripe_payment_method(reservation: Any) -> bool:
+    """
+    Detach a Stripe payment method from a reservation.
+    Args:
+        reservation (Any): The reservation object containing payment method details.
+    Returns:
+        bool: True if the payment method was detached successfully, else False.
+    """
+    payment_method_id = reservation.stripe_saved_payment_method_id
+    user = reservation.user
+
+    if not payment_method_id:
+        logger.warning(f"⚠️ No payment method ID found for reservation {reservation.id}")
+        return False
+
+    try:
+        stripe.PaymentMethod.detach(payment_method_id)
+        logger.info(f"✅ Detached payment method {payment_method_id} from user {user.id}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error detaching payment method {payment_method_id} from user {user.id}: {e}")
+        return False
+
+
 def create_stripe_setup_intent(reservation, user, request):
     """
     Crée un SetupIntent Stripe pour enregistrer une carte (usage off_session).
@@ -233,7 +257,9 @@ def create_stripe_setup_intent(reservation, user, request):
             usage="off_session",
             metadata={"user_id": str(user.id)},
         )
-        logger.info(f"✅ SetupIntent créé: {setup_intent.id} pour user {user.full_name} - Réservation {reservation.code if reservation else 'N/A'}  | IP: {ip}")
+        logger.info(
+            f"✅ SetupIntent créé: {setup_intent.id} pour user {user.full_name} - Réservation {reservation.code if reservation else 'N/A'}  | IP: {ip}"
+        )
         task.mark_success(setup_intent.id)
         return {
             "client_secret": setup_intent.client_secret,

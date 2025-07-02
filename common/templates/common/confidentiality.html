@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Politique de confidentialité – {{ entreprise.name }}{% endblock title%}
+{% block title %}
+    Politique de confidentialité – {{ entreprise.name }}
+{% endblock title %}
 {% block meta_description %}
     Découvrez la politique de confidentialité de {{ entreprise.name }} : gestion des données personnelles, finalités, droits RGPD, sécurité et cookies pour la location de logements à Nice et sur la Côte d’Azur.
 {% endblock meta_description %}
@@ -25,6 +27,9 @@
                     <li>Réservations : dates de séjour, logement sélectionné, nombre de voyageurs ;</li>
                     <li>
                         Paiement : informations de facturation (traitées par Stripe — aucune donnée bancaire n’est stockée par {{ entreprise.name }}),
+                    </li>
+                    <li>
+                        Moyens de paiement : une empreinte bancaire (identifiant de carte Stripe) peut être enregistrée temporairement pour permettre le paiement différé, le dépôt de garantie ou un remboursement. Ces informations sont traitées exclusivement par Stripe, certifié PCI-DSS. {{ entreprise.name }} ne conserve aucune donnée bancaire.
                     </li>
                     <li>Utilisation du site : cookies, adresses IP, données de navigation (voir section « Cookies »),</li>
                     <li>Messagerie interne, avis et formulaires de contact.</li>
@@ -61,11 +66,17 @@
                 <p>
                     Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données contre la perte, l'accès non autorisé, la divulgation ou l'altération.
                 </p>
+                <p>
+                    Les données sont hébergées sur des serveurs situés en France ou dans l’Union Européenne. Aucun transfert vers des pays tiers n’est réalisé sans garanties adéquates.
+                </p>
                 <h2>7. Durée de conservation</h2>
                 <ul>
                     <li>Données liées à une réservation : 5 ans après la dernière interaction,</li>
                     <li>Données de facturation : 10 ans (conformément à la législation fiscale),</li>
                     <li>Données marketing : 3 ans à compter du dernier contact ou désinscription.</li>
+                    <li>
+                        Données liées aux moyens de paiement (identifiants Stripe) : 30 jours maximum après la fin du séjour, sauf en cas de litige ou de remboursement en cours.
+                    </li>
                 </ul>
                 <h2>8. Vos droits</h2>
                 <p>Conformément au RGPD, vous disposez des droits suivants :</p>
@@ -76,6 +87,9 @@
                     <li>Droit au retrait du consentement (ex. newsletter),</li>
                     <li>Droit à la portabilité des données (sur demande).</li>
                 </ul>
+                <p>
+                    Vous pouvez également demander la suppression anticipée des identifiants de carte enregistrés via Stripe, dès lors qu’aucune opération en attente (paiement différé, dépôt, remboursement) ne le justifie.
+                </p>
                 <p>Vous pouvez exercer vos droits à tout moment en nous contactant :</p>
                 <p>
                     ✉️ par e-mail : <strong>{{ entreprise.contact_email }}</strong>

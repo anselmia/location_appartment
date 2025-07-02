@@ -68,6 +68,23 @@
         <p>
           Les paiements sont traités via Stripe, certifié PCI-DSS. Le site ne stocke aucune donnée bancaire. En effectuant un paiement, l’utilisateur accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions d’utilisation de Stripe</a>.
         </p>
+        <p>
+          Lors d’une réservation, une empreinte bancaire peut être conservée de manière sécurisée via Stripe afin de permettre :
+        </p>
+        <ul>
+          <li>la validation différée du paiement (2 jours avant le début du séjour),</li>
+          <li>la gestion d’un dépôt de garantie éventuel,</li>
+          <li>le traitement de remboursements ou litiges éventuels.</li>
+        </ul>
+        <p>
+          Ces informations ne sont pas stockées sur nos serveurs mais uniquement sur les serveurs certifiés PCI-DSS de Stripe.
+        </p>
+        <p>
+          {{ entreprise.name }} supprime les références de carte (identifiants de paiement) dans un délai de 30 jours après la fin du séjour, sauf si un traitement est encore en cours (remboursement, réclamation).
+        </p>
+        <p>
+          Conformément au RGPD, vous pouvez demander la suppression anticipée de ces informations en nous contactant à <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>.
+        </p>
         <h2>8. Mandat de gestion des paiements</h2>
         <p>En tant qu’intermédiaire, {{ entreprise.name }} reçoit mandat de chaque propriétaire pour :</p>
         <ul>
@@ -103,6 +120,9 @@
         <h2>12. Données personnelles</h2>
         <p>
           Les données sont traitées conformément au RGPD. Voir notre <a href="{% url 'common:confidentiality' %}">politique de confidentialité</a>. Contact : <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>
+        </p>
+        <p>
+          Les données personnelles des utilisateurs sont conservées pendant la durée strictement nécessaire aux finalités pour lesquelles elles ont été collectées, et conformément à la législation en vigueur. Les informations liées aux réservations sont conservées pour la durée légale de conservation comptable (10 ans), sauf demande contraire de l’utilisateur dans le respect du cadre légal.
         </p>
         <h2>13. Cookies</h2>
         <p>Des cookies sont utilisés pour assurer la sécurité, la mesure d’audience et le bon fonctionnement du site.</p>
@@ -158,6 +178,8 @@
           <a href="https://www.ovh.com/fr/" target="_blank" rel="noopener">www.ovh.com</a>
         </p>
         <p>Les données sont hébergées sur des serveurs situés en France.</p>
+        <h2>22. Langue applicable</h2>
+        <p>En cas de traduction des présentes CGU, seule la version française fait foi en cas de litige.</p>
       </section>
     </article>
   </div>

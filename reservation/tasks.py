@@ -76,6 +76,7 @@ def _end_reservations(model):
 def delete_expired_pending_reservations_logement():
     """Delete expired pending reservations for logements."""
     from common.signals import update_last_task_result
+
     logger.info("Deleting expired pending logement reservations.")
     summary = _delete_expired_pending(Reservation)
     name = inspect.currentframe().f_code.co_name
@@ -83,10 +84,11 @@ def delete_expired_pending_reservations_logement():
     return summary
 
 
-@periodic_task(crontab(hour=3, minute=10))  # every day at 3am
+@periodic_task(crontab(hour=3, minute=10))  # every day at 3a:10
 def delete_expired_pending_reservations_activity():
     """Delete expired pending reservations for activities."""
     from common.signals import update_last_task_result
+
     logger.info("Deleting expired pending activity reservations.")
     summary = _delete_expired_pending(ActivityReservation)
     name = inspect.currentframe().f_code.co_name
@@ -98,6 +100,7 @@ def delete_expired_pending_reservations_activity():
 def end_reservations_logement():
     """End reservations for logements that have passed their end date."""
     from common.signals import update_last_task_result
+
     logger.info("Ending logement reservations that have passed their end date.")
     summary = _end_reservations(Reservation)
     name = inspect.currentframe().f_code.co_name
@@ -109,6 +112,7 @@ def end_reservations_logement():
 def end_reservations_activity():
     """End reservations for activities that have passed their end date."""
     from common.signals import update_last_task_result
+
     logger.info("Ending activity reservations that have passed their end date.")
     summary = _end_reservations(ActivityReservation)
     name = inspect.currentframe().f_code.co_name
@@ -120,6 +124,7 @@ def end_reservations_activity():
 def send_pre_check_in_logement():
     """Send pre-check-in reminders for logement reservations."""
     from common.signals import update_last_task_result
+
     logger.info("Sending pre-check-in reminders for logement reservations.")
     summary = send_pre_checkin_reminders()
     name = inspect.currentframe().f_code.co_name
@@ -131,8 +136,89 @@ def send_pre_check_in_logement():
 def send_pre_check_in_activity():
     """Send pre-check-in reminders for activity reservations."""
     from common.signals import update_last_task_result
+
     logger.info("Sending pre-check-in reminders for activity reservations.")
     summary = send_pre_checkin_activity_reminders()
     name = inspect.currentframe().f_code.co_name
     update_last_task_result(name, summary)
     return summary
+
+
+@periodic_task(crontab(minute=0, hour=1))  # Runs daily at 1:00 AM
+def clean_sensitive_payment_data():
+    from common.signals import update_last_task_result
+    from payment.services.payment_service import detach_stripe_payment_method
+
+    now = timezone.now().date()
+    cutoff_date = now - timedelta(days=30)
+    cleaned_count = 0
+    failed = 0
+    cleaned_codes = []
+
+    try:
+        queryset = Reservation.objects.filter(
+            statut__in=["terminee", "annulee", "echec_paiement"], end__lt=cutoff_date
+        ).exclude(
+            Q(stripe_saved_payment_method_id__isnull=True)
+            & Q(stripe_payment_intent_id__isnull=True)
+            & Q(stripe_deposit_payment_intent_id__isnull=True)
+        )
+
+        for resa in queryset:
+            try:
+                logger.info(f"Cleaning payment data for reservation {resa.code}")
+                if resa.stripe_saved_payment_method_id:
+                    detach_stripe_payment_method(resa)
+                cleaned_codes.append(resa.code)
+                resa.stripe_saved_payment_method_id = None
+                resa.stripe_payment_intent_id = None
+                resa.stripe_deposit_payment_intent_id = None
+                resa.save(
+                    update_fields=[
+                        "stripe_saved_payment_method_id",
+                        "stripe_payment_intent_id",
+                        "stripe_deposit_payment_intent_id",
+                    ]
+                )
+                cleaned_count += 1
+            except Exception as e:
+                logger.warning(f"Failed to clean reservation {resa.code}: {e}")
+                failed += 1
+
+        queryset = ActivityReservation.objects.filter(
+            statut__in=["terminee", "annulee", "echec_paiement"], end__lt=cutoff_date
+        ).exclude(
+            Q(stripe_saved_payment_method_id__isnull=True)
+            & Q(stripe_payment_intent_id__isnull=True)
+            & Q(stripe_deposit_payment_intent_id__isnull=True)
+        )
+
+        for resa in queryset:
+            try:
+                logger.info(f"Cleaning payment data for reservation {resa.code}")
+                if resa.stripe_saved_payment_method_id:
+                    detach_stripe_payment_method(resa)
+                cleaned_codes.append(resa.code)
+                resa.stripe_saved_payment_method_id = None
+                resa.stripe_payment_intent_id = None
+                resa.save(update_fields=["stripe_saved_payment_method_id", "stripe_payment_intent_id"])
+                cleaned_count += 1
+            except Exception as e:
+                logger.warning(f"Failed to clean reservation {resa.code}: {e}")
+                failed += 1
+
+        summary = {
+            "cutoff_date": str(cutoff_date),
+            "cleaned": cleaned_count,
+            "failed": failed,
+            "reservation_codes": cleaned_codes,
+        }
+
+        logger.info(f"Cleaned sensitive data for {cleaned_count} reservation(s).")
+        name = inspect.currentframe().f_code.co_name
+        update_last_task_result(name, summary)
+
+    except Exception as e:
+        logger.exception(f"Error cleaning reservation payment data: {e}")
+        name = inspect.currentframe().f_code.co_name
+        update_last_task_result(name, {"error": str(e)})

@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Conditions Générales de Vente – {{ entreprise.name }}{% endblock %}
 {% block meta_description %}
-Découvrez les conditions générales de vente de {{ entreprise.name }} : réservation, annulation, paiement, dépôt de garantie, responsabilités et droits des voyageurs et propriétaires à Nice et sur la Côte d’Azur.
+    Découvrez les conditions générales de vente de {{ entreprise.name }} : réservation, annulation, paiement, dépôt de garantie, responsabilités et droits des voyageurs et propriétaires à Nice et sur la Côte d’Azur.
 {% endblock %}
 {% block extrahead %}
     {{ block.super }}
@@ -16,7 +16,7 @@ Découvrez les conditions générales de vente de {{ entreprise.name }} : rés
                 <p>Dernière mise à jour : {{ cgu_update_date|default:"[DATE]" }}</p>
                 <h2>1. Présentation</h2>
                 <p>
-                    La société {{ entreprise.name }}, {{ entreprise.form }}, immatriculée au RCS de Nice sous le numéro {{ entreprise.siret}}, dont le siège social est situé à [adresse complète], agit en qualité de mandataire pour le compte de propriétaires particuliers ou professionnels. Elle propose à la location des logements meublés de courte durée via son site internet et différentes plateformes spécialisées. Les paiements sont gérés via Stripe, prestataire de paiement sécurisé.
+                    La société {{ entreprise.name }}, {{ entreprise.form }}, immatriculée au RCS de Nice sous le numéro {{ entreprise.siret }}, dont le siège social est situé à [adresse complète], agit en qualité de mandataire pour le compte de propriétaires particuliers ou professionnels. Elle propose à la location des logements meublés de courte durée via son site internet et différentes plateformes spécialisées. Les paiements sont gérés via Stripe, prestataire de paiement sécurisé.
                 </p>
                 <h2>2. Formation du contrat</h2>
                 <p>
@@ -80,6 +80,12 @@ Découvrez les conditions générales de vente de {{ entreprise.name }} : rés
                 <p>
                     Les paiements sont traités via Stripe. Le site ne conserve aucune donnée bancaire. L’acheteur accepte les <a href="https://stripe.com/fr/legal" target="_blank">conditions générales de Stripe</a>. Le paiement valide immédiatement la réservation, sans faculté de rétractation (article L.221-28 du Code de la consommation – prestations de services d’hébergement datées).
                 </p>
+                <p>
+                    Lors de la réservation, une carte bancaire peut être enregistrée de manière sécurisée via Stripe pour permettre un débit différé ou un dépôt de garantie. Cette carte est automatiquement détachée après un délai de 30 jours suivant la fin du séjour, sauf en cas de litige ou remboursement en cours.
+                </p>
+                <p>
+                    Le client peut à tout moment demander la suppression anticipée de cette autorisation de paiement, sous réserve qu’aucun montant restant ne soit dû.
+                </p>
                 <h2>10. Responsabilité et assurance</h2>
                 <p>
                     Le locataire est responsable de tout dommage matériel ou moral causé pendant le séjour. Il est fortement recommandé de disposer d’une assurance responsabilité civile villégiature.
@@ -135,41 +141,45 @@ Découvrez les conditions générales de vente de {{ entreprise.name }} : rés
                 <p>
                     {{ entreprise.name }} se réserve le droit de modifier les CGV à tout moment. La version applicable est celle acceptée au moment de la réservation.
                 </p>
-                                <h2>20. Rôle de la plateforme</h2>
+                <h2>20. Rôle de la plateforme</h2>
                 <p>
                     {{ entreprise.name }} agit exclusivement en tant qu’intermédiaire technique, mettant à disposition un espace en ligne permettant à des particuliers ou professionnels de proposer et réserver des logements meublés de courte durée. Elle ne fournit aucun service d’hébergement, n’intervient pas dans la conclusion ou l’exécution du contrat de location, et ne garantit ni la qualité, ni la légalité, ni la disponibilité des logements publiés.
                 </p>
                 <p>
                     {{ entreprise.name }} ne peut être considérée comme un agent immobilier, un hôtelier, ni comme partie au contrat conclu entre hôtes et voyageurs.
                 </p>
-
                 <h2>21. Obligations réglementaires des utilisateurs</h2>
                 <ul>
-                    <li>Les propriétaires sont seuls responsables de la conformité légale de leur offre (autorisation de location, changement d’usage, déclaration en mairie, taxe de séjour, assurance).</li>
-                    <li>En cas de location de la résidence principale, la limite de 120 jours/an doit être respectée (article L. 324-1-1 du Code du tourisme).</li>
-                    <li>Les propriétaires doivent vérifier s’ils sont soumis à une obligation de déclaration préalable ou d’enregistrement, notamment dans des villes comme Paris, Nice ou Lyon.</li>
-                    <li>Les utilisateurs s’engagent à fournir des informations exactes sur le logement et à respecter les lois locales, fiscales et sociales applicables à leur situation.</li>
+                    <li>
+                        Les propriétaires sont seuls responsables de la conformité légale de leur offre (autorisation de location, changement d’usage, déclaration en mairie, taxe de séjour, assurance).
+                    </li>
+                    <li>
+                        En cas de location de la résidence principale, la limite de 120 jours/an doit être respectée (article L. 324-1-1 du Code du tourisme).
+                    </li>
+                    <li>
+                        Les propriétaires doivent vérifier s’ils sont soumis à une obligation de déclaration préalable ou d’enregistrement, notamment dans des villes comme Paris, Nice ou Lyon.
+                    </li>
+                    <li>
+                        Les utilisateurs s’engagent à fournir des informations exactes sur le logement et à respecter les lois locales, fiscales et sociales applicables à leur situation.
+                    </li>
                 </ul>
-
                 <h2>22. Notifications de contenus illicites</h2>
                 <p>
                     Conformément au Règlement (UE) 2022/2065 sur les services numériques (DSA), {{ entreprise.name }} met à disposition un formulaire permettant à toute personne de signaler un contenu illicite ou contraire à ses conditions d’utilisation.
                     En cas de notification fondée, {{ entreprise.name }} se réserve le droit de retirer ou désactiver l’accès à ce contenu et d’informer l’utilisateur concerné.
                 </p>
-                <p>
-                    Un signalement abusif ou infondé peut entraîner des mesures de suspension temporaire de l’accès au service.
-                </p>
-
+                <p>Un signalement abusif ou infondé peut entraîner des mesures de suspension temporaire de l’accès au service.</p>
                 <h2>23. Suspension – Résiliation</h2>
                 <p>
                     {{ entreprise.name }} peut suspendre ou résilier un compte utilisateur, annuler une réservation ou limiter l’accès à ses services sans préavis en cas de violation des présentes CGV, comportement frauduleux, litige répété ou utilisation abusive de la plateforme.
                     En cas de suspension ou suppression, aucune compensation ne pourra être exigée.
                 </p>
-
                 <h2>24. Traitement des réclamations</h2>
                 <p>
                     Les utilisateurs peuvent soumettre toute réclamation via le formulaire de contact ou par e-mail à <a href="mailto:{{ contact_mail }}">{{ contact_mail }}</a>. En cas de désaccord persistant, une médiation pourra être proposée, conformément à l’article L.612-1 du Code de la consommation.
                 </p>
+                <h2>25. Langue applicable</h2>
+                <p>En cas de traduction des présentes CGU, seule la version française fait foi en cas de litige.</p>
             </section>
         </article>
     </div>
