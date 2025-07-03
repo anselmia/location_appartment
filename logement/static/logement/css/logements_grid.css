@@ -16,12 +16,6 @@
   justify-content: center;
   color: white;
   text-align: center;
-  background-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.2)
-    ),
-    url("your-image-url-here"); /* already handled via inline in template */
   height: 70vh;
 }
 
@@ -250,6 +244,8 @@
   .logements-section {
     padding: 0 1rem;
     padding-top: 2rem; /* Adjust padding for smaller screens */
+    aspect-ratio: unset;
+    min-height: 400px;
   }
 
   .btn-show-more {

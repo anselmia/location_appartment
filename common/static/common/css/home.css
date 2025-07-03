@@ -399,21 +399,7 @@ section a:hover {
   padding: 0;
   box-shadow: none;
 }
-.logements-section {
-  background: linear-gradient(
-    120deg,
-    rgba(255, 248, 240, 0.95) 60%,
-    rgba(248, 245, 242, 0.95) 100%
-  );
-  border-radius: 2rem;
-  margin-bottom: 2.5rem;
-  padding: 4rem 2rem 3rem 2rem;
-  box-shadow: 0 2px 16px rgba(191, 166, 107, 0.07);
-  position: relative;
-  overflow: visible !important;
-  padding-bottom: 2rem;
-  min-height: 600px;
-}
+
 .logement-card {
   border: none;
   border-radius: 1.2rem;
@@ -552,11 +538,6 @@ section a:hover {
   .btn-luxury {
     font-size: 1rem;
     padding: 0.7rem 1.5rem;
-  }
-}
-@media (max-width: 600px) {
-  .logements-section {
-    padding: 1.5rem 0.3rem 1.5rem 0.3rem;
   }
 }
 

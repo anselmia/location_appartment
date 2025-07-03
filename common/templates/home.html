@@ -28,6 +28,7 @@
     <link rel="preload"
           as="image"
           href="{% static 'logement/img/logement.jpg' %}"
+          type="image/jpeg"
           fetchpriority="high">
 {% endblock %}
 {% block content %}
@@ -214,16 +215,13 @@
                 </div>
             </section>
             <!-- LOGEMENTS -->
-            <section class="lux-section logements-section position-relative"
-                     id="logements">
-                <img src="{% static 'logement/img/logement.jpg' %}"
-                     alt="Fond logements"
-                     width="1920"
-                     height="600"
-                     class="position-absolute top-0 start-0 w-100 h-100"
-                     style="object-fit: cover;
-                            z-index: -1"
-                     loading="lazy" />
+            <section class="lux-section logements-section"
+                     id="logements"
+                     style="aspect-ratio: 16 / 5;
+                            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2)), url('{% static "logement/img/logement.jpg" %}');
+                            background-size: cover;
+                            background-position: center;
+                            background-repeat: no-repeat">
                 <div class="lux-section-inner">
                     <h2 class="section-title-luxury">Nos logements disponibles</h2>
                     <div class="luxury-divider"></div>
