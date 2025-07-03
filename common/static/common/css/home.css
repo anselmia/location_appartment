@@ -412,6 +412,7 @@ section a:hover {
   position: relative;
   overflow: visible !important;
   padding-bottom: 2rem;
+  min-height: 600px;
 }
 .logement-card {
   border: none;

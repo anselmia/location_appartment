@@ -25,6 +25,10 @@
           href="{% static 'logement/css/logements_grid.css' %}"
           media="print"
           onload="this.media='all'">
+    <link rel="preload"
+          as="image"
+          href="{% static 'logement/img/logement.jpg' %}"
+          fetchpriority="high">
 {% endblock %}
 {% block content %}
     <div class="home-page">
@@ -36,7 +40,8 @@
         </div>
         <header class="hero-banner" style="background: none;">
             <picture>
-                <source srcset="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% endif %}" type="image/webp">
+                <source srcset="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% endif %}"
+                        type="image/webp">
                 <img src="{% if config.banner_image_optimized %}{{ config.banner_image_optimized.url }}{% endif %}"
                      width="1920"
                      height="600"
@@ -209,9 +214,16 @@
                 </div>
             </section>
             <!-- LOGEMENTS -->
-            <section class="lux-section logements-section"
-                     id="logements"
-                     style="background-image: url('{% static "logement/img/logement.jpg" %}')">
+            <section class="lux-section logements-section position-relative"
+                     id="logements">
+                <img src="{% static 'logement/img/logement.jpg' %}"
+                     alt="Fond logements"
+                     width="1920"
+                     height="600"
+                     class="position-absolute top-0 start-0 w-100 h-100"
+                     style="object-fit: cover;
+                            z-index: -1"
+                     loading="lazy" />
                 <div class="lux-section-inner">
                     <h2 class="section-title-luxury">Nos logements disponibles</h2>
                     <div class="luxury-divider"></div>
