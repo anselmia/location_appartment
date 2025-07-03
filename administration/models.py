@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
 
 
 class Entreprise(models.Model):
@@ -35,6 +37,15 @@ class HomePageConfig(models.Model):
     font_family = models.CharField(max_length=100, default="'Poppins', sans-serif")
     cta_text = models.CharField(max_length=100, default="Découvrir nos logements")
     contact_title = models.CharField(max_length=100, default="Contactez-nous")
+
+    banner_image_optimized = ImageSpecField(
+        source="banner_image", processors=[ResizeToFit(1920, 600)], format="JPEG", options={"quality": 75}
+    )
+
+    # WebP format for modern browsers
+    banner_image_webp = ImageSpecField(
+        source="banner_image", processors=[ResizeToFit(1920, 600)], format="WEBP", options={"quality": 75}
+    )
 
     def __str__(self):
         return "Configuration de la page d’accueil"

@@ -26,12 +26,6 @@
         <meta property="og:type" content="website" />
         <meta name="google-site-verification"
               content="Ezmpcz3zkqC2psThMGeZ1zDx5syx8C7Qsi7b7ftz4h0" />
-        <!-- Preload critical banner image -->
-        <link rel="preload"
-              as="image"
-              href="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% else %}{% static 'logement/img/banner.webp' %}{% endif %}"
-              type="image/webp"
-              fetchpriority="high">
         <!-- Fonts (minimize blocking) -->
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap"
               rel="stylesheet">
@@ -50,6 +44,16 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
               media="print"
               onload="this.media='all'">
+        <link rel="preload"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2"
+              as="font"
+              type="font/woff2"
+              crossorigin>
+        <link rel="preload"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-brands-400.woff2"
+              as="font"
+              type="font/woff2"
+              crossorigin>
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
               media="print"
@@ -125,77 +129,10 @@
                 <path fill="#f8f5f2" d="M0,32L1440,96L1440,0L0,0Z"></path>
             </svg>
         </div>
-        <div id="cookie-banner"
-             style="display: none"
-             class="cookie-banner shadow rounded p-3"
-             role="dialog"
-             aria-modal="true"
-             aria-labelledby="cookie-title">
-            <div class="d-flex align-items-center mb-2">
-                <!-- SVG Cookie Icon -->
-                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" class="me-2">
-                    <circle cx="19" cy="19" r="19" fill="#bfa66b" />
-                    <circle cx="13" cy="15" r="2" fill="#fff" />
-                    <circle cx="25" cy="13" r="1.5" fill="#fff" />
-                    <circle cx="19" cy="25" r="2" fill="#fff" />
-                    <circle cx="25" cy="22" r="1.2" fill="#fff" />
-                </svg>
-                <div>
-                    <span class="fw-bold fs-5" id="cookie-title">Gestion des cookies</span>
-                </div>
-            </div>
-            <p class="mb-3">
-                Nous utilisons des cookies pour améliorer votre expérience, mesurer l’audience et proposer des services tiers (Google Maps, Google Analytics, traduction, etc.).
-                <a href="{% url 'common:cgu' %}" target="_blank" rel="noopener">En savoir plus</a>
-            </p>
-            <div class="cookie-actions d-flex flex-wrap gap-2 mb-3">
-                <button id="accept-cookies"
-                        class="btn btn-success btn-sm flex-fill shadow-sm">Tout accepter</button>
-                <button id="refuse-cookies"
-                        class="btn btn-outline-secondary btn-sm flex-fill shadow-sm">Tout refuser</button>
-                <button id="customize-cookies" class="btn btn-link btn-sm flex-fill">Personnaliser</button>
-            </div>
-            <div id="cookie-customize-panel" style="display:none; margin-top:1rem;">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-check-label d-flex align-items-center">
-                            <input type="checkbox" checked disabled class="form-check-input me-2">
-                            <strong>Cookies nécessaires</strong>
-                            <span class="ms-1 badge bg-secondary">Toujours actifs</span>
-                        </label>
-                        <div class="text-muted small ms-4">Indispensables au fonctionnement du site (connexion, sécurité, réservation...)</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-check-label d-flex align-items-center">
-                            <input type="checkbox"
-                                   id="consent-analytics"
-                                   checked
-                                   class="form-check-input me-2">
-                            Statistiques <span class="ms-1 text-muted">(Google Analytics)</span>
-                        </label>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-check-label d-flex align-items-center">
-                            <input type="checkbox"
-                                   id="consent-maps"
-                                   checked
-                                   class="form-check-input me-2">
-                            Services tiers <span class="ms-1 text-muted">(Google Maps, traduction...)</span>
-                        </label>
-                    </div>
-                    <button type="button"
-                            id="save-cookie-preferences"
-                            class="btn btn-primary btn-sm mt-2 w-100 shadow-sm">Enregistrer mes choix</button>
-                </form>
-            </div>
-            <div class="text-center mt-2">
-                <small class="text-muted">Vous pouvez modifier vos préférences à tout moment en cliquant sur « Gérer mes cookies » en bas de page.</small>
-            </div>
-        </div>
         {% include "footer.html" %}
         {% block extra_js %}{% endblock %}
         <!-- Cookie Banner -->
-        {% include 'common/includes/cookie_banner.html' %}
+        {% include 'cookie_banner.html' %}
         <!-- Deferred Scripts -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
         <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>

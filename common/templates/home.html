@@ -9,6 +9,11 @@
 {% block extrahead %}
     {{ block.super }}
     <!-- Preload and preconnect for fonts -->
+    <link rel="preload"
+          as="image"
+          href="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% else %}{% static 'logement/img/banner.webp' %}{% endif %}"
+          type="image/webp"
+          fetchpriority="high">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload"
@@ -31,21 +36,20 @@
         </div>
         <header class="hero-banner" style="background: none;">
             <picture>
-                <source srcset="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% else %}{% static 'logement/img/banner.webp' %}{% endif %}"
-                        type="image/webp">
-                <img src="{% if config.banner_image %}{{ config.banner_image.url }}{% else %}{% static 'logement/img/banner.jpg' %}{% endif %}"
-                     alt="Location Côte d'Azur"
+                <source srcset="{% if config.banner_image_webp %}{{ config.banner_image_webp.url }}{% endif %}" type="image/webp">
+                <img src="{% if config.banner_image_optimized %}{{ config.banner_image_optimized.url }}{% endif %}"
                      width="1920"
                      height="600"
+                     alt="Banner"
                      class="hero-img"
                      loading="eager"
                      fetchpriority="high">
             </picture>
             <div class="overlay">
-                <h1 class="animate-fade-in">{{ entreprise.name }}</h1>
-                <p class="animate-fade-in delay">{{ config.devise }}</p>
+                <h1>{{ entreprise.name }}</h1>
+                <p>{{ config.devise }}</p>
                 <div class="hero-cta-group">
-                    <a href="#logements" class="cta-button animate-slide-up delay-2">Trouvez votre logement</a>
+                    <a href="#logements" class="cta-button ">Trouvez votre logement</a>
                     <a href="{% url 'accounts:register' %}?role=proprietaire"
                        class="cta-button cta-owner">Proposer mon bien</a>
                 </div>
@@ -128,7 +132,7 @@
                 </div>
             </section>
             <!-- ENGAGEMENTS -->
-            <section class="lux-section alt-bg fade-in-up">
+            <section class="lux-section alt-bg">
                 <div class="lux-section-inner">
                     <h2 class="mb-5 section-title-luxury">Nos engagements</h2>
                     <div class="luxury-divider"></div>
@@ -205,7 +209,7 @@
                 </div>
             </section>
             <!-- LOGEMENTS -->
-            <section class="lux-section logements-section fade-in-up"
+            <section class="lux-section logements-section"
                      id="logements"
                      style="background-image: url('{% static "logement/img/logement.jpg" %}')">
                 <div class="lux-section-inner">
@@ -214,11 +218,12 @@
                     {% if logements %}
                         <div class="logements-grid">
                             {% for logement in logements|slice:":6" %}
-                                <div class="card logement-card fade-in-up luxury-card">
+                                <div class="card logement-card  luxury-card">
                                     <a href="{% url 'logement:view_logement' logement.id %}">
                                         <div class="logement-img-wrapper">
                                             <picture>
-                                                <source srcset="{{ logement.photos.first.image_webp.url }}" type="image/webp">
+                                                <source srcset="{% if logement.photos.first.image_webp %}{{ logement.photos.first.image_webp.url }}{% endif %}"
+                                                        type="image/webp">
                                                 <img src="{{ logement.photos.first.image.url }}"
                                                      loading="lazy"
                                                      width="400"
@@ -274,7 +279,7 @@
                 </div>
             </section>
             <!-- JOIN US -->
-            <section class="lux-section join-us-section fade-in-up">
+            <section class="lux-section join-us-section ">
                 <div class="lux-section-inner">
                     <div class="row align-items-center join-us-wrapper">
                         <div class="col-md-6 join-text">
@@ -301,7 +306,7 @@
                 </div>
             </section>
             <!-- CONTACT -->
-            <section class="lux-section contact-section fade-in-up" id="contact">
+            <section class="lux-section contact-section" id="contact">
                 <div class="lux-section-inner contact-wrapper-luxury">
                     <div class="contact-intro">
                         <div class="contact-icon">

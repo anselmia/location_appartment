@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "django.contrib.humanize",
     "widget_tweaks",
+    'imagekit',
     "huey.contrib.djhuey",
     "activity.apps.ActivityConfig",
     "accounts.apps.AccountsConfig",
@@ -167,3 +168,10 @@ Q_CLUSTER = {
 
 CGU_VERSION = "2025.1"
 CGV_VERSION = "2025.1"
+
+# Store generated images in the same MEDIA root
+IMAGEKIT_CACHEFILE_DIR = 'cache/images'
+IMAGEKIT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
+
+# Optional: clear cache on delete
+IMAGEKIT_DEFAULT_CACHEFILE_BACKEND = 'imagekit.cachefiles.backends.Simple'
