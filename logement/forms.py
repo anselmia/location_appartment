@@ -172,6 +172,26 @@ class LogementForm(forms.ModelForm):
                     attrs={"readonly": "readonly", "class": "form-control disabled"}
                 )
                 self.fields["admin"].initial = self._format_user_display(getattr(self.instance, "admin", None))
+            
+            if user and not user.is_owner or (user.is_admin or user.is_superuser):               
+                self.fields["adresse"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["ville"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["category"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["registered_number"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["superficie"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
+                self.fields["admin_fee"].widget = forms.TextInput(
+                    attrs={"readonly": "readonly", "class": "form-control disabled"}
+                )
 
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")

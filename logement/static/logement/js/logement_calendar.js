@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (logementId) {
           axios
-            .get(`/prices/?${params.toString()}`)
+            .get(`/logement/prices/?${params.toString()}`)
             .then((res) => {
               logToServer(
                 "info",
@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
       guestCount = 1;
     }
     axios
-      .post("/prices/calculate_price/", {
+      .post("/logement/prices/calculate_price/", {
         logement_id: selector.value,
         start: selectedStart,
         end: selectedEnd || selectedStart,
@@ -432,7 +432,7 @@ document.addEventListener("DOMContentLoaded", function () {
       end: selectedEnd ? dayBefore(selectedEnd) : selectedStart,
     };
 
-    const url = "/prices/bulk_update/";
+    const url = "/logement/prices/bulk_update/";
     const method = "post";
 
     axios[method](url, payload)

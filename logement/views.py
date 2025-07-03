@@ -200,14 +200,13 @@ def manage_logement(request: HttpRequest, logement_id: int = None) -> HttpRespon
             return redirect("logement:edit_logement", logement.id)
     else:
         form = LogementForm(request.POST or None, instance=logement, user=request.user)
+        # BLOCK is_owner_admin users here
+        if request.user.is_owner_admin and not (request.user.is_admin or request.user.is_superuser):
+            messages.error(request, "Vous n'avez pas l'autorisation d'ajouter un logement.")
+            return redirect("logement:dashboard")
 
     # 2. Ajouter la liste des conciergeries actives au contexte
     active_conciergeries = Conciergerie.objects.filter(actif=True).order_by("name")
-
-    # BLOCK is_owner_admin users here
-    if hasattr(request.user, "is_owner_admin") and request.user.is_owner_admin:
-        messages.error(request, "Vous n'avez pas l'autorisation d'ajouter ou modifier un logement.")
-        return redirect("logement:dashboard")
 
     context = get_logement_form_data(logement, request.user)
     context.update(

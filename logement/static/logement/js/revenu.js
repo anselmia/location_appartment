@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const netProfitElem = document.getElementById("net-profit");
   const economyChartElem = document.getElementById("economy-chart");
   const AdminRevenuElem = document.getElementById("total-conciergerie");
+  const AdminTransfersElem = document.getElementById("total-transfer-conciergerie");
 
   try {
     // Compute totals
@@ -20,9 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const platform = sum(platformEarnings);
     const payment = sum(paymentFees);
     const ownerTransfers = sum(owner_transfer_data);
+    const adminTransfers = sum(admin_transfer_data);
 
     totalRevenueElem.textContent = `€${totalRevenusBrut.toFixed(2)}`;
     if (AdminRevenuElem) AdminRevenuElem.textContent = `€${admintotalRevenus.toFixed(2)}`;
+    if (AdminTransfersElem) AdminTransfersElem.textContent = `€${adminTransfers.toFixed(2)}`;
     totalTaxesElem.textContent = `€${totalTax.toFixed(2)}`;
     netProfitElem.textContent = `€${ownerTransfers.toFixed(2)}`;
     totalRefundsElem.textContent = `€${refunds.toFixed(2)}`;

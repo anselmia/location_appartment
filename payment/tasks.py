@@ -50,7 +50,7 @@ def transfert_funds():
                 summary["activity_reservations"]["errors"].append({"id": reservation.id, "error": str(e)})
         else:
             summary["activity_reservations"]["skipped"] += 1
-    
+
     name = inspect.currentframe().f_code.co_name
     update_last_task_result(name, summary)
 
@@ -162,6 +162,7 @@ def capture_payment_intents():
 def check_stripe_integrity():
     from payment.services.payment_service import send_stripe_payment_link
     from common.signals import update_last_task_result
+
     summary = {
         "reservations": {
             "refunds": {"checked": 0, "updated": 0, "errors": []},
@@ -176,228 +177,232 @@ def check_stripe_integrity():
         },
     }
 
-    ##### RESERVATION REFUNDS #####
-    problematic = Reservation.objects.filter(refunded=True).filter(
-        refund_amount__isnull=True
-    ) | Reservation.objects.filter(refunded=True, refund_amount=0)
+    try:
+        ##### RESERVATION REFUNDS #####
+        problematic = Reservation.objects.filter(refunded=True).filter(
+            refund_amount__isnull=True
+        ) | Reservation.objects.filter(refunded=True, refund_amount=0)
 
-    for resa in problematic:
-        summary["reservations"]["refunds"]["checked"] += 1
-        try:
-            refund = get_refund(resa.stripe_refund_id)
-            if refund:
-                with transaction.atomic():
-                    amount = refund.amount
-                    currency = refund.currency or "eur"
-
-                    if not amount or amount <= 0:
-                        mail_admins(
-                            subject=f"[Refund Integrity] Invalid refund amount for reservation {resa.code}",
-                            message=f"Refund {refund.id} for reservation {resa.code} has invalid amount: {amount} {currency}.",
-                        )
-                        continue
-
-                    refunded_amount = Decimal(amount) / 100
-                    resa.refund_amount = refunded_amount
-
-                    if refund.metadata and refund.metadata.get("refund") == "full":
-                        resa.platform_fee = Decimal("0.00")
-                        resa.tax = Decimal("0.00")
-                        resa.statut = "annulee"
-
-                    resa.save(update_fields=["refund_amount", "platform_fee", "tax", "statut", "stripe_refund_id"])
-                    summary["reservations"]["refunds"]["updated"] += 1
-            else:
-                mail_admins(
-                    subject=f"[Refund Integrity] No refund found for reservation {resa.code}",
-                    message=f"No refund found on Stripe for reservation {resa.code} (refund_id={resa.stripe_refund_id}).",
-                )
-        except Exception as e:
-            summary["reservations"]["refunds"]["errors"].append(f"{resa.code}: {str(e)}")
-
-    ##### RESERVATION TRANSFERS #####
-    problematic = (
-        Reservation.objects.filter(transferred=True, transferred_amount__isnull=True)
-        | Reservation.objects.filter(transferred=True, transferred_amount=0)
-        | Reservation.objects.filter(admin_transferred=True, admin_transferred_amount__isnull=True)
-        | Reservation.objects.filter(admin_transferred=True, admin_transferred_amount=0)
-    )
-
-    for resa in problematic:
-        summary["reservations"]["transfers"]["checked"] += 1
-        try:
-            transfer = get_transfer(resa.stripe_transfer_id)
-            if transfer:
-                transfer_user = transfer.metadata.get("transfer")
-                if not transfer_user:
-                    continue
-
-                with transaction.atomic():
-                    amount = transfer.amount
-                    if not amount or amount <= 0:
-                        mail_admins(
-                            subject=f"[Transfer Integrity] Invalid transfer amount for reservation {resa.code}",
-                            message=f"Transfer {transfer.id} for reservation {resa.code} has invalid amount: {amount}",
-                        )
-                        continue
-
-                    transferred_amount = Decimal(amount) / 100
-
-                    if transfer_user == "owner":
-                        resa.transferred_amount = transferred_amount
-                        resa.save(update_fields=["transferred_amount"])
-                    elif transfer_user == "admin":
-                        resa.admin_transferred_amount = transferred_amount
-                        resa.save(update_fields=["admin_transferred_amount"])
-
-                    summary["reservations"]["transfers"]["updated"] += 1
-            else:
-                mail_admins(
-                    subject=f"[Transfer Integrity] No transfer found for reservation {resa.code}",
-                    message=f"No transfer found on Stripe for reservation {resa.code} (transfer_id={resa.stripe_transfer_id}).",
-                )
-        except Exception as e:
-            summary["reservations"]["transfers"]["errors"].append(f"{resa.code}: {str(e)}")
-
-    ##### RESERVATION DEPOSITS #####
-    problematic = Reservation.objects.filter(caution_charged=True).filter(
-        amount_charged__isnull=True
-    ) | Reservation.objects.filter(caution_charged=True, amount_charged=0)
-
-    for resa in problematic:
-        summary["reservations"]["deposits"]["checked"] += 1
-        try:
-            if resa.stripe_deposit_payment_intent_id:
-                deposit = get_payment_intent(resa.stripe_deposit_payment_intent_id)
-                if deposit:
+        for resa in problematic:
+            summary["reservations"]["refunds"]["checked"] += 1
+            try:
+                refund = get_refund(resa.stripe_refund_id)
+                if refund:
                     with transaction.atomic():
-                        amount = deposit.amount
+                        amount = refund.amount
+                        currency = refund.currency or "eur"
+
                         if not amount or amount <= 0:
                             mail_admins(
-                                subject=f"[Deposit Integrity] Invalid deposit amount for reservation {resa.code}",
-                                message=f"Deposit {deposit.id} for reservation {resa.code} has invalid amount: {amount}",
+                                subject=f"[Refund Integrity] Invalid refund amount for reservation {resa.code}",
+                                message=f"Refund {refund.id} for reservation {resa.code} has invalid amount: {amount} {currency}.",
                             )
                             continue
 
-                        deposited_amount = Decimal(amount) / 100
-                        resa.amount_charged = deposited_amount
-                        resa.save(update_fields=["amount_charged"])
-                        summary["reservations"]["deposits"]["updated"] += 1
+                        refunded_amount = Decimal(amount) / 100
+                        resa.refund_amount = refunded_amount
+
+                        if refund.metadata and refund.metadata.get("refund") == "full":
+                            resa.platform_fee = Decimal("0.00")
+                            resa.tax = Decimal("0.00")
+                            resa.statut = "annulee"
+
+                        resa.save(update_fields=["refund_amount", "platform_fee", "tax", "statut", "stripe_refund_id"])
+                        summary["reservations"]["refunds"]["updated"] += 1
                 else:
                     mail_admins(
-                        subject=f"[Deposit Integrity] No deposit found for reservation {resa.code}",
-                        message=f"No deposit found on Stripe for reservation {resa.code} (id={resa.stripe_deposit_payment_intent_id})",
+                        subject=f"[Refund Integrity] No refund found for reservation {resa.code}",
+                        message=f"No refund found on Stripe for reservation {resa.code} (refund_id={resa.stripe_refund_id}).",
                     )
-        except Exception as e:
-            summary["reservations"]["deposits"]["errors"].append(f"{resa.code}: {str(e)}")
+            except Exception as e:
+                summary["reservations"]["refunds"]["errors"].append(f"{resa.code}: {str(e)}")
 
-    ##### RESERVATION BOOKING FAILURES #####
-    problematic = Reservation.objects.filter(statut="echec_paiement")
+        ##### RESERVATION TRANSFERS #####
+        problematic = (
+            Reservation.objects.filter(transferred=True, transferred_amount__isnull=True)
+            | Reservation.objects.filter(transferred=True, transferred_amount=0)
+            | Reservation.objects.filter(admin_transferred=True, admin_transferred_amount__isnull=True)
+            | Reservation.objects.filter(admin_transferred=True, admin_transferred_amount=0)
+        )
 
-    for resa in problematic:
-        summary["reservations"]["bookings"]["checked"] += 1
-        try:
-            send_stripe_payment_link(resa)
-            summary["reservations"]["bookings"]["sent"] += 1
-            mail_admins(
-                subject=f"[Payment Integrity] No payment found for reservation {resa.code}",
-                message=f"No payment found on Stripe for reservation {resa.code}. Link resent.",
-            )
-        except Exception as e:
-            summary["reservations"]["bookings"]["errors"].append(f"{resa.code}: {str(e)}")
-
-    ##### ACTIVITY REFUNDS #####
-    problematic = ActivityReservation.objects.filter(refunded=True).filter(
-        refund_amount__isnull=True
-    ) | ActivityReservation.objects.filter(refunded=True, refund_amount=0)
-
-    for resa in problematic:
-        summary["activity_reservations"]["refunds"]["checked"] += 1
-        try:
-            refund = get_refund(resa.stripe_refund_id)
-            if refund:
-                with transaction.atomic():
-                    amount = refund.amount
-                    currency = refund.currency or "eur"
-
-                    if not amount or amount <= 0:
-                        mail_admins(
-                            subject=f"[Refund Integrity] Invalid refund amount for activity reservation {resa.code}",
-                            message=f"Refund {refund.id} for reservation {resa.code} has invalid amount: {amount} {currency}.",
-                        )
+        for resa in problematic:
+            summary["reservations"]["transfers"]["checked"] += 1
+            try:
+                transfer = get_transfer(resa.stripe_transfer_id)
+                if transfer:
+                    transfer_user = transfer.metadata.get("transfer")
+                    if not transfer_user:
                         continue
 
-                    refunded_amount = Decimal(amount) / 100
-                    resa.refund_amount = refunded_amount
+                    with transaction.atomic():
+                        amount = transfer.amount
+                        if not amount or amount <= 0:
+                            mail_admins(
+                                subject=f"[Transfer Integrity] Invalid transfer amount for reservation {resa.code}",
+                                message=f"Transfer {transfer.id} for reservation {resa.code} has invalid amount: {amount}",
+                            )
+                            continue
 
-                    if refund.metadata and refund.metadata.get("refund") == "full":
-                        resa.platform_fee = Decimal("0.00")
-                        resa.tax = Decimal("0.00")
-                        resa.statut = "annulee"
+                        transferred_amount = Decimal(amount) / 100
 
-                    resa.save(update_fields=["refund_amount", "platform_fee", "tax", "statut", "stripe_refund_id"])
-                    summary["activity_reservations"]["refunds"]["updated"] += 1
-            else:
-                mail_admins(
-                    subject=f"[Refund Integrity] No refund found for activity reservation {resa.code}",
-                    message=f"No refund found on Stripe for activity reservation {resa.code} (refund_id={resa.stripe_refund_id}).",
-                )
-        except Exception as e:
-            summary["activity_reservations"]["refunds"]["errors"].append(f"{resa.code}: {str(e)}")
+                        if transfer_user == "owner":
+                            resa.transferred_amount = transferred_amount
+                            resa.save(update_fields=["transferred_amount"])
+                        elif transfer_user == "admin":
+                            resa.admin_transferred_amount = transferred_amount
+                            resa.save(update_fields=["admin_transferred_amount"])
 
-    ##### ACTIVITY TRANSFERS #####
-    problematic = ActivityReservation.objects.filter(transferred=True).filter(
-        transferred_amount__isnull=True
-    ) | ActivityReservation.objects.filter(transferred=True, transferred_amount=0)
+                        summary["reservations"]["transfers"]["updated"] += 1
+                else:
+                    mail_admins(
+                        subject=f"[Transfer Integrity] No transfer found for reservation {resa.code}",
+                        message=f"No transfer found on Stripe for reservation {resa.code} (transfer_id={resa.stripe_transfer_id}).",
+                    )
+            except Exception as e:
+                summary["reservations"]["transfers"]["errors"].append(f"{resa.code}: {str(e)}")
 
-    for resa in problematic:
-        summary["activity_reservations"]["transfers"]["checked"] += 1
-        try:
-            transfer = get_transfer(resa.stripe_transfer_id)
-            if transfer:
-                transfer_user = transfer.metadata.get("transfer")
-                if not transfer_user:
-                    continue
+        ##### RESERVATION DEPOSITS #####
+        problematic = Reservation.objects.filter(caution_charged=True).filter(
+            amount_charged__isnull=True
+        ) | Reservation.objects.filter(caution_charged=True, amount_charged=0)
 
-                with transaction.atomic():
-                    amount = transfer.amount
-                    if not amount or amount <= 0:
+        for resa in problematic:
+            summary["reservations"]["deposits"]["checked"] += 1
+            try:
+                if resa.stripe_deposit_payment_intent_id:
+                    deposit = get_payment_intent(resa.stripe_deposit_payment_intent_id)
+                    if deposit:
+                        with transaction.atomic():
+                            amount = deposit.amount
+                            if not amount or amount <= 0:
+                                mail_admins(
+                                    subject=f"[Deposit Integrity] Invalid deposit amount for reservation {resa.code}",
+                                    message=f"Deposit {deposit.id} for reservation {resa.code} has invalid amount: {amount}",
+                                )
+                                continue
+
+                            deposited_amount = Decimal(amount) / 100
+                            resa.amount_charged = deposited_amount
+                            resa.save(update_fields=["amount_charged"])
+                            summary["reservations"]["deposits"]["updated"] += 1
+                    else:
                         mail_admins(
-                            subject=f"[Transfer Integrity] Invalid transfer amount for activity reservation {resa.code}",
-                            message=f"Transfer {transfer.id} for reservation {resa.code} has invalid amount: {amount}",
+                            subject=f"[Deposit Integrity] No deposit found for reservation {resa.code}",
+                            message=f"No deposit found on Stripe for reservation {resa.code} (id={resa.stripe_deposit_payment_intent_id})",
                         )
+            except Exception as e:
+                summary["reservations"]["deposits"]["errors"].append(f"{resa.code}: {str(e)}")
+
+        ##### RESERVATION BOOKING FAILURES #####
+        problematic = Reservation.objects.filter(statut="echec_paiement")
+
+        for resa in problematic:
+            summary["reservations"]["bookings"]["checked"] += 1
+            try:
+                send_stripe_payment_link(resa)
+                summary["reservations"]["bookings"]["sent"] += 1
+                mail_admins(
+                    subject=f"[Payment Integrity] No payment found for reservation {resa.code}",
+                    message=f"No payment found on Stripe for reservation {resa.code}. Link resent.",
+                )
+            except Exception as e:
+                summary["reservations"]["bookings"]["errors"].append(f"{resa.code}: {str(e)}")
+
+        ##### ACTIVITY REFUNDS #####
+        problematic = ActivityReservation.objects.filter(refunded=True).filter(
+            refund_amount__isnull=True
+        ) | ActivityReservation.objects.filter(refunded=True, refund_amount=0)
+
+        for resa in problematic:
+            summary["activity_reservations"]["refunds"]["checked"] += 1
+            try:
+                refund = get_refund(resa.stripe_refund_id)
+                if refund:
+                    with transaction.atomic():
+                        amount = refund.amount
+                        currency = refund.currency or "eur"
+
+                        if not amount or amount <= 0:
+                            mail_admins(
+                                subject=f"[Refund Integrity] Invalid refund amount for activity reservation {resa.code}",
+                                message=f"Refund {refund.id} for reservation {resa.code} has invalid amount: {amount} {currency}.",
+                            )
+                            continue
+
+                        refunded_amount = Decimal(amount) / 100
+                        resa.refund_amount = refunded_amount
+
+                        if refund.metadata and refund.metadata.get("refund") == "full":
+                            resa.platform_fee = Decimal("0.00")
+                            resa.tax = Decimal("0.00")
+                            resa.statut = "annulee"
+
+                        resa.save(update_fields=["refund_amount", "platform_fee", "tax", "statut", "stripe_refund_id"])
+                        summary["activity_reservations"]["refunds"]["updated"] += 1
+                else:
+                    mail_admins(
+                        subject=f"[Refund Integrity] No refund found for activity reservation {resa.code}",
+                        message=f"No refund found on Stripe for activity reservation {resa.code} (refund_id={resa.stripe_refund_id}).",
+                    )
+            except Exception as e:
+                summary["activity_reservations"]["refunds"]["errors"].append(f"{resa.code}: {str(e)}")
+
+        ##### ACTIVITY TRANSFERS #####
+        problematic = ActivityReservation.objects.filter(transferred=True).filter(
+            transferred_amount__isnull=True
+        ) | ActivityReservation.objects.filter(transferred=True, transferred_amount=0)
+
+        for resa in problematic:
+            summary["activity_reservations"]["transfers"]["checked"] += 1
+            try:
+                transfer = get_transfer(resa.stripe_transfer_id)
+                if transfer:
+                    transfer_user = transfer.metadata.get("transfer")
+                    if not transfer_user:
                         continue
 
-                    transferred_amount = Decimal(amount) / 100
+                    with transaction.atomic():
+                        amount = transfer.amount
+                        if not amount or amount <= 0:
+                            mail_admins(
+                                subject=f"[Transfer Integrity] Invalid transfer amount for activity reservation {resa.code}",
+                                message=f"Transfer {transfer.id} for reservation {resa.code} has invalid amount: {amount}",
+                            )
+                            continue
 
-                    if transfer_user == "owner":
-                        resa.transferred_amount = transferred_amount
-                        resa.save(update_fields=["transferred_amount"])
-                        summary["activity_reservations"]["transfers"]["updated"] += 1
-            else:
+                        transferred_amount = Decimal(amount) / 100
+
+                        if transfer_user == "owner":
+                            resa.transferred_amount = transferred_amount
+                            resa.save(update_fields=["transferred_amount"])
+                            summary["activity_reservations"]["transfers"]["updated"] += 1
+                else:
+                    mail_admins(
+                        subject=f"[Transfer Integrity] No transfer found for activity reservation {resa.code}",
+                        message=f"No transfer found on Stripe for reservation {resa.code} (transfer_id={resa.stripe_transfer_id}).",
+                    )
+            except Exception as e:
+                summary["activity_reservations"]["transfers"]["errors"].append(f"{resa.code}: {str(e)}")
+
+        ##### ACTIVITY BOOKING FAILURES #####
+        problematic = ActivityReservation.objects.filter(statut="echec_paiement")
+
+        for resa in problematic:
+            summary["activity_reservations"]["bookings"]["checked"] += 1
+            try:
+                send_stripe_payment_link(resa)
+                summary["activity_reservations"]["bookings"]["sent"] += 1
                 mail_admins(
-                    subject=f"[Transfer Integrity] No transfer found for activity reservation {resa.code}",
-                    message=f"No transfer found on Stripe for reservation {resa.code} (transfer_id={resa.stripe_transfer_id}).",
+                    subject=f"[Payment Integrity] No payment found for activity reservation {resa.code}",
+                    message=f"No payment found on Stripe for activity reservation {resa.code}. Link resent.",
                 )
-        except Exception as e:
-            summary["activity_reservations"]["transfers"]["errors"].append(f"{resa.code}: {str(e)}")
+            except Exception as e:
+                summary["activity_reservations"]["bookings"]["errors"].append(f"{resa.code}: {str(e)}")
 
-    ##### ACTIVITY BOOKING FAILURES #####
-    problematic = ActivityReservation.objects.filter(statut="echec_paiement")
-
-    for resa in problematic:
-        summary["activity_reservations"]["bookings"]["checked"] += 1
-        try:
-            send_stripe_payment_link(resa)
-            summary["activity_reservations"]["bookings"]["sent"] += 1
-            mail_admins(
-                subject=f"[Payment Integrity] No payment found for activity reservation {resa.code}",
-                message=f"No payment found on Stripe for activity reservation {resa.code}. Link resent.",
-            )
-        except Exception as e:
-            summary["activity_reservations"]["bookings"]["errors"].append(f"{resa.code}: {str(e)}")
-
-    name = inspect.currentframe().f_code.co_name
-    update_last_task_result(name, summary)
+        name = inspect.currentframe().f_code.co_name
+        update_last_task_result(name, summary)
+    except Exception as e:
+        logger.error(f"Error in {inspect.currentframe().f_code.co_name}: {str(e)}")
+        summary["error"] = str(e)
 
     return summary

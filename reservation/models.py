@@ -256,6 +256,25 @@ class Reservation(models.Model):
             return Decimal("0.00")
 
     @property
+    def owner_revenu(self):
+        """
+        Calculates the amount that could earn the owner.
+        """
+        try:
+            platform_fee = Decimal(self.platform_fee or 0)
+            payment_fee = Decimal(self.payment_fee or 0)
+            refund = Decimal(self.refund_amount or 0)
+            price = Decimal(self.price or 0)
+
+            amount = price - platform_fee - refund - payment_fee
+            amount = max(Decimal("0"), amount)
+
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        except Exception as e:
+            logger.exception(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
+            return Decimal("0.00")
+
+    @property
     def admin_transferable_amount(self):
         """
         Calculates the amount that can be transferred to the admin.
@@ -276,12 +295,34 @@ class Reservation(models.Model):
                 return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             else:
                 return Decimal(0)
+        except Exception as e:
+            logger.exception(f"Error calculating admin_transferable_amount for admin for reservation {self.code}: {e}")
+            return Decimal("0.00")
+        
+    @property
+    def admin_revenu(self):
+        """
+        Calculates the amount that could earn the admin.
+        """
+        try:
+            if self.logement.admin:
+                platform_fee = Decimal(self.platform_fee or 0)
+                payment_fee = Decimal(self.payment_fee or 0)
+                refund = Decimal(self.refund_amount or 0)
+                price = Decimal(self.price or 0)
+
+                amount = price - platform_fee - refund - payment_fee
+                amount = max(Decimal("0"), amount)
+
+                admin_rate = Decimal(self.admin_fee_rate or 0)
+                admin_fee = admin_rate * amount
+
+                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            else:
+                return Decimal(0)
 
         except Exception as e:
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.exception(f"Error calculating transferable_amount for admin for reservation {self.id}: {e}")
+            logger.exception(f"Error calculating revenu amount for admin for reservation {self.code}: {e}")
             return Decimal("0.00")
 
     @property

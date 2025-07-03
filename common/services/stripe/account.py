@@ -2,6 +2,8 @@
 
 import stripe
 import logging
+from datetime import datetime
+from django.utils import timezone
 
 from django.conf import settings
 
@@ -138,6 +140,7 @@ def get_stripe_transactions(user):
         if transactions.data:
             for transaction in transactions.data:
                 transaction.amount = transaction.amount / 100.0  # Convert cents to euros
+                transaction.created = datetime.fromtimestamp(transaction.created, tz=timezone.get_current_timezone())
         return transactions.data
     except Exception as e:
         logger.error(f"Erreur lors de la récupération des transactions Stripe pour l'utilisateur {user.id}: {e}")

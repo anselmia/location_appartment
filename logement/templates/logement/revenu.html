@@ -52,91 +52,117 @@
       <div class="card-body">
         <h4 class="fw-semibold mb-4">Résumé - {{ selected_month|get_month_name }} {{ selected_year }}</h4>
         <!-- Indicateurs clés -->
-        <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
-          <div class="col">
-            <div class="card text-center h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <h6 class="text-muted">Taux d'occupation</h6>
-                <p class="display-6 text-primary fw-bold">{{ occupancy_rate }}%</p>
+        <div class="mb-4">
+          <h6 class="text-muted fw-bold mb-3">Indicateurs clés</h6>
+          <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col">
+              <div class="card text-center h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="text-muted">
+                    Taux d'occupation
+                    <i class="bi bi-info-circle ms-2 text-secondary"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       title="Taux calculé en tenant compte des nuits réservées sur les autres platefformes.">
+                    </i>
+                  </h6>
+                  <p class="display-6 text-primary fw-bold">{{ occupancy_rate }}%</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="card text-center h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <h6 class="text-muted">Jours Loués</h6>
-                <p class="display-6 fw-bold">{{ reserved_nights }} jours</p>
+            <div class="col">
+              <div class="card text-center h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="text-muted">Jours Loués</h6>
+                  <p class="display-6 fw-bold">{{ reserved_nights }} jours</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="card text-center h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <h6 class="text-muted">Réservations</h6>
-                <p class="display-6 fw-bold">{{ total_reservations }}</p>
+            <div class="col">
+              <div class="card text-center h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="text-muted">Réservations</h6>
+                  <p class="display-6 fw-bold">{{ total_reservations }}</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="card text-center h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <h6 class="text-muted">Prix moyen / nuit</h6>
-                <p class="display-6 fw-bold">{{ average_price|floatformat:2 }} €</p>
+            <div class="col">
+              <div class="card text-center h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="text-muted">Prix moyen / nuit</h6>
+                  <p class="display-6 fw-bold">{{ average_price|floatformat:2 }} €</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Revenu Brut</h6>
-              <p class="display-6 fw-bold text-success" id="total-revenue">0.00 €</p>
-            </div>
-          </div>
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Revenu Net</h6>
-              <p class="display-6 fw-bold text-success" id="total-revenue-net">0.00 €</p>
-            </div>
-          </div>
-          {% if has_conciergerie %}
+        <!-- Revenus -->
+        <div class="mb-4">
+          <h6 class="text-muted fw-bold mb-3">Revenus</h6>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
             <div class="col">
               <div class="p-3 border rounded bg-light h-100">
-                <h6 class="text-muted">Revenue Conciergerie</h6>
-                <p class="display-6 fw-bold" id="total-conciergerie">0.00 €</p>
+                <h6 class="text-muted">Revenu Brut</h6>
+                <p class="display-6 fw-bold text-success" id="total-revenue">0.00 €</p>
               </div>
             </div>
-          {% endif %}
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Net versé</h6>
-              <p class="display-6 fw-bold text-primary" id="net-profit">0.00 €</p>
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Revenu Net</h6>
+                <p class="display-6 fw-bold text-success" id="total-revenue-net">0.00 €</p>
+              </div>
+            </div>
+            {% if has_conciergerie %}
+              <div class="col">
+                <div class="p-3 border rounded bg-light h-100">
+                  <h6 class="text-muted">Revenue Conciergerie</h6>
+                  <p class="display-6 fw-bold" id="total-conciergerie">0.00 €</p>
+                </div>
+              </div>
+            {% endif %}
+            {% if admin_transfer_data %}
+              <div class="col">
+                <div class="p-3 border rounded bg-light h-100">
+                  <h6 class="text-muted">Revenu versé à une Conciergerie</h6>
+                  <p class="display-6 fw-bold" id="total-transfer-conciergerie">0.00 €</p>
+                </div>
+              </div>
+            {% endif %}
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Net versé</h6>
+                <p class="display-6 fw-bold text-primary" id="net-profit">0.00 €</p>
+              </div>
             </div>
           </div>
         </div>
-        <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Remboursements</h6>
-              <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+        <!-- Frais et taxes -->
+        <div class="mb-4">
+          <h6 class="text-muted fw-bold mb-3">Frais, remboursements & taxes</h6>
+          <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Remboursements</h6>
+                <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+              </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Commission plateforme</h6>
-              <p class="display-6 fw-bold" id="total-platform">0.00 €</p>
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Commission plateforme</h6>
+                <p class="display-6 fw-bold" id="total-platform">0.00 €</p>
+              </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Frais de paiement</h6>
-              <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Frais de paiement</h6>
+                <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
+              </div>
             </div>
-          </div>
-          <div class="col">
-            <div class="p-3 border rounded bg-light h-100">
-              <h6 class="text-muted">Taxes collectées</h6>
-              <p class="display-6 fw-bold" id="total-taxes">0.00 €</p>
+            <div class="col">
+              <div class="p-3 border rounded bg-light h-100">
+                <h6 class="text-muted">Taxes collectées</h6>
+                <p class="display-6 fw-bold" id="total-taxes">0.00 €</p>
+              </div>
             </div>
           </div>
         </div>
@@ -163,6 +189,7 @@
   const admintotalRevenu = {{ revenue_net_admin_data|safe }};
   const totalRefunds = {{ refunds_data|safe }};
   const owner_transfer_data = {{ owner_transfer_data|safe }};
+  const admin_transfer_data = {{ admin_transfer_data|safe }};
   const platformEarnings = {{ platform_fee_data|safe }};
   const paymentFees = {{ payment_fee_data|safe }};
   const taxes = {{ tax_data|safe }};

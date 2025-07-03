@@ -190,7 +190,6 @@ def clean_sensitive_payment_data():
         ).exclude(
             Q(stripe_saved_payment_method_id__isnull=True)
             & Q(stripe_payment_intent_id__isnull=True)
-            & Q(stripe_deposit_payment_intent_id__isnull=True)
         )
 
         for resa in queryset:

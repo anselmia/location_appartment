@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, date
 from decimal import Decimal
 from collections import OrderedDict
-from django.db.models import F, ExpressionWrapper, DecimalField, Sum
+from django.db.models import F, Sum
 from logement.services.logement_service import get_logements
 from reservation.services.logement import get_night_booked_in_period
 from django.db.models.functions import ExtractYear, ExtractMonth, TruncMonth
@@ -101,41 +101,40 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
 
     # Monthly data for charts
     reservations_year = reservations.filter(start__year=selected_year)
-    monthly_data = defaultdict(
-        lambda: {
-            "brut": 0,
-            "refunds": 0,
-            "fees": 0,
-            "platform": 0,
-            "tax": 0,
-            "admin_transfer": 0,
-            "owner_transfer": 0,
-            "net_revenue": 0,
-            "net_revenue_admin": 0,
-        }
+    monthly_data = (
+        reservations_year.annotate(month=TruncMonth("start"))
+        .values("month")
+        .annotate(
+            brut=Sum("price"),
+            refunds=Sum("refund_amount"),
+            fees=Sum("payment_fee"),
+            platform=Sum("platform_fee"),
+            transfers=Sum("transferred_amount"),
+            admin_transfers=Sum("admin_transferred_amount"),
+            tax=Sum("tax"),
+        )
+        .order_by("month")
     )
 
-    for res in reservations_year:
-        month = datetime(res.start.year, res.start.month, 1)
+    # Get reservations grouped by month
+    reservations_by_month = defaultdict(list)
+    for r in reservations_year:
+        month = r.start.replace(day=1)
+        reservations_by_month[month].append(r)
 
-        monthly_data[month]["brut"] += res.price or 0
-        monthly_data[month]["refunds"] += res.refund_amount or 0
-        monthly_data[month]["fees"] += res.payment_fee or 0
-        monthly_data[month]["platform"] += res.platform_fee or 0
-        monthly_data[month]["tax"] += res.tax or 0
-        monthly_data[month]["admin_transfer"] += res.admin_transferred_amount or 0
-        monthly_data[month]["owner_transfer"] += res.transferred_amount or 0
-        monthly_data[month]["net_revenue"] += res.transferable_amount or 0
-        monthly_data[month]["net_revenue_admin"] += res.admin_transferable_amount or 0
-
-    monthly_data_sorted = OrderedDict(sorted(monthly_data.items()))
+    # Add admin_revenu sum per month (Python-side)
+    for entry in monthly_data:
+        month = entry["month"].replace(day=1)
+        reservations = reservations_by_month.get(month, [])
+        entry["revenue_net"] = sum((r.owner_revenu for r in reservations), Decimal("0.00"))
+        entry["revenue_net_admin"] = sum((r.admin_revenu for r in reservations), Decimal("0.00"))
 
     monthly_chart = defaultdict(
         lambda: {
             "revenue_brut": Decimal("0.00"),
             "revenue_net": Decimal("0.00"),
             "revenue_net_admin": Decimal("0.00"),
-            "owner_transfers": Decimal("0.00"),
+            "transfers": Decimal("0.00"),
             "admin_transfers": Decimal("0.00"),
             "refunds": Decimal("0.00"),
             "payment_fee": Decimal("0.00"),
@@ -144,24 +143,25 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
         }
     )
 
-    for month, row in monthly_data_sorted.items():
-        month_key = month.month
-        monthly_chart[month_key]["revenue_brut"] = row["brut"]
-        monthly_chart[month_key]["revenue_net"] = row["net_revenue"]
-        monthly_chart[month_key]["revenue_net_admin"] = row["net_revenue_admin"]
-        monthly_chart[month_key]["owner_transfers"] = row["owner_transfer"]
-        monthly_chart[month_key]["admin_transfers"] = row["admin_transfer"]
-        monthly_chart[month_key]["refunds"] = row["refunds"]
-        monthly_chart[month_key]["payment_fee"] = row["fees"]
-        monthly_chart[month_key]["platform_fee"] = row["platform"]
-        monthly_chart[month_key]["tax"] = row["tax"]
+    for row in monthly_data:
+        date_selected = row["month"]
+        month_key = date_selected.month
+        monthly_chart[month_key]["revenue_brut"] = row["brut"] or Decimal("0.00")
+        monthly_chart[month_key]["revenue_net"] = row["revenue_net"] or Decimal("0.00")
+        monthly_chart[month_key]["revenue_net_admin"] = row["revenue_net_admin"] or Decimal("0.00")
+        monthly_chart[month_key]["transfers"] = row["transfers"] or Decimal("0.00")
+        monthly_chart[month_key]["refunds"] = row["refunds"] or Decimal("0.00")
+        monthly_chart[month_key]["payment_fee"] = row["fees"] or Decimal("0.00")
+        monthly_chart[month_key]["platform_fee"] = row["platform"] or Decimal("0.00")
+        monthly_chart[month_key]["admin_transfers"] = row["admin_transfers"] or Decimal("0.00")
+        monthly_chart[month_key]["tax"] = row["tax"] or Decimal("0.00")
 
     chart_labels = [cal.month_abbr[m] for m in range(1, 13)]
     revenue_brut_data = [float(monthly_chart[m]["revenue_brut"]) for m in range(1, 13)]
     revenue_net_data = [float(monthly_chart[m]["revenue_net"]) for m in range(1, 13)]
-    revenue_net_admin_data = [float(monthly_chart[m]["revenue_net"]) for m in range(1, 13)]
-    owner_transfer_data = [float(monthly_chart[m]["owner_transfers"]) for m in range(1, 13)]
-    admin_transfer_data = [float(monthly_chart[m]["owner_transfers"]) for m in range(1, 13)]
+    revenue_net_admin_data = [float(monthly_chart[m]["revenue_net_admin"]) for m in range(1, 13)]
+    owner_transfer_data = [float(monthly_chart[m]["transfers"]) for m in range(1, 13)]
+    admin_transfer_data = [float(monthly_chart[m]["admin_transfers"]) for m in range(1, 13)]
     refunds_data = [float(monthly_chart[m]["refunds"]) for m in range(1, 13)]
     payment_fee_data = [float(monthly_chart[m]["payment_fee"]) for m in range(1, 13)]
     platform_fee_data = [float(monthly_chart[m]["platform_fee"]) for m in range(1, 13)]
