@@ -233,13 +233,9 @@ def delete_logement(request, pk):
         reservations = Reservation.objects.filter(
             logement=logement, statut__in=["en_attente", "confirmee", "echec_paiement"]
         )
-        ended_reservation = Reservation.objects.filter(
-            logement=logement, statut="terminee", end__gt=thirty_days_ago
-        )
+        ended_reservation = Reservation.objects.filter(logement=logement, statut="terminee", end__gt=thirty_days_ago)
         if reservations.exists() or ended_reservation.exists():
-            messages.error(
-                request, "Vous ne pouvez pas supprimer ce logement tant qu'il a des réservations en cours."
-            )
+            messages.error(request, "Vous ne pouvez pas supprimer ce logement tant qu'il a des réservations en cours.")
             return redirect("logement:dashboard")
 
         logement.delete()
@@ -380,6 +376,8 @@ def rotate_photo(request: HttpRequest, photo_id: int) -> JsonResponse:
         return JsonResponse({"status": "error", "error": "Erreur interne serveur"}, status=500)
 
 
+@login_required
+@user_is_logement_admin
 def update_equipment(request: HttpRequest, logement_id: int) -> HttpResponse:
     """
     Update the equipment for a logement (delegates logic to service).
