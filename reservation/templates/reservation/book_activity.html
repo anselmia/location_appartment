@@ -10,7 +10,8 @@
     {{ block.super }}
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="{% static 'reservation/css/book_activity.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'reservation/css/book_activity.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/image-galery.css' %}">
     <link rel="stylesheet" href="{% static 'logement/css/calendar.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
@@ -64,9 +65,11 @@
                         <i class="bi bi-info-circle-fill fs-4 text-primary">
                         </i>
                         <div>
-                            <strong>Le paiement ne sera débité qu'après acceptation de la réservation par le vendeur.</strong>
+                            <strong>La réservation ne sera validée qu'après acceptation de la réservation par le vendeur.</strong>
                             <br>
                             Vous recevrez un e-mail de confirmation dès que votre demande sera validée.
+                            <br>                            
+                            Le paiement sera effectué 2 jours avant le début de l'activité.
                         </div>
                     </div>
                     <form id="booking-form" method="post" novalidate>

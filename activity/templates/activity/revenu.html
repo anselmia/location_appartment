@@ -52,61 +52,72 @@
             <div class="card-body">
                 <h4 class="fw-semibold mb-4">Résumé - {{ selected_month|get_month_name }} {{ selected_year }}</h4>
                 <!-- Indicateurs clés -->
-                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
-                    <div class="col">
-                        <div class="card text-center h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Réservations</h6>
-                                <p class="display-6 fw-bold">{{ total_reservations }}</p>
+                <div class="mb-4">
+                    <h6 class="text-muted fw-bold mb-3">Indicateurs clés</h6>
+                    <div class="row row-cols-1 row-cols-md-4 g-4">
+                        <div class="col">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Réservations</h6>
+                                    <p class="display-6 fw-bold">{{ total_reservations }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="card text-center h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Prix moyen / réservation</h6>
-                                <p class="display-6 fw-bold">{{ average_price|floatformat:2 }} €</p>
+                        <div class="col">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Prix moyen / réservation</h6>
+                                    <p class="display-6 fw-bold">{{ average_price|floatformat:2 }} €</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row row-cols-1 row-cols-md-3 g-4">
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Revenu Brut</h6>
-                            <p class="display-6 fw-bold text-success" id="total-revenue">0.00 €</p>
+                <!-- Revenus -->
+                <div class="mb-4">
+                    <h6 class="text-muted fw-bold mb-3">Revenus</h6>
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Revenu Brut</h6>
+                                <p class="display-6 fw-bold text-success" id="total-revenue">0.00 €</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Revenu Net</h6>
-                            <p class="display-6 fw-bold text-success" id="total-net">0.00 €</p>
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Revenu Net</h6>
+                                <p class="display-6 fw-bold text-success" id="total-net">0.00 €</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Net versé</h6>
-                            <p class="display-6 fw-bold text-primary" id="net-profit">0.00 €</p>
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Net versé</h6>
+                                <p class="display-6 fw-bold text-primary" id="net-profit">0.00 €</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Remboursements</h6>
-                            <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+                <!-- Frais, remboursements & commissions -->
+                <div class="mb-4">
+                    <h6 class="text-muted fw-bold mb-3">Frais, remboursements & commissions</h6>
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Remboursements</h6>
+                                <p class="display-6 fw-bold text-danger" id="total-refunds">0.00 €</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Commission plateforme</h6>
-                            <p class="display-6 fw-bold" id="total-platform">0.00 €</p>
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Commission plateforme</h6>
+                                <p class="display-6 fw-bold" id="total-platform">0.00 €</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="text-muted">Frais de paiement</h6>
-                            <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
+                        <div class="col">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <h6 class="text-muted">Frais de paiement</h6>
+                                <p class="display-6 fw-bold" id="total-payment">0.00 €</p>
+                            </div>
                         </div>
                     </div>
                 </div>

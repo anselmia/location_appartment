@@ -87,9 +87,6 @@ class Reservation(models.Model):
             else:
                 raise ValueError("Could not generate a unique reservation code.")
 
-        if not self.payment_fee:
-            self.payment_fee = get_payment_fee(self.price)
-
         if self.platform_fee is None:
             platform_fee = get_platform_fee(self.price)
             self.platform_fee = get_fee_waiver(platform_fee, self.logement.owner)
@@ -269,6 +266,11 @@ class Reservation(models.Model):
             amount = price - platform_fee - refund - payment_fee
             amount = max(Decimal("0"), amount)
 
+            if self.logement.admin:
+                admin_rate = Decimal(self.admin_fee_rate or 0)
+                admin_fee = admin_rate * amount
+                amount -= admin_fee
+
             return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         except Exception as e:
             logger.exception(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
@@ -298,7 +300,7 @@ class Reservation(models.Model):
         except Exception as e:
             logger.exception(f"Error calculating admin_transferable_amount for admin for reservation {self.code}: {e}")
             return Decimal("0.00")
-        
+
     @property
     def admin_revenu(self):
         """
@@ -405,9 +407,6 @@ class ActivityReservation(models.Model):
                     break
             else:
                 raise ValueError("Could not generate a unique reservation code.")
-
-        if not self.payment_fee:
-            self.payment_fee = get_payment_fee(self.price)
 
         if self.platform_fee is None:
             platform_fee = get_platform_fee(self.price)
@@ -552,6 +551,25 @@ class ActivityReservation(models.Model):
 
             logger = logging.getLogger(__name__)
             logger.exception(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
+            return Decimal("0.00")
+
+    @property
+    def owner_revenu(self):
+        """
+        Calculates the amount that could earn the owner.
+        """
+        try:
+            platform_fee = Decimal(self.platform_fee or 0)
+            payment_fee = Decimal(self.payment_fee or 0)
+            refund = Decimal(self.refund_amount or 0)
+            price = Decimal(self.price or 0)
+
+            amount = price - platform_fee - refund - payment_fee
+            amount = max(Decimal("0"), amount)
+
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        except Exception as e:
+            logger.exception(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
             return Decimal("0.00")
 
 

@@ -103,292 +103,318 @@
                         <strong>Montant :</strong> {{ r.checkout_amount|default:"0.00"|floatformat:2 }} €
                         {% if r.paid and r.checkout_amount and r.checkout_amount > 0 %}
                           <span class="badge bg-success ms-2">Confirmé</span>
+                        </li>
+                      {% else %}
+                        <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
+                      </li>
+                      <li>
+                        {% if r.stripe_payment_intent_id and r.stripe_saved_payment_method_id and not r.paid %}
+                          <form method="post"
+                                action="{% url 'payment:capture_payment' r.code %}"
+                                onsubmit="return confirm('Capturer le paiement de la réservation ?');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-outline-warning btn-sm"
+                                    title="Capturer le paiement de la réservation">
+                              <i class="bi bi-link-45deg"></i> Capturer paiement
+                            </button>
+                          </form>
+                        {% elif r.stripe_saved_payment_method_id and not r.paid %}
+                          <form method="post"
+                                action="{% url 'payment:create_payment_intent' r.code %}"
+                                onsubmit="return confirm('Créer un nouvel intent de paiement pour la réservation ?');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn btn-outline-warning btn-sm"
+                                    title="Créer un nouvel intent de paiement">
+                              <i class="bi bi-link-45deg"></i> Créer paiement
+                            </button>
+                          </form>
+                        {% endif %}
+                        {% if r.can_verify_payment_failed %}
+                          <form method="post"
+                                action="{% url 'payment:verify_payment' r.code %}"
+                                class="d-inline ms-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
+                          </form>
+                        {% endif %}
+                      {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center">
+                      <strong class="me-2">Payée :</strong>
+                      <form method="post"
+                            action="{% url 'reservation:toggle_paid' r.code %}"
+                            class="d-inline-block m-0 p-0">
+                        {% csrf_token %}
+                        <div class="form-check form-switch">
+                          <input class="form-check-input"
+                                 type="checkbox"
+                                 name="paid"
+                                 id="paidSwitch{{ r.code }}"
+                                 {% if r.paid %}checked{% endif %}
+                                 onchange="this.form.submit()">
+                          <label class="form-check-label" for="paidSwitch{{ r.code }}">
+                            {% if r.paid %}
+                              <span class="text-success">Oui</span>
+                            {% else %}
+                              <span class="text-danger">Non</span>
+                            {% endif %}
+                          </label>
+                        </div>
+                      </form>
+                    </li>
+                    <li>
+                      <strong>Taxes :</strong> {{ r.tax|floatformat:2 }} €
+                    </li>
+                    <li>
+                      <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
+                    </li>
+                    <li>
+                      <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
+                    </li>
+                    <li>
+                      <strong>ID Méthode de paiement :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
+                    </li>
+                    <li>
+                      <strong>ID Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
+                    </li>
+                  </ul>
+                  <div class="d-flex flex-wrap gap-2">
+                    {% if r.can_verify_payment_failed %}
+                      <form method="post" action="{% url 'payment:verify_payment' r.code %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-outline-primary btn-sm"
+                                title="Vérifier le paiement Stripe">
+                          <i class="bi bi-shield-check"></i> Vérifier Paiement
+                        </button>
+                      </form>
+                    {% endif %}
+                    {% if r.payment_failed %}
+                      <form method="post"
+                            action="{% url 'payment:send_payment_link' r.code %}"
+                            onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-outline-warning btn-sm"
+                                title="Envoyer un lien de paiement au client">
+                          <i class="bi bi-link-45deg"></i> Envoyer lien
+                        </button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </div>
+                <!-- Remboursement -->
+                <div class="col-md-4">
+                  <h6 class="text-muted fw-bold mb-2">Remboursement</h6>
+                  <ul class="list-unstyled mb-2">
+                    {% if r.refunded %}
+                      <li class="text-success">
+                        <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
+                      </li>
+                    {% else %}
+                      <li class="text-muted">
+                        <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
+                      </li>
+                    {% endif %}
+                    {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
+                      <li>
+                        <form method="post"
+                              action="{% url 'payment:refund_reservation' r.code %}"
+                              onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
+                              class="d-flex align-items-center">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-warning">Remboursement complet</button>
+                        </form>
+                      </li>
+                      <li>
+                        <form method="post"
+                              action="{% url 'payment:refund_partially_reservation' r.code %}"
+                              onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
+                              class="d-flex align-items-center">
+                          {% csrf_token %}
+                          <input type="number"
+                                 name="refund_amount"
+                                 class="form-control"
+                                 min="0"
+                                 max="{{ r.partial_refundable_amount|stringformat:'f' }}"
+                                 step="0.01"
+                                 placeholder="Montant (€)"
+                                 required
+                                 style="max-width: 200px" />
+                          <button type="submit" class="btn btn-outline-warning">Rembourser</button>
+                        </form>
+                      </li>
+                    {% else %}
+                      <li>
+                        {% if not r.paid %}
+                          <p class="text-muted fst-italic mb-0">
+                            Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
+                          </p>
                         {% else %}
-                          <span class="badge bg-warning text-dark ms-2">Non confirmé</span>
-                          {% if reservation.can_verify_payment_failed %}
-                            <form method="post"
-                                  action="{% url 'payment:verify_payment' reservation.code %}"
-                                  class="d-inline ms-2">
-                              {% csrf_token %}
-                              <button type="submit" class="btn btn-primary btn-sm mt-2">Vérifier le Paiement</button>
-                            </form>
-                          {% endif %}
+                          <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
                         {% endif %}
                       </li>
-                      <li class="d-flex align-items-center">
-                        <strong class="me-2">Payée :</strong>
+                    {% endif %}
+                  </ul>
+                </div>
+                <!-- Transferts -->
+                <div class="col-md-4">
+                  <h6 class="text-muted fw-bold mb-2">Transferts</h6>
+                  {% if r.transferred %}
+                    <div>
+                      <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
+                      <br>
+                      <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                      {% if not r.transferred_amount or r.transferred_amount == 0 %}
                         <form method="post"
-                              action="{% url 'reservation:toggle_paid' r.code %}"
-                              class="d-inline-block m-0 p-0">
-                          {% csrf_token %}
-                          <div class="form-check form-switch">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   name="paid"
-                                   id="paidSwitch{{ r.code }}"
-                                   {% if r.paid %}checked{% endif %}
-                                   onchange="this.form.submit()">
-                            <label class="form-check-label" for="paidSwitch{{ r.code }}">
-                              {% if r.paid %}
-                                <span class="text-success">Oui</span>
-                              {% else %}
-                                <span class="text-danger">Non</span>
-                              {% endif %}
-                            </label>
-                          </div>
-                        </form>
-                      </li>
-                      <li>
-                        <strong>Taxes :</strong> {{ r.tax|floatformat:2 }} €
-                      </li>
-                      <li>
-                        <strong>Frais paiement :</strong> {{ r.payment_fee|default:0|floatformat:2 }} €
-                      </li>
-                      <li>
-                        <strong>Frais plateforme :</strong> {{ r.platform_fee|default:0|floatformat:2 }} €
-                      </li>
-                      <li>
-                        <strong>ID Méthode de paiement :</strong> {{ r.stripe_saved_payment_method_id|default:"--" }}
-                      </li>
-                      <li>
-                        <strong>ID Intent :</strong> {{ r.stripe_payment_intent_id|default:"--" }}
-                      </li>
-                    </ul>
-                    <div class="d-flex flex-wrap gap-2">
-                      {% if r.can_verify_payment_failed %}
-                        <form method="post" action="{% url 'payment:verify_payment' r.code %}">
+                              action="{% url 'payment:verify_transfer' r.code %}"
+                              class="d-inline-block ms-2">
                           {% csrf_token %}
                           <button type="submit"
-                                  class="btn btn-outline-primary btn-sm"
-                                  title="Vérifier le paiement Stripe">
-                            <i class="bi bi-shield-check"></i> Vérifier Paiement
-                          </button>
-                        </form>
-                      {% endif %}
-                      {% if r.payment_failed %}
-                        <form method="post"
-                              action="{% url 'payment:send_payment_link' r.code %}"
-                              onsubmit="return confirm('Envoyer un nouveau lien de paiement au client ?');">
-                          {% csrf_token %}
-                          <button type="submit"
-                                  class="btn btn-outline-warning btn-sm"
-                                  title="Envoyer un lien de paiement au client">
-                            <i class="bi bi-link-45deg"></i> Envoyer lien
+                                  class="btn btn-sm btn-outline-primary"
+                                  title="Vérifier le transfert">
+                            <i class="bi bi-arrow-repeat"></i> Vérifier
                           </button>
                         </form>
                       {% endif %}
                     </div>
-                  </div>
-                  <!-- Remboursement -->
-                  <div class="col-md-4">
-                    <h6 class="text-muted fw-bold mb-2">Remboursement</h6>
-                    <ul class="list-unstyled mb-2">
-                      {% if r.refunded %}
-                        <li class="text-success">
-                          <strong>Remboursé :</strong> {{ r.refund_amount|floatformat:2 }} €
-                        </li>
-                      {% else %}
-                        <li class="text-muted">
-                          <strong>Montant remboursable :</strong> {{ r.refundable_amount|default:"0.00"|floatformat:2 }} €
-                        </li>
-                      {% endif %}
-                      {% if r.paid and not r.refunded and r.refundable_amount > 0 %}
-                        <li>
-                          <form method="post"
-                                action="{% url 'payment:refund_reservation' r.code %}"
-                                onsubmit="return confirm('Confirmez-vous le remboursement intégral de cette réservation ?');"
-                                class="d-flex align-items-center">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning">Remboursement complet</button>
-                          </form>
-                        </li>
-                        <li>
-                          <form method="post"
-                                action="{% url 'payment:refund_partially_reservation' r.code %}"
-                                onsubmit="return confirm('Confirmez-vous le remboursement partiel de cette réservation ?');"
-                                class="d-flex align-items-center">
-                            {% csrf_token %}
-                            <input type="number"
-                                   name="refund_amount"
-                                   class="form-control"
-                                   min="0"
-                                   max="{{ r.partial_refundable_amount|stringformat:'f' }}"
-                                   step="0.01"
-                                   placeholder="Montant (€)"
-                                   required
-                                   style="max-width: 200px" />
-                            <button type="submit" class="btn btn-outline-warning">Rembourser</button>
-                          </form>
-                        </li>
-                      {% else %}
-                        <li>
-                          {% if not reservation.paid %}
-                            <p class="text-muted fst-italic mb-0">
-                              Aucun remboursement nécessaire pour cette réservation. Le paiement n'a pas encore été encaissé.
-                            </p>
-                          {% else %}
-                            <p class="text-muted fst-italic mb-0">Aucun remboursement n'est possible pour cette réservation.</p>
-                          {% endif %}
-                        </li>
-                      {% endif %}
-                    </ul>
-                  </div>
-                  <!-- Transferts -->
-                  <div class="col-md-4">
-                    <h6 class="text-muted fw-bold mb-2">Transferts</h6>
-                    {% if r.transferred %}
-                      <div>
-                        <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
-                        <br>
-                        <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
-                        {% if not r.transferred_amount or r.transferred_amount == 0 %}
-                          <form method="post"
-                                action="{% url 'payment:verify_transfer' r.code %}"
-                                class="d-inline-block ms-2">
-                            {% csrf_token %}
-                            <button type="submit"
-                                    class="btn btn-sm btn-outline-primary"
-                                    title="Vérifier le transfert">
-                              <i class="bi bi-arrow-repeat"></i> Vérifier
-                            </button>
-                          </form>
-                        {% endif %}
-                      </div>
-                    {% elif r.paid and r.transferable_amount > 0 %}
-                      <div>
-                        <span>{{ r.transferable_amount|floatformat:2 }} € transférable</span>
-                        <form method="post"
-                              action="{% url 'payment:transfer_reservation' r.code %}"
-                              class="d-inline-block ms-2"
-                              onsubmit="return confirm('Effectuer le transfert ?');">
-                          {% csrf_token %}
-                          <button class="btn btn-sm btn-outline-success" title="Transférer">
-                            <i class="bi bi-arrow-right-circle"></i> Transférer
-                          </button>
-                        </form>
-                      </div>
-                    {% else %}
-                      <p class="text-muted mb-0">Aucun transfert possible.</p>
-                    {% endif %}
-                  </div>
-                </div>
-                <!-- Caution -->
-                <div class="row mt-3 small">
-                  <div class="col-md-6">
-                    <h6 class="text-muted fw-bold">Caution</h6>
-                    <ul class="list-unstyled">
-                      <li>
-                        <strong>Prévue :</strong> {{ r.logement.caution|floatformat:2 }} €
-                      </li>
-                      <li>
-                        <strong>Chargée :</strong> {{ r.amount_charged|floatformat:2 }} €
-                      </li>
-                      <li>
-                        <strong>Restante :</strong> {{ r.chargeable_deposit|floatformat:2 }} €
-                      </li>
-                    </ul>
-                    {% if r.stripe_payment_intent_id and not r.caution_charged > 0 %}
+                  {% elif r.paid and r.transferable_amount > 0 %}
+                    <div>
+                      <span>{{ r.transferable_amount|floatformat:2 }} € transférable</span>
                       <form method="post"
-                            action="{% url 'payment:charge_deposit' r.code %}"
-                            class="d-flex gap-2 align-items-center"
-                            onsubmit="return confirm('Charger la caution restante ?');">
+                            action="{% url 'payment:transfer_reservation' r.code %}"
+                            class="d-inline-block ms-2"
+                            onsubmit="return confirm('Effectuer le transfert ?');">
                         {% csrf_token %}
-                        <input type="number"
-                               name="deposit_amount"
-                               class="form-control form-control-sm"
-                               min="0"
-                               max="{{ r.chargeable_deposit|stringformat:'f' }}"
-                               step="0.01"
-                               placeholder="Montant">
-                        <button type="submit" class="btn btn-sm btn-primary">💳 Charger</button>
+                        <button class="btn btn-sm btn-outline-success" title="Transférer">
+                          <i class="bi bi-arrow-right-circle"></i> Transférer
+                        </button>
                       </form>
-                    {% endif %}
-                  </div>
-                  <div class="col-md-6">
-                    <h6 class="text-muted fw-bold">Transferts</h6>
-                    <p class="mb-1">
-                      <strong>Propriétaire :</strong>
-                      {% if r.transferred %}
-                        <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
-                        <br>
-                        <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
-                        {% if r.transferred_amount == 0 %}
-                          <form method="post"
-                                action="{% url 'payment:verify_transfer' r.code %}"
-                                class="d-inline-block ms-2">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Vérifier</button>
-                          </form>
-                        {% endif %}
-                      {% elif r.paid %}
-                        {{ r.transferable_amount|floatformat:2 }} €
+                    </div>
+                  {% else %}
+                    <p class="text-muted mb-0">Aucun transfert possible.</p>
+                  {% endif %}
+                </div>
+              </div>
+              <!-- Caution -->
+              <div class="row mt-3 small">
+                <div class="col-md-6">
+                  <h6 class="text-muted fw-bold">Caution</h6>
+                  <ul class="list-unstyled">
+                    <li>
+                      <strong>Prévue :</strong> {{ r.logement.caution|floatformat:2 }} €
+                    </li>
+                    <li>
+                      <strong>Chargée :</strong> {{ r.amount_charged|floatformat:2 }} €
+                    </li>
+                    <li>
+                      <strong>Restante :</strong> {{ r.chargeable_deposit|floatformat:2 }} €
+                    </li>
+                  </ul>
+                  {% if r.stripe_payment_intent_id and not r.caution_charged > 0 %}
+                    <form method="post"
+                          action="{% url 'payment:charge_deposit' r.code %}"
+                          class="d-flex gap-2 align-items-center"
+                          onsubmit="return confirm('Charger la caution restante ?');">
+                      {% csrf_token %}
+                      <input type="number"
+                             name="deposit_amount"
+                             class="form-control form-control-sm"
+                             min="0"
+                             max="{{ r.chargeable_deposit|stringformat:'f' }}"
+                             step="0.01"
+                             placeholder="Montant">
+                      <button type="submit" class="btn btn-sm btn-primary">💳 Charger</button>
+                    </form>
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-muted fw-bold">Transferts</h6>
+                  <p class="mb-1">
+                    <strong>Propriétaire :</strong>
+                    {% if r.transferred %}
+                      <span class="text-success">✔️ {{ r.transferred_amount|floatformat:2 }} €</span>
+                      <br>
+                      <small class="text-muted">ID : {{ r.stripe_transfer_id }}</small>
+                      {% if r.transferred_amount == 0 %}
                         <form method="post"
-                              action="{% url 'payment:transfer_reservation' r.code %}"
-                              class="d-inline-block ms-2"
-                              onsubmit="return confirm('Effectuer le transfert ?');">
+                              action="{% url 'payment:verify_transfer' r.code %}"
+                              class="d-inline-block ms-2">
                           {% csrf_token %}
-                          <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
+                          <button type="submit" class="btn btn-sm btn-outline-primary">Vérifier</button>
                         </form>
+                      {% endif %}
+                    {% elif r.paid %}
+                      {{ r.transferable_amount|floatformat:2 }} €
+                      <form method="post"
+                            action="{% url 'payment:transfer_reservation' r.code %}"
+                            class="d-inline-block ms-2"
+                            onsubmit="return confirm('Effectuer le transfert ?');">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-success">💶 Transférer</button>
+                      </form>
+                    {% else %}
+                      <p class="text-muted">Aucun transfert possible.</p>
+                    {% endif %}
+                  </p>
+                  {% if r.logement.admin %}
+                    <p class="mb-1">
+                      <strong>Admin :</strong>
+                      {% if r.admin_transferred %}
+                        <span class="text-success">✔️ {{ r.admin_transferred_amount|floatformat:2 }} €</span>
+                        <br>
+                        <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
                       {% else %}
-                        <p class="text-muted">Aucun transfert possible.</p>
+                        {{ r.admin_transferable_amount|floatformat:2 }} €
                       {% endif %}
                     </p>
-                    {% if r.logement.admin %}
-                      <p class="mb-1">
-                        <strong>Admin :</strong>
-                        {% if r.admin_transferred %}
-                          <span class="text-success">✔️ {{ r.admin_transferred_amount|floatformat:2 }} €</span>
-                          <br>
-                          <small class="text-muted">ID : {{ r.admin_stripe_transfer_id }}</small>
-                        {% else %}
-                          {{ r.admin_transferable_amount|floatformat:2 }} €
-                        {% endif %}
-                      </p>
-                    {% endif %}
-                  </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
           </div>
-        {% endwith %}
-      {% empty %}
-        <p class="text-center text-muted mt-5">Aucune réservation trouvée.</p>
-      {% endfor %}
-    </div>
-    <div class="d-flex justify-content-center mt-4">
-      <nav aria-label="Pagination">
-        <ul class="pagination-list">
-          {% if page_obj.has_previous %}
-            <li class="page-item">
-              <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
-                 aria-label="Précédent">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span>&laquo;</span>
-            </li>
-          {% endif %}
-          {% for num in page_obj.paginator.page_range %}
-            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-              <a chref="?q={{ query }}&page={{ num }}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          {% if page_obj.has_next %}
-            <li class="page-item">
-              <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
-                 aria-label="Suivant">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span>&raquo;</span>
-            </li>
-          {% endif %}
-        </ul>
-      </nav>
-    </div>
+        </div>
+      {% endwith %}
+    {% empty %}
+      <p class="text-center text-muted mt-5">Aucune réservation trouvée.</p>
+    {% endfor %}
   </div>
+  <div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Pagination">
+      <ul class="pagination-list">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+               aria-label="Précédent">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span>&laquo;</span>
+          </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a chref="?q={{ query }}&page={{ num }}">{{ num }}</a>
+          </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
+               aria-label="Suivant">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span>&raquo;</span>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
 {% endblock content %}

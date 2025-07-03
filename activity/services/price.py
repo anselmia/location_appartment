@@ -235,7 +235,6 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
     total_refunds = aggregates["total_refunds"] or Decimal("0.00")
     platform_earnings = aggregates["platform_earnings"] or Decimal("0.00")
     total_payment_fee = aggregates["total_payment_fee"] or Decimal("0.00")
-    owner_transfer = aggregates["owner_transfer"] or Decimal("0.00")
     total_revenu = aggregates["net_revenue"] or Decimal("0.00")
     total_reservations = filtered_reservations.count()
     average_price = brut_revenue / total_reservations if total_reservations else Decimal("0.00")
@@ -255,6 +254,19 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
         .order_by("month")
     )
 
+    # Get reservations grouped by month
+    reservations_by_month = defaultdict(list)
+    for r in reservations_year:
+        month = r.start.replace(day=1).date()
+        reservations_by_month[month].append(r)
+
+    # Add admin_revenu sum per month (Python-side)
+    for entry in monthly_data:
+        month = entry["month"].replace(day=1).date()
+        reservations = reservations_by_month.get(month, [])
+        entry["revenue_net"] = sum((r.owner_revenu for r in reservations), Decimal("0.00"))
+        
+
     monthly_chart = defaultdict(
         lambda: {
             "revenue_brut": Decimal("0.00"),
@@ -270,9 +282,7 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
         date = row["month"]
         month_key = date.month
         monthly_chart[month_key]["revenue_brut"] = row["brut"] or Decimal("0.00")
-        monthly_chart[month_key]["revenue_net"] = (
-            row["brut"] - row["refunds"] - row["fees"] - row["platform"]
-        ) or Decimal("0.00")
+        monthly_chart[month_key]["revenue_net"] = row["revenue_net"] or Decimal("0.00")
         monthly_chart[month_key]["transfers"] = row["transfers"] or Decimal("0.00")
         monthly_chart[month_key]["refunds"] = row["refunds"] or Decimal("0.00")
         monthly_chart[month_key]["payment_fee"] = row["fees"] or Decimal("0.00")

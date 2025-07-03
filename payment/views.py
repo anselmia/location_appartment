@@ -45,6 +45,10 @@ from payment.services.payment_service import (
     verify_refund,
     create_stripe_checkout_session_with_deposit,
     create_stripe_checkout_session_without_deposit,
+    capture_reservation_payment,
+    create_reservation_payment_intents,
+    get_strip_fee,
+    get_payment_fee
 )
 from payment.models import PaymentTask
 
@@ -143,6 +147,7 @@ def payment_success(request, type, code):
             return redirect("accounts:dashboard")
 
         amount_paid = payment_intent.amount / 100  # Montant en euros
+        payment_fee = max(get_strip_fee(payment_intent_id), get_payment_fee(amount_paid))
 
         if type == "logement":
             reservation = Reservation.objects.get(code=code)
@@ -150,8 +155,9 @@ def payment_success(request, type, code):
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
+            reservation.payment_fee = payment_fee
             reservation.save(
-                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"]
+                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut", "payment_fee"]
             )
             send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
             ReservationHistory.objects.create(
@@ -164,8 +170,9 @@ def payment_success(request, type, code):
             reservation.paid = True
             reservation.stripe_payment_intent_id = payment_intent_id
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
+            reservation.payment_fee = payment_fee
             reservation.save(
-                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut"]
+                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut", "payment_fee"]
             )
             send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
             ActivityReservationHistory.objects.create(
@@ -305,7 +312,7 @@ def payment_task_list(request):
             if all_ids:
                 tasks = tasks.filter(object_id__in=all_ids)
                 # Exclude tasks whose content_object is None (dangling generic relation)
-                tasks = [t for t in tasks if getattr(t, 'content_type', None) is not None]
+                tasks = [t for t in tasks if getattr(t, "content_type", None) is not None]
             else:
                 tasks = tasks.none()
 
@@ -324,6 +331,7 @@ def payment_task_list(request):
     except Exception as e:
         logger.exception(f"Erreur lors de l'affichage des tâches de paiement : {e}")
         raise
+
 
 @login_required
 @user_is_reservation_admin
@@ -589,5 +597,38 @@ def verify_refund_view(request, code):
             messages.warning(request, message)
     except Exception as e:
         logger.error(f"Error verifying refund for reservation {code}: {e}")
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@require_POST
+@login_required
+@is_admin
+def capture_payment_view(request, code):
+    try:
+        reservation = get_reservation_by_code(code)
+        result = capture_reservation_payment(reservation)
+        if isinstance(result, dict) and not result.get("success", True):
+            messages.error(request, result.get("error", "Erreur lors de la capture du paiement."))
+        else:
+            messages.success(request, f"Paiement capturé pour {reservation.user.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to capture payment for {code}: {e}")
+        messages.error(request, f"Erreur lors de la capture du paiement : {e}")
+
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@require_POST
+@login_required
+@is_admin
+def create_payment_intent(request, code):
+    try:
+        reservation = get_reservation_by_code(code)
+        create_reservation_payment_intents(reservation)
+        messages.success(request, f"Paiement créé pour {reservation.user.email}")
+    except Exception as e:
+        logger.exception(f"❌ Failed to create payment for {code}: {e}")
+        messages.error(request, f"Erreur lors de la création du paiement : {e}")
 
     return redirect(request.META.get("HTTP_REFERER", "/"))

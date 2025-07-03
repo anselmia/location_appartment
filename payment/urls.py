@@ -73,4 +73,14 @@ urlpatterns = [
     ),
     path('save-payment-method/<str:code>/', views.save_payment_method, name='save_payment_method'),
     path("pay/<str:code>/", views.start_payment, name="start_payment"),
+    path(
+        "capture-payment/<str:code>/",
+        views.capture_payment_view,
+        name="capture_payment",
+    ),
+    path(
+        "create-payment/<str:code>/",
+        views.create_payment_intent,
+        name="create_payment_intent",
+    ),
 ]

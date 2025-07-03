@@ -172,6 +172,29 @@ def get_payment_intent(payment_intent_id: str) -> Any:
         return None
 
 
+def get_strip_fee(payment_intent_id: str) -> Decimal:
+    """
+    Retrieve the Stripe fee for a given PaymentIntent.
+    Args:
+        payment_intent_id (str): The Stripe PaymentIntent ID.
+    Returns:
+        Decimal: The Stripe fee amount, or Decimal("0.00") if not found.
+    """
+    try:
+        pi = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["latest_charge.balance_transaction"])
+        stripe_fee = Decimal("0.00")
+        # Retrieve the charge and balance transaction to get the Stripe fee
+        if pi.latest_charge:
+            charge = pi.latest_charge
+            balance_tx = charge.balance_transaction
+            stripe_fee = Decimal(balance_tx["fee"]) / 100 if balance_tx["fee"] else Decimal("0.00")
+        return stripe_fee
+
+    except Exception as e:
+        logger.error(f"❌ Error retrieving Stripe fee for PaymentIntent {payment_intent_id}: {e}")
+        return Decimal("0.00")
+
+
 def get_session(session_id: str) -> Any:
     """
     Retrieve a Stripe Checkout Session by its ID.
@@ -1193,16 +1216,7 @@ def capture_reservation_payment(reservation):
 
         # Retrieve the PaymentIntent
         intent = stripe.PaymentIntent.retrieve(reservation.stripe_payment_intent_id)
-        # Try to update the saved payment method from the PaymentIntent
-        payment_method_id = None
-        if hasattr(intent, "payment_method") and intent.payment_method:
-            if isinstance(intent.payment_method, dict):
-                payment_method_id = intent.payment_method.get("id")
-            else:
-                payment_method_id = intent.payment_method
-        if payment_method_id and getattr(reservation, "stripe_saved_payment_method_id", None) != payment_method_id:
-            reservation.stripe_saved_payment_method_id = payment_method_id
-            reservation.save(update_fields=["stripe_saved_payment_method_id"])
+
         if intent.status == "succeeded":
             task.mark_success(intent.id)
             return {"success": True, "error": None}  # Already paid
@@ -1216,6 +1230,13 @@ def capture_reservation_payment(reservation):
         captured_intent = stripe.PaymentIntent.capture(
             reservation.stripe_payment_intent_id, idempotency_key=idempotency_key, metadata=capture_metadata
         )
+        amount_captured = (
+            Decimal(captured_intent.amount_received) / 100 if captured_intent.amount_received else Decimal("0.00")
+        )
+
+        stripe_fee = get_strip_fee(reservation.stripe_payment_intent_id)
+        reservation.payment_fee = max(stripe_fee, get_payment_fee(reservation.price))
+        reservation.save(update_fields=["payment_fee"])
 
         if captured_intent.status != "succeeded":
             error_message = f"Échec de la capture du paiement pour la réservation {reservation.code}."
@@ -1237,19 +1258,8 @@ def capture_reservation_payment(reservation):
                 send_mail_on_activity_payment_failure(reservation.activity, reservation, reservation.user)
             return {"success": False, "error": error_message}
 
-        # Try to update the saved payment method from the captured intent
-        payment_method_id = None
-        if hasattr(captured_intent, "payment_method") and captured_intent.payment_method:
-            if isinstance(captured_intent.payment_method, dict):
-                payment_method_id = captured_intent.payment_method.get("id")
-            else:
-                payment_method_id = captured_intent.payment_method
-
-        if payment_method_id and getattr(reservation, "stripe_saved_payment_method_id", None) != payment_method_id:
-            reservation.stripe_saved_payment_method_id = payment_method_id
         reservation.paid = True
-
-        reservation.save(update_fields=["stripe_saved_payment_method_id", "paid"])
+        reservation.save(update_fields=["paid"])
 
         task.mark_success(captured_intent.id)
 
