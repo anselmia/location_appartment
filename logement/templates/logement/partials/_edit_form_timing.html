@@ -31,6 +31,16 @@
     {% endfor %}
 </div>
 
+<div class="form-field form-switch mb-3 d-flex align-items-center gap-2">
+    <label class="form-check-label mb-0" for="{{ form.self_check_in.id_for_label }}">
+        {{ form.self_check_in.label }}
+    </label>
+    {{ form.self_check_in|add_class:"form-check-input" }}
+</div>
+{% for error in form.self_check_in.errors %}
+    <div class="invalid-feedback d-block">{{ error }}</div>
+{% endfor %}
+
 <div class="form-field">
     <label for="{{ form.leaving_hour.id_for_label }}">{{ form.leaving_hour.label }}</label>
     {{ form.leaving_hour|add_class:"form-input" }}

@@ -94,6 +94,7 @@ class Logement(models.Model):
         ],
         default="flat",
     )
+    self_check_in = models.BooleanField(default=False)
 
     max_traveler = models.IntegerField(default=4)
     nominal_traveler = models.IntegerField(default=4)

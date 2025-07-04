@@ -49,6 +49,7 @@ class LogementForm(forms.ModelForm):
             "beds",
             "map_link",
             "admin_fee",
+            "self_check_in"
         ]
         labels = {
             "name": "Nom du logement",
@@ -89,6 +90,7 @@ class LogementForm(forms.ModelForm):
             "owner": "Propriétaire",
             "admin": "Administrateur du logement",
             "admin_fee": "Frais de gestion Administrateur (%)",
+            "self_check_in": "Arrivée autonome (boîte à clés)",
         }
         help_texts = {
             "nominal_traveler": "Nombre de voyageurs inclus sans frais supplémentaires.",

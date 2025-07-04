@@ -205,6 +205,20 @@
                 <li>
                     <strong>Check-out :</strong> avant {{ logement.leaving_hour|time:"H:i" }}
                 </li>
+                <li>
+                    <strong>Arrivée autonome :</strong>
+                    {% if logement.self_check_in %}
+                        Oui
+                    {% else %}
+                        Non
+                    {% endif %}
+                    <br>
+                    {% if logement.self_check_in %}
+                        <span class="text-muted small">
+                            Vous pouvez entrer dans le logement sans la présence de l'hôte grâce à une boîte à clés.
+                        </span>
+                    {% endif %}
+                </li>
             </ul>
         </section>
         <section class="section-block logement-description-block">
