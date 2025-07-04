@@ -25,11 +25,7 @@
           href="{% static 'logement/css/logements_grid.css' %}"
           media="print"
           onload="this.media='all'">
-    <link rel="preload"
-          as="image"
-          href="{% static 'logement/img/logement.jpg' %}"
-          type="image/jpeg"
-          fetchpriority="high">
+
 {% endblock %}
 {% block content %}
     <div class="home-page">
@@ -62,14 +58,168 @@
             </div>
         </header>
         <div class="container my-5">
-            <section class="py-5">
-                <div class="text-center mb-5">
-                    <h2 class="display-5 fw-bold mb-3 section-title-luxury">Louer en toute sérénité avec {{ entreprise.name }}</h2>
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold mb-3 section-title-luxury">Louer en toute sérénité avec {{ entreprise.name }}</h2>
+                <div class="luxury-divider"></div>
+                <p class="text-muted lead mx-auto" style="max-width: 700px;">
+                    Profitez d’une expérience locale, humaine et transparente pour vos séjours sur la Côte d’Azur. Notre équipe et nos partenaires s’engagent à vous offrir le meilleur, sans compromis.
+                </p>
+            </div>
+            <!-- LOGEMENTS -->
+            <section class="lux-section logements-section" id="logements">
+                <div class="lux-section-inner">
+                    <h2 class="section-title-luxury">Nos logements disponibles</h2>
                     <div class="luxury-divider"></div>
-                    <p class="text-muted lead mx-auto" style="max-width: 700px;">
-                        Profitez d’une expérience locale, humaine et transparente pour vos séjours sur la Côte d’Azur. Notre équipe et nos partenaires s’engagent à vous offrir le meilleur, sans compromis.
-                    </p>
+                    {% if logements %}
+                        <div class="logements-grid">
+                            {% for logement in logements|slice:":6" %}
+                                <div class="card logement-card  luxury-card">
+                                    <a href="{% url 'logement:view_logement' logement.id %}">
+                                        <div class="logement-img-wrapper">
+                                            <picture>
+                                                <source srcset="{% if logement.photos.first.image_webp %}{{ logement.photos.first.image_webp.url }}{% endif %}"
+                                                        type="image/webp">
+                                                <img src="{{ logement.photos.first.image.url }}"
+                                                     loading="lazy"
+                                                     width="400"
+                                                     height="250"
+                                                     alt="{{ logement.name }}">
+                                            </picture>
+                                            <div class="logement-badge">
+                                                <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
+                                                {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
+                                            </div>
+                                            <div class="logement-icons-overlay">
+                                                {% for equip in logement.equipment.all %}
+                                                    {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
+                                                        <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if logement.animals %}
+                                                    <i class="fas fa-paw" title="Animaux acceptés"></i>
+                                                {% else %}
+                                                    <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
+                                                {% endif %}
+                                                {% if logement.smoking %}
+                                                    <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
+                                                {% else %}
+                                                    <i class="fas fa-smoking-ban" title="Non fumeur"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="logement-location">
+                                                <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <div class="card-body">
+                                        <h3 class="logement-title">{{ logement.name }}</h3>
+                                        {% if logement.rankings.exists %}
+                                            <div class="logement-stars mb-2 text-center"
+                                                 title="Note moyenne : {{ logement.rating }} sur 5">
+                                                {% for i in "1,2,3,4,5"|cut:"," %}
+                                                    {% with i_int=i|add:"0" %}
+                                                        {% if logement.rating >= i_int %}
+                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                        {% elif logement.rating >= i_int|add:"-0.5" %}
+                                                            <i class="bi bi-star-half text-warning"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                                <span class="ms-1 text-muted small">({{ logement.rating|floatformat:1 }}/5, {{ logement.rankings.count }} avis)</span>
+                                            </div>
+                                        {% endif %}
+                                        <p class="price">
+                                            À partir de {{ logement.price }}€ <span>par nuit</span>
+                                        </p>
+                                        <div class="logement-details">
+                                            <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
+                                            <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
+                                            <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
+                    {% endif %}
                 </div>
+                <div class="text-center" style="margin-top: 1rem;">
+                    <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
+                </div>
+            </section>
+            <!-- ACTIVITIES -->
+            <section class="lux-section activities-section" id="activities">
+                <div class="lux-section-inner">
+                    <h2 class="section-title-luxury">Nos activités à découvrir</h2>
+                    <div class="luxury-divider"></div>
+                    {% if activities %}
+                        <div class="activities-grid">
+                            {% for activity in activities|slice:":6" %}
+                                <div class="card activity-card luxury-card">
+                                    <a href="{% url 'activity:detail' activity.id %}">
+                                        <div class="activity-img-wrapper">
+                                            {% if activity.image %}
+                                                <img src="{{ activity.image.url }}"
+                                                     alt="{{ activity.name }}"
+                                                     class="img-fluid rounded"
+                                                     loading="lazy">
+                                            {% else %}
+                                                <img src="{% static 'activity/img/default_activity.jpg' %}"
+                                                     alt="{{ activity.name }}"
+                                                     class="img-fluid rounded"
+                                                     loading="lazy">
+                                            {% endif %}
+                                            <div class="activity-badge">
+                                                <span><i class="fas fa-tag"></i> {{ activity.category.name }}</span>
+                                                <span><i class="fas fa-clock"></i> {{ activity.duration }} min</span>
+                                            </div>
+                                            <div class="activity-location">
+                                                <i class="fas fa-map-marker-alt"></i> {{ activity.location.name }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    <div class="card-body">
+                                        <h3 class="activity-title">{{ activity.name }}</h3>
+                                        {% if activity.rankings.exists %}
+                                            <div class="logement-stars mb-2 text-center"
+                                                 title="Note moyenne : {{ activity.rating }} sur 5">
+                                                {% for i in "1,2,3,4,5"|cut:"," %}
+                                                    {% with i_int=i|add:"0" %}
+                                                        {% if activity.rating >= i_int %}
+                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                        {% elif activity.rating >= i_int|add:"-0.5" %}
+                                                            <i class="bi bi-star-half text-warning"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                                <span class="ms-1 text-muted small">({{ activity.rating|floatformat:1 }}/5, {{ activity.rankings.count }} avis)</span>
+                                            </div>
+                                        {% endif %}
+                                        <p class="price">
+                                            À partir de {{ activity.price|floatformat:2 }}€ <span>par personne</span>
+                                        </p>
+                                        <div class="activity-details">
+                                            <span><i class="fas fa-users"></i> {{ activity.max_participants }} pers. max</span>
+                                            <span><i class="fas fa-calendar-day"></i> {{ activity.get_days_of_week_display }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted mt-4">Aucune activité disponible pour cette recherche.</p>
+                    {% endif %}
+                </div>
+                <div class="text-center" style="margin-top: 1rem;">
+                    <a href="{% url 'activity:search' %}" class="btn-show-more">Voir toutes les activités</a>
+                </div>
+            </section>
+            <section class="py-5">
                 <div class="row g-5">
                     <div class="col-md-4">
                         <div class="luxury-card h-100">
@@ -212,97 +362,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-            <!-- LOGEMENTS -->
-            <section class="lux-section logements-section"
-                     id="logements"
-                     style="aspect-ratio: 16 / 5;
-                            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2)), url('{% static "logement/img/logement.webp" %}');
-                            background-size: cover;
-                            background-position: center;
-                            background-repeat: no-repeat">
-                <div class="lux-section-inner">
-                    <h2 class="section-title-luxury">Nos logements disponibles</h2>
-                    <div class="luxury-divider"></div>
-                    {% if logements %}
-                        <div class="logements-grid">
-                            {% for logement in logements|slice:":6" %}
-                                <div class="card logement-card  luxury-card">
-                                    <a href="{% url 'logement:view_logement' logement.id %}">
-                                        <div class="logement-img-wrapper">
-                                            <picture>
-                                                <source srcset="{% if logement.photos.first.image_webp %}{{ logement.photos.first.image_webp.url }}{% endif %}"
-                                                        type="image/webp">
-                                                <img src="{{ logement.photos.first.image.url }}"
-                                                     loading="lazy"
-                                                     width="400"
-                                                     height="250"
-                                                     alt="{{ logement.name }}">
-                                            </picture>
-                                            <div class="logement-badge">
-                                                <span><i class="fas fa-building"></i> {{ logement.get_type_display }}</span>
-                                                {% if logement.superficie %}<span><i class="fas fa-ruler-combined"></i> {{ logement.superficie }} m²</span>{% endif %}
-                                            </div>
-                                            <div class="logement-icons-overlay">
-                                                {% for equip in logement.equipment.all %}
-                                                    {% if equip.name in "Wifi Climatisation Cuisine Lave-linge Télévision Parking gratuit sur place" %}
-                                                        <i class="{{ equip.icon }}" title="{{ equip.name }}"></i>
-                                                    {% endif %}
-                                                {% endfor %}
-                                                {% if logement.animals %}
-                                                    <i class="fas fa-paw" title="Animaux acceptés"></i>
-                                                {% else %}
-                                                    <i class="fas fa-paw" style="opacity: 0.4" title="Animaux non autorisés"></i>
-                                                {% endif %}
-                                                {% if logement.smoking %}
-                                                    <i class="fas fa-smoking" title="Fumeurs autorisés"></i>
-                                                {% else %}
-                                                    <i class="fas fa-smoking-ban" title="Non fumeur"></i>
-                                                {% endif %}
-                                            </div>
-                                            <div class="logement-location">
-                                                <i class="fas fa-map-marker-alt"></i> {{ logement.ville }}
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <div class="card-body">
-                                        <h3 class="logement-title">{{ logement.name }}</h3>
-                                        {% if logement.rankings.exists %}
-                                            <div class="logement-stars mb-2 text-center"
-                                                 title="Note moyenne : {{ logement.rating }} sur 5">
-                                                {% for i in "1,2,3,4,5"|cut:"," %}
-                                                    {% with i_int=i|add:"0" %}
-                                                        {% if logement.rating >= i_int %}
-                                                            <i class="bi bi-star-fill text-warning"></i>
-                                                        {% elif logement.rating >= i_int|add:"-0.5" %}
-                                                            <i class="bi bi-star-half text-warning"></i>
-                                                        {% else %}
-                                                            <i class="bi bi-star text-warning"></i>
-                                                        {% endif %}
-                                                    {% endwith %}
-                                                {% endfor %}
-                                                <span class="ms-1 text-muted small">({{ logement.rating|floatformat:1 }}/5, {{ logement.rankings.count }} avis)</span>
-                                            </div>
-                                        {% endif %}
-                                        <p class="price">
-                                            À partir de {{ logement.price }}€ <span>par nuit</span>
-                                        </p>
-                                        <div class="logement-details">
-                                            <span><i class="fas fa-bed"></i> {{ logement.bedrooms }}</span>
-                                            <span><i class="fas fa-bath"></i> {{ logement.bathrooms }}</span>
-                                            <span><i class="fas fa-user-friends"></i> {{ logement.max_traveler }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-center text-muted mt-4">Aucun logement disponible pour cette recherche.</p>
-                    {% endif %}
-                </div>
-                <div class="text-center" style="margin-top: 1rem;">
-                    <a href="{% url 'logement:logement_search' %}" class="btn-show-more">Voir tous les logements</a>
                 </div>
             </section>
             <!-- JOIN US -->

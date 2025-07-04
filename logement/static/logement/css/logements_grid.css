@@ -7,10 +7,6 @@
   margin-top: 2rem;
   box-sizing: border-box;
   margin-bottom: 20px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   color: white; /* Optional if you want text contrast */
   position: relative;
   align-items: center;
@@ -21,13 +17,6 @@
   max-height: 70vh;
 }
 
-.logements-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4); /* Dark overlay */
-  z-index: 0;
-}
 .logements-section > * {
   position: relative;
   z-index: 1;
