@@ -3,6 +3,7 @@ import json
 from openai import OpenAI, RateLimitError, AuthenticationError, APIError, Timeout
 from datetime import date
 
+from django.db.models import Avg
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
@@ -11,9 +12,9 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.views.generic import TemplateView
 
 from logement.models import Logement
+from activity.models import Activity
 from common.services.email_service import send_contact_email_notification
 from administration.models import HomePageConfig
 from accounts.forms import ContactForm
@@ -30,7 +31,30 @@ def is_admin(user):
 def home(request):
     try:
         config = HomePageConfig.objects.prefetch_related("services", "testimonials", "commitments").first()
-        logements = Logement.objects.prefetch_related("photos").filter(statut="open")
+        logements = (
+            Logement.objects.prefetch_related("photos")
+            .filter(statut="open")
+            .annotate(
+                rating_avg=(
+                    (
+                        Avg("rankings__cleanliness")
+                        + Avg("rankings__equipment")
+                        + Avg("rankings__location")
+                        + Avg("rankings__welcome")
+                        + Avg("rankings__value")
+                    )
+                    / 5.0
+                )
+            )
+            .order_by("-rating_avg")[:6]  # Only the top 6
+        )
+
+        activities = (
+            Activity.objects.prefetch_related("photos")
+            .filter(is_active=True)
+            .annotate(rating_avg=Avg("rankings__stars"))
+            .order_by("-rating_avg")[:6]  # Only the top 6
+        )
 
         if request.method == "POST":
             form = ContactForm(request.POST)
@@ -55,6 +79,7 @@ def home(request):
             request,
             "home.html",
             {
+                "activities": activities,
                 "logements": logements,
                 "config": config,
                 "contact_form": form,

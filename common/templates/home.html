@@ -25,7 +25,6 @@
           href="{% static 'logement/css/logements_grid.css' %}"
           media="print"
           onload="this.media='all'">
-
 {% endblock %}
 {% block content %}
     <div class="home-page">
@@ -72,7 +71,7 @@
                     <div class="luxury-divider"></div>
                     {% if logements %}
                         <div class="logements-grid">
-                            {% for logement in logements|slice:":6" %}
+                            {% for logement in logements %}
                                 <div class="card logement-card  luxury-card">
                                     <a href="{% url 'logement:view_logement' logement.id %}">
                                         <div class="logement-img-wrapper">
@@ -156,33 +155,29 @@
                     <h2 class="section-title-luxury">Nos activités à découvrir</h2>
                     <div class="luxury-divider"></div>
                     {% if activities %}
-                        <div class="activities-grid">
-                            {% for activity in activities|slice:":6" %}
-                                <div class="card activity-card luxury-card">
+                        <div class="logements-grid">
+                            {% for activity in activities %}
+                                <div class="card logement-card luxury-card">
                                     <a href="{% url 'activity:detail' activity.id %}">
-                                        <div class="activity-img-wrapper">
-                                            {% if activity.image %}
-                                                <img src="{{ activity.image.url }}"
-                                                     alt="{{ activity.name }}"
-                                                     class="img-fluid rounded"
-                                                     loading="lazy">
-                                            {% else %}
-                                                <img src="{% static 'activity/img/default_activity.jpg' %}"
-                                                     alt="{{ activity.name }}"
-                                                     class="img-fluid rounded"
-                                                     loading="lazy">
-                                            {% endif %}
-                                            <div class="activity-badge">
+                                        <div class="logement-img-wrapper">
+                                            <picture>
+                                                <img src="{{ activity.photos.all.0.image.url }}"
+                                                     loading="lazy"
+                                                     width="400"
+                                                     height="250"
+                                                     alt="{{ activity.name }}">
+                                            </picture>    
+                                            <div class="logement-badge">
                                                 <span><i class="fas fa-tag"></i> {{ activity.category.name }}</span>
                                                 <span><i class="fas fa-clock"></i> {{ activity.duration }} min</span>
                                             </div>
-                                            <div class="activity-location">
+                                            <div class="logement-location">
                                                 <i class="fas fa-map-marker-alt"></i> {{ activity.location.name }}
                                             </div>
                                         </div>
                                     </a>
                                     <div class="card-body">
-                                        <h3 class="activity-title">{{ activity.name }}</h3>
+                                        <h3 class="logement-title">{{ activity.name }}</h3>
                                         {% if activity.rankings.exists %}
                                             <div class="logement-stars mb-2 text-center"
                                                  title="Note moyenne : {{ activity.rating }} sur 5">
@@ -203,7 +198,7 @@
                                         <p class="price">
                                             À partir de {{ activity.price|floatformat:2 }}€ <span>par personne</span>
                                         </p>
-                                        <div class="activity-details">
+                                        <div class="logement-details">
                                             <span><i class="fas fa-users"></i> {{ activity.max_participants }} pers. max</span>
                                             <span><i class="fas fa-calendar-day"></i> {{ activity.get_days_of_week_display }}</span>
                                         </div>
