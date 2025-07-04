@@ -1,0 +1,9 @@
+Bonjour {{ user.get_full_name|default:user.name }},
+
+Le dépôt de garantie pour votre réservation {{ reservation.code }} ({{ logement.name }}) a bien été transféré au propriétaire.
+
+Montant transféré : {{ amount|floatformat:2 }} €
+
+Merci de votre confiance.
+
+L'équipe {{ entreprise.name }}

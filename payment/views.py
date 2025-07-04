@@ -48,7 +48,7 @@ from payment.services.payment_service import (
     capture_reservation_payment,
     create_reservation_payment_intents,
     get_strip_fee,
-    get_payment_fee
+    get_payment_fee,
 )
 from payment.models import PaymentTask
 
@@ -67,7 +67,7 @@ def save_payment_method(request, code):
         reservation.save(update_fields=["stripe_saved_payment_method_id"])
         return HttpResponse(status=200)
     except Exception as e:
-        logger.exception(f"Erreur lors de la sauvegarde du payment_method Stripe: {e}")
+        logger.error(f"Erreur lors de la sauvegarde du payment_method Stripe: {e}")
         return HttpResponse(status=400)
 
 
@@ -120,7 +120,7 @@ def payment_method_saved(request, type, code):
         messages.error(request, f"Activité {code} introuvable.")
         return redirect("accounts:dashboard")
     except Exception as e:
-        logger.exception(f"Error handling payment success: {e}")
+        logger.error(f"Error handling payment success: {e}")
         messages.error(request, "Erreur lors du traitement du paiement.")
         return redirect("accounts:dashboard")
 
@@ -157,7 +157,13 @@ def payment_success(request, type, code):
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
             reservation.payment_fee = payment_fee
             reservation.save(
-                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut", "payment_fee"]
+                update_fields=[
+                    "paid",
+                    "stripe_payment_intent_id",
+                    "stripe_saved_payment_method_id",
+                    "statut",
+                    "payment_fee",
+                ]
             )
             send_mail_logement_payment_success(reservation.logement, reservation, reservation.user)
             ReservationHistory.objects.create(
@@ -172,7 +178,13 @@ def payment_success(request, type, code):
             reservation.stripe_saved_payment_method_id = payment_intent.payment_method.id
             reservation.payment_fee = payment_fee
             reservation.save(
-                update_fields=["paid", "stripe_payment_intent_id", "stripe_saved_payment_method_id", "statut", "payment_fee"]
+                update_fields=[
+                    "paid",
+                    "stripe_payment_intent_id",
+                    "stripe_saved_payment_method_id",
+                    "statut",
+                    "payment_fee",
+                ]
             )
             send_mail_activity_payment_success(reservation.activity, reservation, reservation.user)
             ActivityReservationHistory.objects.create(
@@ -211,7 +223,7 @@ def payment_cancel(request, type, code):
         return redirect("accounts:dashboard")
 
     except Exception as e:
-        logger.exception(f"Error handling payment cancellation: {e}")
+        logger.error(f"Error handling payment cancellation: {e}")
         messages.error(request, "Une erreur est survenue.")
         return redirect("accounts:dashboard")
 
@@ -232,7 +244,7 @@ def send_payment_link(request, code):
         send_stripe_payment_link(reservation)  # Your helper function
         messages.success(request, f"Lien de paiement envoyé à {reservation.user.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send payment link for {code}: {e}")
+        logger.error(f"❌ Failed to send payment link for {code}: {e}")
         messages.error(request, "Erreur lors de l'envoi du lien.")
 
     if reservation_type == "activity":
@@ -266,7 +278,7 @@ def start_payment(request, code):
                 )
                 return redirect("accounts:dashboard")
     except Exception as e:
-        logger.exception(f"Erreur lors de la création de la session Stripe pour {reservation.code}: {e}")
+        logger.error(f"Erreur lors de la création de la session Stripe pour {reservation.code}: {e}")
         messages.error(request, "Impossible de démarrer le paiement Stripe.")
         if reservation_type == "activity":
             return redirect("reservation:customer_activity_reservation_detail", code=code)
@@ -285,7 +297,7 @@ def transfer_reservation_payment(request, code):
         messages.success(request, f"Transfert effectué pour {reservation.code}.")
     except Exception as e:
         messages.error(request, f"Erreur lors du transfert : {str(e)}")
-        logger.exception(f"❌ Failed to transfer funds for {code}: {e}")
+        logger.error(f"❌ Failed to transfer funds for {code}: {e}")
     if reservation_type == "activity":
         return redirect("reservation:manage_activity_reservations")
     else:
@@ -329,7 +341,7 @@ def payment_task_list(request):
 
         return render(request, "payment/payment_tasks.html", context)
     except Exception as e:
-        logger.exception(f"Erreur lors de l'affichage des tâches de paiement : {e}")
+        logger.error(f"Erreur lors de l'affichage des tâches de paiement : {e}")
         raise
 
 
@@ -368,7 +380,7 @@ def refund_reservation(request, code):
                 )
             except Exception as e:
                 messages.error(request, f"Erreur de remboursement Stripe : {e}")
-                logger.exception("Stripe refund failed")
+                logger.error("Stripe refund failed")
         else:
             messages.warning(request, "Cette réservation a déjà été remboursée.")
     except (InvalidOperation, TypeError, ValueError):
@@ -376,7 +388,7 @@ def refund_reservation(request, code):
         messages.error(request, "Montant de remboursement invalide.")
     except Exception as e:
         messages.error(request, f"Erreur lors du remboursement : {e}")
-        logger.exception("Error processing refund")
+        logger.error("Error processing refund")
 
     if reservation_type == "activity":
         return redirect("reservation:activity_reservation_detail", code=code)
@@ -420,11 +432,11 @@ def refund_partially_reservation(request, code):
         )
 
     except (InvalidOperation, TypeError, ValueError):
-        logger.exception("Invalid refund amount")
+        logger.error("Invalid refund amount")
         messages.error(request, "Montant de remboursement invalide.")
     except Exception as e:
         messages.error(request, f"Erreur de remboursement Stripe : {e}")
-        logger.exception("Stripe refund failed")
+        logger.error("Stripe refund failed")
 
     if reservation_type == "activity":
         return redirect("reservation:activity_reservation_detail", code=code)
@@ -468,11 +480,11 @@ def charge_deposit_view(request, code):
             messages.error(request, "Erreur lors du paiement de la caution.")
 
     except (InvalidOperation, ValueError, TypeError):
-        logger.exception("Invalid deposit amount")
+        logger.error("Invalid deposit amount")
         messages.error(request, "Montant invalide.")
     except Exception as e:
         messages.error(request, f"Erreur lors du chargement Stripe : {e}")
-        logger.exception("Stripe deposit charge failed")
+        logger.error("Stripe deposit charge failed")
 
     return redirect("reservation:logement_reservation_detail", code=code)
 
@@ -613,7 +625,7 @@ def capture_payment_view(request, code):
         else:
             messages.success(request, f"Paiement capturé pour {reservation.user.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to capture payment for {code}: {e}")
+        logger.error(f"❌ Failed to capture payment for {code}: {e}")
         messages.error(request, f"Erreur lors de la capture du paiement : {e}")
 
     return redirect(request.META.get("HTTP_REFERER", "/"))
@@ -628,7 +640,7 @@ def create_payment_intent(request, code):
         create_reservation_payment_intents(reservation)
         messages.success(request, f"Paiement créé pour {reservation.user.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to create payment for {code}: {e}")
+        logger.error(f"❌ Failed to create payment for {code}: {e}")
         messages.error(request, f"Erreur lors de la création du paiement : {e}")
 
     return redirect(request.META.get("HTTP_REFERER", "/"))

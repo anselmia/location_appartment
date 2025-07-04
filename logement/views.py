@@ -18,21 +18,14 @@ from django.views.decorators.cache import cache_page
 
 from django.core.cache import cache
 
-from logement.models import (
-    Logement,
-    Price,
-    EquipmentType,
-    Photo,
-    Discount,
-    DiscountType,
-)
+from logement.models import Logement, Price, EquipmentType, Photo, Discount, DiscountType, LogementRanking
 from logement.services.calendar_service import (
     sync_external_ical,
     get_calendar_context,
     export_ical_service,
 )
 from logement.services.revenue_service import get_economie_stats
-from logement.forms import LogementForm, DiscountForm
+from logement.forms import LogementForm, DiscountForm, LogementRankingForm
 from logement.serializers import DailyPriceSerializer
 from logement.services.price_service import (
     bulk_update_prices,
@@ -68,7 +61,8 @@ from common.services.email_service import (
     send_mail_conciergerie_stop_management,
 )
 
-from reservation.models import Reservation
+from reservation.models import Reservation, ReservationHistory
+from reservation.decorators import user_has_reservation
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +313,7 @@ def move_photo(request: HttpRequest, photo_id: int, direction: str) -> JsonRespo
         logger.warning(f"Failed to move photo {photo_id}: {message}")
         return JsonResponse({"success": False, "message": message}, status=400)
     except Exception as e:
-        logger.exception(f"Error moving photo {photo_id}: {e}")
+        logger.error(f"Error moving photo {photo_id}: {e}")
         return JsonResponse({"success": False, "error": "Erreur interne serveur"}, status=500)
 
 
@@ -336,7 +330,7 @@ def delete_photo(request: HttpRequest, photo_id: int) -> JsonResponse:
         logger.info(f"Photo {photo_id} deleted")
         return JsonResponse({"success": True})
     except Exception as e:
-        logger.exception(f"Error deleting photo {photo_id}: {e}")
+        logger.error(f"Error deleting photo {photo_id}: {e}")
         return JsonResponse({"success": False, "error": "Erreur interne serveur"}, status=500)
 
 
@@ -354,7 +348,7 @@ def delete_all_photos(request: HttpRequest, logement_id: int) -> JsonResponse:
         logger.info(f"All photos deleted for logement {logement_id}")
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        logger.exception(f"Error deleting all photos for logement {logement_id}: {e}")
+        logger.error(f"Error deleting all photos for logement {logement_id}: {e}")
         return JsonResponse({"status": "error", "error": "Erreur interne serveur"}, status=500)
 
 
@@ -372,7 +366,7 @@ def rotate_photo(request: HttpRequest, photo_id: int) -> JsonResponse:
         logger.info(f"Photo {photo_id} rotated by {degrees} degrees")
         return JsonResponse({"status": "ok", "rotation": photo.rotation})
     except Exception as e:
-        logger.exception(f"Error rotating photo {photo_id}: {e}")
+        logger.error(f"Error rotating photo {photo_id}: {e}")
         return JsonResponse({"status": "error", "error": "Erreur interne serveur"}, status=500)
 
 
@@ -416,14 +410,14 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             result = get_daily_price_data(logement_id, start_str, end_str)
             return Response(result)
         except Exception as e:
-            logger.exception(f"Error fetching daily prices: {e}")
+            logger.error(f"Error fetching daily prices: {e}")
             return Response({"error": "Erreur interne serveur"}, status=500)
 
     def perform_create(self, serializer):
         try:
             serializer.save()
         except Exception as e:
-            logger.exception(f"Error creating price: {e}")
+            logger.error(f"Error creating price: {e}")
             raise
 
     @action(detail=False, methods=["post"])
@@ -534,7 +528,7 @@ def manage_discounts(request: HttpRequest) -> HttpResponse:
             },
         )
     except Exception as e:
-        logger.exception(f"Error managing discounts: {e}")
+        logger.error(f"Error managing discounts: {e}")
         # Optionally, show a user-friendly error message
         messages.error(request, "Erreur interne serveur. Veuillez réessayer plus tard.")
         return redirect("logement:dashboard")
@@ -573,7 +567,7 @@ def api_economie_data(request, logement_id):
         cache.set(cache_key, data, 600)
         return JsonResponse(data)
     except Exception as e:
-        logger.exception(f"Erreur dans api_economie_data: {e}")
+        logger.error(f"Erreur dans api_economie_data: {e}")
         return JsonResponse({"error": "Erreur interne serveur"}, status=500)
 
 
@@ -658,3 +652,46 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     context["today"] = timezone.localdate()
 
     return render(request, "logement/dash.html", context)
+
+
+@login_required
+@user_has_reservation
+def rate(request, code):
+    reservation = get_object_or_404(Reservation, code=code)
+    logement = reservation.logement
+
+    # Check if a rating already exists for this reservation
+    rating = LogementRanking.objects.filter(reservation=reservation).first()
+    already_rated = rating is not None
+
+    if already_rated:
+        messages.info(request, "Vous avez déjà donné votre avis pour ce logement.")
+        return redirect("accounts:dashboard")
+
+    if request.method == "POST":
+        form = LogementRankingForm(request.POST)
+        if form.is_valid():
+            new_rating = form.save(commit=False)
+            new_rating.reservation = reservation
+            new_rating.logement = logement
+            new_rating.save()
+            messages.success(request, "Merci pour votre avis sur ce logement !")
+            ReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Nouveau commentaire reçu pour la réservation {reservation.code}.",
+            )
+            return redirect("accounts:dashboard")
+    else:
+        form = LogementRankingForm()
+
+    return render(
+        request,
+        "logement/rate_logement.html",
+        {
+            "form": form,
+            "logement": logement,
+            "reservation": reservation,
+            "already_rated": False,
+            "rating": None,
+        },
+    )

@@ -18,7 +18,7 @@ def send_message_notification(message_id, recipient_id):
 
         email_service.send_message_notification_email(message, recipient)
     except Exception:
-        logger.exception(f"Échec de la notification pour message {message_id} à utilisateur {recipient_id}")
+        logger.error(f"Échec de la notification pour message {message_id} à utilisateur {recipient_id}")
 
 
 @task()
@@ -26,4 +26,4 @@ def send_contact_email(cd):
     try:
         email_service.send_contact_email_notification(cd)
     except Exception as e:
-        logger.exception(f"Erreur d'envoi email de contact: {e}")
+        logger.error(f"Erreur d'envoi email de contact: {e}")

@@ -135,13 +135,13 @@ def client_dashboard(request):
                 user, Reservation, statut_list=["confirmee", "annulee", "terminee", "echec_paiement"]
             )
         except Exception as e:
-            logger.exception(f"❌ Failed to load reservations for user {user.id}: {e}")
+            logger.error(f"❌ Failed to load reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations.")
 
         try:
             activity_reservations = get_user_reservations(user, ActivityReservation)
         except Exception as e:
-            logger.exception(f"❌ Failed to load activity reservations for user {user.id}: {e}")
+            logger.error(f"❌ Failed to load activity reservations for user {user.id}: {e}")
             messages.error(request, "Impossible de charger vos réservations d'activité.")
 
         if activity_reservations:
@@ -159,7 +159,7 @@ def client_dashboard(request):
                     messages.success(request, "Mot de passe mis à jour avec succès.")
                     return redirect("accounts:dashboard")
                 except Exception as e:
-                    logger.exception(f"❌ Error updating password for user {user.id}: {e}")
+                    logger.error(f"❌ Error updating password for user {user.id}: {e}")
                     messages.error(request, "Erreur lors de la mise à jour du mot de passe.")
             else:
                 logger.warning(f"⚠️ Password form invalid for user {user.id}")
@@ -194,7 +194,7 @@ def client_dashboard(request):
                 stripe_payouts = get_stripe_payouts(user)
 
             except Exception as e:
-                logger.exception(f"❌ Stripe integration failed for user {user.id}: {e}")
+                logger.error(f"❌ Stripe integration failed for user {user.id}: {e}")
                 messages.error(
                     request,
                     "Une erreur est survenue lors du chargement de vos données Stripe.",
@@ -244,7 +244,7 @@ def client_dashboard(request):
         )
 
     except Exception as e:
-        logger.exception(f"❌ Unexpected error in client_dashboard for user {request.user.id}: {e}")
+        logger.error(f"❌ Unexpected error in client_dashboard for user {request.user.id}: {e}")
         messages.error(request, "Une erreur inattendue est survenue.")
         return redirect("common:home")  # Fallback route in case rendering fails
 
@@ -326,7 +326,7 @@ def messages_view(request, conversation_id=None):
             }
             return render(request, "accounts/messages.html", context)
     except Exception as e:
-        logger.exception(f"[User:{user.id}] Error in messages_view: {e}")
+        logger.error(f"[User:{user.id}] Error in messages_view: {e}")
         messages.error(request, "Une erreur est survenue lors du chargement des messages.")
         return redirect("accounts:dashboard")
 
@@ -439,7 +439,7 @@ def create_stripe_account(request):
         return redirect(account_link.url)
 
     except Exception as e:
-        logger.exception(f"[Stripe] Erreur création compte pour {user.username}, IP: {ip} — {e}")
+        logger.error(f"[Stripe] Erreur création compte pour {user.username}, IP: {ip} — {e}")
         messages.error(request, "Erreur lors de la création du compte Stripe.")
         return redirect("accounts:dashboard")
 
@@ -477,7 +477,7 @@ def update_stripe_account_view(request):
             return redirect("accounts:dashboard")
 
         except Exception as e:
-            logger.exception(
+            logger.error(
                 f"[Stripe] Erreur mise à jour pour {user.username}, ID: {user.stripe_account_id}, IP: {ip} — {e}"
             )
             messages.error(request, "Erreur lors de la mise à jour du compte Stripe.")

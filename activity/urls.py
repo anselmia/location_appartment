@@ -17,6 +17,7 @@ urlpatterns = [
     path("dashboard/", views.activity_dashboard, name="activity_dashboard"),
     path("calendar/", views.activity_calendar, name="activity_calendar"),
     path("revenu/", RevenueView.as_view(), name="revenu"),
+    path("rate/<str:code>/", views.rate, name="rate"),
 ]
 
 # Add router URLs BEFORE catch-all patterns

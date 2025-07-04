@@ -1,7 +1,8 @@
 import re
 
 from django import forms
-from activity.models import Activity
+from activity.models import Activity, ActivityRating
+from common.forms import StarRadioSelect
 
 
 class ActivityForm(forms.ModelForm):
@@ -121,3 +122,17 @@ class ActivityForm(forms.ModelForm):
                 if not getattr(owner, "stripe_account_id", None):
                     self.add_error(None, "Le propriétaire doit avoir un compte Stripe connecté.")
         return cleaned_data
+
+
+class ActivityRatingForm(forms.ModelForm):
+    class Meta:
+        model = ActivityRating
+        fields = ["stars", "comment"]
+        widgets = {
+            "stars": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "comment": forms.Textarea(attrs={"rows": 3, "placeholder": "Votre commentaire (optionnel)"}),
+        }
+        labels = {
+            "stars": "Note globale",
+            "comment": "Votre commentaire",
+        }

@@ -146,6 +146,8 @@ def delete_partner(request, pk):
                     return redirect("accounts:dashboard")
 
         partner.delete()
+        for activity in partner_activities:
+            activity.delete()
         messages.success(request, "Compte Partenaire supprimé avec succès.")
     except Partners.DoesNotExist:
         messages.error(request, "Ce partenaire n'existe pas.")

@@ -84,6 +84,55 @@
                     {% if logement.registered_number %}– {{ logement.registered_number }}{% endif %}
                 {% endif %}
             </p>
+            <div class="logement-stars mb-2 text-center"
+                 title="Note moyenne : {{ logement.rating }} sur 5">
+                {% for i in "1,2,3,4,5"|cut:"," %}
+                    {% with i_int=i|add:"0" %}
+                        {% if logement.rating >= i_int %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                        {% elif logement.rating >= i_int|add:"-0.5" %}
+                            <i class="bi bi-star-half text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-star text-warning"></i>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+                <span class="ms-1 text-muted small">({{ logement.rating|floatformat:1 }}/5, {{ logement.rankings.count }} avis)</span>
+            </div>
+            <div class="logement-field-averages text-center mb-3">
+                <span class="me-3">Propreté : <strong>{{ logement.avg_cleanliness|floatformat:1 }}/5</strong></span>
+                <span class="me-3">Équipement : <strong>{{ logement.avg_equipment|floatformat:1 }}/5</strong></span>
+                <span class="me-3">Emplacement : <strong>{{ logement.avg_location|floatformat:1 }}/5</strong></span>
+                <span class="me-3">Accueil : <strong>{{ logement.avg_welcome|floatformat:1 }}/5</strong></span>
+                <span>Qualité/prix : <strong>{{ logement.avg_value|floatformat:1 }}/5</strong></span>
+            </div>
+            <div class="booking-links text-center my-4">
+                <a href="{% url 'reservation:book_logement' logement.id %}"
+                   class="btn btn-primary btn-lg me-2 mb-1"
+                   target="_blank"
+                   rel="noopener">
+                    <i class="bi bi-calendar2-check-fill me-1"></i>
+                    Réserver sur ce site
+                </a>
+                {% if logement.airbnb_link %}
+                    <a href="{{ logement.airbnb_link }}"
+                       class="btn btn-danger btn-lg me-2 mb-1"
+                       target="_blank"
+                       rel="noopener">
+                        <i class="fab fa-airbnb me-1"></i>
+                        Voir sur Airbnb
+                    </a>
+                {% endif %}
+                {% if logement.booking_link %}
+                    <a href="{{ logement.booking_link }}"
+                       class="btn btn-lg booking-btn me-2 mb-1"
+                       target="_blank"
+                       rel="noopener">
+                        <i class="fas fa-bed me-2"></i>
+                        Voir sur Booking.com
+                    </a>
+                {% endif %}
+            </div>
         </section>
         <!-- 🗺️ Google Map container -->
         <section class="section-block">
@@ -212,6 +261,42 @@
                     {% endwith %}
                 {% endfor %}
             </div>
+        </section>
+        <section class="section-block logement-comments-block">
+            <h2 class="section-title mb-3">
+                <i class="bi bi-chat-left-text text-primary me-2"></i>
+                Avis des voyageurs
+            </h2>
+            {% if logement.ranking_comments %}
+                <div class="comments-list" id="commentsList">
+                    {% for comment in logement.ranking_comments|slice:":3" %}
+                        <div class="logement-comment card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-person-circle text-secondary me-2"></i>
+                                <span class="comment-text">{{ comment }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if logement.ranking_comments|length > 3 %}
+                        {% for comment in logement.ranking_comments|slice:"3:" %}
+                            <div class="logement-comment card mb-3 shadow-sm d-none extra-comment">
+                                <div class="card-body">
+                                    <i class="bi bi-person-circle text-secondary me-2"></i>
+                                    <span class="comment-text">{{ comment }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <button class="btn btn-outline-primary btn-sm mt-2" id="showMoreCommentsBtn">Voir plus d'avis</button>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="alert-info text-center">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Aucun commentaire pour ce logement pour le moment.
+                </div>
+            {% endif %}
         </section>
         <div id="imageModal" class="image-modal">
             <span id="closeModal" class="close-btn">&times;</span>

@@ -49,7 +49,7 @@ def generate_ical(code):
         return cal.to_ical()
 
     except Exception as e:
-        logger.exception("Erreur lors de la génération du fichier iCal")
+        logger.error("Erreur lors de la génération du fichier iCal")
         raise e
 
 
@@ -194,5 +194,5 @@ def export_ical_service(code: str):
         else:
             return {"success": False, "error": "Aucune donnée à exporter", "status": 204}
     except Exception as e:
-        logger.exception(f"Error exporting iCal:  {e}")
+        logger.error(f"Error exporting iCal:  {e}")
         return {"success": False, "error": "Erreur interne serveur", "status": 500}

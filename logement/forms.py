@@ -1,7 +1,8 @@
 from django import forms
-from logement.models import Discount, Logement, City
+from logement.models import Discount, Logement, City, LogementRanking
 from decimal import Decimal
 from django.db.models import Q
+from common.forms import StarRadioSelect
 
 
 class LogementForm(forms.ModelForm):
@@ -172,8 +173,8 @@ class LogementForm(forms.ModelForm):
                     attrs={"readonly": "readonly", "class": "form-control disabled"}
                 )
                 self.fields["admin"].initial = self._format_user_display(getattr(self.instance, "admin", None))
-            
-            if user and not user.is_owner or (user.is_admin or user.is_superuser):               
+
+            if user and not user.is_owner or (user.is_admin or user.is_superuser):
                 self.fields["adresse"].widget = forms.TextInput(
                     attrs={"readonly": "readonly", "class": "form-control disabled"}
                 )
@@ -364,3 +365,40 @@ class DiscountForm(forms.ModelForm):
                     self.add_error("start_date", "La date de début est requise.")
                 if not cleaned_data.get("end_date"):
                     self.add_error("end_date", "La date de fin est requise.")
+
+
+class LogementRankingForm(forms.ModelForm):
+    class Meta:
+        model = LogementRanking
+        fields = ["cleanliness", "equipment", "location", "welcome", "value", "comment"]
+        widgets = {
+            "cleanliness": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "equipment": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "location": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "welcome": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "value": StarRadioSelect(choices=[(i, "") for i in range(1, 6)]),
+            "comment": forms.Textarea(attrs={"rows": 3, "placeholder": "Votre commentaire (optionnel)"}),
+        }
+        labels = {
+            "cleanliness": "Propreté",
+            "equipment": "Équipement",
+            "location": "Emplacement",
+            "welcome": "Accueil",
+            "value": "Rapport qualité/prix",
+            "comment": "Votre commentaire",
+        }
+
+    def clean_cleanliness(self):
+        return int(self.cleaned_data["cleanliness"])
+
+    def clean_equipment(self):
+        return int(self.cleaned_data["equipment"])
+
+    def clean_location(self):
+        return int(self.cleaned_data["location"])
+
+    def clean_welcome(self):
+        return int(self.cleaned_data["welcome"])
+
+    def clean_value(self):
+        return int(self.cleaned_data["value"])

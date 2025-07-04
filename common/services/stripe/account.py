@@ -17,7 +17,7 @@ def get_stripe_account_info(user):
     try:
         return stripe.Account.retrieve(user.stripe_account_id)
     except Exception as e:
-        logger.exception(f"Failed to retrieve Stripe account for user {user.id}: {e}")
+        logger.error(f"Failed to retrieve Stripe account for user {user.id}: {e}")
         return None
 
 

@@ -1,0 +1,13 @@
+Merci pour votre activité – Donnez-nous votre avis !
+
+Bonjour {{ user.full_name|default:user.username }},
+
+Nous espérons que votre expérience pour {{ activity.name }} s’est déroulée à merveille !
+
+Votre avis compte beaucoup pour nous et pour la communauté. En quelques secondes, partagez votre expérience et aidez d’autres voyageurs à faire le bon choix.
+
+Donner mon avis : {{ settings.SITE_ADDRESS }}/activity/rate/{{ reservation.code }}/
+
+Merci pour votre confiance et à bientôt sur {{ entreprise.name }} !
+
+L’équipe {{ entreprise.name }}

@@ -1,0 +1,11 @@
+Bonjour {{ user.get_full_name|default:user.name }},
+
+Nous vous confirmons que le transfert de la caution pour la réservation {{ reservation.code }} ({{ logement.name }}) a été effectué avec succès.
+
+Montant transféré : {{ amount|floatformat:2 }} €
+
+Vous pouvez consulter le détail dans votre espace partenaire :
+{{ espace_partenaire_url }}
+
+Merci,
+L'équipe {{ entreprise.name }}

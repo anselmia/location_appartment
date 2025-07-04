@@ -1,0 +1,45 @@
+
+/* Gradient Text for Title */
+.text-primary {
+  color: var(--text-primary) !important;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Card Enhancements */
+.card {
+  border-radius: 1.5rem !important;
+  box-shadow: 0 8px 32px 0 rgba(54, 209, 196, 0.1),
+    0 1.5px 8px 0 rgba(91, 134, 229, 0.08);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(2px);
+  border: none;
+}
+
+/* Responsive */
+@media (max-width: 760px) {
+  .card {
+    padding: 1.2rem !important;
+    border-radius: 1rem !important;
+  }
+  .star-rating label {
+    font-size: 1.5em !important;
+  }
+}
+
+/* Subtle fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.card,
+.star-rating,
+.btn-primary {
+  animation: fadeInUp 0.7s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+}

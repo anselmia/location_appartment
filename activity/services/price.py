@@ -82,7 +82,7 @@ def set_price(
         cache.set(key, result, 300)  # 5 min
         return result
     except Exception as e:
-        logger.exception(f"Error calculating price: {e}")
+        logger.error(f"Error calculating price: {e}")
         raise
 
 
@@ -265,7 +265,6 @@ def get_revenue_context(user, request) -> Dict[str, Any]:
         month = entry["month"].replace(day=1).date()
         reservations = reservations_by_month.get(month, [])
         entry["revenue_net"] = sum((r.owner_revenu for r in reservations), Decimal("0.00"))
-        
 
     monthly_chart = defaultdict(
         lambda: {

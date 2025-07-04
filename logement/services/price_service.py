@@ -74,7 +74,7 @@ def get_price_for_date_service(logement_id: int, date: str):
         logger.warning(f"Logement {logement_id} not found")
         return {"success": False, "error": "Logement not found", "status": 404}
     except Exception as e:
-        logger.exception(f"Failed to fetch price for date: {e}")
+        logger.error(f"Failed to fetch price for date: {e}")
         return {"success": False, "error": "Erreur interne serveur", "status": 500}
 
 
@@ -178,7 +178,7 @@ def get_best_discounts(discounts: Any, start_date: date, end_date: date) -> Dict
             "date_range": best_date_range_discounts,
         }
     except Exception as e:
-        logger.exception(f"Error determining best discounts: {e}")
+        logger.error(f"Error determining best discounts: {e}")
         return {"min_nights": None, "days_before": None, "date_range": []}
 
 
@@ -221,7 +221,7 @@ def apply_discounts(
 
         return base_price, discount_applied
     except Exception as e:
-        logger.exception(f"Error applying discounts on {current_day} with base {base_price}: {e}")
+        logger.error(f"Error applying discounts on {current_day} with base {base_price}: {e}")
         raise
 
 
@@ -331,7 +331,7 @@ def set_price(
         cache.set(key, result, 300)  # 5 min
         return result
     except Exception as e:
-        logger.exception(f"Error calculating price: {e}")
+        logger.error(f"Error calculating price: {e}")
         raise
 
 
@@ -340,9 +340,7 @@ def get_average_nightly_price(logement: Logement, start: date, end: date) -> Dec
     Calculate the average nightly price for a logement over a given period.
     """
     try:
-        reservations = get_valid_reservations_in_period(
-            Reservation, "logement_id", logement.id, start, end
-        )
+        reservations = get_valid_reservations_in_period(Reservation, "logement_id", logement.id, start, end)
         total_price = Decimal("0.00")
         total_nights = (end - start).days
 
@@ -359,5 +357,5 @@ def get_average_nightly_price(logement: Logement, start: date, end: date) -> Dec
 
         return total_price / total_nights
     except Exception as e:
-        logger.exception(f"Error calculating average nightly price: {e}")
+        logger.error(f"Error calculating average nightly price: {e}")
         return Decimal("0.00")

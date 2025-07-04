@@ -5,7 +5,7 @@ from accounts.models import CustomUser
 from datetime import timedelta
 from django.utils import timezone
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_DOWN
 
 from logement.models import Logement
 from activity.models import Activity
@@ -52,9 +52,13 @@ class Reservation(models.Model):
     refunded = models.BooleanField(default=False)
     refund_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     stripe_refund_id = models.CharField(max_length=100, blank=True, null=True)
+
     caution_charged = models.BooleanField(default=False)
     amount_charged = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    caution_transferred = models.BooleanField(default=False)
     stripe_deposit_payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
+    stripe_deposit_transfer_id = models.CharField(max_length=100, blank=True, null=True)
+    deposit_transferred_amount = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
     stripe_transfer_id = models.CharField(max_length=100, blank=True, null=True)
     transferred = models.BooleanField(default=False)
@@ -134,13 +138,13 @@ class Reservation(models.Model):
             refundable = price - payment_fee - refund_amount
             refundable = max(Decimal("0.00"), refundable)
 
-            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
         except Exception as e:
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            logger.error(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -164,13 +168,13 @@ class Reservation(models.Model):
             refundable = price - payment_fee - refund_amount - platform_fee
             refundable = max(Decimal("0.00"), refundable)
 
-            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
         except Exception as e:
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            logger.error(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -215,7 +219,7 @@ class Reservation(models.Model):
         result = max(Decimal("0"), caution - charged)
 
         # Round the result to 2 decimal places
-        return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return result.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
     @property
     def transferable_amount(self):
@@ -241,7 +245,7 @@ class Reservation(models.Model):
                     admin_fee = admin_rate * amount
                     amount -= admin_fee
 
-                return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
             else:
                 return Decimal(0)
 
@@ -249,7 +253,36 @@ class Reservation(models.Model):
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
+            logger.error(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
+            return Decimal("0.00")
+
+    @property
+    def caution_transferable_amount(self):
+        """
+        Calculates the amount that can be transferred to the owner for the deposit.
+
+        Formula:
+        transferable = amount_charged - payment_fee
+        """
+        from payment.services.payment_service import get_payment_fee
+
+        try:
+            if self.paid and self.amount_charged and self.amount_charged > 0 and not self.caution_transferred:
+                payment_fee = Decimal(get_payment_fee(self.amount_charged) or 0)
+
+                # Check if logement or owner has offered fees
+                amount = self.amount_charged - payment_fee
+                amount = max(Decimal("0"), amount)
+
+                return amount.quantize(Decimal("0.01"), rounding=ROUN)
+            else:
+                return Decimal(0)
+
+        except Exception as e:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -271,9 +304,9 @@ class Reservation(models.Model):
                 admin_fee = admin_rate * amount
                 amount -= admin_fee
 
-            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
         except Exception as e:
-            logger.exception(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
+            logger.error(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
             return Decimal("0.00")
 
     @property
@@ -294,11 +327,11 @@ class Reservation(models.Model):
                 admin_rate = Decimal(self.admin_fee_rate or 0)
                 admin_fee = admin_rate * amount
 
-                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
             else:
                 return Decimal(0)
         except Exception as e:
-            logger.exception(f"Error calculating admin_transferable_amount for admin for reservation {self.code}: {e}")
+            logger.error(f"Error calculating admin_transferable_amount for admin for reservation {self.code}: {e}")
             return Decimal("0.00")
 
     @property
@@ -319,12 +352,12 @@ class Reservation(models.Model):
                 admin_rate = Decimal(self.admin_fee_rate or 0)
                 admin_fee = admin_rate * amount
 
-                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return admin_fee.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
             else:
                 return Decimal(0)
 
         except Exception as e:
-            logger.exception(f"Error calculating revenu amount for admin for reservation {self.code}: {e}")
+            logger.error(f"Error calculating revenu amount for admin for reservation {self.code}: {e}")
             return Decimal("0.00")
 
     @property
@@ -453,10 +486,10 @@ class ActivityReservation(models.Model):
             refundable = price - payment_fee - refund_amount
             refundable = max(Decimal("0.00"), refundable)
 
-            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
         except Exception as e:
-            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            logger.error(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -480,13 +513,13 @@ class ActivityReservation(models.Model):
             refundable = price - payment_fee - refund_amount - platform_fee
             refundable = max(Decimal("0.00"), refundable)
 
-            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return refundable.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
         except Exception as e:
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
+            logger.error(f"❌ Error calculating refundable_amount for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -544,13 +577,13 @@ class ActivityReservation(models.Model):
             amount = price - platform_fee - refund - payment_fee
             amount = max(Decimal("0"), amount)
 
-            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
 
         except Exception as e:
             import logging
 
             logger = logging.getLogger(__name__)
-            logger.exception(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
+            logger.error(f"Error calculating transferable_amount for owner for reservation {self.id}: {e}")
             return Decimal("0.00")
 
     @property
@@ -567,9 +600,9 @@ class ActivityReservation(models.Model):
             amount = price - platform_fee - refund - payment_fee
             amount = max(Decimal("0"), amount)
 
-            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_DOWN)
         except Exception as e:
-            logger.exception(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
+            logger.error(f"Error calculating revenu amount for owner for reservation {self.code}: {e}")
             return Decimal("0.00")
 
 

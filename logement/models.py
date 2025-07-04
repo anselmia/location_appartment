@@ -11,6 +11,7 @@ from PIL import Image
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Avg
 from common.services.helper_fct import generate_unique_code
 
 logger = logging.getLogger(__name__)
@@ -198,7 +199,55 @@ class Logement(models.Model):
 
     @property
     def calendar_link(self):
-        return f"{settings.SITE_ADDRESS}/api/export/ical/{self.code}/"
+        return f"{settings.SITE_ADDRESS}/logement/api/export/ical/{self.code}/"
+
+    @property
+    def rating(self):
+        # Aggregate average for each field
+        agg = self.rankings.aggregate(
+            cleanliness=Avg("cleanliness"),
+            equipment=Avg("equipment"),
+            location=Avg("location"),
+            welcome=Avg("welcome"),
+            value=Avg("value"),
+        )
+        # Filter out None (no votes)
+        field_avgs = [v for v in agg.values() if v is not None]
+        if not field_avgs:
+            return 0
+        # Global average: mean of all field averages
+        return round(sum(field_avgs) / len(field_avgs), 2)
+
+    @property
+    def review_count(self):
+        return self.rankings.count()
+
+    @property
+    def avg_cleanliness(self):
+        return round(self.rankings.aggregate(avg=Avg("cleanliness"))["avg"] or 0, 2)
+
+    @property
+    def avg_equipment(self):
+        return round(self.rankings.aggregate(avg=Avg("equipment"))["avg"] or 0, 2)
+
+    @property
+    def avg_location(self):
+        return round(self.rankings.aggregate(avg=Avg("location"))["avg"] or 0, 2)
+
+    @property
+    def avg_welcome(self):
+        return round(self.rankings.aggregate(avg=Avg("welcome"))["avg"] or 0, 2)
+
+    @property
+    def avg_value(self):
+        return round(self.rankings.aggregate(avg=Avg("value"))["avg"] or 0, 2)
+
+    @property
+    def ranking_comments(self):
+        """
+        Returns a queryset of all non-empty comments from rankings for this logement.
+        """
+        return self.rankings.exclude(comment__isnull=True).exclude(comment__exact="").values_list("comment", flat=True)
 
 
 class Price(models.Model):
@@ -422,3 +471,38 @@ class PlatformFeeWaiver(models.Model):
         if self.max_amount and self.total_used >= self.max_amount:
             return False
         return True
+
+
+class LogementRanking(models.Model):
+    reservation = models.OneToOneField("reservation.Reservation", on_delete=models.CASCADE)
+    logement = models.ForeignKey(Logement, on_delete=models.CASCADE, related_name="rankings")
+    cleanliness = models.PositiveSmallIntegerField(default=0, help_text="Propreté (1-5)")
+    equipment = models.PositiveSmallIntegerField(default=0, help_text="Équipement (1-5)")
+    location = models.PositiveSmallIntegerField(default=0, help_text="Emplacement (1-5)")
+    welcome = models.PositiveSmallIntegerField(default=0, help_text="Accueil (1-5)")
+    value = models.PositiveSmallIntegerField(default=0, help_text="Rapport qualité/prix (1-5)")
+    comment = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def average(self):
+        scores = [
+            self.cleanliness,
+            self.equipment,
+            self.location,
+            self.welcome,
+            self.value,
+        ]
+        valid_scores = [s for s in scores if s > 0]
+        if not valid_scores:
+            return 0
+        return round(sum(valid_scores) / len(valid_scores), 2)
+
+    @property
+    def stars(self):
+        """Return the average as a number of stars (rounded to nearest half)."""
+        avg = self.average
+        return round(avg * 2) / 2  # e.g. 4.5, 3.0, etc.
+
+    def __str__(self):
+        return f"Note {self.stars}★ pour {self.logement.name}"

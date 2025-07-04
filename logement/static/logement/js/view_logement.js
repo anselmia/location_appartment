@@ -26,4 +26,15 @@ document.addEventListener("DOMContentLoaded", function () {
         rules.classList.toggle("collapsed", !isRulesExpanded);
         toggleRules.textContent = isRulesExpanded ? "Voir moins" : "Voir plus";
     });
+
+    // Show more comments functionality
+    const btn = document.getElementById("showMoreCommentsBtn");
+    if (btn) {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll(".extra-comment").forEach(function(el) {
+                el.classList.remove("d-none");
+            });
+            btn.style.display = "none";
+        });
+    }
 });

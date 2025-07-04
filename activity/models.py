@@ -1,15 +1,15 @@
 import logging
 from datetime import timedelta
 from multiselectfield import MultiSelectField
-
+from django.db.models import Avg
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from common.services.helper_fct import generate_unique_code
 from logement.models import City
 from accounts.models import CustomUser
+from partner.models import Partners
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +123,24 @@ class Activity(models.Model):
     def partner(self):
         return get_object_or_404(Partners, user=self.owner)
 
+    @property
+    def rating(self):
+        """Return the average stars for this activity (float, 0 if no ratings)."""
+        avg = self.rankings.aggregate(avg=Avg("stars"))["avg"]
+        return round(avg or 0, 2)
+
+    @property
+    def review_count(self):
+        """Return the number of ratings for this activity."""
+        return self.rankings.count()
+
+    @property
+    def ranking_comments(self):
+        """
+        Returns a queryset of all non-empty comments from rankings for this activity.
+        """
+        return self.rankings.exclude(comment__isnull=True).exclude(comment__exact="").values_list("comment", flat=True)
+
 
 class CloseDate(models.Model):
     activity = models.ForeignKey(Activity, related_name="close_dates", on_delete=models.CASCADE)
@@ -149,3 +167,12 @@ class Price(models.Model):
 
     def __str__(self):
         return f"Prix du {self.date}: {self.value}"
+
+
+class ActivityRating(models.Model):
+    reservation = models.OneToOneField("reservation.ActivityReservation", on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="rankings")
+    user = models.ForeignKey("accounts.CustomUser", on_delete=models.CASCADE)
+    stars = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

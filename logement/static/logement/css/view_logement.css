@@ -138,7 +138,6 @@ select,
   );
 }
 
-
 .toggle-description-btn,
 .toggle-rules-btn {
   display: inline-block;
@@ -322,6 +321,46 @@ select,
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
+.logement-comments-block .comments-list {
+  max-width: 700px;
+  margin: 0 auto;
+}
+.logement-comment.card {
+  border-radius: 1rem;
+  border: none;
+  background: #f8f9fa;
+}
+.comment-text {
+  font-size: 1.1em;
+  color: #333;
+}
+
+.booking-links .btn {
+  min-width: 200px;
+  font-size: 1.15em;
+  box-shadow: 0 2px 8px #0001;
+  transition: transform 0.15s;
+}
+.booking-links .btn:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.booking-btn {
+    background-color: #003580;
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.booking-btn:hover {
+    background-color: #00224f;
+    color: white;
+}
+
 
 @media (max-width: 768px) {
   .section-block {

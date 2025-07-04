@@ -88,8 +88,9 @@
 }
 
 .logement-badge span {
-  display: block;
-  line-height: 1.2;
+    display: flex;
+    line-height: 1.2;
+    justify-content: left;
 }
 
 .logement-icons-overlay {
@@ -219,6 +220,18 @@
   background: linear-gradient(90deg, #bfa66b 0%, #ffe6b7 100%);
   color: #fff !important;
   box-shadow: 0 4px 16px rgba(191, 166, 107, 0.18);
+}
+
+.logement-stars i {
+  font-size: 1.1em;
+  vertical-align: middle;
+  margin-right: 1px;
+}
+.logement-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
 }
 
 @media (max-width: 576px) {

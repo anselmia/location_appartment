@@ -251,7 +251,7 @@ def delete_room_by_id(room_id: int) -> Dict[str, str]:
         logger.info(f"Room {room_id} deleted")
         return {"success": True, "logement_id": logement_id}
     except Exception as e:
-        logger.exception(f"Error deleting room {room_id}: {e}")
+        logger.error(f"Error deleting room {room_id}: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -298,7 +298,7 @@ def change_photo_room_service(photo_id: int, request_body: bytes) -> Dict:
         logger.info(f"Photo {photo_id} assigned to room {room_id}")
         return {"success": True}
     except Exception as e:
-        logger.exception(f"Error changing photo room: {e}")
+        logger.error(f"Error changing photo room: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -474,7 +474,7 @@ def autocomplete_cities_service(query: str):
         logger.info(f"Autocomplete for query '{query}', {cities.count()} results")
         return {"success": True, "options": "".join(f"<option value='{c.name}'></option>" for c in cities)}
     except Exception as e:
-        logger.exception(f"Autocomplete city search failed: {e}")
+        logger.error(f"Autocomplete city search failed: {e}")
         return {"success": False, "error": "Erreur interne serveur"}
 
 

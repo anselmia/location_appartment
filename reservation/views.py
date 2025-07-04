@@ -162,7 +162,7 @@ def book_logement(request: HttpRequest, pk: int) -> HttpResponse:
             },
         )
     except Exception as e:
-        logger.exception(f"Booking failed: {e}")
+        logger.error(f"Booking failed: {e}")
         raise
 
 
@@ -237,7 +237,7 @@ def book_activity(request: HttpRequest, pk: int) -> HttpResponse:
             },
         )
     except Exception as e:
-        logger.exception(f"Booking failed: {e}")
+        logger.error(f"Booking failed: {e}")
         raise
 
 
@@ -258,7 +258,7 @@ def check_availability(request: HttpRequest, logement_id: int) -> JsonResponse:
         available = not is_period_booked(start_date, end_date, logement_id, user)
         return JsonResponse({"available": available})
     except Exception as e:
-        logger.exception(f"Error checking availability: {e}")
+        logger.error(f"Error checking availability: {e}")
         return JsonResponse({"error": "Erreur interne serveur"}, status=500)
 
 
@@ -281,7 +281,7 @@ def check_logement_booking_input(request: HttpRequest, logement_id: int) -> Json
     except ValueError as e:
         return JsonResponse({"correct": False, "error": str(e)})
     except Exception as e:
-        logger.exception(f"Error validating booking input: {e}")
+        logger.error(f"Error validating booking input: {e}")
         return JsonResponse({"correct": False, "error": "Erreur interne serveur."}, status=500)
 
 
@@ -304,7 +304,7 @@ def check_activity_booking_input(request: HttpRequest, activity_id: int) -> Json
         logger.error(f"Invalid input for activity booking: {e}")
         return JsonResponse({"correct": False, "error": str(e)})
     except Exception as e:
-        logger.exception(f"Error validating booking input: {e}")
+        logger.error(f"Error validating booking input: {e}")
         return JsonResponse({"correct": False, "error": "Erreur interne serveur."}, status=500)
 
 
@@ -322,7 +322,7 @@ def customer_cancel_logement_booking(request: HttpRequest, code: str) -> HttpRes
         if error_message:
             messages.error(request, error_message)
     except Exception as e:
-        logger.exception(f"Error canceling booking: {e}")
+        logger.error(f"Error canceling booking: {e}")
         messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
     return redirect("accounts:dashboard")
 
@@ -342,7 +342,7 @@ def owner_cancel_booking(request: HttpRequest, code: str) -> HttpResponse:
         if error_message:
             messages.error(request, error_message)
     except Exception as e:
-        logger.exception(f"Error canceling booking: {e}")
+        logger.error(f"Error canceling booking: {e}")
         messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
     if reservation_type == "activity":
         return redirect("reservation:activity_reservation_detail", code=code)
@@ -364,7 +364,7 @@ def customer_cancel_activity_booking(request: HttpRequest, code: str) -> HttpRes
         if error_message:
             messages.error(request, error_message)
     except Exception as e:
-        logger.exception(f"Error canceling booking: {e}")
+        logger.error(f"Error canceling booking: {e}")
         messages.error(request, "Erreur lors de l'annulation. Veuillez nous contacter")
     return redirect("accounts:dashboard")
 
@@ -681,7 +681,7 @@ def validate_activity_reservation(request, code):
                         send_mail_activity_reservation_confirmation(reservation.activity, reservation, reservation.user)
                         logger.info(f"📧 Confirmation email sent for reservation {reservation.code}")
                     except Exception as e:
-                        logger.exception(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
+                        logger.error(f"❌ Error sending confirmation email for reservation {reservation.code}: {e}")
                     messages.success(request, "La réservation a été confirmée avec succès.")
                 else:
                     error_msg = "Aucun moyen de paiement enregistré. Veuillez enregistrer un moyen de paiement."

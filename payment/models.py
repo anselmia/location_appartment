@@ -9,6 +9,7 @@ class PaymentTask(models.Model):
     TASK_TYPES = [
         ("transfer_owner", "Transfer to Owner"),
         ("transfer_admin", "Transfer to Admin"),
+        ("transfer_deposit_owner", "Transfer Deposit to Owner"),
         ("charge_deposit", "Charge Deposit"),
         ("refund", "Refund"),
         ("checkout", "Check Out"),

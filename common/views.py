@@ -61,7 +61,7 @@ def home(request):
             },
         )
     except Exception as e:
-        logger.exception(f"Error rendering homepage: {e}")
+        logger.error(f"Error rendering homepage: {e}")
         raise
 
 
@@ -239,7 +239,7 @@ def chatbot_api(request):
     except Timeout:
         return JsonResponse({"error": "Temps d’attente dépassé. Réessayez."}, status=504)
     except APIError:
-        logger.exception("OpenAI APIError")
+        logger.error("OpenAI APIError")
         return JsonResponse({"error": "Erreur côté serveur IA"}, status=502)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -273,7 +273,7 @@ def js_logger(request):
 
             return JsonResponse({"success": True})
         except Exception as e:
-            logger.exception(f"Failed to log JS message: {e}")
+            logger.error(f"Failed to log JS message: {e}")
             return HttpResponseBadRequest("Invalid data")
     return JsonResponse({"error": "Méthode non autorisée"}, status=400)
 

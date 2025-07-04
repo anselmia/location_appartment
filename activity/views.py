@@ -7,18 +7,17 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
-
 from django.views.generic import TemplateView
 from django.core.paginator import Paginator
-
-from activity.forms import ActivityForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
+from activity.forms import ActivityForm, ActivityRatingForm
 from activity.mixins import UserHasActivityMixin
 from activity.decorators import user_has_activity
-from activity.models import Price, Activity
+from activity.models import Price, Activity, ActivityRating
 from activity.models import Activity, Category, ActivityPhoto
 from activity.services.activity import get_activity, get_calendar_context
 from activity.services.price import get_price_context, get_daily_price_data, bulk_update_prices, get_revenue_context
@@ -30,7 +29,8 @@ from accounts.decorators import user_has_valid_stripe_account
 from logement.models import City
 
 from reservation.services.activity import available_by_day
-from reservation.models import ActivityReservation
+from reservation.models import ActivityReservation, ActivityReservationHistory
+from reservation.decorators import user_has_reservation
 
 
 logger = logging.getLogger(__name__)
@@ -138,10 +138,16 @@ def delete_activity(request, pk):
     try:
         thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
         activity = Activity.objects.get(id=pk)
-        activity_reservation = ActivityReservation.objects.filter(activity=activity, statut__in=["en_attente", "confirmee", "echec_paiement"])
-        ended_reservation = ActivityReservation.objects.filter(activity=activity, statut="terminee", end__gt=thirty_days_ago)
+        activity_reservation = ActivityReservation.objects.filter(
+            activity=activity, statut__in=["en_attente", "confirmee", "echec_paiement"]
+        )
+        ended_reservation = ActivityReservation.objects.filter(
+            activity=activity, statut="terminee", end__gt=thirty_days_ago
+        )
         if activity_reservation.exists() or ended_reservation.exists():
-            messages.error(request, "Vous ne pouvez pas supprimer cette activité tant qu'elle a des réservations en cours.")
+            messages.error(
+                request, "Vous ne pouvez pas supprimer cette activité tant qu'elle a des réservations en cours."
+            )
             return redirect("activity:activity_dashboard")
 
         activity.delete()
@@ -240,14 +246,14 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
             result = get_daily_price_data(activity_id, start_str, end_str)
             return Response(result)
         except Exception as e:
-            logger.exception(f"Error fetching daily prices: {e}")
+            logger.error(f"Error fetching daily prices: {e}")
             return Response({"error": "Erreur interne serveur"}, status=500)
 
     def perform_create(self, serializer):
         try:
             serializer.save()
         except Exception as e:
-            logger.exception(f"Error creating price: {e}")
+            logger.error(f"Error creating price: {e}")
             raise
 
     @action(detail=False, methods=["post"])
@@ -275,3 +281,48 @@ class DailyPriceViewSet(viewsets.ModelViewSet):
         if "error" in result:
             return Response({"error": result["error"]}, status=500)
         return Response(result)
+
+
+@login_required
+@user_has_reservation
+def rate(request, code):
+    reservation = get_object_or_404(ActivityReservation, code=code)
+    activity = reservation.activity
+
+    # Check if a rating already exists for this reservation
+    rating = ActivityRating.objects.filter(reservation=reservation).first()
+    already_rated = rating is not None
+
+    if already_rated:
+        # If already rated, redirect to dashboard
+        messages.info(request, "Vous avez déjà donné votre avis pour cette activité.")
+        return reverse("accounts:dashboard")
+
+    if request.method == "POST":
+        form = ActivityRatingForm(request.POST)
+        if form.is_valid():
+            new_rating = form.save(commit=False)
+            new_rating.reservation = reservation
+            new_rating.activity = activity
+            new_rating.user = request.user
+            new_rating.save()
+            ActivityReservationHistory.objects.create(
+                reservation=reservation,
+                details=f"Nouveau commentaire reçu pour la réservation {reservation.code}.",
+            )
+            messages.success(request, "Merci pour votre avis sur cette activité !")
+            return redirect("accounts:dashboard")
+    else:
+        form = ActivityRatingForm()
+
+    return render(
+        request,
+        "activity/rate_activity.html",
+        {
+            "form": form,
+            "activity": activity,
+            "reservation": reservation,
+            "already_rated": False,
+            "rating": None,
+        },
+    )

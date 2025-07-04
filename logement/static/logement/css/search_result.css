@@ -490,6 +490,18 @@ logement-list-card {
   color: #fff !important;
 }
 
+.logement-stars i {
+  font-size: 1.1em;
+  vertical-align: middle;
+  margin-right: 1px;
+}
+.logement-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+}
+
 @media (min-width: 769px) {
   .search-layout-container {
     display: flex;

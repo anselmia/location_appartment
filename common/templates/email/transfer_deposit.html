@@ -1,0 +1,26 @@
+{% extends "email/base.html" %}
+{% block banner_icon %}
+    💸
+{% endblock banner_icon %}
+{% block banner_bg %}
+    #673AB7
+{% endblock banner_bg %}
+{% block banner_title %}
+    Transfert de caution effectué
+{% endblock banner_title %}
+{% block content %}
+    <p>Bonjour {{ user.get_full_name|default:user.name }},</p>
+    <p>
+        Le transfert de la caution pour la réservation <strong>{{ reservation.code }}</strong> concernant le logement <strong>{{ logement.name }}</strong> a été effectué.
+    </p>
+    <p>
+        Montant transféré : <strong>{{ amount|floatformat:2 }} €</strong>
+    </p>
+    <p>
+        Consultez le détail dans votre <a href="{{ espace_partenaire_url }}">espace partenaire</a>.
+    </p>
+    <p>
+        Merci de votre confiance.<br>
+        L'équipe {{ entreprise.name }}
+    </p>
+{% endblock content %}

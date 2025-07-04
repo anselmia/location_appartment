@@ -284,7 +284,6 @@ section a:hover {
 .lux-section {
   padding: 4rem 0 3rem 0;
   background: linear-gradient(135deg, #f8f5f2 60%, #fff8f0 100%);
-  border-radius: 2rem;
   margin-bottom: 2.5rem;
   box-shadow: 0 2px 16px rgba(191, 166, 107, 0.07);
   transition: background 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;

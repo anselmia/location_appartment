@@ -262,7 +262,7 @@ def mark_reservation_cancelled(reservation: Any) -> None:
             send_mail_logement_reservation_cancellation(reservation.logement, reservation, reservation.user)
         logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} has been marked as cancelled.")
     except Exception as e:
-        logger.exception(f"Error cancelling reservation {getattr(reservation, 'code', repr(reservation))}: {e}")
+        logger.error(f"Error cancelling reservation {getattr(reservation, 'code', repr(reservation))}: {e}")
         raise
 
 
@@ -332,7 +332,7 @@ def cancel_and_refund_reservation(reservation: Any, user: CustomUser) -> Tuple[O
         logger.info(f"Reservation {getattr(reservation, 'code', repr(reservation))} cancelled without refund.")
         return ("✅ Réservation annulée (aucun paiement à rembourser).", None)
     except Exception as e:
-        logger.exception(
+        logger.error(
             f"Error cancelling and refunding reservation {getattr(reservation, 'code', repr(reservation))}: {e}"
         )
         raise

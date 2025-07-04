@@ -79,7 +79,7 @@ def traffic_dashboard(request):
             },
         )
     except Exception as e:
-        logger.exception(f"Error loading traffic dashboard: {e}")
+        logger.error(f"Error loading traffic dashboard: {e}")
         return JsonResponse({"error": "Erreur lors du chargement des données"}, status=500)
 
 
@@ -139,7 +139,7 @@ def log_viewer(request):
         paginator = Paginator(logs, page_size)
         page_obj = paginator.get_page(page)
     except Exception as e:
-        logger.exception(f"Erreur lors de la lecture du fichier de log: {e}")
+        logger.error(f"Erreur lors de la lecture du fichier de log: {e}")
         page_obj = None
         all_loggers = []
         paginator = None
@@ -226,7 +226,7 @@ def homepage_admin_view(request):
         }
         return render(request, "administration/base_site.html", context)
     except Exception as e:
-        logger.exception(f"Erreur dans homepage_admin_view: {e}")
+        logger.error(f"Erreur dans homepage_admin_view: {e}")
         raise
 
 
@@ -246,7 +246,7 @@ def edit_entreprise(request):
 
         return render(request, "administration/edit_entreprise.html", {"form": form})
     except Exception as e:
-        logger.exception(f"Erreur dans edit_entreprise: {e}")
+        logger.error(f"Erreur dans edit_entreprise: {e}")
         raise
 
 
@@ -420,8 +420,9 @@ def huey_tasks_status(request):
 @user_passes_test(is_admin)
 def huey_task_detail(request, task_id):
     from common.services.helper_fct import parse_json_field
+
     try:
-        task = TaskHistory.objects.get(id=task_id)    
+        task = TaskHistory.objects.get(id=task_id)
 
         context = {
             "task": task,
@@ -434,7 +435,7 @@ def huey_task_detail(request, task_id):
         messages.error(request, "Tâche introuvable.")
         return redirect("administration:huey_tasks_status")
     except Exception as e:
-        logger.exception(f"Erreur lors de l'affichage des détails de la tâche: {e}")
+        logger.error(f"Erreur lors de l'affichage des détails de la tâche: {e}")
         raise
 
 
@@ -546,6 +547,6 @@ def test_email_view(request):
                 messages.warning(request, f"Aucune logique de test pour {func_name}")
             messages.success(request, f"Email envoyé avec succès via {func_name}")
         except Exception as e:
-            logger.exception(f"Erreur lors de l'envoi de l'email via {func_name}: {e}")
+            logger.error(f"Erreur lors de l'envoi de l'email via {func_name}: {e}")
             messages.error(request, f"Erreur lors de l'envoi: {e}")
     return render(request, "administration/test_email.html", {"email_functions": EMAIL_FUNCTIONS})

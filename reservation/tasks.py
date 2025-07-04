@@ -11,7 +11,10 @@ from reservation.models import Reservation, ActivityReservation
 from common.services.email_service import (
     send_pre_checkin_reminders,
     send_pre_checkin_activity_reminders,
+    send_rating_reminders_for_logement,
+    send_rating_reminders_for_activity
 )
+from reservation.services.reservation_service import get_reservation_type
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ def _delete_expired_pending(model, pending_minutes=30, failed_weeks=1):
         logger.info(f"Deleted {count_pending} expired pending reservations for {model.__name__}")
         result["deleted"] = count_pending
     except Exception as e:
-        logger.exception(f"Error deleting expired reservations for {model.__name__}: {e}")
+        logger.error(f"Error deleting expired reservations for {model.__name__}: {e}")
         result["errors"] = str(e)
 
     return result
@@ -63,10 +66,16 @@ def _end_reservations(model):
         ended_qs = model.objects.filter(statut="confirmee", end__lt=today)
         count = ended_qs.count()
         ended_qs.update(statut="terminee")
+        for reservation in ended_qs:
+            reservation_type = get_reservation_type(reservation)
+            if reservation_type
+                send_rating_reminders_for_logement(reservation)
+            elif reservation_type == "activity":
+                send_rating_reminders_for_activity(reservation)
         logger.info(f"Ended {count} reservations for {model.__name__}")
         result["ended"] = count
     except Exception as e:
-        logger.exception(f"Error ending reservations for {model.__name__}: {e}")
+        logger.error(f"Error ending reservations for {model.__name__}: {e}")
         result["errors"] = str(e)
 
     return result
@@ -218,6 +227,6 @@ def clean_sensitive_payment_data():
         update_last_task_result(name, summary)
 
     except Exception as e:
-        logger.exception(f"Error cleaning reservation payment data: {e}")
+        logger.error(f"Error cleaning reservation payment data: {e}")
         name = inspect.currentframe().f_code.co_name
         update_last_task_result(name, {"error": str(e)})

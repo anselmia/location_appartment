@@ -497,7 +497,7 @@ def create_or_update_reservation(
             logger.info(f"Reservation {reservation.code} created.")
         return reservation
     except Exception as e:
-        logger.exception(f"Error creating or updating reservation: {e}")
+        logger.error(f"Error creating or updating reservation: {e}")
         raise
 
 

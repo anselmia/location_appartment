@@ -33,7 +33,7 @@ def send_mail_new_account_validation(user, current_site):
         msg.send(fail_silently=False)
         logger.info(f"📧 Validation email sent to {user.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send account validation email to {user.email}: {e}")
+        logger.error(f"❌ Failed to send account validation email to {user.email}: {e}")
 
 
 def resend_confirmation_email(user, current_site):
@@ -53,7 +53,7 @@ def resend_confirmation_email(user, current_site):
         msg.send(fail_silently=False)
         logger.info(f"🔁 Confirmation email resent to {user.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to resend confirmation email to {user.email}: {e}")
+        logger.error(f"❌ Failed to resend confirmation email to {user.email}: {e}")
 
 
 def send_mail_on_new_reservation(logement, reservation, user):
@@ -95,7 +95,7 @@ def send_mail_on_new_reservation(logement, reservation, user):
             logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
 
     except Exception as e:
-        logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_new_activity_reservation(activity, reservation, user):
@@ -136,7 +136,7 @@ def send_mail_on_new_activity_reservation(activity, reservation, user):
             logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
 
     except Exception as e:
-        logger.exception(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send admin mail for reservation {reservation.code}: {e}")
 
 
 def send_mail_activity_reservation_confirmation(activity, reservation, user):
@@ -167,7 +167,7 @@ def send_mail_activity_reservation_confirmation(activity, reservation, user):
             logger.info(f"✅ Confirmation mail sent to user {user.email} for reservation {reservation.code}")
 
     except Exception as e:
-        logger.exception(f"❌ Failed to send confirmation mail for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send confirmation mail for reservation {reservation.code}: {e}")
 
 
 def send_pre_checkin_reminders():
@@ -234,7 +234,7 @@ def send_pre_checkin_reminders():
         return summary
 
     except Exception as e:
-        logger.exception(f"❌ Fatal error during pre-checkin reminders: {e}")
+        logger.error(f"❌ Fatal error during pre-checkin reminders: {e}")
         summary["errors"].append(str(e))
         return summary
 
@@ -302,7 +302,7 @@ def send_pre_checkin_activity_reminders():
         return summary
 
     except Exception as e:
-        logger.exception(f"❌ Fatal error during activity pre-checkin reminders: {e}")
+        logger.error(f"❌ Fatal error during activity pre-checkin reminders: {e}")
         summary["errors"].append(str(e))
         return summary
 
@@ -348,7 +348,7 @@ def send_mail_on_logement_refund(logement, reservation, user):
             msg_user.send(fail_silently=False)
             logger.info(f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_activity_refund(activity, reservation, user):
@@ -392,7 +392,7 @@ def send_mail_on_activity_refund(activity, reservation, user):
             msg_user.send(fail_silently=False)
             logger.info(f"✅ Refund confirmation sent to user {user.email} for reservation {reservation.code}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send refund email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_new_transfer(logement, reservation, user_type):
@@ -442,7 +442,61 @@ def send_mail_on_new_transfer(logement, reservation, user_type):
             msg_user.send(fail_silently=False)
             logger.info(f"✅ Transfer confirmation sent to user {user.email} for reservation {reservation.code}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+
+
+def send_mail_on_new_deposit_transfer(logement, reservation, user_type):
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            return
+
+        # Context for email templates
+        user = logement.owner
+        amount = reservation.deposit_transferred_amount
+
+        email_context = {
+            "reservation": reservation,
+            "logement": logement,
+            "user": user,
+            "amount": amount,
+            "entreprise": entreprise,
+        }
+        if hasattr(settings, "SITE_ADDRESS"):
+            email_context["espace_partenaire_url"] = settings.SITE_ADDRESS + "/accounts/dashboard/"
+        else:
+            email_context["espace_partenaire_url"] = "#"
+        email_context["now"] = timezone.now()
+
+        # Admin/owner email (HTML + plain)
+        admin_message_txt = render_to_string("email/transfer_deposit.txt", email_context)
+        admin_message_html = render_to_string("email/transfer_deposit.html", email_context)
+        subject_admin = (
+            f"💸 Transfert pour la caution effectué à {user} - {logement.name} - Réservation {reservation.code}"
+        )
+        admin_emails = logement.mail_list
+        msg = EmailMultiAlternatives(subject_admin, admin_message_txt, settings.DEFAULT_FROM_EMAIL, admin_emails)
+        msg.attach_alternative(admin_message_html, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"✅ Transfer deposit email sent to admins for reservation {reservation.code}.")
+
+        # User email (HTML + plain)
+        if user.email:
+            user_message_txt = render_to_string("email/transfer_deposit_user.txt", email_context)
+            user_message_html = render_to_string("email/transfer_deposit_user.html", email_context)
+            msg_user = EmailMultiAlternatives(
+                f"Transfert de la caution de la Réservation {reservation.code} - {logement.name}",
+                user_message_txt,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+            )
+            msg_user.attach_alternative(user_message_html, "text/html")
+            msg_user.send(fail_silently=False)
+            logger.info(
+                f"✅ Transfer deposit confirmation sent to user {user.email} for reservation {reservation.code}"
+            )
+    except Exception as e:
+        logger.error(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_new_activity_transfer(activity, reservation, user_type):
@@ -489,7 +543,7 @@ def send_mail_on_new_activity_transfer(activity, reservation, user_type):
             msg_user.send(fail_silently=False)
             logger.info(f"✅ Transfer confirmation sent to user {user.email} for reservation {reservation.code}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
 def send_mail_payment_link(reservation):
@@ -512,7 +566,7 @@ def send_mail_payment_link(reservation):
         msg.send(fail_silently=False)
         logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
     except Exception as e:
-        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
 def send_mail_activity_payment_link(reservation):
@@ -535,7 +589,7 @@ def send_mail_activity_payment_link(reservation):
         msg.send(fail_silently=False)
         logger.info(f"✅ Payment link sent to customer for reservation {reservation.code}.")
     except Exception as e:
-        logger.exception(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send transfer email for reservation {reservation.code}: {e}")
 
 
 def send_mail_logement_payment_success(logement, reservation, user):
@@ -576,7 +630,7 @@ def send_mail_logement_payment_success(logement, reservation, user):
             logger.info(f"📧 Payment success email sent to {user.email} for reservation {reservation.code}.")
 
     except Exception as e:
-        logger.exception(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
 
 
 def send_mail_activity_payment_success(activity, reservation, user):
@@ -617,7 +671,7 @@ def send_mail_activity_payment_success(activity, reservation, user):
             logger.info(f"📧 Payment success email sent to {user.email} for reservation {reservation.code}.")
 
     except Exception as e:
-        logger.exception(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send payment success email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_payment_failure(logement, reservation, user):
@@ -663,7 +717,7 @@ def send_mail_on_payment_failure(logement, reservation, user):
             fail_silently=False,
         )
     except Exception as e:
-        logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
 
 def send_mail_on_activity_payment_failure(activity, reservation, user):
@@ -710,7 +764,7 @@ def send_mail_on_activity_payment_failure(activity, reservation, user):
             fail_silently=False,
         )
     except Exception as e:
-        logger.exception(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
+        logger.error(f"❌ Failed to send payment failure email for reservation {reservation.code}: {e}")
 
 
 def send_message_notification_email(message, recipient):
@@ -734,7 +788,7 @@ def send_message_notification_email(message, recipient):
         msg.send(fail_silently=False)
         logger.info(f"Notification envoyée à {recipient.email} pour le message {message.id}")
     except Exception:
-        logger.exception(
+        logger.error(
             f"Échec de la notification pour message {getattr(message, 'id', '?')} à utilisateur {getattr(recipient, 'id', '?')}"
         )
 
@@ -760,7 +814,7 @@ def send_contact_email_notification(cd):
         msg.send(fail_silently=False)
         logger.info(f"Contact email sent from {cd['email']} to {settings.CONTACT_EMAIL}")
     except Exception as e:
-        logger.exception(f"Erreur d'envoi email de contact: {e}")
+        logger.error(f"Erreur d'envoi email de contact: {e}")
 
 
 def send_email_new_message(msg):
@@ -779,7 +833,7 @@ def send_email_new_message(msg):
             m.send(fail_silently=False)
             logger.info(f"✅ new message email sent to {user.full_name} for reservation {reservation.code}.")
     except Exception as e:
-        logger.exception(f"❌ Failed to send new message email for message {msg.id}: {e}")
+        logger.error(f"❌ Failed to send new message email for message {msg.id}: {e}")
 
 
 def send_mail_conciergerie_request_accepted(owner, conciergerie, logement):
@@ -799,7 +853,7 @@ def send_mail_conciergerie_request_accepted(owner, conciergerie, logement):
         msg.send(fail_silently=False)
         logger.info(f"✅ Mail conciergerie accepted sent to {owner.email} for logement {logement.name}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send conciergerie accepted mail to {owner.email}: {e}")
+        logger.error(f"❌ Failed to send conciergerie accepted mail to {owner.email}: {e}")
 
 
 def send_mail_conciergerie_request_refused(owner, conciergerie, logement):
@@ -819,7 +873,7 @@ def send_mail_conciergerie_request_refused(owner, conciergerie, logement):
         msg.send(fail_silently=False)
         logger.info(f"✅ Mail conciergerie refused sent to {owner.email} for logement {logement.name}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send conciergerie refused mail to {owner.email}: {e}")
+        logger.error(f"❌ Failed to send conciergerie refused mail to {owner.email}: {e}")
 
 
 def send_mail_conciergerie_request_new(conciergerie_user, logement, owner):
@@ -839,7 +893,7 @@ def send_mail_conciergerie_request_new(conciergerie_user, logement, owner):
         msg.send(fail_silently=False)
         logger.info(f"✅ Mail new conciergerie request sent to {conciergerie_user.email} for logement {logement.name}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send new conciergerie request mail to {conciergerie_user.email}: {e}")
+        logger.error(f"❌ Failed to send new conciergerie request mail to {conciergerie_user.email}: {e}")
 
 
 def send_mail_conciergerie_stop_management(owner, conciergerie, logement):
@@ -859,7 +913,7 @@ def send_mail_conciergerie_stop_management(owner, conciergerie, logement):
         msg.send(fail_silently=False)
         logger.info(f"✅ Mail stop management sent to {owner.email} for logement {logement.name}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send stop management mail to {owner.email}: {e}")
+        logger.error(f"❌ Failed to send stop management mail to {owner.email}: {e}")
 
 
 def send_partner_validation_email(partner):
@@ -877,7 +931,7 @@ def send_partner_validation_email(partner):
         msg.send(fail_silently=False)
         logger.info(f"✅ Partner validation email sent to {partner.email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to send partner validation email to {partner.email}: {e}")
+        logger.error(f"❌ Failed to send partner validation email to {partner.email}: {e}")
 
 
 def notify_vendor_new_reservation(reservation):
@@ -899,7 +953,7 @@ def notify_vendor_new_reservation(reservation):
         msg.send(fail_silently=False)
         logger.info(f"✅ New reservation email sent to {vendor_email}")
     except Exception as e:
-        logger.exception(f"❌ Failed to notify vendor for new reservation {reservation.id}: {e}")
+        logger.error(f"❌ Failed to notify vendor for new reservation {reservation.id}: {e}")
 
 
 def send_conciergerie_validation_email_notification(conciergerie):
@@ -921,7 +975,7 @@ def send_conciergerie_validation_email_notification(conciergerie):
         msg.send(fail_silently=False)
         logger.info(f"Validation email sent to conciergerie {conciergerie.email}")
     except Exception as e:
-        logger.exception(f"Erreur d'envoi email de validation conciergerie: {e}")
+        logger.error(f"Erreur d'envoi email de validation conciergerie: {e}")
 
 
 def send_admin_conciergerie_validation_email_notification(conciergerie):
@@ -938,7 +992,7 @@ def send_admin_conciergerie_validation_email_notification(conciergerie):
         )
         logger.info(f"Admin validation email sent for conciergerie {conciergerie.name}")
     except Exception as e:
-        logger.exception(f"Erreur d'envoi email de validation admin conciergerie: {e}")
+        logger.error(f"Erreur d'envoi email de validation admin conciergerie: {e}")
 
 
 def send_admin_partner_validation_email_notification(partner):
@@ -955,7 +1009,7 @@ def send_admin_partner_validation_email_notification(partner):
         )
         logger.info(f"Admin validation email sent for partner {partner.name}")
     except Exception as e:
-        logger.exception(f"Erreur d'envoi email de validation admin partenaire: {e}")
+        logger.error(f"Erreur d'envoi email de validation admin partenaire: {e}")
 
 
 def send_mail_on_manual_payment_intent_failure(reservation):
@@ -977,7 +1031,7 @@ def send_mail_on_manual_payment_intent_failure(reservation):
         msg.send(fail_silently=False)
         logger.info(f"Email sent to user {reservation.user.email} about manual payment intent failure")
     except Exception as e:
-        logger.exception(f"Error sending email about manual payment intent failure: {e}")
+        logger.error(f"Error sending email about manual payment intent failure: {e}")
 
 
 def send_mail_logement_reservation_cancellation(logement, reservation, user):
@@ -1020,7 +1074,7 @@ def send_mail_logement_reservation_cancellation(logement, reservation, user):
         msg.send(fail_silently=False)
         logger.info(f"Email sent to user {user.email} about logement reservation cancellation")
     except Exception as e:
-        logger.exception(f"Error sending email about logement reservation cancellation: {e}")
+        logger.error(f"Error sending email about logement reservation cancellation: {e}")
 
 
 def send_mail_activity_reservation_cancellation(activity, reservation, user):
@@ -1063,4 +1117,77 @@ def send_mail_activity_reservation_cancellation(activity, reservation, user):
         msg.send(fail_silently=False)
         logger.info(f"Email sent to user {user.email} about activity reservation cancellation")
     except Exception as e:
-        logger.exception(f"Error sending email about activity reservation cancellation: {e}")
+        logger.error(f"Error sending email about activity reservation cancellation: {e}")
+
+
+def send_rating_reminders_for_logement(reservation):
+    """Sends a reminder email to the user to rate their stay at a logement.
+    Args:
+        reservation (Reservation): The reservation object for which the reminder is sent.
+    """
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            raise Exception("No entreprise configuration found.")
+
+        context = {
+            "reservation": reservation or None,
+            "logement": reservation.logement,
+            "user": reservation.user,
+            "entreprise": entreprise,
+            "settings": settings,
+        }
+
+        subject = f"Notez votre séjour pour {reservation.logement.name}"
+        message_txt = render_to_string("email/ranking_logement_reminder.txt", context)
+        message_html = render_to_string("email/ranking_logement_reminder.html", context)
+
+        msg = EmailMultiAlternatives(
+            subject,
+            message_txt,
+            settings.DEFAULT_FROM_EMAIL,
+            [reservation.user.email],
+        )
+        msg.attach_alternative(message_html, "text/html")
+        msg.send(fail_silently=False)
+
+        logger.info(f"✅ Rating reminder email sent to {reservation.user.email} for reservation {reservation.code}.")
+
+    except Exception as email_error:
+        logger.warning(f"Failed to send ranking email for {reservation.code}: {email_error}")
+
+
+def send_rating_reminders_for_activity(reservation):
+    """Sends a reminder email to the user to rate their activity experience.
+    Args:
+        reservation (Reservation): The reservation object for which the reminder is sent.
+    """
+    try:
+        entreprise = get_entreprise()
+        if not entreprise:
+            raise Exception("No entreprise configuration found.")
+
+        context = {
+            "reservation": reservation or None,
+            "activity": reservation.activity,
+            "user": reservation.user,
+            "entreprise": entreprise,
+        }
+
+        subject = f"Notez votre expérience pour {reservation.activity.name}"
+        message_txt = render_to_string("email/ranking_activity_reminder.txt", context)
+        message_html = render_to_string("email/ranking_activity_reminder.html", context)
+
+        msg = EmailMultiAlternatives(
+            subject,
+            message_txt,
+            settings.DEFAULT_FROM_EMAIL,
+            [reservation.user.email],
+        )
+        msg.attach_alternative(message_html, "text/html")
+        msg.send(fail_silently=False)
+
+        logger.info(f"✅ Rating reminder email sent to {reservation.user.email} for reservation {reservation.code}.")
+
+    except Exception as email_error:
+        logger.warning(f"Failed to send ranking email for {reservation.code}: {email_error}")

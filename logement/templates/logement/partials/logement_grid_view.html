@@ -41,6 +41,21 @@
         </div>
         <div class="card-body">
           <h3 class="logement-title">{{ logement.name }}</h3>
+          <div class="logement-stars mb-2 text-center"
+               title="Note moyenne : {{ logement.rating }} sur 5">
+            {% for i in "1,2,3,4,5"|cut:"," %}
+              {% with i_int=i|add:"0" %}
+                {% if logement.rating >= i_int %}
+                  <i class="bi bi-star-fill text-warning"></i>
+                {% elif logement.rating >= i_int|add:"-0.5" %}
+                  <i class="bi bi-star-half text-warning"></i>
+                {% else %}
+                  <i class="bi bi-star text-warning"></i>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+            <span class="ms-1 text-muted small">({{ logement.rating|floatformat:1 }}/5, {{ logement.rankings.count }} avis)</span>
+          </div>
           <p class="price">
             À partir de {{ logement.price }}€ <span>par nuit</span>
           </p>

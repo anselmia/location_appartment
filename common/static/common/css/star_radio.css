@@ -1,0 +1,21 @@
+.star-rating {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.1em;
+}
+
+.star-rating input[type="radio"] {
+  display: none;
+}
+.star-rating label {
+  font-size: 2.2em;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+.star-rating label.filled {
+  color: #ffd200 !important;
+  text-shadow: 0 0 8px #ffd20077;
+  transform: scale(1.1);
+}

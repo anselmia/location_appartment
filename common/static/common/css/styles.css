@@ -789,6 +789,15 @@ ul.list-unstyled li .ml-3 {
   border-color: #b6effb !important;
 }
 
+.custom-divider {
+  border: none;
+  border-top: 2px solid var(--primary-color, #003580);
+  width: 60px;
+  margin: 1.5rem auto;
+  opacity: 0.5;
+  border-radius: 2px;
+}
+
 /* ==== RESPONSIVE === */
 @media screen and (max-width: 900px) {
   .container {

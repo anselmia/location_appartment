@@ -1,0 +1,43 @@
+{% extends "email/base.html" %}
+{% block subject %}
+    Merci pour votre activité – Donnez-nous votre avis !
+{% endblock subject %}
+{% block banner_bg %}
+    background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+{% endblock banner_bg %}
+{% block banner_icon %}
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616489.png"
+         alt="Étoiles"
+         width="80"
+         height="80" />
+{% endblock banner_icon %}
+{% block banner_title %}
+    Comment s’est passée votre activité&nbsp;?
+{% endblock banner_title %}
+{% block content %}
+    <p>
+        Bonjour <strong>{{ user.full_name|default:user.username }}</strong>,
+    </p>
+    <p>
+        Nous espérons que votre expérience pour <strong>{{ activity.name }}</strong> s’est déroulée à merveille&nbsp;!
+    </p>
+    <p>
+        Votre avis compte beaucoup pour nous et pour la communauté. En quelques secondes, partagez votre expérience et aidez d’autres voyageurs à faire le bon choix.
+    </p>
+    <div style="text-align:center;margin:2em 0;">
+        <a href="{{ settings.SITE_ADDRESS }}/activity/rate/{{ reservation.code }}/"
+           class="btn"
+           style="background:#36d1c4;
+                  color:#fff;
+                  padding:1em 2em;
+                  border-radius:30px;
+                  font-size:1.2em;
+                  text-decoration:none;
+                  display:inline-block">⭐ Donner mon avis</a>
+    </div>
+    <p style="text-align:center;font-size:1.5em;margin-bottom:1em;">
+        {% for i in "12345" %}<span style="color:#ffd200;font-size:1.3em;">★</span>{% endfor %}
+    </p>
+    <p>Merci pour votre confiance et à bientôt sur {{ entreprise.name }} !</p>
+    <p>L’équipe {{ entreprise.name }}</p>
+{% endblock content %}

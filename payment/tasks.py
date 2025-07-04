@@ -406,3 +406,34 @@ def check_stripe_integrity():
         summary["error"] = str(e)
 
     return summary
+
+
+@periodic_task(crontab(hour=5, minute=0))  # tous les jours à 5h
+def transfert_deposit():
+    from payment.services.payment_service import transfer_deposit
+    from common.signals import update_last_task_result
+
+    summary = {
+        "reservations": {"count": 0, "transferred": 0, "skipped": 0, "errors": []},
+    }
+
+    # Standard reservations
+    reservations = Reservation.objects.filter(
+        caution_charged=True, caution_transferred=False, paid=True, amount_charged__gt=0
+    )
+    summary["reservations"]["count"] = reservations.count()
+
+    for reservation in reservations:
+        if reservation.refundable_period_passed:
+            try:
+                transfer_deposit(reservation)
+                summary["reservations"]["transferred"] += 1
+            except Exception as e:
+                summary["reservations"]["errors"].append({"id": reservation.id, "error": str(e)})
+        else:
+            summary["reservations"]["skipped"] += 1
+
+    name = inspect.currentframe().f_code.co_name
+    update_last_task_result(name, summary)
+
+    return summary

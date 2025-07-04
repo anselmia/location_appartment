@@ -66,6 +66,7 @@ urlpatterns = [
     path("<int:logement_id>/sync/booking/", views.sync_booking_calendar_view, name="sync_booking_calendar"),
     path("api/stop-managing-logement/", views.stop_managing_logement, name="stop_managing_logement"),
     path("dash/", views.dashboard, name="dash"),
+    path("rate/<str:code>/", views.rate, name="rate")
 ]
 
 urlpatterns += router.urls
